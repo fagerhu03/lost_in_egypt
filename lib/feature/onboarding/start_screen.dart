@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../auth/login/presentaion/login_screen.dart';
+
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
 
@@ -38,7 +40,10 @@ class StartScreen extends StatelessWidget {
             child: Center(
               child: GestureDetector(
                 onTap: () {
-                  // TODO: Go to Home or Main App
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
                 },
                 child: Container(
                   width: 260,

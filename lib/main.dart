@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'feature/auth/login/presentaion/login_screen.dart';
+import 'feature/auth/sign_up/presentaion/signup_screen.dart';
 import 'feature/onboarding/onboarding_screen.dart';
 
 void main() {
@@ -12,7 +14,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const OnboardingScreen(),
+        initialRoute: '/onboarding',
+        routes: {
+          '/onboarding': (context) => const OnboardingScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/signup': (context) => const SignupScreen(),
+        }
     );
   }
 }
