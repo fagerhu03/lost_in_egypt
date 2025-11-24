@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "435450589544",
+    "project_id": "lost-in-egypt-elasly",
+    "storage_bucket": "lost-in-egypt-elasly.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:435450589544:android:3ec27d857a05cca1f0e6dd",
+        "android_client_info": {
+          "package_name": "com.example.lost_in_egypt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpLn2UsR773pvIN6uVUSWEL_MXwPNqzSw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
