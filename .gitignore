@@ -46,3 +46,4 @@ app.*.map.json
 
 /android/app/build/google-services.json
 /android/app/src/debug/google-services.json
+/android/app/google-services.json
