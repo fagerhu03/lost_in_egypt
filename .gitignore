@@ -44,6 +44,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-/android/app/build/google-services.json
-/android/app/src/debug/google-services.json
-/android/app/google-services.json
+# --- SECRETS (STRICTLY IGNORE FOR PUBLIC REPO) ---
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+android/key.properties
+**/debug.keystore
+
+# Facebook & Sensitive Strings
+android/app/src/main/res/values/strings.xml
