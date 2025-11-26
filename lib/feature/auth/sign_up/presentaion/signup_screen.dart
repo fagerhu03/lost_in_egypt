@@ -49,7 +49,7 @@ class _SignupScreenState extends State<SignupScreen> {
         decoration: const BoxDecoration(
           color: Color(0xFFFCFBE8),
           image: DecorationImage(
-            image: AssetImage("assets/pattern.png"),
+            image: AssetImage("assets/pattern_comp.png"),
             fit: BoxFit.cover,
             opacity: 0.4,
           ),
@@ -64,7 +64,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 40),
 
                   // LOGO
-                  Image.asset("assets/logo/logo_colorful.png", height: 140),
+                  Image.asset("assets/logo/logo_colorful_comp.png", height: 140),
 
                   const SizedBox(height: 20),
                   const Text(

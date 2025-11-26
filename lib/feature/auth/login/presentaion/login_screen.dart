@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // LOGO
                 Image.asset(
-                  "assets/logo/logo_colorful.png",
+                  "assets/logo/logo_colorful_comp.png",
                   height: 140,
                 ),
 
