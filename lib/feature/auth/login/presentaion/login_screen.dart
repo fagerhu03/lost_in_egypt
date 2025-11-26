@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../forget_password/presentaion/forget_password_screen.dart';
 import '../../sign_up/presentaion/signup_screen.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/datasources/auth_remote_datasource.dart'; // Check path
 import '../../data/repository_impl/auth_repository_impl.dart';
 import '../../sign_up/presentaion/complete_profile_screen.dart';
 
@@ -122,7 +122,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ---FACEBOOK HANDLER ---
   Future<void> _handleFacebookLogin() async {
     setState(() => _isLoading = true);
     try {
@@ -133,6 +132,50 @@ class _LoginScreenState extends State<LoginScreen> {
       final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
 
       final result = await repository.signInWithFacebook();
+
+      result.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+            );
+          }
+        },
+        (userEntity) {
+          if (mounted) {
+            if (userEntity != null) {
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+              );
+            }
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // --- APPLE HANDLER (Using Mock Logic) ---
+  Future<void> _handleAppleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final dataSource = AuthRemoteDataSourceImpl(
+        firebaseAuth: FirebaseAuth.instance,
+        firestore: FirebaseFirestore.instance,
+      );
+      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+
+      // This calls the mock method that logs in "apple.demo@lostinegypt.com"
+      final result = await repository.signInWithApple();
 
       result.fold(
         (failure) {
@@ -338,9 +381,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Image.asset("assets/social/google.png", height: 40),
                       ),
                       const SizedBox(width: 20),
-                      Image.asset("assets/social/apple.png", height: 40),
+                      GestureDetector(
+                        onTap: _isLoading ? null : _handleAppleLogin,
+                        child: Image.asset("assets/social/apple.png", height: 40),
+                      ),
                       const SizedBox(width: 20),
-                      //FACEBOOK ON TAP
                       GestureDetector(
                         onTap: _isLoading ? null : _handleFacebookLogin,
                         child: Image.asset("assets/social/facebook.png", height: 40),

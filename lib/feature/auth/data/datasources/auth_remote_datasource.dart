@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import '../models/user.dart'; 
+import '../models/user.dart'; // Verify this path matches your project
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> signUp({
@@ -21,7 +21,10 @@ abstract class AuthRemoteDataSource {
   Future<void> forgetPassword({required String email});
 
   Future<UserModel?> signInWithGoogle();
+  
   Future<UserModel?> signInWithFacebook();
+
+  Future<UserModel?> signInWithApple();
 
   Future<void> completeSocialProfile({
     required String birthMonth,
@@ -120,22 +123,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return _checkUserInFirestore(userCredential.user!.uid);
   }
 
-  // --- FACEBOOK IMPLEMENTATION ---
   @override
   Future<UserModel?> signInWithFacebook() async {
-    // 1. Trigger Facebook Login
     final LoginResult result = await FacebookAuth.instance.login();
 
     if (result.status == LoginStatus.success) {
       final AccessToken accessToken = result.accessToken!;
-
-      // 2. Create Credential
       final OAuthCredential credential = FacebookAuthProvider.credential(accessToken.tokenString);
-
-      // 3. Sign in to Firebase
       final UserCredential userCredential = await firebaseAuth.signInWithCredential(credential);
-
-      // 4. Check Firestore (Reuse logic)
       return _checkUserInFirestore(userCredential.user!.uid);
     } else if (result.status == LoginStatus.cancelled) {
       return null;
@@ -147,7 +142,33 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  // Helper method to avoid duplicating code between Google and Facebook
+  // --- MOCK APPLE IMPLEMENTATION ---
+  @override
+  Future<UserModel?> signInWithApple() async {
+    // We use a specific demo account to simulate Apple Login
+    const mockEmail = "apple.demo@lostinegypt.com";
+    const mockPassword = "AppleDemoPassword123!";
+    
+    UserCredential userCredential;
+
+    try {
+      // 1. Try to login
+      userCredential = await firebaseAuth.signInWithEmailAndPassword(
+        email: mockEmail, 
+        password: mockPassword
+      );
+    } on FirebaseAuthException catch (_) {
+      // 2. If it fails, create the account (First time simulation)
+      userCredential = await firebaseAuth.createUserWithEmailAndPassword(
+        email: mockEmail, 
+        password: mockPassword
+      );
+    }
+
+    return _checkUserInFirestore(userCredential.user!.uid);
+  }
+
+  // Helper
   Future<UserModel?> _checkUserInFirestore(String uid) async {
     final DocumentSnapshot doc = await firestore.collection('users').doc(uid).get();
     if (doc.exists) {
@@ -171,12 +192,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     int year = int.parse(birthYear);
     DateTime parsedBirthDate = DateTime(year, monthIndex, day);
 
-    String firstName = "";
-    String lastName = "";
-    if (user.displayName != null) {
+    String firstName = "Apple"; 
+    String lastName = "User";
+
+    if (user.displayName != null && user.displayName!.isNotEmpty) {
       final names = user.displayName!.split(" ");
       firstName = names.first;
       if (names.length > 1) lastName = names.sublist(1).join(" ");
+    } else if (user.email == "apple.demo@lostinegypt.com") {
+        firstName = "Apple";
+        lastName = "Demo";
     }
 
     final newUser = UserModel(

@@ -79,7 +79,6 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  // ---FACEBOOK REPO LOGIC ---
   @override
   Future<Either<Failure, UserEntity?>> signInWithFacebook() async {
     try {
@@ -87,6 +86,18 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(userModel);
     } on FirebaseAuthException catch (e) {
       return Left(ServerFailure(e.message ?? 'Facebook Sign In Failed'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity?>> signInWithApple() async {
+    try {
+      final userModel = await remoteDataSource.signInWithApple();
+      return Right(userModel);
+    } on FirebaseAuthException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Apple Sign In Failed'));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

@@ -15,7 +15,7 @@ void main() async {
   );
   
   // TESTING: Force logout on start so you can test login again
-  await FirebaseAuth.instance.signOut();
+  // await FirebaseAuth.instance.signOut();
 
   runApp(const MyApp());
 }
