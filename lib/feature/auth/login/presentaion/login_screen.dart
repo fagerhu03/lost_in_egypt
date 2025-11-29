@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// --- APP IMPORTS ---
+// --- AUTH FEATURE IMPORTS ---
 import '../../forget_password/presentaion/forget_password_screen.dart';
 import '../../sign_up/presentaion/signup_screen.dart';
-import '../../data/datasources/auth_remote_datasource.dart'; 
-import '../../data/repository_impl/auth_repository_impl.dart';
 import '../../sign_up/presentaion/complete_profile_screen.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/repository_impl/auth_repository_impl.dart';
+
+// --- HOME SCREEN IMPORT ---
+import '../../../home/tabs/home/home_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,7 +20,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // --- STATE MANAGEMENT ---
+  // ===========================================================================
+  // 1. STATE VARIABLES & CONTROLLERS
+  // ===========================================================================
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool obscure = true;
@@ -30,9 +35,32 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // --- LOGIN LOGIC ---
+  // ===========================================================================
+  // 2. HELPER METHODS (NAVIGATION)
+  // ===========================================================================
+  
+  /// Navigates to the Home Screen and removes all previous screens (Login/Onboarding)
+  void _navigateToHome() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      (route) => false,
+    );
+  }
+
+  /// Navigates to the Complete Profile Screen (For new Social Users)
+  void _navigateToCompleteProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+    );
+  }
+
+  // ===========================================================================
+  // 3. AUTHENTICATION LOGIC
+  // ===========================================================================
+
+  /// Handles Standard Email/Password Login
   Future<void> _handleLogin() async {
-    // 1. Validation: Ensure fields are not empty
+    // A. Validation
     if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter both email and password")),
@@ -43,20 +71,20 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 2. Setup Data Layer
+      // B. Dependency Injection (Manual)
       final dataSource = AuthRemoteDataSourceImpl(
         firebaseAuth: FirebaseAuth.instance,
         firestore: FirebaseFirestore.instance,
       );
       final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
 
-      // 3. Attempt Login
+      // C. Call Repository
       final result = await repository.login(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // 4. Handle Result
+      // D. Handle Result (Either Failure or Success)
       result.fold(
         (failure) {
           if (mounted) {
@@ -73,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 backgroundColor: Colors.green,
               ),
             );
-            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            _navigateToHome(); // Navigate to Home
           }
         },
       );
@@ -88,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // --- GOOGLE LOGIN ---
+  /// Handles Google Sign In
   Future<void> _handleGoogleLogin() async {
     setState(() => _isLoading = true);
     try {
@@ -110,13 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         (userEntity) {
           if (mounted) {
-            // Null userEntity means "New User" -> Go to Complete Profile
             if (userEntity != null) {
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              _navigateToHome(); // Existing User -> Home
             } else {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
-              );
+              _navigateToCompleteProfile(); // New User -> Profile Setup
             }
           }
         },
@@ -132,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // --- FACEBOOK LOGIN ---
+  /// Handles Facebook Sign In
   Future<void> _handleFacebookLogin() async {
     setState(() => _isLoading = true);
     try {
@@ -155,11 +180,9 @@ class _LoginScreenState extends State<LoginScreen> {
         (userEntity) {
           if (mounted) {
             if (userEntity != null) {
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              _navigateToHome();
             } else {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
-              );
+              _navigateToCompleteProfile();
             }
           }
         },
@@ -175,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // --- APPLE LOGIN (MOCK) ---
+  /// Handles Apple Sign In (Mock/Real)
   Future<void> _handleAppleLogin() async {
     setState(() => _isLoading = true);
     try {
@@ -198,11 +221,9 @@ class _LoginScreenState extends State<LoginScreen> {
         (userEntity) {
           if (mounted) {
             if (userEntity != null) {
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              _navigateToHome();
             } else {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
-              );
+              _navigateToCompleteProfile();
             }
           }
         },
@@ -218,7 +239,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // --- UI BUILD ---
+  // ===========================================================================
+  // 4. UI BUILD
+  // ===========================================================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -241,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const SizedBox(height: 60),
 
-                  // LOGO
+                  // --- LOGO ---
                   Image.asset(
                     "assets/logo/logo_colorful_comp.png",
                     height: 140,
@@ -267,6 +290,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+                    // Removed 'const', Added 'controller'
                     child: TextField(
                       controller: _emailController, 
                       style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
@@ -290,6 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+                    // Added 'controller'
                     child: TextField(
                       controller: _passwordController,
                       obscureText: obscure,
@@ -346,7 +371,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 15),
 
-                  // FORGOT PASSWORD LINK
+                  // --- FORGOT PASSWORD LINK ---
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).push(
@@ -368,7 +393,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 30),
 
-                  // DIVIDER
+                  // --- DIVIDER ---
                   Row(
                     children: const [
                       Expanded(
@@ -393,20 +418,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
-                  // --- SOCIAL BUTTONS (WIRED UP) ---
+                  // --- SOCIAL BUTTONS ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Google
                       GestureDetector(
                         onTap: _isLoading ? null : _handleGoogleLogin,
                         child: Image.asset("assets/social/google.png", height: 40),
                       ),
                       const SizedBox(width: 20),
+                      
+                      // Apple
                       GestureDetector(
                         onTap: _isLoading ? null : _handleAppleLogin,
                         child: Image.asset("assets/social/apple.png", height: 40),
                       ),
                       const SizedBox(width: 20),
+                      
+                      // Facebook
                       GestureDetector(
                         onTap: _isLoading ? null : _handleFacebookLogin,
                         child: Image.asset("assets/social/facebook.png", height: 40),
@@ -416,7 +446,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 25),
 
-                  // CREATE ACCOUNT LINK
+                  // --- CREATE ACCOUNT LINK ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
