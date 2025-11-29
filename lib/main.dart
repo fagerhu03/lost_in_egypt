@@ -27,34 +27,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Lost in Egypt',
       theme: ThemeData(fontFamily: 'Marcellus'),
-      
       initialRoute: '/onboarding',
       
       routes: {
-        //placeholder Scaffold for testing login success
-        '/': (context) => Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("LOGIN SUCCESSFUL!"), 
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                    Navigator.pushReplacementNamed(context, '/onboarding');
-                  }, 
-                  child: const Text("Logout & Restart")
-                )
-              ],
-            ),
-          ),
-        ),
-
         '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
       },
     );
   }
+
 }
