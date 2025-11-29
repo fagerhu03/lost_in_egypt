@@ -43,3 +43,16 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# --- Secrets 
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+android/app/src/main/res/values/strings.xml
+**/debug.keystore
+
+# Facebook & Sensitive Strings
+android/app/src/main/res/values/strings.xml
+# --- Cloud Functions ---
+functions/node_modules/
+functions/firebase-debug.log
+functions/firebase-debug.log.*
