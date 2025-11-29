@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../forget_password/presentaion/forget_password_screen.dart';
 import '../../sign_up/presentaion/signup_screen.dart';
+import '../../data/datasources/auth_remote_datasource.dart'; // Check path
+import '../../data/repository_impl/auth_repository_impl.dart';
+import '../../sign_up/presentaion/complete_profile_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,7 +15,200 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool obscure = true;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter both email and password")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final dataSource = AuthRemoteDataSourceImpl(
+        firebaseAuth: FirebaseAuth.instance,
+        firestore: FirebaseFirestore.instance,
+      );
+      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+
+      final result = await repository.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      result.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+            );
+          }
+        },
+        (userEntity) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Welcome back, ${userEntity.firstName}!"),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final dataSource = AuthRemoteDataSourceImpl(
+        firebaseAuth: FirebaseAuth.instance,
+        firestore: FirebaseFirestore.instance,
+      );
+      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+
+      final result = await repository.signInWithGoogle();
+
+      result.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+            );
+          }
+        },
+        (userEntity) {
+          if (mounted) {
+            if (userEntity != null) {
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+              );
+            }
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleFacebookLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final dataSource = AuthRemoteDataSourceImpl(
+        firebaseAuth: FirebaseAuth.instance,
+        firestore: FirebaseFirestore.instance,
+      );
+      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+
+      final result = await repository.signInWithFacebook();
+
+      result.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+            );
+          }
+        },
+        (userEntity) {
+          if (mounted) {
+            if (userEntity != null) {
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+              );
+            }
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // --- APPLE HANDLER (Using Mock Logic) ---
+  Future<void> _handleAppleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final dataSource = AuthRemoteDataSourceImpl(
+        firebaseAuth: FirebaseAuth.instance,
+        firestore: FirebaseFirestore.instance,
+      );
+      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+
+      // This calls the mock method that logs in "apple.demo@lostinegypt.com"
+      final result = await repository.signInWithApple();
+
+      result.fold(
+        (failure) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+            );
+          }
+        },
+        (userEntity) {
+          if (mounted) {
+            if (userEntity != null) {
+              // Existing User
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            } else {
+              // New User (Needs Birthdate)
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+              );
+            }
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,59 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:email_otp/email_otp.dart';
-import 'otp_verification_screen.dart';
+import 'new_password_screen.dart'; 
 
-class ForgetPasswordScreen extends StatefulWidget {
-  const ForgetPasswordScreen({super.key});
+class OtpVerificationScreen extends StatefulWidget {
+  // FIX 1: Removed 'myAuth' from constructor (it's static now)
+  final String email;
+
+  const OtpVerificationScreen({
+    super.key, 
+    required this.email,
+  });
 
   @override
-  State<ForgetPasswordScreen> createState() => _ForgetPasswordScreenState();
+  State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
 }
 
-class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
-  final TextEditingController _emailController = TextEditingController();
+class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
+  final TextEditingController _otpController = TextEditingController();
   bool _isLoading = false;
 
-  Future<void> _sendOtp() async {
-    if (_emailController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email")),
-      );
-      return;
-    }
-
+  Future<void> _verifyOtp() async {
     setState(() => _isLoading = true);
-
-    // FIX 1: Use Static "config" method (No "myAuth" instance needed)
-    // FIX 2: Use "OTPType.numeric" instead of "digitsOnly"
-    EmailOTP.config(
-      appEmail: "support@lostinegypt.com",
-      appName: "Lost in Egypt",
-      otpLength: 4,
-      otpType: OTPType.numeric, 
-    );
-
-    // FIX 3: Pass email directly to sendOTP
-    bool success = await EmailOTP.sendOTP(email: _emailController.text.trim());
+    
+    // FIX 2: Use Static "verifyOTP" method
+    bool valid = EmailOTP.verifyOTP(otp: _otpController.text);
 
     if (mounted) {
       setState(() => _isLoading = false);
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("OTP Sent! Check your email.")),
-        );
-        // Navigate to Verify Screen (No need to pass 'myAuth' anymore)
-        Navigator.push(
+      if (valid) {
+        // Success! Go to New Password Screen
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => OtpVerificationScreen(
-              email: _emailController.text.trim(),
-            ),
+            builder: (context) => NewPasswordScreen(email: widget.email),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Failed to send OTP. Try again."),
+            content: Text("Invalid OTP"),
             backgroundColor: Colors.red,
           ),
         );
@@ -64,10 +49,14 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent, 
+        elevation: 0, 
+        leading: const BackButton(color: Colors.black),
+      ),
+      extendBodyBehindAppBar: true,
       body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFFCFBE8),
-        ),
+        decoration: const BoxDecoration(color: Color(0xFFFCFBE8)),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(30.0),
@@ -75,7 +64,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  "Reset Password",
+                  "Verification",
                   style: TextStyle(
                     fontSize: 24, 
                     fontFamily: "Marcellus", 
@@ -83,11 +72,11 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     fontWeight: FontWeight.bold
                   ),
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  "Enter your email to receive a 4-digit code.",
+                const SizedBox(height: 10),
+                Text(
+                  "Enter the code sent to \n${widget.email}",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: "Marcellus", fontSize: 16),
+                  style: const TextStyle(fontFamily: "Marcellus", fontSize: 16),
                 ),
                 const SizedBox(height: 30),
                 
@@ -98,13 +87,22 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
                   child: TextField(
-                    controller: _emailController,
-                    style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
+                    controller: _otpController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontFamily: "Marcellus",
+                      fontSize: 24,
+                      letterSpacing: 10,
+                    ),
+                    maxLength: 4,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      hintText: "Enter your email",
+                      hintText: "0000",
+                      counterText: "",
                       hintStyle: TextStyle(
-                        color: Colors.white70,
+                        color: Colors.white38,
                         fontFamily: "Marcellus",
                       ),
                     ),
@@ -114,7 +112,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                 const SizedBox(height: 25),
                 
                 GestureDetector(
-                  onTap: _isLoading ? null : _sendOtp,
+                  onTap: _isLoading ? null : _verifyOtp,
                   child: Container(
                     width: double.infinity,
                     height: 50,
@@ -126,7 +124,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                       child: _isLoading 
                       ? const CircularProgressIndicator(color: Colors.black87)
                       : const Text(
-                        "Send Code",
+                        "Verify Code",
                         style: TextStyle(
                           color: Colors.black87,
                           fontSize: 18,
