@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  pinput: ^6.0.1
   flutter:
     sdk: flutter
   firebase_core: ^4.2.1
@@ -72,6 +73,7 @@ flutter:
     - assets/onboarding/
     - assets/logo/
     - assets/social/
+    - assets/icons/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

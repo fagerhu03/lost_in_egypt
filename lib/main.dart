@@ -57,6 +57,13 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
       },
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/onboarding',
+        routes: {
+          '/onboarding': (context) => const OnboardingScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/signup': (context) => const SignupScreen(),
+        }
     );
   }
 }

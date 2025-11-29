@@ -27,7 +27,7 @@ class StartScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: Image.asset(
-              "assets/logo/logo_light.png",
+              "assets/logo/logo_light_comp.png",
               height: 200, // Adjust height as needed
             ),
           ),
