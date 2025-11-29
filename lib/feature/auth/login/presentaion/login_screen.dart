@@ -50,14 +50,14 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       result.fold(
-        (failure) {
+            (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
             );
           }
         },
-        (userEntity) {
+            (userEntity) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -92,14 +92,14 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await repository.signInWithGoogle();
 
       result.fold(
-        (failure) {
+            (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
             );
           }
         },
-        (userEntity) {
+            (userEntity) {
           if (mounted) {
             if (userEntity != null) {
               Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
@@ -134,14 +134,14 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await repository.signInWithFacebook();
 
       result.fold(
-        (failure) {
+            (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
             );
           }
         },
-        (userEntity) {
+            (userEntity) {
           if (mounted) {
             if (userEntity != null) {
               Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
@@ -178,14 +178,14 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await repository.signInWithApple();
 
       result.fold(
-        (failure) {
+            (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
             );
           }
         },
-        (userEntity) {
+            (userEntity) {
           if (mounted) {
             if (userEntity != null) {
               // Existing User
@@ -322,9 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // LOGIN BUTTON
                     GestureDetector(
-                      onTap: () {
-                        // TODO: login logic
-                      },
+                      onTap: _isLoading ? null : _handleLogin,
                       child: Container(
                         width: double.infinity,
                         height: 50,
@@ -332,8 +330,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: const Color(0xFFD6A00F),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Center(
-                          child: Text(
+                        child: Center(
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.black87)
+                              : const Text(
                             "Log In",
                             style: TextStyle(
                               color: Colors.black87,
