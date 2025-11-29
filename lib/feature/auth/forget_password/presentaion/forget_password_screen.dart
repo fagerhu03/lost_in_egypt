@@ -23,41 +23,41 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
     setState(() => _isLoading = true);
 
-    // FIX 1: Use Static "config" method (No "myAuth" instance needed)
-    // FIX 2: Use "OTPType.numeric" instead of "digitsOnly"
+    // Email OTP configuration (Correct way)
     EmailOTP.config(
       appEmail: "support@lostinegypt.com",
       appName: "Lost in Egypt",
       otpLength: 4,
-      otpType: OTPType.numeric, 
+      otpType: OTPType.numeric,
     );
 
-    // FIX 3: Pass email directly to sendOTP
-    bool success = await EmailOTP.sendOTP(email: _emailController.text.trim());
+    // Send OTP
+    bool success =
+    await EmailOTP.sendOTP(email: _emailController.text.trim());
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("OTP Sent! Check your email.")),
-        );
-        // Navigate to Verify Screen (No need to pass 'myAuth' anymore)
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OtpVerificationScreen(
-              email: _emailController.text.trim(),
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Failed to send OTP. Try again."),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("OTP Sent! Check your email.")),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              OtpVerificationScreen(email: _emailController.text.trim()),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Failed to send OTP. Try again."),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -67,39 +67,63 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
       body: Container(
         decoration: const BoxDecoration(
           color: Color(0xFFFCFBE8),
+          image: DecorationImage(
+            image: AssetImage("assets/pattern.png"),
+            fit: BoxFit.cover,
+            opacity: 0.4,
+          ),
         ),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(30.0),
             child: Column(
+
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // ICON
+                Image.asset(
+                  "assets/icons/error.png",
+                  height: 150,
+                ),
+
                 const Text(
                   "Reset Password",
                   style: TextStyle(
-                    fontSize: 24, 
-                    fontFamily: "Marcellus", 
+                    fontSize: 24,
+                    fontFamily: "Marcellus",
                     color: Color(0xff634700),
-                    fontWeight: FontWeight.bold
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
                 const Text(
                   "Enter your email to receive a 4-digit code.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: "Marcellus", fontSize: 16),
+                  style: TextStyle(
+                    fontFamily: "Marcellus",
+                    fontSize: 16,
+                    color: Color(0xff634700),
+                  ),
                 ),
+
                 const SizedBox(height: 30),
-                
+
+                // EMAIL INPUT
                 Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFF7A8450).withOpacity(0.70),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 3),
                   child: TextField(
                     controller: _emailController,
-                    style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: "Marcellus",
+                    ),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                       hintText: "Enter your email",
@@ -110,9 +134,9 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 25),
-                
+
                 GestureDetector(
                   onTap: _isLoading ? null : _sendOtp,
                   child: Container(
@@ -123,9 +147,10 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
-                      child: _isLoading 
-                      ? const CircularProgressIndicator(color: Colors.black87)
-                      : const Text(
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                          color: Colors.black87)
+                          : const Text(
                         "Send Code",
                         style: TextStyle(
                           color: Colors.black87,
