@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
+import '../camra/camra_screen.dart';
+import '../community/community_screen.dart';
+import '../home/home_screen.dart';
+import '../map/map_screen.dart';
+import '../more/more_screen.dart';
+
 class HomeWrapper extends StatefulWidget {
   const HomeWrapper({super.key});
 
@@ -10,15 +16,14 @@ class HomeWrapper extends StatefulWidget {
 
 class _HomeWrapperState extends State<HomeWrapper> {
   final PageController _controller = PageController();
-
-  int index = 0;   // start at home
+  int index = 0;
 
   final pages = const [
-    Center(child: Text("Home", style: TextStyle(fontSize: 28))),
-    Center(child: Text("Explore", style: TextStyle(fontSize: 28))),
-    Center(child: Text("Camera", style: TextStyle(fontSize: 28))),
-    Center(child: Text("Map", style: TextStyle(fontSize: 28))),
-    Center(child: Text("More", style: TextStyle(fontSize: 28))),
+    HomeScreen(),
+    CommunityScreen(),
+    CameraScreen(),
+    MapScreen(),
+    MoreScreen(),
   ];
 
   @override
@@ -26,28 +31,23 @@ class _HomeWrapperState extends State<HomeWrapper> {
     return Scaffold(
       extendBody: true,
 
-      // ⭐ PAGEVIEW for animated navigation
+      // PAGEVIEW (correct)
       body: PageView(
         controller: _controller,
         physics: const BouncingScrollPhysics(),
-        onPageChanged: (i) {
-          setState(() => index = i);
-        },
-        children: pages,
+        onPageChanged: (i) => setState(() => index = i),
+        children: pages,  // ✔ must be a list of widgets
       ),
 
-      // ⭐ REACT CIRCLE BOTTOM BAR
+      // BOTTOM BAR (correct)
       bottomNavigationBar: ConvexAppBar(
         initialActiveIndex: 0,
-        style: TabStyle.reactCircle,  // ← THIS STYLE
-
-        height: 70,
+        style: TabStyle.react,
+        height: 50,
         curveSize: 90,
-        // ❗ remove cornerRadius or bar breaks
-
         backgroundColor: const Color(0xffE9E4BC),
         activeColor: const Color(0xff4D5420),
-        color: const Color(0xff4D5420).withOpacity(0.55),
+        color: const Color(0xff4D5420).withOpacity(0.60),
         elevation: 12,
 
         items: const [
@@ -60,11 +60,9 @@ class _HomeWrapperState extends State<HomeWrapper> {
 
         onTap: (i) {
           setState(() => index = i);
-
-          // ⭐ FULL ANIMATED SLIDE
           _controller.animateToPage(
             i,
-            duration: const Duration(milliseconds: 350),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
         },
