@@ -32,4 +32,5 @@ abstract class AuthRepository {
     required String birthDay,
     required String birthYear,
   });
+  Future<Either<Failure, bool>> checkEmailExists(String email);
 }

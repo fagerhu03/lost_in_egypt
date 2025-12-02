@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'feature/home/tabs/navigator/home_wrapper.dart';
 import 'firebase_options.dart';
 import 'feature/auth/login/presentaion/login_screen.dart';
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Lost in Egypt',
       theme: ThemeData(fontFamily: 'Marcellus'),
-      initialRoute: '/home',
+      initialRoute: '/onboarding',
       
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),

@@ -46,11 +46,6 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
 
   Future<void> _handlePasswordReset() async {
     if (!_validatePassword()) return;
-    print("--------------------------------------------------");
-    print("DEBUG CHECK: Sending Data to Server:");
-    print("EMAIL: '${widget.email}'");
-    print("PASSWORD: '${_passController.text.trim()}'");
-    print("--------------------------------------------------");
     setState(() => _isLoading = true);
 
     try {

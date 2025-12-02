@@ -1,23 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../navigator/widget/search_header.dart';
+import '../navigator/widget/search_header.dart'; 
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String? _profileImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        
+        if (doc.exists && mounted) {
+          final data = doc.data();
+          // --- DEBUG PRINT ---
+          print("🔥 FIRESTORE DATA: $data"); 
+          print("🔥 TRYING TO READ: '${data?['profileImageUrl']}'");
+          setState(() {
+            _profileImageUrl = data?['profileImageUrl'];
+          });
+        } else {
+          print("🔥 DOC DOES NOT EXIST for UID: ${user.uid}");
+        }
+      } catch (e) {
+        debugPrint("Error fetching profile: $e");
+      }
+    } else {
+      print("🔥 NO USER LOGGED IN");
+    }
+  }
+
+  Future<void> _handleSignOut() async {
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      // Go back to login
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffFCFBE8),
-
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              // 🔍 SEARCH BAR
-              const SearchHeader(),
+              
+              // 🔍 SEARCH HEADER (With Profile & Logout)
+              SearchHeader(
+                profileImageUrl: _profileImageUrl,
+                onSignOut: _handleSignOut,
+              ),
+              
               const SizedBox(height: 12),
 
               // 🖼 HERO IMAGE
@@ -34,7 +88,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // ⭐ WHAT'S NEW TITLE
+              // ⭐ WHAT'S NEW
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -43,6 +97,7 @@ class HomeScreen extends StatelessWidget {
                     color: const Color(0xff4D5420),
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                    fontFamily: "Marcellus",
                   ),
                 ),
               ),
@@ -67,7 +122,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              // ⭐ EVENTS HEADER
+              // ⭐ EVENTS
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -79,6 +134,7 @@ class HomeScreen extends StatelessWidget {
                         color: const Color(0xff4D5420),
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        fontFamily: "Marcellus",
                       ),
                     ),
                     Text(
@@ -86,6 +142,7 @@ class HomeScreen extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.brown.shade700,
                         fontWeight: FontWeight.bold,
+                        fontFamily: "Marcellus",
                       ),
                     ),
                   ],
@@ -93,7 +150,6 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
 
-              // ⭐ EVENTS HORIZONTAL SCROLL
               SizedBox(
                 height: 170,
                 child: ListView(
@@ -118,24 +174,20 @@ class HomeScreen extends StatelessWidget {
                     color: const Color(0xff4D5420),
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                    fontFamily: "Marcellus",
                   ),
                 ),
               ),
 
               const SizedBox(height: 12),
 
-              // ⭐ TRIP OPTIONS
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: _tripCard("Guide"),
-                    ),
+                    Expanded(child: _tripCard("Guide")),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: _tripCard("Solo trip"),
-                    ),
+                    Expanded(child: _tripCard("Solo trip")),
                   ],
                 ),
               ),
@@ -148,7 +200,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // CATEGORY CARD
+  // --- WIDGET HELPERS ---
   Widget _categoryCard(String icon, String title) {
     return Container(
       width: 110,
@@ -162,19 +214,12 @@ class HomeScreen extends StatelessWidget {
         children: [
           Image.asset(icon, width: 35),
           const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xff4D5420),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(title, style: const TextStyle(color: Color(0xff4D5420), fontWeight: FontWeight.w600, fontFamily: "Marcellus")),
         ],
       ),
     );
   }
 
-  // EVENT CARD
   Widget _eventCard(String title, String imagePath) {
     return Container(
       width: 150,
@@ -182,10 +227,7 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Colors.grey.shade200,
-        image: DecorationImage(
-          image: AssetImage(imagePath),
-          fit: BoxFit.cover,
-        ),
+        image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
       ),
       child: Container(
         alignment: Alignment.bottomLeft,
@@ -198,18 +240,11 @@ class HomeScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: "Marcellus")),
       ),
     );
   }
 
-  // TRIP CARD
   Widget _tripCard(String title) {
     return Container(
       height: 110,
@@ -218,14 +253,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Center(
-        child: Text(
-          title,
-          style: const TextStyle(
-            color: Color(0xff4D5420),
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: Text(title, style: const TextStyle(color: Color(0xff4D5420), fontSize: 20, fontWeight: FontWeight.bold, fontFamily: "Marcellus")),
       ),
     );
   }
