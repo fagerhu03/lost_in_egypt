@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../navigator/widget/search_header.dart'; 
+import '../../data/mock_home_data.dart';
+import '../navigator/widget/search_header.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetchUserProfile();
   }
-
   Future<void> _fetchUserProfile() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -28,30 +28,21 @@ class _HomeScreenState extends State<HomeScreen> {
             .collection('users')
             .doc(user.uid)
             .get();
-        
+
         if (doc.exists && mounted) {
-          final data = doc.data();
-          // --- DEBUG PRINT ---
-          print("🔥 FIRESTORE DATA: $data"); 
-          print("🔥 TRYING TO READ: '${data?['profileImageUrl']}'");
           setState(() {
-            _profileImageUrl = data?['profileImageUrl'];
+            _profileImageUrl = doc.data()?['profileImageUrl'];
           });
-        } else {
-          print("🔥 DOC DOES NOT EXIST for UID: ${user.uid}");
         }
       } catch (e) {
         debugPrint("Error fetching profile: $e");
       }
-    } else {
-      print("🔥 NO USER LOGGED IN");
     }
   }
 
   Future<void> _handleSignOut() async {
     await FirebaseAuth.instance.signOut();
     if (mounted) {
-      // Go back to login
       Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     }
   }
@@ -65,13 +56,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
-              // 🔍 SEARCH HEADER (With Profile & Logout)
+              // 🔍 SEARCH HEADER
               SearchHeader(
                 profileImageUrl: _profileImageUrl,
                 onSignOut: _handleSignOut,
               ),
-              
               const SizedBox(height: 12),
 
               // 🖼 HERO IMAGE
@@ -88,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ⭐ WHAT'S NEW
+              // ⭐ WHAT'S NEW (Dynamic Categories)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -103,26 +92,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
 
-              // ⭐ CATEGORY GRID
+              // DYNAMIC CATEGORY GRID
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Wrap(
                   spacing: 12,
                   runSpacing: 12,
-                  children: [
-                    _categoryCard("assets/icons/hotel.png", "Hotels"),
-                    _categoryCard("assets/icons/museum.png", "Museums"),
-                    _categoryCard("assets/icons/restaurant.png", "Restaurants"),
-                    _categoryCard("assets/icons/mosque.png", "Mosques"),
-                    _categoryCard("assets/icons/beach.png", "Beaches"),
-                    _categoryCard("assets/icons/adventure.png", "Adventure"),
-                  ],
+                  children: MockHomeRepository.categories.map((category) {
+                    return _categoryCard(category.iconPath, category.title);
+                  }).toList(),
                 ),
               ),
 
               const SizedBox(height: 25),
 
-              // ⭐ EVENTS
+              // ⭐ EVENTS HEADER
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -150,16 +134,45 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 10),
 
+              // ⭐ REAL-TIME FIRESTORE EVENTS LIST
               SizedBox(
                 height: 170,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(left: 16),
-                  children: [
-                    _eventCard("Arabian Night", "assets/images/event1.jpg"),
-                    _eventCard("Crimson Bar & Grill", "assets/images/event2.jpg"),
-                    _eventCard("Temple Tour", "assets/images/event3.jpg"),
-                  ],
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('events')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    // 1. Loading State
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    // 2. Error State
+                    if (snapshot.hasError) {
+                      return const Center(child: Text("Something went wrong"));
+                    }
+
+                    // 3. Empty State
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text("No events found"));
+                    }
+
+                    // 4. Data Loaded
+                    final docs = snapshot.data!.docs;
+
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(left: 16),
+                      itemCount: docs.length,
+                      itemBuilder: (context, index) {
+                        final data = docs[index].data() as Map<String, dynamic>;
+                        // Convert DB Map -> EventModel
+                        final event = EventModel.fromMap(data, docs[index].id);
+
+                        return _eventCard(event.title, event.imagePath);
+                      },
+                    );
+                  },
                 ),
               ),
 
@@ -214,7 +227,14 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Image.asset(icon, width: 35),
           const SizedBox(height: 8),
-          Text(title, style: const TextStyle(color: Color(0xff4D5420), fontWeight: FontWeight.w600, fontFamily: "Marcellus")),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xff4D5420),
+              fontWeight: FontWeight.w600,
+              fontFamily: "Marcellus",
+            ),
+          ),
         ],
       ),
     );
@@ -227,7 +247,14 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Colors.grey.shade200,
-        image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
+        image: DecorationImage(
+          image: AssetImage(imagePath),
+          fit: BoxFit.cover,
+          // Handle missing images gracefully
+          onError: (exception, stackTrace) {
+            // You can add a placeholder logic here if needed
+          },
+        ),
       ),
       child: Container(
         alignment: Alignment.bottomLeft,
@@ -240,7 +267,14 @@ class _HomeScreenState extends State<HomeScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: "Marcellus")),
+        child: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontFamily: "Marcellus",
+          ),
+        ),
       ),
     );
   }
@@ -253,7 +287,15 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Center(
-        child: Text(title, style: const TextStyle(color: Color(0xff4D5420), fontSize: 20, fontWeight: FontWeight.bold, fontFamily: "Marcellus")),
+        child: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xff4D5420),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            fontFamily: "Marcellus",
+          ),
+        ),
       ),
     );
   }
