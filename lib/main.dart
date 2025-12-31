@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
       
       // Keep routes for manual navigation (Navigator.pushNamed)
       routes: {
+
         '/onboarding': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
