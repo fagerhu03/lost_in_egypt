@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cached_network_image/cached_network_image.dart'; 
 
-import '../../data/mock_home_data.dart';
+import './data/datasources/local_mock_data.dart';
+import './data/models/map_item_models.dart'; 
 import '../navigator/widget/search_header.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetchUserProfile();
   }
+
   Future<void> _fetchUserProfile() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -47,6 +52,54 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // --- IMAGE UPLOADER ---
+  // Future<String> _uploadAssetImage(String assetPath, String filename) async {
+  //   try {
+  //     final byteData = await rootBundle.load(assetPath);
+  //     final bytes = byteData.buffer.asUint8List();
+
+  //     final ref = FirebaseStorage.instance.ref().child('seed_images/$filename');
+  //     final uploadTask = await ref.putData(bytes);
+
+  //     final url = await uploadTask.ref.getDownloadURL();
+  //     print("✅ Image Uploaded: $url");
+  //     return url;
+  //   } catch (e) {
+  //     print("❌ Image Upload Failed: $e");
+  //     return ""; 
+  //   }
+  // }
+
+  // // --- SEEDER FUNCTION ---
+  // Future<void> _seedDatabase() async {
+  //   final firestore = FirebaseFirestore.instance;
+  //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Starting Upload... this may take a minute.")));
+
+  //   try {
+  //     // 1. PROCESS EVENTS
+  //     for (var e in MockHomeRepository.events) {
+  //       String imageUrl = await _uploadAssetImage(e.imagePath, "${e.id}.jpg");
+  //       var data = e.toMap();
+  //       data['imagePath'] = imageUrl; 
+  //       await firestore.collection('events').doc(e.id).set(data);
+  //     }
+
+  //     // 2. PROCESS PLACES
+  //     for (var p in MockHomeRepository.places) {
+  //       String imageUrl = await _uploadAssetImage(p.imagePath, "${p.id}.jpg");
+  //       var data = p.toMap();
+  //       data['imagePath'] = imageUrl;
+  //       await firestore.collection('places').doc(p.id).set(data);
+  //     }
+
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Success! Images & Data linked in Cloud.")));
+  //     }
+  //   } catch (e) {
+  //     print("Seeding Error: $e");
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,6 +114,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 profileImageUrl: _profileImageUrl,
                 onSignOut: _handleSignOut,
               ),
+              
+              // 🔴 TEMPORARY SEEDER BUTTON (Delete after success)
+              // Center(
+              //   child: Padding(
+              //     padding: const EdgeInsets.symmetric(vertical: 10),
+              //     child: ElevatedButton.icon(
+              //       onPressed: _seedDatabase,
+              //       icon: const Icon(Icons.public, color: Colors.white),
+              //       label: const Text("Seed Maps Data", style: TextStyle(color: Colors.white)),
+              //       style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              //     ),
+              //   ),
+              // ),
+              
               const SizedBox(height: 12),
 
               // 🖼 HERO IMAGE
@@ -77,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ⭐ WHAT'S NEW (Dynamic Categories)
+              // ⭐ WHAT'S NEW
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -92,13 +159,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
 
-              // DYNAMIC CATEGORY GRID
+              // CATEGORY GRID
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Wrap(
                   spacing: 12,
                   runSpacing: 12,
-                  children: MockHomeRepository.categories.map((category) {
+                  children: LocalMockData.categories.map((category) {
                     return _categoryCard(category.iconPath, category.title);
                   }).toList(),
                 ),
@@ -142,22 +209,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       .collection('events')
                       .snapshots(),
                   builder: (context, snapshot) {
-                    // 1. Loading State
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
-
-                    // 2. Error State
                     if (snapshot.hasError) {
                       return const Center(child: Text("Something went wrong"));
                     }
-
-                    // 3. Empty State
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return const Center(child: Text("No events found"));
                     }
 
-                    // 4. Data Loaded
                     final docs = snapshot.data!.docs;
 
                     return ListView.builder(
@@ -166,7 +227,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: docs.length,
                       itemBuilder: (context, index) {
                         final data = docs[index].data() as Map<String, dynamic>;
-                        // Convert DB Map -> EventModel
                         final event = EventModel.fromMap(data, docs[index].id);
 
                         return _eventCard(event.title, event.imagePath);
@@ -191,9 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -204,7 +262,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 30),
             ],
           ),
@@ -240,40 +297,72 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ⭐ UPDATED: Handles Caching & Shimmer for HTTP images
   Widget _eventCard(String title, String imagePath) {
     return Container(
       width: 150,
       margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.grey.shade200,
-        image: DecorationImage(
-          image: AssetImage(imagePath),
-          fit: BoxFit.cover,
-          // Handle missing images gracefully
-          onError: (exception, stackTrace) {
-            // You can add a placeholder logic here if needed
-          },
-        ),
-      ),
-      child: Container(
-        alignment: Alignment.bottomLeft,
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [Colors.black.withOpacity(0.0), Colors.black45],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: "Marcellus",
-          ),
+        child: Stack(
+          children: [
+            // 1. THE IMAGE (Smart Loading)
+            Positioned.fill(
+              child: imagePath.startsWith('http')
+                  ? CachedNetworkImage(
+                      imageUrl: imagePath,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: Colors.grey.shade300,
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: Colors.grey.shade300,
+                        child: const Icon(Icons.broken_image, color: Colors.grey),
+                      ),
+                    )
+                  : Image.asset(
+                      imagePath,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                         color: Colors.grey.shade300, 
+                         child: const Icon(Icons.image_not_supported),
+                      ),
+                    ),
+            ),
+
+            // 2. GRADIENT OVERLAY (For Text Readability)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ),
+
+            // 3. TITLE
+            Positioned(
+              bottom: 8,
+              left: 8,
+              right: 8,
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "Marcellus",
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
