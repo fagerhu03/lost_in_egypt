@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -29,20 +30,18 @@ class _MapScreenState extends State<MapScreen> {
   // Default selection: recommended only
   String _selectedUiCategoryId = 'recommended';
 
+  // ---- Map Styling (assets) ----
+  String? _lightMapStyle;
+  String? _darkMapStyle;
+  Brightness? _lastBrightness;
+
   static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(30.0444, 31.2357),
     zoom: 10,
   );
 
-  final String _mapStyle = '''
-  [
-    {"featureType":"poi","stylers":[{"visibility":"on"}]},
-    {"featureType":"transit","stylers":[{"visibility":"off"}]}
-  ]
-  ''';
-
   static const List<_UiCategory> _categories = [
-    _UiCategory('all', 'All'), // ✅ added
+    _UiCategory('all', 'All'),
     _UiCategory('recommended', 'Recommended'),
     _UiCategory('historic', 'Historic'),
     _UiCategory('museum', 'Museum'),
@@ -57,6 +56,48 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
     _checkLocationPermission();
     _loadFeatured(); // default on open
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Called when theme/locale/etc changes.
+    final brightness = Theme.of(context).brightness;
+    if (_lastBrightness != brightness) {
+      _lastBrightness = brightness;
+      _loadAndApplyMapStyleIfNeeded();
+    }
+  }
+
+  Future<void> _loadAndApplyMapStyleIfNeeded() async {
+    
+    if (_lightMapStyle == null) {
+      _lightMapStyle = await rootBundle.loadString('assets/map_style.json');
+    }
+
+    if (_darkMapStyle == null) {
+      try {
+        _darkMapStyle = await rootBundle.loadString('assets/map_style_dark.json');
+      } catch (_) {
+        // Fallback to light style if dark file doesn't exist yet
+        _darkMapStyle = _lightMapStyle;
+      }
+    }
+
+    await _applyCurrentMapStyle();
+  }
+
+  Future<void> _applyCurrentMapStyle() async {
+    final controller = _mapController;
+    if (controller == null) return;
+
+    final isDark = (Theme.of(context).brightness == Brightness.dark);
+    final style = isDark ? _darkMapStyle : _lightMapStyle;
+
+    if (style != null) {
+      await controller.setMapStyle(style);
+    }
   }
 
   Future<void> _checkLocationPermission() async {
@@ -139,7 +180,9 @@ class _MapScreenState extends State<MapScreen> {
     final tags = item.tags.map((t) => t.toLowerCase()).toSet();
     final category = item.category.toLowerCase();
 
-    if (tags.contains('recommended') || tags.contains('featured') || tags.contains('top_pick')) {
+    if (tags.contains('recommended') ||
+        tags.contains('featured') ||
+        tags.contains('top_pick')) {
       return BitmapDescriptor.hueYellow;
     }
     if (category == 'event' || tags.contains('event')) return BitmapDescriptor.hueViolet;
@@ -207,9 +250,11 @@ class _MapScreenState extends State<MapScreen> {
             myLocationEnabled: _isLocationPermissionGranted,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
-            onMapCreated: (controller) {
+            onMapCreated: (controller) async {
               _mapController = controller;
-              controller.setMapStyle(_mapStyle);
+
+              // Load/apply style when the map is created
+              await _loadAndApplyMapStyleIfNeeded();
             },
           ),
 

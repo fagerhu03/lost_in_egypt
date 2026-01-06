@@ -82,6 +82,7 @@ class LocalMockData {
       date: DateTime(2025, 12, 15),
       tags: const ["event", "opera", "culture", "nightlife", "cairo"],
     ),
+  
   ];
 
   static final List<PlaceModel> places = [
@@ -111,6 +112,7 @@ class LocalMockData {
       description: "The oldest of the Seven Wonders...",
       isOpenNow: true,
     ),
+
 
   
   ];
