@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cached_network_image/cached_network_image.dart'; 
 
 import './data/datasources/local_mock_data.dart';
@@ -52,54 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // --- IMAGE UPLOADER ---
-  // Future<String> _uploadAssetImage(String assetPath, String filename) async {
-  //   try {
-  //     final byteData = await rootBundle.load(assetPath);
-  //     final bytes = byteData.buffer.asUint8List();
-
-  //     final ref = FirebaseStorage.instance.ref().child('seed_images/$filename');
-  //     final uploadTask = await ref.putData(bytes);
-
-  //     final url = await uploadTask.ref.getDownloadURL();
-  //     print("✅ Image Uploaded: $url");
-  //     return url;
-  //   } catch (e) {
-  //     print("❌ Image Upload Failed: $e");
-  //     return ""; 
-  //   }
-  // }
-
-  // // --- SEEDER FUNCTION ---
-  // Future<void> _seedDatabase() async {
-  //   final firestore = FirebaseFirestore.instance;
-  //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Starting Upload... this may take a minute.")));
-
-  //   try {
-  //     // 1. PROCESS EVENTS
-  //     for (var e in MockHomeRepository.events) {
-  //       String imageUrl = await _uploadAssetImage(e.imagePath, "${e.id}.jpg");
-  //       var data = e.toMap();
-  //       data['imagePath'] = imageUrl; 
-  //       await firestore.collection('events').doc(e.id).set(data);
-  //     }
-
-  //     // 2. PROCESS PLACES
-  //     for (var p in MockHomeRepository.places) {
-  //       String imageUrl = await _uploadAssetImage(p.imagePath, "${p.id}.jpg");
-  //       var data = p.toMap();
-  //       data['imagePath'] = imageUrl;
-  //       await firestore.collection('places').doc(p.id).set(data);
-  //     }
-
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Success! Images & Data linked in Cloud.")));
-  //     }
-  //   } catch (e) {
-  //     print("Seeding Error: $e");
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,19 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 profileImageUrl: _profileImageUrl,
                 onSignOut: _handleSignOut,
               ),
-              
-              // 🔴 TEMPORARY SEEDER BUTTON (Delete after success)
-              // Center(
-              //   child: Padding(
-              //     padding: const EdgeInsets.symmetric(vertical: 10),
-              //     child: ElevatedButton.icon(
-              //       onPressed: _seedDatabase,
-              //       icon: const Icon(Icons.public, color: Colors.white),
-              //       label: const Text("Seed Maps Data", style: TextStyle(color: Colors.white)),
-              //       style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              //     ),
-              //   ),
-              // ),
               
               const SizedBox(height: 12),
 
@@ -201,12 +139,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 10),
 
-              // ⭐ REAL-TIME FIRESTORE EVENTS LIST
+              // ⭐ REAL-TIME EVENTS LIST (LIMITED SAMPLE)
               SizedBox(
                 height: 170,
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('events')
+                      .limit(5) // 🟢 THIS LIMITS IT TO A SAMPLE OF 5
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -297,7 +236,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ⭐ UPDATED: Handles Caching & Shimmer for HTTP images
   Widget _eventCard(String title, String imagePath) {
     return Container(
       width: 150,
@@ -306,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            // 1. THE IMAGE (Smart Loading)
+            // 1. THE IMAGE
             Positioned.fill(
               child: imagePath.startsWith('http')
                   ? CachedNetworkImage(
@@ -333,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
             ),
 
-            // 2. GRADIENT OVERLAY (For Text Readability)
+            // 2. GRADIENT
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(

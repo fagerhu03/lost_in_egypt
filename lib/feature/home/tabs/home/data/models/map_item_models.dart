@@ -15,6 +15,8 @@ abstract class MapItem {
   String get duration;
   String get weather;
   String get description;
+
+  List<String> get tags;
 }
 
 // ==========================================================
@@ -25,9 +27,16 @@ class CategoryModel {
   final String title;
   final String iconPath;
 
-  const CategoryModel({required this.id, required this.title, required this.iconPath});
+  const CategoryModel({
+    required this.id,
+    required this.title,
+    required this.iconPath,
+  });
 
-  Map<String, dynamic> toMap() => {'title': title, 'iconPath': iconPath};
+  Map<String, dynamic> toMap() => {
+        'title': title,
+        'iconPath': iconPath,
+      };
 
   factory CategoryModel.fromMap(Map<String, dynamic> map, String docId) {
     return CategoryModel(
@@ -42,18 +51,32 @@ class CategoryModel {
 // 3. PLACE MODEL (Data Transfer Object)
 // ==========================================================
 class PlaceModel implements MapItem {
-  @override final String id;
-  @override final String title;
-  @override final String category;
-  @override final GeoPoint coordinate;
-  @override final String imagePath;
-  @override final String locationAddress;
-  @override final double rating;
-  @override final double price;
-  @override final String duration;
-  @override final String weather;
-  @override final String description;
-  
+  @override
+  final String id;
+  @override
+  final String title;
+  @override
+  final String category;
+  @override
+  final GeoPoint coordinate;
+  @override
+  final String imagePath;
+  @override
+  final String locationAddress;
+  @override
+  final double rating;
+  @override
+  final double price;
+  @override
+  final String duration;
+  @override
+  final String weather;
+  @override
+  final String description;
+
+  @override
+final List<String> tags; 
+
   final bool isOpenNow;
 
   const PlaceModel({
@@ -69,6 +92,7 @@ class PlaceModel implements MapItem {
     required this.weather,
     required this.description,
     required this.isOpenNow,
+    this.tags = const [], // ✅ default (not required)
   });
 
   Map<String, dynamic> toMap() {
@@ -84,6 +108,7 @@ class PlaceModel implements MapItem {
       'weather': weather,
       'description': description,
       'isOpenNow': isOpenNow,
+      'tags': tags, // ✅ included
     };
   }
 
@@ -101,6 +126,10 @@ class PlaceModel implements MapItem {
       weather: map['weather'] ?? '',
       description: map['description'] ?? '',
       isOpenNow: map['isOpenNow'] ?? false,
+      tags: (map['tags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 }
@@ -109,21 +138,34 @@ class PlaceModel implements MapItem {
 // 4. EVENT MODEL (Data Transfer Object)
 // ==========================================================
 class EventModel implements MapItem {
-  @override final String id;
-  @override final String title;
-  @override final GeoPoint coordinate;
-  @override final String imagePath;
-  @override final String locationAddress;
-  @override final double rating;
-  @override final double price;
-  @override final String duration;
-  @override final String weather;
-  @override final String description;
-  
+  @override
+  final String id;
+  @override
+  final String title;
+  @override
+  final GeoPoint coordinate;
+  @override
+  final String imagePath;
+  @override
+  final String locationAddress;
+  @override
+  final double rating;
+  @override
+  final double price;
+  @override
+  final String duration;
+  @override
+  final String weather;
+  @override
+  final String description;
+
   @override
   String get category => 'event';
-  
-  final DateTime date;     
+
+  @override
+  final List<String> tags; // ✅ added
+
+  final DateTime date;
 
   const EventModel({
     required this.id,
@@ -137,6 +179,7 @@ class EventModel implements MapItem {
     required this.weather,
     required this.description,
     required this.date,
+    this.tags = const [], 
   });
 
   Map<String, dynamic> toMap() {
@@ -151,7 +194,8 @@ class EventModel implements MapItem {
       'weather': weather,
       'description': description,
       'date': Timestamp.fromDate(date),
-      'isEvent': true, 
+      'isEvent': true,
+      'tags': tags, 
     };
   }
 
@@ -168,6 +212,10 @@ class EventModel implements MapItem {
       weather: map['weather'] ?? '',
       description: map['description'] ?? '',
       date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      tags: (map['tags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 }

@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/map_item_models.dart'; 
+import '../models/map_item_models.dart';
 
 class LocalMockData {
-  
   static final List<CategoryModel> categories = [
     CategoryModel(id: "cat_hotel", title: "Hotels", iconPath: "assets/icons/hotel.png"),
     CategoryModel(id: "cat_museum", title: "Museums", iconPath: "assets/icons/museum.png"),
@@ -25,6 +24,7 @@ class LocalMockData {
       weather: "28° C",
       description: "This resort presents itself as a tranquil yet upscale getaway...",
       date: DateTime(2025, 10, 20),
+      tags: const ["event", "desert", "resort", "adventure", "weekend_trip"],
     ),
     EventModel(
       id: "event_crimson",
@@ -38,6 +38,7 @@ class LocalMockData {
       weather: "22° C",
       description: "Experience fine dining with a breathtaking view of the Nile...",
       date: DateTime(2025, 10, 21),
+      tags: const ["event", "food", "nightlife", "nile_view", "cairo"],
     ),
     EventModel(
       id: "event_temple_tour",
@@ -51,12 +52,13 @@ class LocalMockData {
       weather: "35° C",
       description: "Step back in time and explore the majestic temples...",
       date: DateTime(2025, 10, 22),
+      tags: const ["event", "luxor", "historic", "temple", "day_trip"],
     ),
     EventModel(
       id: "event_jazz_night",
       title: "Cairo Jazz Festival",
       coordinate: const GeoPoint(30.0444, 31.2357),
-      imagePath: "assets/images/jazz_festival.jpg", 
+      imagePath: "assets/images/jazz_festival.jpg",
       locationAddress: "Cairo Jazz Club",
       rating: 4.5,
       price: 500.0,
@@ -64,12 +66,13 @@ class LocalMockData {
       weather: "19° C",
       description: "Live Jazz music all night...",
       date: DateTime(2025, 11, 20),
+      tags: const ["event", "music", "nightlife", "cairo"],
     ),
     EventModel(
       id: "event_opera_aida",
       title: "Opera Aida",
       coordinate: const GeoPoint(30.0425, 31.2238),
-      imagePath: "assets/images/opera_aida.jpg", 
+      imagePath: "assets/images/opera_aida.jpg",
       locationAddress: "Cairo Opera House",
       rating: 4.8,
       price: 1200.0,
@@ -77,14 +80,27 @@ class LocalMockData {
       weather: "18° C",
       description: "The classic opera performed at the historic Cairo Opera House.",
       date: DateTime(2025, 12, 15),
+      tags: const ["event", "opera", "culture", "nightlife", "cairo"],
     ),
   ];
 
   static final List<PlaceModel> places = [
+    // =========================
+    // Core places (existing)
+    // =========================
     PlaceModel(
       id: "place_pyramids",
       title: "Great Pyramids",
       category: "historic",
+      tags: const [
+        "pyramid",
+        "historic",
+        "giza",
+        "unesco",
+        "photo_spot",
+        "family_friendly",
+        "outdoor",
+      ],
       coordinate: const GeoPoint(29.9792, 31.1342),
       imagePath: "assets/images/event1.jpg",
       locationAddress: "Al Haram, Giza",
@@ -95,5 +111,7 @@ class LocalMockData {
       description: "The oldest of the Seven Wonders...",
       isOpenNow: true,
     ),
+
+  
   ];
 }
