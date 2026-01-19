@@ -1,0 +1,19 @@
+flutter_native_splash:
+  # نفس لون الخلفية في الصورة
+  color: "#CC9900"
+
+  # صورة السبلاتش
+  image: assets/logo/logo_colorful_comp.png
+
+  # Android
+  android: true
+  android_gravity: center
+
+  android_12:
+    image: assets/icons/icon.png
+    color: "#CC9900"
+    icon_background_color: "#CC9900"
+
+  # iOS
+  ios: true
+  ios_content_mode: scaleAspectFill
