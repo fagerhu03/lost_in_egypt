@@ -101,7 +101,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         decoration: const BoxDecoration(
           color: Color(0xFFFCFBE8),
           image: DecorationImage(
-            image: AssetImage("assets/pattern.png"),
+            image: AssetImage("assets/pattern_comp.png"),
             fit: BoxFit.cover,
             opacity: 0.4,
           ),
