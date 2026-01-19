@@ -7,6 +7,7 @@ import '../home/home_screen.dart';
 import '../map/map_screen.dart';
 import '../more/more_screen.dart';
 
+// ⭐ 1. Add 'with SingleTickerProviderStateMixin' here
 class HomeWrapper extends StatefulWidget {
   const HomeWrapper({super.key});
 
@@ -14,34 +15,53 @@ class HomeWrapper extends StatefulWidget {
   State<HomeWrapper> createState() => _HomeWrapperState();
 }
 
-class _HomeWrapperState extends State<HomeWrapper> {
-  final PageController _controller = PageController();
+class _HomeWrapperState extends State<HomeWrapper> with SingleTickerProviderStateMixin {
+  final PageController _pageController = PageController();
+  
+  // ⭐ 2. Add a TabController to sync the bar with the swipe
+  late TabController _tabController;
   int index = 0;
 
   final pages = const [
-    HomeScreen(),
-    CommunityScreen(),
-    CameraScreen(),
-    MapScreen(),
-    MoreScreen(),
+    HomeScreen(),      // 0
+    CommunityScreen(), // 1
+    CameraScreen(),    // 2
+    MapScreen(),       // 3
+    MoreScreen(),      // 4
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the controller with 5 tabs
+    _tabController = TabController(length: 5, vsync: this);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
 
-      // PAGEVIEW (correct)
       body: PageView(
-        controller: _controller,
-        physics: const BouncingScrollPhysics(),
-        onPageChanged: (i) => setState(() => index = i),
-        children: pages,  // ✔ must be a list of widgets
+        controller: _pageController,
+        
+        // Disable swipe ONLY on the Map tab (index 3)
+        physics: index == 3 
+            ? const NeverScrollableScrollPhysics() 
+            : const BouncingScrollPhysics(),
+            
+        onPageChanged: (i) {
+          setState(() => index = i);
+          // ⭐ 3. Sync: When page swipes, move the bottom bar
+          _tabController.animateTo(i);
+        },
+        children: pages,
       ),
 
-      // BOTTOM BAR (correct)
       bottomNavigationBar: ConvexAppBar(
-        initialActiveIndex: 0,
+        // ⭐ 4. Connect the controller here
+        controller: _tabController,
+        
         style: TabStyle.react,
         height: 50,
         curveSize: 90,
@@ -60,11 +80,8 @@ class _HomeWrapperState extends State<HomeWrapper> {
 
         onTap: (i) {
           setState(() => index = i);
-          _controller.animateToPage(
-            i,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
+          // ⭐ 5. Sync: When bar tapped, move the page
+          _pageController.jumpToPage(i);
         },
       ),
     );

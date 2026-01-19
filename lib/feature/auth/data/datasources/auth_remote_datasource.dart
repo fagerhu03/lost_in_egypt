@@ -31,6 +31,7 @@ abstract class AuthRemoteDataSource {
     required String birthDay,
     required String birthYear,
   });
+  Future<bool> checkEmailExists(String email);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -120,7 +121,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     );
 
     final UserCredential userCredential = await firebaseAuth.signInWithCredential(credential);
-    return _checkUserInFirestore(userCredential.user!.uid);
+    
+    // FIX: Pass the Google Photo URL to the check function
+    return _checkUserInFirestore(
+      userCredential.user!.uid, 
+      newPhotoUrl: userCredential.user?.photoURL
+    );
   }
 
   @override
@@ -131,7 +137,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final AccessToken accessToken = result.accessToken!;
       final OAuthCredential credential = FacebookAuthProvider.credential(accessToken.tokenString);
       final UserCredential userCredential = await firebaseAuth.signInWithCredential(credential);
-      return _checkUserInFirestore(userCredential.user!.uid);
+      
+      // FIX: Pass Facebook Photo URL (if available)
+      return _checkUserInFirestore(
+        userCredential.user!.uid,
+        newPhotoUrl: userCredential.user?.photoURL
+      );
     } else if (result.status == LoginStatus.cancelled) {
       return null;
     } else {
@@ -145,20 +156,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   // --- MOCK APPLE IMPLEMENTATION ---
   @override
   Future<UserModel?> signInWithApple() async {
-    // We use a specific demo account to simulate Apple Login
     const mockEmail = "apple.demo@lostinegypt.com";
     const mockPassword = "AppleDemoPassword123!";
     
     UserCredential userCredential;
-
     try {
-      // 1. Try to login
       userCredential = await firebaseAuth.signInWithEmailAndPassword(
         email: mockEmail, 
         password: mockPassword
       );
     } on FirebaseAuthException catch (_) {
-      // 2. If it fails, create the account (First time simulation)
       userCredential = await firebaseAuth.createUserWithEmailAndPassword(
         email: mockEmail, 
         password: mockPassword
@@ -169,12 +176,28 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   // Helper
-  Future<UserModel?> _checkUserInFirestore(String uid) async {
-    final DocumentSnapshot doc = await firestore.collection('users').doc(uid).get();
+  Future<UserModel?> _checkUserInFirestore(String uid, {String? newPhotoUrl}) async {
+    final DocumentReference docRef = firestore.collection('users').doc(uid);
+    final DocumentSnapshot doc = await docRef.get();
+
     if (doc.exists) {
+      // 1. If we have a new photo (e.g. from Google) and it's different, UPDATE IT.
+      if (newPhotoUrl != null && newPhotoUrl.isNotEmpty) {
+        final currentData = doc.data() as Map<String, dynamic>;
+        final currentPhoto = currentData['profileImageUrl'] as String?;
+
+        // If current photo is empty OR different from new one -> Update DB
+        if (currentPhoto == null || currentPhoto.isEmpty || currentPhoto != newPhotoUrl) {
+          await docRef.update({'profileImageUrl': newPhotoUrl});
+          
+          // Fetch fresh data after update
+          final updatedDoc = await docRef.get();
+          return UserModel.fromSnapshot(updatedDoc);
+        }
+      }
       return UserModel.fromSnapshot(doc);
     } else {
-      return null; // Needs profile completion
+      return null; 
     }
   }
 
@@ -227,5 +250,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     ];
     int index = months.indexOf(monthName);
     return index == -1 ? 1 : index + 1;
+  }
+  @override
+  Future<bool> checkEmailExists(String email) async {
+    try {
+      // NEW STRATEGY: Query Firestore 'users' collection
+      final QuerySnapshot result = await firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      // If we found any documents, the email exists
+      return result.docs.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
   }
 }

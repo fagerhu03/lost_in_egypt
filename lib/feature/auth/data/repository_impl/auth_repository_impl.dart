@@ -120,4 +120,14 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+  @override
+  Future<Either<Failure, bool>> checkEmailExists(String email) async {
+    try {
+      final exists = await remoteDataSource.checkEmailExists(email);
+      return Right(exists);
+    } catch (e) {
+      // Even if it fails, we return Left to handle it gracefully
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }
