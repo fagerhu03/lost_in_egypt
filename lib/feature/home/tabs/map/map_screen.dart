@@ -28,7 +28,7 @@ class _MapScreenState extends State<MapScreen> {
   bool _loading = false;
 
   // Default selection: recommended only
-  String _selectedUiCategoryId = 'recommended';
+  String _selectedUiCategoryId = 'all';
 
   // ---- Map Styling (assets) ----
   String? _lightMapStyle;
@@ -42,20 +42,23 @@ class _MapScreenState extends State<MapScreen> {
 
   static const List<_UiCategory> _categories = [
     _UiCategory('all', 'All'),
-    _UiCategory('recommended', 'Recommended'),
-    _UiCategory('historic', 'Historic'),
-    _UiCategory('museum', 'Museum'),
-    _UiCategory('market', 'Market'),
+    _UiCategory('landmark', 'Landmarks'),   // Was 'historic'
+    _UiCategory('museum', 'Museums'),
+    _UiCategory('religious', 'Religious'),  // For Mosques/Churches
+    _UiCategory('nature', 'Nature'),        // For Parks
+    _UiCategory('shopping', 'Shopping'),    // For Markets
+    
+    // Keep these if you plan to add them later manually
     _UiCategory('restaurants', 'Restaurants'),
-    _UiCategory('nightlife', 'Nightlife'),
-    _UiCategory('event', 'Event'),
   ];
 
   @override
   void initState() {
     super.initState();
     _checkLocationPermission();
-    _loadFeatured(); // default on open
+    // WAS: _loadFeatured();
+    // NOW: Load everything immediately
+    _loadByCategory('all'); 
   }
 
   @override

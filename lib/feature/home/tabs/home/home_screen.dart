@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import './data/datasources/local_mock_data.dart';
 import './data/models/map_item_models.dart'; 
 import '../navigator/widget/search_header.dart';
+import 'dart:convert'; // For json.decode
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _fetchUserProfile();
+    _uploadNewDataset();
   }
 
   Future<void> _fetchUserProfile() async {
@@ -51,6 +53,59 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _uploadNewDataset() async {
+    print("🚀 STARTING UPLOAD...");
+    
+    try {
+      // 1. Load the JSON file from assets
+      final String response = await rootBundle.loadString('assets/final_places_clean_v2.json');
+      final List<dynamic> data = json.decode(response);
+      
+      final firestore = FirebaseFirestore.instance;
+      int count = 0;
+
+      // 2. Loop through every place and upload
+      for (var item in data) {
+        
+        // Convert JSON coordinates to Firestore GeoPoint
+        // Check if your python script used 'lat' or 'latitude' keys
+        double lat = item['coordinate']['latitude']; 
+        double lng = item['coordinate']['longitude'];
+        
+        await firestore.collection('places').doc(item['id']).set({
+          'id': item['id'],
+          'title': item['title'],
+          'category': item['category'],
+          'coordinate': GeoPoint(lat, lng), // 👈 Crucial Step
+          'description': item['description'],
+          'imagePath': item['imagePath'], // Defaults to "assets/images/default.jpg"
+          'locationAddress': item['locationAddress'],
+          'rating': item['rating'],
+          'isOpenNow': item['isOpenNow'],
+          
+          // Defaults for fields we didn't scrape
+          'price': 0.0,
+          'duration': '2 hours',
+          'weather': '25°C',
+        }, SetOptions(merge: true)); // merge: true prevents overwriting if you edit later
+        
+        count++;
+        if (count % 10 == 0) print("   Saved $count places...");
+      }
+      
+      print("✅ SUCCESS! Uploaded $count places to Firestore.");
+      
+      // Optional: Show a snackbar on the phone
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Successfully added $count new places!")),
+        );
+      }
+      
+    } catch (e) {
+      print("❌ ERROR UPLOADING: $e");
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
