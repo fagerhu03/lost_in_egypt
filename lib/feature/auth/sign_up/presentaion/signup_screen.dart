@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../auth/data/datasources/auth_remote_datasource.dart'; 
+import '../../../auth/data/datasources/auth_remote_datasource.dart';
 import '../../login/presentaion/login_screen.dart'; // Verify this path for your LoginScreen
 
 class SignupScreen extends StatefulWidget {
@@ -53,6 +53,18 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
+  int _calculateAge(DateTime birthDate) {
+    final now = DateTime.now();
+    int age = now.year - birthDate.year;
+
+    if (now.month < birthDate.month ||
+        (now.month == birthDate.month && now.day < birthDate.day)) {
+      age--;
+    }
+
+    return age;
+  }
+
   // 3. Validation Logic
   bool _validateForm() {
     // Name Regex: Letters and spaces only, min 2 chars
@@ -73,6 +85,48 @@ class _SignupScreenState extends State<SignupScreen> {
       return false;
     }
 
+    // Date validity and age check
+    try {
+      final int day = int.parse(_selectedDay!);
+      final int year = int.parse(_selectedYear!);
+      final int monthIndex = _months.indexOf(_selectedMonth!) + 1;
+
+      // Months that never have 31 days
+      const monthsWith30Days = ['April', 'June', 'September', 'November'];
+
+      // 1) February cannot have 30 or 31
+      if (_selectedMonth == 'February' && (day == 30 || day == 31)) {
+        _showError("February cannot have 30 or 31 days.");
+        return false;
+      }
+
+      // 2) Months that cannot have 31 days (April, June, September, November, February)
+      if (day == 31 &&
+          (monthsWith30Days.contains(_selectedMonth) ||
+              _selectedMonth == 'February')) {
+        _showError("The selected month cannot have 31 days.");
+        return false;
+      }
+
+      final DateTime dob = DateTime(year, monthIndex, day);
+
+      // Extra safety: ensure the constructed date matches the selected values
+      if (dob.year != year || dob.month != monthIndex || dob.day != day) {
+        _showError("Please select a valid Date of Birth.");
+        return false;
+      }
+
+      // Age must be at least 16
+      final int age = _calculateAge(dob);
+      if (age < 16) {
+        _showError("You must be at least 16 years old to sign up.");
+        return false;
+      }
+    } catch (_) {
+      _showError("Please select a valid Date of Birth.");
+      return false;
+    }
+
     // Email Regex
     final emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
     if (!emailRegex.hasMatch(_emailController.text.trim())) {
@@ -81,7 +135,8 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     // Password Regex: 8+ chars, 1 letter, 1 number
-    final passwordRegex = RegExp(r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$");
+    final passwordRegex =
+        RegExp(r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$");
     if (!passwordRegex.hasMatch(_passwordController.text)) {
       _showError("Password must be 8+ chars, with at least 1 letter and 1 number.");
       return false;
@@ -112,13 +167,11 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // NOTE: In the final app, use Dependency Injection (GetIt) or BlocProvider to get this
       final dataSource = AuthRemoteDataSourceImpl(
         firebaseAuth: FirebaseAuth.instance,
         firestore: FirebaseFirestore.instance,
       );
 
-      // We use ! here because validateForm() guaranteed they are not null
       await dataSource.signUp(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
@@ -137,7 +190,6 @@ class _SignupScreenState extends State<SignupScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        // Navigate to Login or Home
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const LoginScreen()),
         );

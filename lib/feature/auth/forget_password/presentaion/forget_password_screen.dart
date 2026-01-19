@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:email_otp/email_otp.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/repository_impl/auth_repository_impl.dart';
 import 'otp_verification_screen.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
@@ -14,7 +19,10 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   bool _isLoading = false;
 
   Future<void> _sendOtp() async {
-    if (_emailController.text.isEmpty) {
+    final email = _emailController.text.trim();
+
+    // 1. Basic Input Validation
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter your email")),
       );
@@ -23,41 +31,80 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
     setState(() => _isLoading = true);
 
-    // Email OTP configuration (Correct way)
-    EmailOTP.config(
-      appEmail: "support@lostinegypt.com",
-      appName: "Lost in Egypt",
-      otpLength: 4,
-      otpType: OTPType.numeric,
-    );
-
-    // Send OTP
-    bool success =
-    await EmailOTP.sendOTP(email: _emailController.text.trim());
-
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("OTP Sent! Check your email.")),
+    try {
+      // 2. Initialize Repo (Manual Injection)
+      final dataSource = AuthRemoteDataSourceImpl(
+        firebaseAuth: FirebaseAuth.instance,
+        firestore: FirebaseFirestore.instance,
       );
+      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              OtpVerificationScreen(email: _emailController.text.trim()),
-        ),
+      // 3. Check if Email Exists in Database
+      final result = await repository.checkEmailExists(email);
+
+      // We use 'await' inside the fold to handle the async flow cleanly
+      await result.fold(
+        (failure) {
+          // Failure checking email (Connection error, etc.)
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error checking email: ${failure.message}")),
+          );
+        },
+        (exists) async {
+          if (!exists) {
+            // CASE A: Email does NOT exist
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("This email is not registered."),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else {
+            // CASE B: Email Exists -> Send OTP
+            
+            // Configure OTP
+            EmailOTP.config(
+              appEmail: "support@lostinegypt.com",
+              appName: "Lost in Egypt",
+              otpLength: 4,
+              otpType: OTPType.numeric,
+            );
+
+            // Trigger Email
+            bool success = await EmailOTP.sendOTP(email: email);
+
+            if (mounted) {
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("OTP Sent! Check your email.")),
+                );
+                // Navigate
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OtpVerificationScreen(email: email),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Failed to send OTP. Try again."),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          }
+        },
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Failed to send OTP. Try again."),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Unexpected Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -77,13 +124,13 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
           child: Padding(
             padding: const EdgeInsets.all(30.0),
             child: Column(
-
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // ICON
                 Image.asset(
-                  "assets/icons/error.png",
+                  "assets/icons/error.png", // Ensure this asset exists
                   height: 150,
+                  errorBuilder: (c, e, s) => const Icon(Icons.lock_reset, size: 100, color: Color(0xff634700)),
                 ),
 
                 const Text(
@@ -149,16 +196,16 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     child: Center(
                       child: _isLoading
                           ? const CircularProgressIndicator(
-                          color: Colors.black87)
+                              color: Colors.black87)
                           : const Text(
-                        "Send Code",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: "Marcellus",
-                        ),
-                      ),
+                              "Send Code",
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: "Marcellus",
+                              ),
+                            ),
                     ),
                   ),
                 ),

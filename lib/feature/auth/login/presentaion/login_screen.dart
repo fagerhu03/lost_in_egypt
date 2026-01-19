@@ -10,7 +10,8 @@ import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repository_impl/auth_repository_impl.dart';
 
 // --- HOME SCREEN IMPORT ---
-import '../../../home/tabs/home/home_screen.dart'; 
+// import '../../../home/tabs/home/home_screen.dart'; 
+import '../../../home/tabs/navigator/home_wrapper.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,7 +43,8 @@ class _LoginScreenState extends State<LoginScreen> {
   /// Navigates to the Home Screen and removes all previous screens (Login/Onboarding)
   void _navigateToHome() {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      // CHANGE HERE: Navigate to HomeWrapper, NOT HomeScreen
+      MaterialPageRoute(builder: (context) => const HomeWrapper()), 
       (route) => false,
     );
   }
@@ -139,9 +141,13 @@ class _LoginScreenState extends State<LoginScreen> {
         (userEntity) {
           if (mounted) {
             if (userEntity != null) {
-              _navigateToHome(); // Existing User -> Home
+              // EXISTING USER -> GO HOME
+              Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
             } else {
-              _navigateToCompleteProfile(); // New User -> Profile Setup
+              // NEW USER -> COMPLETE PROFILE
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+              );
             }
           }
         },
