@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; 
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart'; 
+import 'package:cached_network_image/cached_network_image.dart';
 
 import './data/datasources/local_mock_data.dart';
-import './data/models/map_item_models.dart'; 
+import './data/models/map_item_models.dart';
 import '../navigator/widget/search_header.dart';
 import 'dart:convert'; // For json.decode
 
@@ -55,23 +55,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Future<void> _uploadNewDataset() async {
   //   print("🚀 STARTING UPLOAD...");
-    
+
   //   try {
   //     // 1. Load the JSON file from assets
   //     final String response = await rootBundle.loadString('assets/final_places_clean_v2.json');
   //     final List<dynamic> data = json.decode(response);
-      
+
   //     final firestore = FirebaseFirestore.instance;
   //     int count = 0;
 
   //     // 2. Loop through every place and upload
-  //     for (var item in data) {
-        
+  //     for (var item remembers) {
+
   //       // Convert JSON coordinates to Firestore GeoPoint
   //       // Check if your python script used 'lat' or 'latitude' keys
-  //       double lat = item['coordinate']['latitude']; 
+  //       double lat = item['coordinate']['latitude'];
   //       double lng = item['coordinate']['longitude'];
-        
+
   //       await firestore.collection('places').doc(item['id']).set({
   //         'id': item['id'],
   //         'title': item['title'],
@@ -82,183 +82,211 @@ class _HomeScreenState extends State<HomeScreen> {
   //         'locationAddress': item['locationAddress'],
   //         'rating': item['rating'],
   //         'isOpenNow': item['isOpenNow'],
-          
+
   //         // Defaults for fields we didn't scrape
   //         'price': 0.0,
   //         'duration': '2 hours',
   //         'weather': '25°C',
   //       }, SetOptions(merge: true)); // merge: true prevents overwriting if you edit later
-        
+
   //       count++;
   //       if (count % 10 == 0) print("   Saved $count places...");
   //     }
-      
+
   //     print("✅ SUCCESS! Uploaded $count places to Firestore.");
-      
+
   //     // Optional: Show a snackbar on the phone
   //     if (mounted) {
   //       ScaffoldMessenger.of(context).showSnackBar(
   //         SnackBar(content: Text("Successfully added $count new places!")),
   //       );
   //     }
-      
+
   //   } catch (e) {
   //     print("❌ ERROR UPLOADING: $e");
   //   }
   // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffFCFBE8),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 🔍 SEARCH HEADER
-              SearchHeader(
-                profileImageUrl: _profileImageUrl,
-                onSignOut: _handleSignOut,
-              ),
-              
-              const SizedBox(height: 12),
-
-              // 🖼 HERO IMAGE
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                height: 180,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  image: const DecorationImage(
-                    image: AssetImage("assets/images/home_bridge.png"),
-                    fit: BoxFit.cover,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          // 🖼 HERO IMAGE + SEARCH (NO TOP GAP)
+            Stack(
+              children: [
+                Container(
+                  height: 300,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage("assets/images/home_bridge.png"),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
 
-              // ⭐ WHAT'S NEW
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  "What's New",
-                  style: TextStyle(
-                    color: const Color(0xff4D5420),
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "Marcellus",
+                Container(
+                  height: 260,
+                  width: double.infinity,
+                  color: Colors.black.withOpacity(0.08),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 8,
+                    left: 16,
+                    right: 16,
+                  ),
+                  child: SearchHeader(
+                    profileImageUrl: _profileImageUrl,
+                    onSignOut: _handleSignOut,
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
 
-              // CATEGORY GRID
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: LocalMockData.categories.map((category) {
-                    return _categoryCard(category.iconPath, category.title);
-                  }).toList(),
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
-              // ⭐ EVENTS HEADER
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Events",
-                      style: TextStyle(
-                        color: const Color(0xff4D5420),
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "Marcellus",
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 30,
+                    decoration: const BoxDecoration(
+                      color: Color(0xffFCFBE8),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
                       ),
                     ),
-                    Text(
-                      "see all >",
-                      style: TextStyle(
-                        color: Colors.brown.shade700,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "Marcellus",
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // ⭐ REAL-TIME EVENTS LIST (LIMITED SAMPLE)
-              SizedBox(
-                height: 170,
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('events')
-                      .limit(5) // 🟢 THIS LIMITS IT TO A SAMPLE OF 5
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError) {
-                      return const Center(child: Text("Something went wrong"));
-                    }
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text("No events found"));
-                    }
-
-                    final docs = snapshot.data!.docs;
-
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(left: 16),
-                      itemCount: docs.length,
-                      itemBuilder: (context, index) {
-                        final data = docs[index].data() as Map<String, dynamic>;
-                        final event = EventModel.fromMap(data, docs[index].id);
-
-                        return _eventCard(event.title, event.imagePath);
-                      },
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
-              // ⭐ PLAN YOUR TRIP
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  "Plan your trip",
-                  style: TextStyle(
-                    color: const Color(0xff4D5420),
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "Marcellus",
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(child: _tripCard("Guide")),
-                    const SizedBox(width: 12),
-                    Expanded(child: _tripCard("Solo trip")),
-                  ],
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ⭐ WHAT'S NEW
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                "What's New",
+                style: TextStyle(
+                  color: const Color(0xff4D5420),
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "Marcellus",
                 ),
               ),
-              const SizedBox(height: 30),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+
+            // CATEGORY GRID
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: LocalMockData.categories.map((category) {
+                  return _categoryCard(category.iconPath, category.title);
+                }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // ⭐ EVENTS HEADER
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Events",
+                    style: TextStyle(
+                      color: const Color(0xff4D5420),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Marcellus",
+                    ),
+                  ),
+                  Text(
+                    "see all >",
+                    style: TextStyle(
+                      color: Colors.brown.shade700,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Marcellus",
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // ⭐ REAL-TIME EVENTS LIST (LIMITED SAMPLE)
+            SizedBox(
+              height: 170,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('events')
+                    .limit(5) // 🟢 THIS LIMITS IT TO A SAMPLE OF 5
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return const Center(child: Text("Something went wrong"));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(child: Text("No events found"));
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(left: 16),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final data = docs[index].data() as Map<String, dynamic>;
+                      final event = EventModel.fromMap(data, docs[index].id);
+
+                      return _eventCard(event.title, event.imagePath);
+                    },
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // ⭐ PLAN YOUR TRIP
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                "Plan your trip",
+                style: TextStyle(
+                  color: const Color(0xff4D5420),
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "Marcellus",
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(child: _tripCard("Guide")),
+                  const SizedBox(width: 12),
+                  Expanded(child: _tripCard("Solo trip")),
+                ],
+              ),
+            ),
+            const SizedBox(height: 120),
+          ],
         ),
       ),
     );
@@ -267,16 +295,23 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- WIDGET HELPERS ---
   Widget _categoryCard(String icon, String title) {
     return Container(
-      width: 110,
-      height: 95,
+      width: 120,
+      height: 100,
       decoration: BoxDecoration(
         color: const Color(0xffFFFDF4),
         borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(icon, width: 35),
+          Image.asset(icon, width: 40),
           const SizedBox(height: 8),
           Text(
             title,
@@ -291,72 +326,103 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ✅ UPDATED EVENT CARD (LIKE YOUR IMAGE)
   Widget _eventCard(String title, String imagePath) {
     return Container(
-      width: 150,
+      width: 200,
       margin: const EdgeInsets.only(right: 12),
-      child: ClipRRect(
+      decoration: BoxDecoration(
+        color: const Color(0xffFFFDF4),
         borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            // 1. THE IMAGE
-            Positioned.fill(
-              child: imagePath.startsWith('http')
-                  ? CachedNetworkImage(
-                      imageUrl: imagePath,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey.shade300,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey.shade300,
-                        child: const Icon(Icons.broken_image, color: Colors.grey),
-                      ),
-                    )
-                  : Image.asset(
-                      imagePath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                         color: Colors.grey.shade300, 
-                         child: const Icon(Icons.image_not_supported),
-                      ),
-                    ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 🖼 IMAGE + HEART
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
             ),
+            child: Stack(
+              children: [
+                SizedBox(
+                  height: 110,
+                  width: double.infinity,
+                  child: imagePath.startsWith('http')
+                      ? CachedNetworkImage(
+                          imageUrl: imagePath,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey.shade300,
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey.shade300,
+                            child: const Icon(
+                              Icons.broken_image,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        )
+                      : Image.asset(
+                          imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                color: Colors.grey.shade300,
+                                child: const Icon(Icons.image_not_supported),
+                              ),
+                        ),
+                ),
 
-            // 2. GRADIENT
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                // ❤️ HEART
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.85),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.favorite_border,
+                      size: 18,
+                      color: Colors.red.shade400,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
+          ),
 
-            // 3. TITLE
-            Positioned(
-              bottom: 8,
-              left: 8,
-              right: 8,
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "Marcellus",
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+          // 🧾 TITLE AREA (WHITE BELOW IMAGE)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xff4D5420),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                fontFamily: "Marcellus",
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -367,6 +433,13 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: const Color(0xffFFFDF4),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Center(
         child: Text(
