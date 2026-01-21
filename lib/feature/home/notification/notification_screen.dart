@@ -3,23 +3,50 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../tabs/community/data/repositories/firebase_community_repository.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class NotificationScreen extends StatelessWidget {
+import '../tabs/community/presentation/post_detail_screen.dart'; // Import to navigate to post
+import '../tabs/community/presentation/community_screen.dart'; // Import if needed for navigation logic
+
+class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final repo = FirebaseCommunityRepository();
+  State<NotificationScreen> createState() => _NotificationScreenState();
+}
 
+class _NotificationScreenState extends State<NotificationScreen> {
+  final FirebaseCommunityRepository _repo = FirebaseCommunityRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    // ⭐ CLEAR BADGE ON OPEN
+    // We delay slightly to let the build finish, then mark all as read
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _repo.markAllNotificationsAsRead();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFEF0),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(color: Color(0xFF4A3D2E)),
-        title: const Text("Notifications", style: TextStyle(color: Color(0xFF4A3D2E), fontFamily: "Marcellus", fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Notifications", 
+          style: TextStyle(
+            color: Color(0xFF4A3D2E), 
+            fontFamily: "Marcellus", 
+            fontWeight: FontWeight.bold
+          )
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: repo.getNotificationsStream(),
+        stream: _repo.getNotificationsStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -43,44 +70,50 @@ class NotificationScreen extends StatelessWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(12),
             itemCount: docs.length,
-            separatorBuilder: (c, i) => const Divider(),
+            separatorBuilder: (c, i) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
-              final id = docs[index].id;
+              // If it's unread, show a highlight color, otherwise transparent
               final bool isRead = data['isRead'] ?? false;
               final Timestamp? ts = data['timestamp'];
               final date = ts?.toDate() ?? DateTime.now();
 
-              return ListTile(
-                tileColor: isRead ? Colors.transparent : const Color(0xFFE6A44A).withOpacity(0.1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                leading: CircleAvatar(
-                  backgroundColor: Colors.grey.shade200,
-                  backgroundImage: (data['senderAvatar'] != null && data['senderAvatar'] != "")
-                      ? NetworkImage(data['senderAvatar'])
-                      : null,
-                  child: (data['senderAvatar'] == null || data['senderAvatar'] == "")
-                      ? const Icon(Icons.person, color: Colors.grey)
-                      : null,
-                ),
-                title: RichText(
-                  text: TextSpan(
-                    style: const TextStyle(color: Colors.black87, fontSize: 14),
-                    children: [
-                      TextSpan(text: "${data['senderName']} ", style: const TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: data['message'] ?? "interacted with your post"),
-                    ],
+              return Container(
+                color: isRead ? Colors.transparent : const Color(0xFFE6A44A).withOpacity(0.1),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.grey.shade200,
+                    backgroundImage: (data['senderAvatar'] != null && data['senderAvatar'] != "")
+                        ? NetworkImage(data['senderAvatar'])
+                        : null,
+                    child: (data['senderAvatar'] == null || data['senderAvatar'] == "")
+                        ? const Icon(Icons.person, color: Colors.grey)
+                        : null,
                   ),
+                  title: RichText(
+                    text: TextSpan(
+                      style: const TextStyle(color: Colors.black87, fontSize: 14, fontFamily: "Mako"),
+                      children: [
+                        TextSpan(
+                          text: "${data['senderName']} ", 
+                          style: const TextStyle(fontWeight: FontWeight.bold)
+                        ),
+                        TextSpan(text: data['message'] ?? "interacted with your post"),
+                      ],
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      timeago.format(date), 
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)
+                    ),
+                  ),
+                  onTap: () {
+                    // Optional: Add logic here to fetch the specific post and navigate to it
+                  },
                 ),
-                subtitle: Text(
-                  timeago.format(date), 
-                  style: const TextStyle(fontSize: 12, color: Colors.grey)
-                ),
-                onTap: () {
-                  repo.markNotificationAsRead(id);
-                  // Optional: Navigate to the post
-                  // Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailScreen(post: ... fetch post ...)));
-                },
               );
             },
           );

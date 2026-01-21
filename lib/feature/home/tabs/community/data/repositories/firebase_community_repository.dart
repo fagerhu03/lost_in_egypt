@@ -333,4 +333,25 @@ class FirebaseCommunityRepository {
   Future<void> markNotificationAsRead(String notificationId) async {
     await _notificationsRef.doc(notificationId).update({'isRead': true});
   }
+  Future<void> markAllNotificationsAsRead() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // 1. Get all unread notifications
+    final snapshot = await _notificationsRef
+        .where('recipientId', isEqualTo: user.uid)
+        .where('isRead', isEqualTo: false)
+        .get();
+
+    if (snapshot.docs.isEmpty) return;
+
+    // 2. Batch update (Much faster than updating one by one)
+    final batch = FirebaseFirestore.instance.batch();
+    
+    for (final doc in snapshot.docs) {
+      batch.update(doc.reference, {'isRead': true});
+    }
+
+    await batch.commit();
+  }
 }

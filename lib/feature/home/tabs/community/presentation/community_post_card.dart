@@ -24,6 +24,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
   final FirebaseCommunityRepository _repo = FirebaseCommunityRepository();
 
   // --- ACTIONS ---
+
   void _deletePost() {
     showDialog(
       context: context,
@@ -33,9 +34,10 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              _repo.deletePost(widget.post.id);
+              await _repo.deletePost(widget.post.id);
+              if (widget.isDetail && mounted) Navigator.pop(context);
             },
             child: const Text("Delete", style: TextStyle(color: Colors.red)),
           ),
@@ -58,9 +60,9 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (editController.text.trim().isNotEmpty) {
-                _repo.editPost(widget.post.id, editController.text.trim());
+                await _repo.editPost(widget.post.id, editController.text.trim());
               }
               Navigator.pop(ctx);
             },
@@ -158,6 +160,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
               // ⭐ MENU (Delete, Edit, Report)
               PopupMenuButton<String>(
                 icon: Icon(Icons.more_horiz_rounded, color: textMid),
+                // 👇 THIS IS THE FIX: Ensure all 3 map to functions
                 onSelected: (value) {
                   if (value == 'delete') _deletePost();
                   if (value == 'edit') _editPost();
@@ -191,39 +194,33 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
             widget.post.content, 
             style: TextStyle(
               color: textDark, 
-              fontWeight: FontWeight.w600, // Slightly lighter for Mako
-              fontSize: 15, // Mako is often smaller, so 15 looks better
-              fontFamily: "Mako", // 👈 CHANGED TO MAKO
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+              fontFamily: "Mako", // Using the font you requested
               height: 1.4,
             ),
           ),
 
-          // ⭐ LOCATION CHIP
+          // Location Chip
           if (widget.post.locationName != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: GestureDetector(
-                onTap: () {
-                   // Navigate to Place Detail (You need to implement this navigation logic based on your app structure)
-                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Navigate to ${widget.post.locationName}")));
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.location_on, size: 14, color: Colors.blue),
-                      const SizedBox(width: 4),
-                      Text(
-                        widget.post.locationName!,
-                        style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                    ],
-                  ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.location_on, size: 14, color: Colors.blue),
+                    const SizedBox(width: 4),
+                    Text(
+                      widget.post.locationName!,
+                      style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -303,7 +300,6 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
               
               const Spacer(),
               
-              // ⭐ BOOKMARK BUTTON
               InkWell(
                 onTap: () => _repo.toggleSavePost(widget.post.id, widget.post.isSavedByMe),
                 child: Icon(
