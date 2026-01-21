@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import '../camra/camra_screen.dart';
-import '../community/community_screen.dart';
+import '../community/presentation/community_screen.dart';
 import '../home/home_screen.dart';
 import '../map/map_screen.dart';
 import '../more/more_screen.dart';

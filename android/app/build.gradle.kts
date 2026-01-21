@@ -45,3 +45,9 @@ android {
 flutter {
     source = "../.."
 }
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.activity:activity:1.10.0")
+    }
+}
