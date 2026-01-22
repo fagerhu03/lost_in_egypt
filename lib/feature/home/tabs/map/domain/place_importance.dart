@@ -4,7 +4,7 @@ enum PlaceImportance {
   landmark,   // Always visible (zoom >= 0)
   major,      // Visible at zoom >= 10
   moderate,   // Visible at zoom >= 13
-  minor,      // Visible at zoom >= 15
+  minor;      // Visible at zoom >= 15
 }
 
 extension PlaceImportanceExtension on PlaceImportance {

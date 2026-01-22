@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../map/domain/place_importance.dart';
 
 // ==========================================================
 // 1. SHARED INTERFACE (Domain Entity)
@@ -15,8 +16,10 @@ abstract class MapItem {
   String get duration;
   String get weather;
   String get description;
-
   List<String> get tags;
+  
+  // Added for Map Logic
+  PlaceImportance get importance;
 }
 
 // ==========================================================
@@ -73,9 +76,10 @@ class PlaceModel implements MapItem {
   final String weather;
   @override
   final String description;
-
   @override
-final List<String> tags; 
+  final List<String> tags;
+  @override
+  final PlaceImportance importance;
 
   final bool isOpenNow;
 
@@ -92,7 +96,8 @@ final List<String> tags;
     required this.weather,
     required this.description,
     required this.isOpenNow,
-    this.tags = const [], // ✅ default (not required)
+    this.tags = const [],
+    this.importance = PlaceImportance.minor,
   });
 
   Map<String, dynamic> toMap() {
@@ -108,16 +113,18 @@ final List<String> tags;
       'weather': weather,
       'description': description,
       'isOpenNow': isOpenNow,
-      'tags': tags, // ✅ included
+      'tags': tags,
     };
   }
 
-  factory PlaceModel.fromMap(Map<String, dynamic> map, String docId) {
+  factory PlaceModel.fromMap(Map<String, dynamic> map, String docId, {PlaceImportance? importance}) {
     return PlaceModel(
       id: docId,
       title: map['title'] ?? '',
       category: map['category'] ?? '',
-      coordinate: map['coordinate'] ?? const GeoPoint(30.0444, 31.2357),
+      coordinate: map['coordinate'] is GeoPoint 
+          ? map['coordinate'] 
+          : const GeoPoint(30.0444, 31.2357),
       imagePath: map['imagePath'] ?? '',
       locationAddress: map['locationAddress'] ?? '',
       rating: (map['rating'] ?? 0).toDouble(),
@@ -130,6 +137,7 @@ final List<String> tags;
               ?.map((e) => e.toString())
               .toList() ??
           const [],
+      importance: importance ?? PlaceImportance.minor,
     );
   }
 }
@@ -158,12 +166,13 @@ class EventModel implements MapItem {
   final String weather;
   @override
   final String description;
+  @override
+  final List<String> tags;
+  @override
+  final PlaceImportance importance;
 
   @override
   String get category => 'event';
-
-  @override
-  final List<String> tags; // ✅ added
 
   final DateTime date;
 
@@ -179,7 +188,8 @@ class EventModel implements MapItem {
     required this.weather,
     required this.description,
     required this.date,
-    this.tags = const [], 
+    this.tags = const [],
+    this.importance = PlaceImportance.major, // Events usually important
   });
 
   Map<String, dynamic> toMap() {
@@ -195,7 +205,7 @@ class EventModel implements MapItem {
       'description': description,
       'date': Timestamp.fromDate(date),
       'isEvent': true,
-      'tags': tags, 
+      'tags': tags,
     };
   }
 
@@ -203,7 +213,9 @@ class EventModel implements MapItem {
     return EventModel(
       id: docId,
       title: map['title'] ?? '',
-      coordinate: map['coordinate'] ?? const GeoPoint(30.0444, 31.2357),
+      coordinate: map['coordinate'] is GeoPoint 
+          ? map['coordinate'] 
+          : const GeoPoint(30.0444, 31.2357),
       imagePath: map['imagePath'] ?? '',
       locationAddress: map['locationAddress'] ?? '',
       rating: (map['rating'] ?? 0).toDouble(),
@@ -216,7 +228,7 @@ class EventModel implements MapItem {
               ?.map((e) => e.toString())
               .toList() ??
           const [],
+      importance: PlaceImportance.major,
     );
   }
 }
-// ==========================================================

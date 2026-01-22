@@ -56,3 +56,4 @@ android/app/src/main/res/values/strings.xml
 functions/node_modules/
 functions/firebase-debug.log
 functions/firebase-debug.log.*
+.env

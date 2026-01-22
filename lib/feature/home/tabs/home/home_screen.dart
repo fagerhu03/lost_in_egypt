@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+
 import './data/datasources/local_mock_data.dart';
 import './data/models/map_item_models.dart';
 import '../navigator/widget/search_header.dart';

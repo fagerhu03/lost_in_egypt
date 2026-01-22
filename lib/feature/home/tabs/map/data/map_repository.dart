@@ -1,17 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+
+// Go up: data -> map -> tabs -> home -> then down to data/models
 import '../../home/data/models/map_item_models.dart';
+// Go up: data -> map -> down to domain
+import '../domain/importance_calculator.dart';
+//import '../domain/place_importance.dart';
 
 class MapRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  /// Fetches featured items based on specific tags
   Future<List<MapItem>> fetchFeaturedMapItems({int limit = 80}) async {
     debugPrint('📦 fetchFeaturedMapItems called (limit: $limit)');
     const featuredTags = ['recommended', 'featured', 'top_pick', 'must_see'];
     return _fetchByTags(featuredTags, limit: limit);
   }
 
-  /// ✅ "All" but limited for performance
+  /// "All" items, limited for performance
   Future<List<MapItem>> fetchAllMapItemsLimited({int limit = 500}) async {
     debugPrint('');
     debugPrint('📦 fetchAllMapItemsLimited called (limit: $limit)');
@@ -31,25 +37,33 @@ class MapRepository {
       debugPrint('   📁 places: ${placesSnapshot.docs.length} documents');
       debugPrint('   📁 events: ${eventsSnapshot.docs.length} documents');
 
-      // Debug: Show first few documents
-      if (placesSnapshot.docs.isNotEmpty) {
-        debugPrint('   📄 First place: ${placesSnapshot.docs.first.data()['title']}');
-      } else {
-        debugPrint('   ⚠️ No places found in Firestore!');
-      }
-
       final List<MapItem> allItems = [];
 
+      // --- PARSE PLACES (With Dynamic Importance) ---
       for (final doc in placesSnapshot.docs) {
         try {
-          allItems.add(PlaceModel.fromMap(doc.data(), doc.id));
+          final data = doc.data();
+          // 1. Create a temporary model to analyze the data
+          final tempPlace = PlaceModel.fromMap(data, doc.id);
+          
+          // 2. Calculate its importance dynamically
+          final calculatedImportance = ImportanceCalculator.calculate(tempPlace);
+          
+          // 3. Create the final model with the correct importance
+          allItems.add(PlaceModel.fromMap(
+            data, 
+            doc.id, 
+            importance: calculatedImportance
+          ));
         } catch (e) {
           debugPrint('   ❌ Error parsing place ${doc.id}: $e');
         }
       }
       
+      // --- PARSE EVENTS ---
       for (final doc in eventsSnapshot.docs) {
         try {
+          // Events are handled with default importance (Major) via their factory
           allItems.add(EventModel.fromMap(doc.data(), doc.id));
         } catch (e) {
           debugPrint('   ❌ Error parsing event ${doc.id}: $e');
@@ -66,19 +80,21 @@ class MapRepository {
     }
   }
 
+  /// Fetches items based on a UI Category ID (e.g. 'museum', 'nature')
   Future<List<MapItem>> fetchByUiCategory(String uiCategoryId, {int limit = 250}) async {
     debugPrint('');
     debugPrint('📦 fetchByUiCategory("$uiCategoryId", limit: $limit)');
     
-    // ✅ New: All
+    // Handle 'All'
     if (uiCategoryId == 'all') {
-      debugPrint('   → Routing to fetchAllMapItemsLimited');
       return fetchAllMapItemsLimited(limit: limit);
     }
 
+    // Get tags for the category
     final tags = _tagsForUiCategory(uiCategoryId);
     debugPrint('   → Tags for "$uiCategoryId": $tags');
     
+    // Fallback if no tags match
     if (tags.isEmpty) {
       debugPrint('   → No tags found, falling back to featured');
       return fetchFeaturedMapItems(limit: limit);
@@ -95,7 +111,7 @@ class MapRepository {
       case 'recommended':
         return const ['recommended', 'featured', 'top_pick', 'must_see'];
 
-      case 'landmark':  // 🔧 Added this case
+      case 'landmark':
         return const ['landmark', 'historic', 'pyramid', 'temple', 'unesco'];
 
       case 'historic':
@@ -104,19 +120,20 @@ class MapRepository {
       case 'museum':
         return const ['museum'];
 
-      case 'religious':  // 🔧 Added this case
+      case 'religious':
         return const ['mosque', 'church', 'religious', 'coptic', 'islamic'];
 
-      case 'nature':  // 🔧 Added this case
+      case 'nature':
         return const ['nature', 'park', 'garden', 'beach', 'desert', 'oasis'];
 
-      case 'shopping':  // 🔧 Added this case
+      case 'shopping':
         return const ['market', 'shopping', 'bazaar', 'souq', 'mall'];
 
       case 'market':
         return const ['market', 'shopping', 'bazaar', 'souq'];
 
-      case 'restaurants':
+      case 'restaurant':
+      case 'restaurants': // Handle plural
         return const ['restaurant', 'food', 'dining'];
 
       case 'nightlife':
@@ -157,14 +174,25 @@ class MapRepository {
 
       final List<MapItem> allItems = [];
 
+      // --- PARSE PLACES ---
       for (final doc in placesSnapshot.docs) {
         try {
-          allItems.add(PlaceModel.fromMap(doc.data(), doc.id));
+          final data = doc.data();
+          // Dynamic importance calculation
+          final tempPlace = PlaceModel.fromMap(data, doc.id);
+          final calculatedImportance = ImportanceCalculator.calculate(tempPlace);
+          
+          allItems.add(PlaceModel.fromMap(
+            data, 
+            doc.id, 
+            importance: calculatedImportance
+          ));
         } catch (e) {
           debugPrint('   ❌ Error parsing place ${doc.id}: $e');
         }
       }
       
+      // --- PARSE EVENTS ---
       for (final doc in eventsSnapshot.docs) {
         try {
           allItems.add(EventModel.fromMap(doc.data(), doc.id));

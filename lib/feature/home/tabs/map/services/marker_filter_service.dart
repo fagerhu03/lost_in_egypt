@@ -1,11 +1,14 @@
-import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/domain/importance_calculator.dart';
+// Go up: services -> map -> tabs -> home -> then down to data/models
+import '../../home/data/models/map_item_models.dart';
+// Go up: services -> map -> down to domain
+import '../domain/importance_calculator.dart';
 
 /// Service to filter map markers based on zoom level and importance
 class MarkerFilterService {
   
   /// Filter items based on current zoom level
   static List<MapItem> filterByZoom(List<MapItem> items, double currentZoom) {
+    // .isVisibleAtZoom comes from the extension in importance_calculator.dart
     return items.where((item) => item.isVisibleAtZoom(currentZoom)).toList();
   }
 
@@ -18,6 +21,7 @@ class MarkerFilterService {
     return items.where((item) {
       final zoomVisible = item.isVisibleAtZoom(currentZoom);
       final categoryMatch = categoryFilter == null || 
+                            categoryFilter == 'all' ||
                             item.category.toLowerCase() == categoryFilter.toLowerCase();
       return zoomVisible && categoryMatch;
     }).toList();
@@ -33,6 +37,7 @@ class MarkerFilterService {
     };
 
     for (final item in items) {
+      // .importance comes from the extension in importance_calculator.dart
       final key = item.importance.name;
       breakdown[key] = (breakdown[key] ?? 0) + 1;
     }
