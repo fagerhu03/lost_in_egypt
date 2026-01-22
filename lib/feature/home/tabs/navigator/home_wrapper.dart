@@ -81,16 +81,16 @@ class _HomeWrapperState extends State<HomeWrapper> with SingleTickerProviderStat
         child: ConvexAppBar(
           controller: _tabController,
           style: TabStyle.react,
-          height: 50,
+          height: 55,
           curveSize: 90,
-          backgroundColor: const Color(0xffE9E4BC),
-          activeColor: const Color(0xff4D5420),
-          color: const Color(0xff4D5420).withOpacity(0.60),
+          backgroundColor: const Color(0xffFCFBE8),
+          activeColor: const Color(0xff714611),
+          color: const Color(0xff714611).withOpacity(0.60),
           elevation: 12,
 
           items: const [
             TabItem(icon: Icons.home_filled, title: "Home"),
-            TabItem(icon: Icons.explore, title: "Community"),
+            TabItem(icon: Icons.people_rounded, title: "Community"),
             TabItem(icon: Icons.camera_alt_rounded, title: "Camera"),
             TabItem(icon: Icons.map_rounded, title: "Map"),
             TabItem(icon: Icons.more_horiz, title: "More"),

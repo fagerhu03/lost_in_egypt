@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '../navigator/widget/account_menu_button.dart';
 import './data/datasources/local_mock_data.dart';
 import './data/models/map_item_models.dart';
 import '../navigator/widget/search_header.dart';
@@ -141,12 +142,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     left: 16,
                     right: 16,
                   ),
-                  child: SearchHeader(
-                    profileImageUrl: _profileImageUrl,
-                    onSignOut: _handleSignOut,
-                  ),
+                  child:  Row(
+                    children: [
+                      Expanded(child: SearchHeader(onSignOut: () {},)),
+                      const SizedBox(width: 12),
+                      AccountMenuButton(profileImageUrl: _profileImageUrl, onSignOut: _handleSignOut),
+                    ],
                 ),
 
+                ),
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -172,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text(
                 "What's New",
                 style: TextStyle(
-                  color: const Color(0xff4D5420),
+                  color: const Color(0xff714611),
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   fontFamily: "Marcellus",
@@ -204,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     "Events",
                     style: TextStyle(
-                      color: const Color(0xff4D5420),
+                      color: const Color(0xff714611),
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       fontFamily: "Marcellus",
@@ -267,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text(
                 "Plan your trip",
                 style: TextStyle(
-                  color: const Color(0xff4D5420),
+                  color: const Color(0xff714611),
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   fontFamily: "Marcellus",
@@ -316,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             title,
             style: const TextStyle(
-              color: Color(0xff4D5420),
+              color: Color(0xff714611),
               fontWeight: FontWeight.w600,
               fontFamily: "Marcellus",
             ),
@@ -413,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(
               title,
               style: const TextStyle(
-                color: Color(0xff4D5420),
+                color: Color(0xff714611),
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 fontFamily: "Marcellus",
@@ -445,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Text(
           title,
           style: const TextStyle(
-            color: Color(0xff4D5420),
+            color: Color(0xff714611),
             fontSize: 20,
             fontWeight: FontWeight.bold,
             fontFamily: "Marcellus",
