@@ -208,17 +208,17 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.08),
+                  color: Color(0xff4D5420).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.location_on, size: 14, color: Colors.blue),
+                    const Icon(Icons.location_on, size: 14, color: Color(0xff4D5420)),
                     const SizedBox(width: 4),
                     Text(
                       widget.post.locationName!,
-                      style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 12),
+                      style: const TextStyle(color: Color(0xff4D5420), fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ],
                 ),
@@ -329,9 +329,9 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(icon, size: 20, color: color),
+          Icon(icon, size: 20, color: Color(0xff714611)),
           const SizedBox(width: 6),
-          Text("$value", style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 13)),
+          Text("$value", style: TextStyle(color: Color(0xff714611), fontWeight: FontWeight.w800, fontSize: 13)),
         ],
       ),
     );
