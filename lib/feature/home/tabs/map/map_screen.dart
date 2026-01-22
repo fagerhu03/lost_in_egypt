@@ -7,9 +7,14 @@ import './data/map_repository.dart';
 import '../home/data/models/map_item_models.dart';
 import './domain/place_importance.dart';
 import './services/marker_filter_service.dart';
-// ✅ CRITICAL: Use the package import
-import 'package:lost_in_egypt/feature/home/tabs/map/services/map_focus_service.dart';
-import '../map/place_detail_screen.dart';
+import './services/map_focus_service.dart';
+import './place_detail_screen.dart';
+
+class _UiCategory {
+  final String id;
+  final String label;
+  const _UiCategory(this.id, this.label);
+}
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -25,16 +30,19 @@ class _MapScreenState extends State<MapScreen> {
   Set<Marker> _markers = {};
   bool _isLocationPermissionGranted = false;
   bool _loading = false;
-  
-  // Setting this variable is what makes the Sheet slide up
-  MapItem? _selectedItem;
+
+  String _selectedUiCategoryId = 'all';
 
   List<MapItem> _allItems = [];
   double _currentZoom = 10.0;
-  String? _lightMapStyle;
-  String _selectedUiCategoryId = 'all';
 
-  static const CameraPosition _cairoPosition = CameraPosition(
+  MapItem? _selectedPlace;
+
+  String? _lightMapStyle;
+  String? _darkMapStyle;
+  Brightness? _lastBrightness;
+
+  static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(30.0444, 31.2357),
     zoom: 10,
   );
@@ -46,7 +54,9 @@ class _MapScreenState extends State<MapScreen> {
     _UiCategory('religious', 'Religious'),
     _UiCategory('nature', 'Nature'),
     _UiCategory('shopping', 'Shopping'),
-    _UiCategory('restaurant', 'Restaurants'),
+    _UiCategory('restaurants', 'Restaurants'),
+    _UiCategory('tourism', 'Tourism'),
+    _UiCategory('hotel', 'Hotels'),
   ];
 
   @override
@@ -54,88 +64,306 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
     _checkLocationPermission();
     _loadByCategory('all');
-    
-    // ⭐ LISTEN: When this screen wakes up, check if there is a place to focus on
-    MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequest);
+    MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequested);
   }
 
   @override
   void dispose() {
-    MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequest);
+    MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
     super.dispose();
   }
 
-  // ⭐ THE ZOOM & OPEN LOGIC
-  void _onFocusRequest() {
+  void _onFocusRequested() {
     final item = MapFocusService.instance.focusedItemNotifier.value;
-    if (item != null) {
-      print("🗺️ MAP: Zooming to ${item.title}");
-      
-      setState(() {
-        _selectedItem = item; // This opens the Bottom Sheet
-        
-        // Ensure marker exists locally
-        if (!_allItems.any((e) => e.id == item.id)) {
-           _allItems.add(item);
-        }
-        _updateVisibleMarkers();
+    if (item != null && mounted) {
+      debugPrint('📷 Focus requested for: ${item.title}');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _focusOnPlace(item);
       });
+    }
+  }
 
-      if (_mapController != null) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          _mapController!.animateCamera(CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(item.coordinate.latitude, item.coordinate.longitude),
-              zoom: 17, 
-              tilt: 45, 
-            ),
-          ));
-        });
+  Future<void> _focusOnPlace(MapItem place) async {
+    debugPrint('🎯 _focusOnPlace: ${place.title}');
+    debugPrint('   📍 Lat: ${place.coordinate.latitude}, Lng: ${place.coordinate.longitude}');
+
+    if (_mapController == null) {
+      debugPrint('   ⏳ Waiting for map controller...');
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (_mapController == null) {
+        debugPrint('   ❌ Map controller still null');
+        return;
       }
     }
+
+    if (!_allItems.any((p) => p.id == place.id)) {
+      debugPrint('   ➕ Adding place to _allItems');
+      _allItems.add(place);
+    }
+
+    setState(() {
+      _selectedPlace = place;
+    });
+
+    debugPrint('   🎥 Animating camera...');
+    try {
+      await _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(place.coordinate.latitude, place.coordinate.longitude),
+            zoom: 17,
+          ),
+        ),
+      );
+      debugPrint('   ✅ Camera animation complete');
+    } catch (e) {
+      debugPrint('   ❌ Camera animation error: $e');
+    }
+
+    _currentZoom = 17;
+    _updateVisibleMarkers(forceInclude: place);
+    MapFocusService.instance.clearFocus();
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
-    _loadAndApplyMapStyleIfNeeded();
-
-    // Check immediately if we need to zoom (in case map was just created)
-    if (MapFocusService.instance.focusedItemNotifier.value != null) {
-      _onFocusRequest();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = Theme.of(context).brightness;
+    if (_lastBrightness != brightness) {
+      _lastBrightness = brightness;
+      _loadAndApplyMapStyleIfNeeded();
     }
   }
 
-  Future<void> _loadByCategory(String uiCategoryId) async {
-    setState(() { _loading = true; _selectedUiCategoryId = uiCategoryId; });
-    try {
-      final items = await _repository.fetchByUiCategory(uiCategoryId);
-      if(mounted) setState(() { _allItems = items; _updateVisibleMarkers(); });
-    } catch (e) { debugPrint('Error: $e'); }
+  Future<void> _loadAndApplyMapStyleIfNeeded() async {
+    if (_lightMapStyle == null) {
+      _lightMapStyle = await rootBundle.loadString('assets/map_style.json');
+    }
+    if (_darkMapStyle == null) {
+      try {
+        _darkMapStyle = await rootBundle.loadString('assets/map_style_dark.json');
+      } catch (_) {
+        _darkMapStyle = _lightMapStyle;
+      }
+    }
+    await _applyCurrentMapStyle();
+  }
+
+  Future<void> _applyCurrentMapStyle() async {
+    final controller = _mapController;
+    if (controller == null) return;
+    final isDark = (Theme.of(context).brightness == Brightness.dark);
+    final style = isDark ? _darkMapStyle : _lightMapStyle;
+    if (style != null) {
+      await controller.setMapStyle(style);
+    }
+  }
+
+  Future<void> _checkLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.whileInUse ||
+        permission == LocationPermission.always) {
+      if (mounted) setState(() => _isLocationPermissionGranted = true);
+    }
+  }
+
+  Future<void> _goToUserLocation() async {
+    if (!_isLocationPermissionGranted) {
+      await _checkLocationPermission();
+      if (!_isLocationPermissionGranted) return;
+    }
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    _mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(position.latitude, position.longitude),
+          zoom: 15,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loadFeatured() async {
+    setState(() {
+      _loading = true;
+      _selectedUiCategoryId = 'recommended';
+    });
+
+    final items = await _repository.fetchFeaturedMapItems(limit: 80);
+    _allItems = items;
+    _updateVisibleMarkers();
+    _debugImportanceBreakdown();
+
     if (mounted) setState(() => _loading = false);
   }
 
-  void _updateVisibleMarkers() {
-    if (_allItems.isEmpty) return;
-    final filteredItems = MarkerFilterService.filterByZoom(_allItems, _currentZoom);
+  Future<void> _loadByCategory(String uiCategoryId) async {
     setState(() {
-      _markers = filteredItems.map((item) {
-        final isSelected = item.id == _selectedItem?.id;
-        return Marker(
-          markerId: MarkerId(item.id),
-          position: LatLng(item.coordinate.latitude, item.coordinate.longitude),
-          onTap: () => setState(() => _selectedItem = item),
-          icon: BitmapDescriptor.defaultMarkerWithHue(isSelected ? BitmapDescriptor.hueRed : _hueFor(item)),
-          zIndex: isSelected ? 2 : 1,
-        );
-      }).toSet();
+      _loading = true;
+      _selectedUiCategoryId = uiCategoryId;
     });
+
+    final limit = uiCategoryId == 'all' ? 2000 : 500;
+    final items = await _repository.fetchByUiCategory(uiCategoryId, limit: limit);
+
+    _allItems = items;
+    _updateVisibleMarkers();
+    _debugImportanceBreakdown();
+
+    if (mounted) setState(() => _loading = false);
+  }
+
+  void _debugImportanceBreakdown() {
+    final breakdown = MarkerFilterService.getImportanceBreakdown(_allItems);
+    debugPrint('═══════════════════════════════════════');
+    debugPrint('📊 IMPORTANCE BREAKDOWN (Total: ${_allItems.length})');
+    debugPrint('───────────────────────────────────────');
+    debugPrint('   (10 = Most Important, 1 = Least Important)');
+    debugPrint('───────────────────────────────────────');
+    for (int i = 10; i >= 1; i--) {
+      final count = breakdown[i] ?? 0;
+      final label = ImportanceConfig.getLabelForImportance(i);
+      final minZoom = ImportanceConfig.getMinZoomForImportance(i);
+      final bar = '█' * (count ~/ 30);
+      debugPrint('   $i - $label: $count (zoom >= $minZoom) $bar');
+    }
+    debugPrint('═══════════════════════════════════════');
+  }
+
+  void _updateVisibleMarkers({MapItem? forceInclude}) {
+    if (_allItems.isEmpty && forceInclude == null) {
+      setState(() => _markers = {});
+      debugPrint('⚠️ No items to display');
+      return;
+    }
+
+    var filteredItems = MarkerFilterService.filterByZoom(_allItems, _currentZoom);
+
+    if (forceInclude != null && !filteredItems.any((p) => p.id == forceInclude.id)) {
+      filteredItems = [...filteredItems, forceInclude];
+      debugPrint('   ➕ Force included: ${forceInclude.title}');
+    }
+
+    final markers = filteredItems.map((item) {
+      final isSelected = _selectedPlace?.id == item.id;
+      return Marker(
+        markerId: MarkerId(item.id),
+        position: LatLng(item.coordinate.latitude, item.coordinate.longitude),
+        infoWindow: InfoWindow(
+          title: item.title,
+          snippet: '${item.category.toUpperCase()} • ${item.importance.importanceLabel}',
+        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          isSelected ? BitmapDescriptor.hueGreen : _hueFor(item),
+        ),
+        onTap: () => _onMarkerTapped(item),
+      );
+    }).toSet();
+
+    if (mounted) {
+      setState(() => _markers = markers);
+    }
+
+    debugPrint('📍 Zoom: ${_currentZoom.toStringAsFixed(1)} | Showing: ${markers.length}/${_allItems.length}');
+  }
+
+  void _onMarkerTapped(MapItem place) {
+    debugPrint('📍 Marker tapped: ${place.title}');
+    setState(() {
+      _selectedPlace = place;
+    });
+
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLng(
+        LatLng(place.coordinate.latitude, place.coordinate.longitude),
+      ),
+    );
+  }
+
+  void _closeDetailSheet() {
+    setState(() {
+      _selectedPlace = null;
+    });
+    _updateVisibleMarkers();
   }
 
   double _hueFor(MapItem item) {
-    if (item.importance == PlaceImportance.landmark) return BitmapDescriptor.hueYellow;
-    if (item.category.toLowerCase() == 'museum') return BitmapDescriptor.hueAzure;
-    if (item.category.toLowerCase() == 'restaurant') return BitmapDescriptor.hueRed;
-    return BitmapDescriptor.hueOrange;
+    final importance = item.importance;
+    final category = item.category.toLowerCase();
+    final tags = item.tags.map((t) => t.toLowerCase()).toSet();
+
+    if (importance >= 9) {
+      return BitmapDescriptor.hueYellow;
+    }
+
+    if (category == 'event' || tags.contains('event')) {
+      return BitmapDescriptor.hueViolet;
+    }
+    if (category == 'museum' || tags.contains('museum')) {
+      return BitmapDescriptor.hueAzure;
+    }
+    if (category == 'religious' || tags.contains('mosque') || tags.contains('church')) {
+      return BitmapDescriptor.hueGreen;
+    }
+    if (category == 'hotel' || tags.contains('hotel') || tags.contains('accommodation')) {
+      return BitmapDescriptor.hueMagenta;
+    }
+    if (category == 'tourism') {
+      return BitmapDescriptor.hueCyan;
+    }
+    if (tags.contains('restaurant') || tags.contains('food')) {
+      return BitmapDescriptor.hueRed;
+    }
+    if (tags.contains('market') || tags.contains('shopping')) {
+      return BitmapDescriptor.hueOrange;
+    }
+
+    if (importance >= 8) return BitmapDescriptor.hueRed;
+    if (importance >= 6) return BitmapDescriptor.hueOrange;
+    if (importance >= 4) return BitmapDescriptor.hueRose;
+    if (importance >= 2) return BitmapDescriptor.hueCyan;
+    return BitmapDescriptor.hueBlue;
+  }
+
+  Future<void> _openCategorySheet() async {
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      builder: (_) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              const ListTile(
+                title: Text(
+                  "Choose a Category",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              ..._categories.map((c) {
+                final selected = c.id == _selectedUiCategoryId;
+                return ListTile(
+                  title: Text(c.label),
+                  trailing: selected ? const Icon(Icons.check) : null,
+                  onTap: () => Navigator.pop(context, c.id),
+                );
+              }),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (chosen == null) return;
+    if (chosen == 'recommended') {
+      await _loadFeatured();
+    } else {
+      await _loadByCategory(chosen);
+    }
   }
 
   @override
@@ -144,114 +372,148 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         children: [
           GoogleMap(
-            initialCameraPosition: _cairoPosition,
+            initialCameraPosition: _initialPosition,
             markers: _markers,
             myLocationEnabled: _isLocationPermissionGranted,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
-            onMapCreated: _onMapCreated,
-            onCameraMove: (pos) => _currentZoom = pos.zoom,
-            onCameraIdle: _updateVisibleMarkers,
-            padding: EdgeInsets.only(bottom: _selectedItem != null ? 300 : 0),
+            onMapCreated: (controller) async {
+              debugPrint('🗺️ Map created!');
+              _mapController = controller;
+              await _loadAndApplyMapStyleIfNeeded();
+
+              final pendingFocus = MapFocusService.instance.focusedItemNotifier.value;
+              if (pendingFocus != null) {
+                debugPrint('🎯 Processing pending focus: ${pendingFocus.title}');
+                _focusOnPlace(pendingFocus);
+              }
+            },
+            onCameraMove: (position) {
+              _currentZoom = position.zoom;
+            },
+            onCameraIdle: () {
+              _updateVisibleMarkers(forceInclude: _selectedPlace);
+            },
             onTap: (_) {
-              setState(() => _selectedItem = null);
-              MapFocusService.instance.clearFocus();
+              if (_selectedPlace != null) {
+                _closeDetailSheet();
+              }
             },
           ),
-          
-          if (_selectedItem == null) ...[
-            Positioned(
-              top: 50, left: 0, right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
-                  ),
-                  child: const Text("Lost In Egypt", style: TextStyle(fontWeight: FontWeight.bold, fontFamily: "Marcellus")),
+          Positioned(
+            top: 50,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
+                ),
+                child: const Text(
+                  "Lost In Egypt",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontFamily: "Marcellus"),
                 ),
               ),
             ),
-            Positioned(
-              top: 100, right: 20,
-              child: FloatingActionButton(
-                heroTag: "filter_btn",
-                mini: true,
-                backgroundColor: Colors.white,
-                onPressed: _openCategorySheet,
-                child: const Icon(Icons.tune, color: Colors.black87),
+          ),
+          Positioned(
+            top: 110,
+            left: 20,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
+              ),
+              child: Text(
+                '${_markers.length}/${_allItems.length} places',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
               ),
             ),
-            Positioned(
-              bottom: 40, right: 20,
-              child: FloatingActionButton(
-                heroTag: "location_btn",
-                backgroundColor: Colors.white,
-                onPressed: _goToUserLocation,
-                child: Icon(Icons.my_location, color: _isLocationPermissionGranted ? Colors.blue : Colors.black87),
+          ),
+          Positioned(
+            top: 110,
+            right: 20,
+            child: FloatingActionButton(
+              heroTag: "filter_btn",
+              backgroundColor: Colors.white,
+              onPressed: _openCategorySheet,
+              child: const Icon(Icons.tune, color: Colors.black87),
+            ),
+          ),
+          Positioned(
+            bottom: _selectedPlace != null ? 350 : 110,
+            right: 20,
+            child: FloatingActionButton(
+              heroTag: "location_btn",
+              backgroundColor: Colors.white,
+              onPressed: () {
+                if (_isLocationPermissionGranted) {
+                  _goToUserLocation();
+                } else {
+                  _checkLocationPermission();
+                }
+              },
+              child: Icon(
+                Icons.my_location,
+                color: _isLocationPermissionGranted ? Colors.blue : Colors.black87,
               ),
             ),
-          ],
-
-          // ⭐ THE SLIDING SHEET
-          if (_selectedItem != null)
+          ),
+          if (_loading)
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 10),
+                          Text("Loading..."),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (_selectedPlace != null)
             PlaceDetailSheet(
-              place: _selectedItem!,
-              onClose: () {
-                setState(() => _selectedItem = null);
-                MapFocusService.instance.clearFocus();
-              },
+              place: _selectedPlace!,
+              onClose: _closeDetailSheet,
               onShowOnMap: () {
-                // Minimize sheet, user wants to see the map
+                _mapController?.animateCamera(
+                  CameraUpdate.newLatLng(
+                    LatLng(
+                      _selectedPlace!.coordinate.latitude,
+                      _selectedPlace!.coordinate.longitude,
+                    ),
+                  ),
+                );
               },
             ),
-
-          if (_loading && _markers.isEmpty)
-            const Center(child: CircularProgressIndicator()),
         ],
       ),
     );
   }
-
-  Future<void> _loadAndApplyMapStyleIfNeeded() async {
-    if (_lightMapStyle == null) {
-      try { _lightMapStyle = await rootBundle.loadString('assets/map_style.json'); } catch(_) {}
-    }
-    if (_mapController != null && _lightMapStyle != null) _mapController!.setMapStyle(_lightMapStyle);
-  }
-
-  Future<void> _checkLocationPermission() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-      if (mounted) setState(() => _isLocationPermissionGranted = true);
-    }
-  }
-
-  Future<void> _goToUserLocation() async {
-    if (!_isLocationPermissionGranted) { await _checkLocationPermission(); if (!_isLocationPermissionGranted) return; }
-    final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    _mapController?.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(position.latitude, position.longitude), zoom: 15)));
-  }
-  
-  Future<void> _openCategorySheet() async {
-    final chosen = await showModalBottomSheet<String>(
-      context: context,
-      builder: (_) {
-        return SafeArea(child: ListView(shrinkWrap: true, children: [
-          const ListTile(title: Text("Choose a Category", style: TextStyle(fontWeight: FontWeight.bold))),
-          ..._categories.map((c) => ListTile(title: Text(c.label), trailing: c.id == _selectedUiCategoryId ? const Icon(Icons.check) : null, onTap: () => Navigator.pop(context, c.id))),
-        ]));
-      },
-    );
-    if (chosen != null) _loadByCategory(chosen);
-  }
-}
-
-class _UiCategory {
-  final String id;
-  final String label;
-  const _UiCategory(this.id, this.label);
 }

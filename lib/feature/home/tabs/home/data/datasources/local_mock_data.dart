@@ -25,6 +25,7 @@ class LocalMockData {
       description: "This resort presents itself as a tranquil yet upscale getaway...",
       date: DateTime(2025, 10, 20),
       tags: const ["event", "desert", "resort", "adventure", "weekend_trip"],
+      importance: 7, // 🆕 Added
     ),
     EventModel(
       id: "event_crimson",
@@ -39,6 +40,7 @@ class LocalMockData {
       description: "Experience fine dining with a breathtaking view of the Nile...",
       date: DateTime(2025, 10, 21),
       tags: const ["event", "food", "nightlife", "nile_view", "cairo"],
+      importance: 8, // 🆕 Added
     ),
     EventModel(
       id: "event_temple_tour",
@@ -53,6 +55,7 @@ class LocalMockData {
       description: "Step back in time and explore the majestic temples...",
       date: DateTime(2025, 10, 22),
       tags: const ["event", "luxor", "historic", "temple", "day_trip"],
+      importance: 9, // 🆕 Added - Very important
     ),
     EventModel(
       id: "event_jazz_night",
@@ -67,6 +70,7 @@ class LocalMockData {
       description: "Live Jazz music all night...",
       date: DateTime(2025, 11, 20),
       tags: const ["event", "music", "nightlife", "cairo"],
+      importance: 7, // 🆕 Added
     ),
     EventModel(
       id: "event_opera_aida",
@@ -81,14 +85,11 @@ class LocalMockData {
       description: "The classic opera performed at the historic Cairo Opera House.",
       date: DateTime(2025, 12, 15),
       tags: const ["event", "opera", "culture", "nightlife", "cairo"],
+      importance: 8, // 🆕 Added
     ),
-  
   ];
 
   static final List<PlaceModel> places = [
-    // =========================
-    // Core places (existing)
-    // =========================
     PlaceModel(
       id: "place_pyramids",
       title: "Great Pyramids",
@@ -111,9 +112,7 @@ class LocalMockData {
       weather: "32° C",
       description: "The oldest of the Seven Wonders...",
       isOpenNow: true,
+      importance: 10, // 🆕 Added - LANDMARK (Always visible)
     ),
-
-
-  
   ];
 }
