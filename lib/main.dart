@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart'; 
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'feature/home/tabs/navigator/home_wrapper.dart';
 import 'firebase_options.dart';
@@ -26,8 +27,11 @@ void main() async {
     mapsImplementation.useAndroidViewSurface = true;
     mapsImplementation.initializeWithRenderer(AndroidMapRenderer.latest);
   }
+
+  await dotenv.load(fileName: ".env");
   
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {

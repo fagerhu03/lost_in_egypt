@@ -1,5 +1,6 @@
-import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'place_importance.dart';
+// Go up: domain -> map -> tabs -> home -> then down to data/models
+import '../../home/data/models/map_item_models.dart';
 
 /// Calculates importance dynamically based on available MapItem properties
 class ImportanceCalculator {
@@ -161,7 +162,17 @@ class ImportanceCalculator {
 
     // Base score from common factors
     final baseImportance = calculate(event);
-    score += baseImportance.index * 2;
+    // Convert base importance to a starting score
+    // landmark=0, major=1, moderate=2, minor=3 in enum definition
+    // We invert it for points: landmark=3, major=2, moderate=1, minor=0
+    int baseScore = 0;
+    switch (baseImportance) {
+      case PlaceImportance.landmark: baseScore = 6; break;
+      case PlaceImportance.major: baseScore = 4; break;
+      case PlaceImportance.moderate: baseScore = 2; break;
+      case PlaceImportance.minor: baseScore = 0; break;
+    }
+    score += baseScore;
 
     // ========== Event-specific: Date Proximity ==========
     final daysUntilEvent = event.date.difference(DateTime.now()).inDays;
