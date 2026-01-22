@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../navigator/widget/account_menu_button.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import '../domain/entities/community_post.dart';
 import './community_post_card.dart';
@@ -254,6 +255,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
     }
   }
 
+  Future<void> _handleSignOut() async {
+    await FirebaseAuth.instance.signOut();
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -393,12 +403,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
       child: Row(
         children: [
-          // Search Bar (Kept as requested)
           Expanded(
             child: Container(
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xff4D5420).withOpacity(0.50),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: const Color(0xFFE0D8C3)),
                 boxShadow: [
@@ -412,132 +421,27 @@ class _CommunityScreenState extends State<CommunityScreen> {
               child: TextField(
                 onChanged: (val) => setState(() => _searchQuery = val),
                 decoration: const InputDecoration(
+                  fillColor: Colors.white,
                   hintText: "Search posts...",
                   hintStyle: TextStyle(
-                    color: Colors.grey, 
-                    fontSize: 14, 
-                    fontWeight: FontWeight.w500
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "Marcellus",
                   ),
-                  prefixIcon: Icon(Icons.search, color: Color(0xFF7A6A55)),
+                  prefixIcon: Icon(Icons.search, color: Colors.white),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
               ),
             ),
           ),
-          
           const SizedBox(width: 12),
 
-          // ⭐ PROFILE DROPDOWN (With Notification Badge Logic)
-          StreamBuilder<int>(
-            stream: _repository.getUnreadCountStream(),
-            builder: (context, snapshot) {
-              final int unreadCount = snapshot.data ?? 0;
-              final String badgeText = unreadCount > 9 ? "9+" : "$unreadCount";
-
-              return PopupMenuButton<String>(
-                offset: const Offset(0, 50),
-                color: const Color(0xffFFFDF4),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                
-                // The Trigger Icon (Profile Pic)
-                child: Container(
-                  height: 44,
-                  width: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4)),
-                    ],
-                  ),
-                  child: Stack( // Stack for the badge on the profile pic itself (optional, but looks nice)
-                    clipBehavior: Clip.none,
-                    children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: Colors.grey.shade200,
-                        backgroundImage: (_profileImageUrl != null && _profileImageUrl!.isNotEmpty)
-                            ? NetworkImage(_profileImageUrl!) 
-                            : null,
-                        child: (_profileImageUrl == null || _profileImageUrl!.isEmpty)
-                            ? const Icon(Icons.person, color: Colors.grey)
-                            : null,
-                      ),
-                      // Optional: Small red dot on avatar if unread
-                      if (unreadCount > 0)
-                        Positioned(
-                          top: -2, right: -2,
-                          child: Container(
-                            width: 12, height: 12,
-                            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                          ),
-                        )
-                    ],
-                  ),
-                ),
-
-                // Menu Actions
-                onSelected: (value) {
-                  if (value == 'notifications') {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationScreen()));
-                  } else if (value == 'logout') {
-                     FirebaseAuth.instance.signOut();
-                  }
-                },
-
-                itemBuilder: (BuildContext context) {
-                  return [
-                     const PopupMenuItem<String>(
-                      enabled: false,
-                      child: Text("My Account", style: TextStyle(fontFamily: "Marcellus", fontWeight: FontWeight.bold, color: Color(0xff4D5420))),
-                    ),
-                    const PopupMenuDivider(),
-                    
-                    // ⭐ NOTIFICATION CENTRE ITEM
-                    PopupMenuItem<String>(
-                      value: 'notifications',
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.notifications_outlined, color: Color(0xFF7A6A55), size: 20),
-                              SizedBox(width: 10),
-                              Text("Notification Centre", style: TextStyle(fontFamily: "Marcellus")),
-                            ],
-                          ),
-                          // ⭐ THE BADGE
-                          if (unreadCount > 0)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                badgeText,
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                            )
-                        ],
-                      ),
-                    ),
-                    
-                    const PopupMenuItem<String>(
-                      value: 'logout',
-                      child: Row(
-                        children: [
-                          Icon(Icons.logout, color: Colors.red, size: 20),
-                          SizedBox(width: 10),
-                          Text("Sign Out", style: TextStyle(fontFamily: "Marcellus")),
-                        ],
-                      ),
-                    ),
-                  ];
-                },
-              );
-            },
+          // ✅ REPLACED PROFILE ICON WITH YOUR AccountMenuButton
+          AccountMenuButton(
+            profileImageUrl: _profileImageUrl,
+            onSignOut: _handleSignOut,
           ),
         ],
       ),
@@ -573,7 +477,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : const Color(0xFF7A6A55),
+            color: isSelected ? Colors.white : const Color(0xFF714611),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -724,7 +628,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
               ElevatedButton(
                 onPressed: _isPosting ? null : _handlePost,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff714611),
+                  backgroundColor: const Color(0xFF714611),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),

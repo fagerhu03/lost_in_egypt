@@ -84,28 +84,27 @@ class AccountMenuButton extends StatelessWidget {
           ),
 
           onSelected: (value) {
-            if (value == 'notifications') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NotificationScreen()),
-              );
-            } else if (value == 'logout') {
-              onSignOut();
-            }
-            if (value == 'account') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AccountScreen()),
-              );
-            } else if (value == 'notifications') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NotificationScreen()),
-              );
-            } else if (value == 'logout') {
-              onSignOut();
+            switch (value) {
+              case 'account':
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AccountScreen()),
+                );
+                break;
+
+              case 'notifications':
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                );
+                break;
+
+              case 'logout':
+                onSignOut();
+                break;
             }
           },
+
 
           itemBuilder: (BuildContext context) {
             return [
