@@ -1,3 +1,10 @@
+// =========================
+// 1) map_item_models.dart (EDITED - COPY/PASTE)
+// NOTE: Only change made here:
+// - Added MapItemFactory at the bottom (Section 5)
+// - Nothing else touched
+// =========================
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../map/domain/place_importance.dart';
 
@@ -17,7 +24,7 @@ abstract class MapItem {
   String get weather;
   String get description;
   List<String> get tags;
-  
+
   // Added for Map Logic
   PlaceImportance get importance;
 }
@@ -37,9 +44,9 @@ class CategoryModel {
   });
 
   Map<String, dynamic> toMap() => {
-        'title': title,
-        'iconPath': iconPath,
-      };
+    'title': title,
+    'iconPath': iconPath,
+  };
 
   factory CategoryModel.fromMap(Map<String, dynamic> map, String docId) {
     return CategoryModel(
@@ -117,13 +124,17 @@ class PlaceModel implements MapItem {
     };
   }
 
-  factory PlaceModel.fromMap(Map<String, dynamic> map, String docId, {PlaceImportance? importance}) {
+  factory PlaceModel.fromMap(
+      Map<String, dynamic> map,
+      String docId, {
+        PlaceImportance? importance,
+      }) {
     return PlaceModel(
       id: docId,
       title: map['title'] ?? '',
       category: map['category'] ?? '',
-      coordinate: map['coordinate'] is GeoPoint 
-          ? map['coordinate'] 
+      coordinate: map['coordinate'] is GeoPoint
+          ? map['coordinate']
           : const GeoPoint(30.0444, 31.2357),
       imagePath: map['imagePath'] ?? '',
       locationAddress: map['locationAddress'] ?? '',
@@ -133,9 +144,7 @@ class PlaceModel implements MapItem {
       weather: map['weather'] ?? '',
       description: map['description'] ?? '',
       isOpenNow: map['isOpenNow'] ?? false,
-      tags: (map['tags'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
+      tags: (map['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           const [],
       importance: importance ?? PlaceImportance.minor,
     );
@@ -189,7 +198,7 @@ class EventModel implements MapItem {
     required this.description,
     required this.date,
     this.tags = const [],
-    this.importance = PlaceImportance.major, // Events usually important
+    this.importance = PlaceImportance.major,
   });
 
   Map<String, dynamic> toMap() {
@@ -213,8 +222,8 @@ class EventModel implements MapItem {
     return EventModel(
       id: docId,
       title: map['title'] ?? '',
-      coordinate: map['coordinate'] is GeoPoint 
-          ? map['coordinate'] 
+      coordinate: map['coordinate'] is GeoPoint
+          ? map['coordinate']
           : const GeoPoint(30.0444, 31.2357),
       imagePath: map['imagePath'] ?? '',
       locationAddress: map['locationAddress'] ?? '',
@@ -224,11 +233,24 @@ class EventModel implements MapItem {
       weather: map['weather'] ?? '',
       description: map['description'] ?? '',
       date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      tags: (map['tags'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
+      tags: (map['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           const [],
       importance: PlaceImportance.major,
     );
+  }
+}
+
+// ==========================================================
+// 5. MAP ITEM FACTORY (NEW)
+// ==========================================================
+class MapItemFactory {
+  const MapItemFactory._();
+
+  static MapItem fromFirestoreDoc(Map<String, dynamic> data, String docId) {
+    final bool isEvent = data['isEvent'] == true || data['date'] != null;
+    if (isEvent) {
+      return EventModel.fromMap(data, docId);
+    }
+    return PlaceModel.fromMap(data, docId);
   }
 }

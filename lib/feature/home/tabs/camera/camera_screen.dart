@@ -5,10 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'landmark_service.dart';
 
-// ✅ Models & Service
+// ✅ Correct relative path based on your existing structure
 import '../home/data/models/map_item_models.dart';
-// ⚠️ IMPORTANT: Ensure this import matches exactly what is in home_wrapper.dart
-// Check your pubspec.yaml name. If it is 'lost_in_egypt', keep this:
+
 import 'package:lost_in_egypt/feature/home/tabs/map/services/map_focus_service.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -39,7 +38,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     super.dispose();
   }
 
-  // --- CAMERA SETUP ---
   Future<void> _initCamera() async {
     try {
       _cameras = await availableCameras();
@@ -52,21 +50,28 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   }
 
   Future<void> _onNewCameraSelected(CameraDescription cameraDescription) async {
-    final previousCameraController = _controller;
-    final newController = CameraController(
+    final previous = _controller;
+
+    final controller = CameraController(
       cameraDescription,
       ResolutionPreset.high,
       enableAudio: false,
-      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.jpeg : ImageFormatGroup.bgra8888,
+      imageFormatGroup:
+      Platform.isAndroid ? ImageFormatGroup.jpeg : ImageFormatGroup.bgra8888,
     );
-    await previousCameraController?.dispose();
-    if (mounted) setState(() => _controller = newController);
+
+    await previous?.dispose();
+
+    if (mounted) setState(() => _controller = controller);
+
     try {
-      await newController.initialize();
+      await controller.initialize();
     } catch (e) {
       debugPrint("Error initializing camera: $e");
     }
-    if (mounted) setState(() => _isCameraInitialized = _controller!.value.isInitialized);
+
+    if (!mounted) return;
+    setState(() => _isCameraInitialized = _controller!.value.isInitialized);
   }
 
   void _flipCamera() {
@@ -75,21 +80,23 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     _onNewCameraSelected(_cameras[_selectedCameraIndex]);
   }
 
-  // --- CAPTURE & ANALYZE ---
   Future<void> _captureAndAnalyze() async {
     if (_controller == null || !_controller!.value.isInitialized || _isAnalyzing) return;
+
     try {
       setState(() => _isAnalyzing = true);
+
       final XFile imageFile = await _controller!.takePicture();
-      
-      String? landmarkName = await LandmarkService.identifyLandmark(File(imageFile.path));
-      if (landmarkName != null) {
-        // ⭐ Fetch data but STAY here to show sheet
-        await _fetchPlaceAndShowSheet(landmarkName);
-      } else {
+      final String? landmarkName =
+      await LandmarkService.identifyLandmark(File(imageFile.path));
+
+      if (landmarkName == null) {
         _showErrorDialog("Could not identify any landmark.");
         setState(() => _isAnalyzing = false);
+        return;
       }
+
+      await _fetchPlaceAndShowSheet(landmarkName);
     } catch (e) {
       _showErrorDialog("Could not analyze image.");
       setState(() => _isAnalyzing = false);
@@ -97,21 +104,24 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   }
 
   Future<void> _pickFromGallery() async {
-    final ImagePicker picker = ImagePicker();
+    final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() => _isAnalyzing = true);
-      String? landmarkName = await LandmarkService.identifyLandmark(File(image.path));
-      if (landmarkName != null) {
-        await _fetchPlaceAndShowSheet(landmarkName);
-      } else {
-        _showErrorDialog("Could not identify any landmark.");
-        setState(() => _isAnalyzing = false);
-      }
+    if (image == null) return;
+
+    setState(() => _isAnalyzing = true);
+
+    final String? landmarkName =
+    await LandmarkService.identifyLandmark(File(image.path));
+
+    if (landmarkName == null) {
+      _showErrorDialog("Could not identify any landmark.");
+      setState(() => _isAnalyzing = false);
+      return;
     }
+
+    await _fetchPlaceAndShowSheet(landmarkName);
   }
 
-  // --- DATABASE & SHEET LOGIC ---
   Future<void> _fetchPlaceAndShowSheet(String placeName) async {
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -122,26 +132,25 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
       if (!mounted) return;
 
-      if (snapshot.docs.isNotEmpty) {
-        final doc = snapshot.docs.first;
-        final PlaceModel identifiedPlace = PlaceModel.fromMap(doc.data(), doc.id);
-        
-        setState(() => _isAnalyzing = false);
-
-        // ⭐ SHOW SHEET HERE (Do not switch tabs yet)
-        _showResultSheet(identifiedPlace);
-
-      } else {
+      if (snapshot.docs.isEmpty) {
         _showNoMatchDialog(placeName);
         setState(() => _isAnalyzing = false);
+        return;
       }
+
+      final doc = snapshot.docs.first;
+
+      // ✅ FIX: PlaceModel has fromMap (MapItem does NOT)
+      final PlaceModel identifiedPlace = PlaceModel.fromMap(doc.data(), doc.id);
+
+      setState(() => _isAnalyzing = false);
+      _showResultSheet(identifiedPlace);
     } catch (e) {
       _showErrorDialog("Database error: $e");
       setState(() => _isAnalyzing = false);
     }
   }
 
-  // --- ⭐ THE RESULT SHEET ---
   void _showResultSheet(PlaceModel place) {
     showModalBottomSheet(
       context: context,
@@ -157,7 +166,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header Image
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
                 child: SizedBox(
@@ -165,11 +173,11 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                   child: Image.network(
                     place.imagePath,
                     fit: BoxFit.cover,
-                    errorBuilder: (c,e,s) => Container(color: Colors.grey[300], child: const Icon(Icons.broken_image)),
+                    errorBuilder: (c, e, s) =>
+                        Container(color: Colors.grey[300], child: const Icon(Icons.broken_image)),
                   ),
                 ),
               ),
-              
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
@@ -194,34 +202,26 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                         ),
                       ],
                     ),
-                    
                     const SizedBox(height: 10),
-                    
                     Text(
                       place.description,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: Colors.grey[600]),
                     ),
-
                     const SizedBox(height: 30),
-                    
-                    // --- BUTTONS ---
                     Row(
                       children: [
-                        // ⭐ "SHOW ON MAP" BUTTON
-                        // Triggers the Service
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () {
-                              Navigator.pop(ctx); // Close Sheet
-                              
-                              // Trigger Tab Switch
-                              print("📸 CAMERA: User clicked Map. Triggering service...");
+                              Navigator.pop(ctx);
+                              // ✅ Works because PlaceModel implements MapItem
                               MapFocusService.instance.triggerFocus(place);
                             },
                             icon: const Icon(Icons.map_outlined, color: Color(0xFF4D5420)),
-                            label: const Text("Show on Map", style: TextStyle(color: Color(0xFF4D5420))),
+                            label: const Text("Show on Map",
+                                style: TextStyle(color: Color(0xFF4D5420))),
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               side: const BorderSide(color: Color(0xFF4D5420)),
@@ -229,12 +229,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                             ),
                           ),
                         ),
-                        
                         const SizedBox(width: 12),
-
-                        // Close Button
                         Expanded(
-                          flex: 1,
                           child: ElevatedButton(
                             onPressed: () => Navigator.pop(ctx),
                             style: ElevatedButton.styleFrom(
@@ -257,12 +253,12 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     );
   }
 
-  // --- UI WIDGETS ---
   @override
   Widget build(BuildContext context) {
     if (!_isCameraInitialized || _controller == null) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFFE6A44A)));
     }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -282,11 +278,12 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                     children: [
                       IconButton(
                         icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                        onPressed: () {
-                             MapFocusService.instance.tabSwitchNotifier.value = 0; // Go Home
-                        },
+                        onPressed: () => MapFocusService.instance.switchToTab(0),
                       ),
-                      const Text("Lens", style: TextStyle(fontFamily: "Marcellus", color: Colors.white, fontSize: 20)),
+                      const Text(
+                        "Lens",
+                        style: TextStyle(fontFamily: "Marcellus", color: Colors.white, fontSize: 20),
+                      ),
                       IconButton(
                         icon: const Icon(Icons.flip_camera_ios, color: Colors.white, size: 28),
                         onPressed: _flipCamera,
@@ -302,18 +299,37 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                     children: [
                       GestureDetector(
                         onTap: _pickFromGallery,
-                        child: Container(width: 50, height: 50, decoration: BoxDecoration(color: const Color(0xFFFFFDF4).withOpacity(0.9), shape: BoxShape.circle), child: const Icon(Icons.photo_library_outlined, color: Color(0xFF4A3D2E))),
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFDF4).withOpacity(0.9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.photo_library_outlined, color: Color(0xFF4A3D2E)),
+                        ),
                       ),
                       GestureDetector(
                         onTap: _captureAndAnalyze,
                         child: Container(
-                          width: 80, height: 80,
-                          decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 4)),
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                          ),
                           padding: const EdgeInsets.all(4),
                           child: Container(
                             decoration: const BoxDecoration(color: Color(0xFFFFFDF4), shape: BoxShape.circle),
                             child: _isAnalyzing
-                                ? const Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(color: Color(0xFF4A3D2E), strokeWidth: 3))
+                                ? const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF4A3D2E),
+                                strokeWidth: 3,
+                              ),
+                            )
                                 : const Icon(Icons.search, size: 36, color: Color(0xFF4A3D2E)),
                           ),
                         ),
@@ -332,9 +348,24 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   }
 
   void _showNoMatchDialog(String label) {
-    showDialog(context: context, builder: (ctx) => AlertDialog(title: const Text("Found something..."), content: Text("We identified '$label', but currently don't have a guide for it in our database."), actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))]));
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Found something..."),
+        content: Text("We identified '$label', but currently don't have a guide for it in our database."),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))],
+      ),
+    );
   }
+
   void _showErrorDialog(String msg) {
-    showDialog(context: context, builder: (ctx) => AlertDialog(title: const Text("Error"), content: Text(msg), actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))]));
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(msg),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))],
+      ),
+    );
   }
 }
