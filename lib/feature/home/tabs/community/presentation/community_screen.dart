@@ -566,9 +566,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF7A6A55) : Colors.transparent,
+          color: isSelected ? const Color(0xFF714611) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFF7A6A55)),
+          border: Border.all(color: const Color(0xFF714611)),
         ),
         child: Text(
           label,
@@ -724,7 +724,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
               ElevatedButton(
                 onPressed: _isPosting ? null : _handlePost,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE6A44A),
+                  backgroundColor: const Color(0xff714611),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
