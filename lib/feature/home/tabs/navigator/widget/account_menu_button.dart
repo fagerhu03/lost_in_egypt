@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../account/account_screen.dart';
 import '../../community/data/repositories/firebase_community_repository.dart';
 import '../../../notification/notification_screen.dart';
 
@@ -91,19 +92,42 @@ class AccountMenuButton extends StatelessWidget {
             } else if (value == 'logout') {
               onSignOut();
             }
+            if (value == 'account') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AccountScreen()),
+              );
+            } else if (value == 'notifications') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationScreen()),
+              );
+            } else if (value == 'logout') {
+              onSignOut();
+            }
           },
 
           itemBuilder: (BuildContext context) {
             return [
               const PopupMenuItem<String>(
-                enabled: false,
-                child: Text(
-                  "My Account",
-                  style: TextStyle(
-                    fontFamily: "Marcellus",
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xff4D5420),
-                  ),
+                value: 'account',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      color: Color(0xFF7A6A55),
+                      size: 20,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "My Account",
+                      style: TextStyle(
+                        fontFamily: "Marcellus",
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xff4D5420),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const PopupMenuDivider(),
