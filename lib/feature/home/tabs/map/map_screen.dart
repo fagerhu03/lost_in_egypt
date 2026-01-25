@@ -36,7 +36,7 @@ class _MapScreenState extends State<MapScreen> {
   String _selectedUiCategoryId = 'all';
 
   List<MapItem> _allItems = [];
-  List<MapItem> _allItemsCache = []; // Cache for all items
+  List<MapItem> _allItemsCache = [];
   double _currentZoom = 10.0;
 
   MapItem? _selectedPlace;
@@ -59,22 +59,23 @@ class _MapScreenState extends State<MapScreen> {
     'government',
   };
 
-  // Category mapping: data category -> pin file name (without extension)
+  // Category mapping: data category -> pin file name
+  // Each category now has its own pin!
   static const Map<String, String> _categoryToPinMap = {
     'tourism': 'tourism',
-    'historical': 'tourism',
-    'museum': 'tourism',
+    'historical': 'historical',
+    'museum': 'museum',
     'hotel': 'hotels',
     'food': 'resturants',
     'nature': 'nature',
     'entertainment': 'entertainment',
     'shopping': 'shopping',
     'transport': 'transport',
-    'religious': 'default',
+    'religious': 'religious',
     'education': 'default',
   };
 
-  // Marker size
+  // Marker size - adjust if needed
   static const int _markerSize = 120;
 
   static const CameraPosition _initialPosition = CameraPosition(
@@ -83,7 +84,7 @@ class _MapScreenState extends State<MapScreen> {
   );
 
   // ═══════════════════════════════════════════════════════════
-  // 📂 CATEGORIES - Matching your data exactly
+  // 📂 CATEGORIES
   // ═══════════════════════════════════════════════════════════
 
   static const List<_UiCategory> _categories = [
@@ -132,16 +133,20 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // 🎨 CUSTOM PNG MARKER LOADING METHODS
+  // 🎨 CUSTOM PNG MARKER LOADING - ALL YOUR PINS
   // ═══════════════════════════════════════════════════════════
 
   Future<void> _loadCustomMarkerIcons() async {
     try {
+      // All your pin files
       final pinNames = [
         'default',
         'entertainment',
+        'historical',
         'hotels',
+        'museum',
         'nature',
+        'religious',
         'resturants',
         'shopping',
         'tourism',
@@ -230,14 +235,13 @@ class _MapScreenState extends State<MapScreen> {
 
     List<MapItem> filteredItems;
 
-    // Check if specific category is selected
     if (_selectedUiCategoryId == 'all') {
       // "All" selected → Apply zoom-based importance filtering
       filteredItems = MarkerFilterService.filterByZoom(_allItems, _currentZoom);
       debugPrint(
           '🔍 Filter: ALL with zoom filtering (zoom: ${_currentZoom.toStringAsFixed(1)})');
     } else {
-      // Specific category selected → NO zoom filtering, show ALL in category
+      // Specific category selected → NO zoom filtering
       filteredItems = List.from(_allItems);
       debugPrint(
           '🔍 Filter: Category "$_selectedUiCategoryId" - NO zoom filtering');
@@ -398,7 +402,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // 📦 FIXED DATA LOADING METHODS - Load all, filter locally
+  // 📦 DATA LOADING METHODS
   // ═══════════════════════════════════════════════════════════
 
   Future<void> _loadAllItemsIfNeeded() async {
@@ -430,17 +434,14 @@ class _MapScreenState extends State<MapScreen> {
       _selectedUiCategoryId = uiCategoryId;
     });
 
-    // Always load all items first (cached after first load)
     await _loadAllItemsIfNeeded();
 
     List<MapItem> items;
 
     if (uiCategoryId == 'all') {
-      // Show all items (excluding sports, health, government)
       items = _allItemsCache.where(_shouldShowItem).toList();
       debugPrint('📦 Showing ALL categories: ${items.length} items');
     } else {
-      // Filter locally by exact category match
       items = _allItemsCache.where((item) {
         final itemCategory = item.category.toLowerCase().trim();
         final filterCategory = uiCategoryId.toLowerCase().trim();
@@ -561,7 +562,6 @@ class _MapScreenState extends State<MapScreen> {
                       final category = _categories[index];
                       final isSelected = category.id == _selectedUiCategoryId;
 
-                      // Get count for this category from cache
                       final count = category.id == 'all'
                           ? _allItemsCache.where(_shouldShowItem).length
                           : _allItemsCache
