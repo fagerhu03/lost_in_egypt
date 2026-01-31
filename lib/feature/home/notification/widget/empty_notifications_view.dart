@@ -5,7 +5,6 @@ class EmptyNotificationsView extends StatelessWidget {
 
   const EmptyNotificationsView({super.key, required this.onTapSettings});
 
-  static const Color _text = Color(0xFF7C6A4D);
   static const Color _chip = Color(0xFF4D5420);
 
   @override
@@ -21,7 +20,11 @@ class EmptyNotificationsView extends StatelessWidget {
               color: _chip.withOpacity(0.10),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(Icons.mail_outline, color: _chip.withOpacity(0.85), size: 34),
+            child: Icon(
+              Icons.mail_outline,
+              color: _chip.withOpacity(0.85),
+              size: 34,
+            ),
           ),
           const SizedBox(height: 12),
           const Text(

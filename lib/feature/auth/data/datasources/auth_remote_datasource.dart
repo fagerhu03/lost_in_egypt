@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import '../models/user.dart'; // Verify this path matches your project
+import '../models/user.dart'; // ✅ Make sure this imports the NEW UserModel
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> signUp({
@@ -11,17 +11,17 @@ abstract class AuthRemoteDataSource {
     required String email,
     required String password,
     required String birthMonth,
-    required String birthDay,   
-    required String birthYear,  
+    required String birthDay,
+    required String birthYear,
     String? phoneNumber,
   });
 
   Future<UserModel> login({required String email, required String password});
-  
+
   Future<void> forgetPassword({required String email});
 
   Future<UserModel?> signInWithGoogle();
-  
+
   Future<UserModel?> signInWithFacebook();
 
   Future<UserModel?> signInWithApple();
@@ -31,7 +31,12 @@ abstract class AuthRemoteDataSource {
     required String birthDay,
     required String birthYear,
   });
+
   Future<bool> checkEmailExists(String email);
+
+  // ✅ NEW METHODS (Must return UserModel, NOT Either)
+  Future<UserModel> getUserProfile(String uid);
+  Future<void> updateUserProfile(UserModel user);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -55,10 +60,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String birthYear,
     String? phoneNumber,
   }) async {
-    final UserCredential result = await firebaseAuth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    final UserCredential result = await firebaseAuth
+        .createUserWithEmailAndPassword(email: email, password: password);
     final User user = result.user!;
 
     int monthIndex = _getMonthIndex(birthMonth);
@@ -72,24 +75,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       firstName: firstName,
       lastName: lastName,
       birthDate: parsedBirthDate,
-      role: "tourist",
+      role: "tourist", // or UserRole.tourist.name if using Enum
       profileImageUrl: "",
       phoneNumber: phoneNumber ?? "",
-      language: "en",
-      preferences: {},
+      nationality: "",
+      language: "English",
+      isNotificationsEnabled: true,
+      isDarkMode: false,
+      createdAt: DateTime.now(),
     );
 
-    await firestore.collection('users').doc(user.uid).set(newUser.toDocument());
+    // ✅ FIX: Use toMap(), not toDocument()
+    await firestore.collection('users').doc(user.uid).set(newUser.toMap());
     return newUser;
   }
 
   @override
-  Future<UserModel> login({required String email, required String password}) async {
+  Future<UserModel> login({
+    required String email,
+    required String password,
+  }) async {
     final UserCredential result = await firebaseAuth.signInWithEmailAndPassword(
-      email: email, 
-      password: password
+      email: email,
+      password: password,
     );
-    
+
     final DocumentSnapshot doc = await firestore
         .collection('users')
         .doc(result.user!.uid)
@@ -101,7 +111,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         message: 'User authenticated but profile data is missing.',
       );
     }
-    return UserModel.fromSnapshot(doc);
+    // ✅ FIX: Use fromMap()
+    return UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
   }
 
   @override
@@ -112,20 +123,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel?> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-    if (googleUser == null) return null; 
+    if (googleUser == null) return null;
 
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
     final OAuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
-    final UserCredential userCredential = await firebaseAuth.signInWithCredential(credential);
-    
-    // FIX: Pass the Google Photo URL to the check function
+    final UserCredential userCredential = await firebaseAuth
+        .signInWithCredential(credential);
+
     return _checkUserInFirestore(
-      userCredential.user!.uid, 
-      newPhotoUrl: userCredential.user?.photoURL
+      userCredential.user!.uid,
+      newPhotoUrl: userCredential.user?.photoURL,
     );
   }
 
@@ -135,13 +147,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     if (result.status == LoginStatus.success) {
       final AccessToken accessToken = result.accessToken!;
-      final OAuthCredential credential = FacebookAuthProvider.credential(accessToken.tokenString);
-      final UserCredential userCredential = await firebaseAuth.signInWithCredential(credential);
-      
-      // FIX: Pass Facebook Photo URL (if available)
+      final OAuthCredential credential = FacebookAuthProvider.credential(
+        accessToken.tokenString,
+      );
+      final UserCredential userCredential = await firebaseAuth
+          .signInWithCredential(credential);
+
       return _checkUserInFirestore(
         userCredential.user!.uid,
-        newPhotoUrl: userCredential.user?.photoURL
+        newPhotoUrl: userCredential.user?.photoURL,
       );
     } else if (result.status == LoginStatus.cancelled) {
       return null;
@@ -153,51 +167,58 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  // --- MOCK APPLE IMPLEMENTATION ---
   @override
   Future<UserModel?> signInWithApple() async {
     const mockEmail = "apple.demo@lostinegypt.com";
     const mockPassword = "AppleDemoPassword123!";
-    
+
     UserCredential userCredential;
     try {
       userCredential = await firebaseAuth.signInWithEmailAndPassword(
-        email: mockEmail, 
-        password: mockPassword
+        email: mockEmail,
+        password: mockPassword,
       );
     } on FirebaseAuthException catch (_) {
       userCredential = await firebaseAuth.createUserWithEmailAndPassword(
-        email: mockEmail, 
-        password: mockPassword
+        email: mockEmail,
+        password: mockPassword,
       );
     }
 
     return _checkUserInFirestore(userCredential.user!.uid);
   }
 
-  // Helper
-  Future<UserModel?> _checkUserInFirestore(String uid, {String? newPhotoUrl}) async {
+  Future<UserModel?> _checkUserInFirestore(
+    String uid, {
+    String? newPhotoUrl,
+  }) async {
     final DocumentReference docRef = firestore.collection('users').doc(uid);
     final DocumentSnapshot doc = await docRef.get();
 
     if (doc.exists) {
-      // 1. If we have a new photo (e.g. from Google) and it's different, UPDATE IT.
+      Map<String, dynamic> updateData = {'emailVerified': true};
+
       if (newPhotoUrl != null && newPhotoUrl.isNotEmpty) {
         final currentData = doc.data() as Map<String, dynamic>;
         final currentPhoto = currentData['profileImageUrl'] as String?;
 
-        // If current photo is empty OR different from new one -> Update DB
-        if (currentPhoto == null || currentPhoto.isEmpty || currentPhoto != newPhotoUrl) {
-          await docRef.update({'profileImageUrl': newPhotoUrl});
-          
-          // Fetch fresh data after update
-          final updatedDoc = await docRef.get();
-          return UserModel.fromSnapshot(updatedDoc);
+        if (currentPhoto == null ||
+            currentPhoto.isEmpty ||
+            currentPhoto != newPhotoUrl) {
+          updateData['profileImageUrl'] = newPhotoUrl;
         }
       }
-      return UserModel.fromSnapshot(doc);
+
+      // ✅ Always verify email for social logins (Google, Facebook, Apple)
+      await docRef.update(updateData);
+      final updatedDoc = await docRef.get();
+      // ✅ FIX: fromMap
+      return UserModel.fromMap(
+        updatedDoc.data() as Map<String, dynamic>,
+        updatedDoc.id,
+      );
     } else {
-      return null; 
+      return null;
     }
   }
 
@@ -215,7 +236,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     int year = int.parse(birthYear);
     DateTime parsedBirthDate = DateTime(year, monthIndex, day);
 
-    String firstName = "Apple"; 
+    String firstName = "Apple";
     String lastName = "User";
 
     if (user.displayName != null && user.displayName!.isNotEmpty) {
@@ -223,8 +244,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       firstName = names.first;
       if (names.length > 1) lastName = names.sublist(1).join(" ");
     } else if (user.email == "apple.demo@lostinegypt.com") {
-        firstName = "Apple";
-        lastName = "Demo";
+      firstName = "Apple";
+      lastName = "Demo";
     }
 
     final newUser = UserModel(
@@ -236,31 +257,81 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       role: "tourist",
       profileImageUrl: user.photoURL ?? "",
       phoneNumber: "",
-      language: "en",
-      preferences: {},
+      nationality: "",
+      language: "English",
+      isNotificationsEnabled: true,
+      isDarkMode: false,
+      createdAt: DateTime.now(),
     );
 
-    await firestore.collection('users').doc(user.uid).set(newUser.toDocument());
+    // ✅ FIX: toMap
+    await firestore.collection('users').doc(user.uid).set(newUser.toMap());
+  }
+
+  // ✅ NEW: Correct Get Profile Implementation
+  @override
+  Future<UserModel> getUserProfile(String uid) async {
+    final doc = await firestore.collection('users').doc(uid).get();
+
+    if (doc.exists) {
+      return UserModel.fromMap(doc.data()!, doc.id);
+    } else {
+      // Create default shell if missing
+      final currentUser = firebaseAuth.currentUser;
+      return UserModel(
+        id: uid,
+        email: currentUser?.email ?? '',
+        firstName: currentUser?.displayName?.split(' ').first ?? 'User',
+        lastName: '',
+        birthDate: DateTime.now(),
+        role: 'tourist',
+        profileImageUrl: currentUser?.photoURL ?? '',
+        phoneNumber: '',
+        nationality: '',
+        isNotificationsEnabled: true,
+        isDarkMode: false,
+        language: 'English',
+        createdAt: DateTime.now(),
+      );
+    }
+  }
+
+  // ✅ NEW: Correct Update Profile Implementation
+  @override
+  Future<void> updateUserProfile(UserModel user) async {
+    // ✅ FIX: toMap with merge
+    await firestore
+        .collection('users')
+        .doc(user.id)
+        .set(user.toMap(), SetOptions(merge: true));
   }
 
   int _getMonthIndex(String monthName) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     int index = months.indexOf(monthName);
     return index == -1 ? 1 : index + 1;
   }
+
   @override
   Future<bool> checkEmailExists(String email) async {
     try {
-      // NEW STRATEGY: Query Firestore 'users' collection
       final QuerySnapshot result = await firestore
           .collection('users')
           .where('email', isEqualTo: email)
           .get();
-
-      // If we found any documents, the email exists
       return result.docs.isNotEmpty;
     } catch (e) {
       return false;

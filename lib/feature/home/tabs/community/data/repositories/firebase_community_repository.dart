@@ -18,7 +18,11 @@ class FirebaseCommunityRepository {
   final CollectionReference _notificationsRef = FirebaseFirestore.instance
       .collection('notifications');
 
-  // 1. GET POSTS
+  // ✅ NEW: Track pagination cursor
+  DocumentSnapshot? _lastDocument;
+  static const int _pageSize = 20; // Load 20 posts per page
+
+  // 1. GET POSTS - ✅ WITH PAGINATION
   Stream<List<CommunityPost>> getPostsStream({String sortBy = 'newest'}) {
     Query query = _postsRef;
     if (sortBy == 'popular') {
@@ -28,11 +32,45 @@ class FirebaseCommunityRepository {
     } else {
       query = query.orderBy('timestamp', descending: true);
     }
-    return query.snapshots().map((snapshot) {
+
+    // ✅ ADD LIMIT: Load only 20 posts initially
+    return query.limit(_pageSize).snapshots().map((snapshot) {
       return snapshot.docs
           .map((doc) => CommunityPostModel.fromSnapshot(doc))
           .toList();
     });
+  }
+
+  // ✅ NEW: Load more posts (pagination)
+  Future<List<CommunityPost>> loadMorePosts({String sortBy = 'newest'}) async {
+    if (_lastDocument == null) return [];
+
+    Query query = _postsRef;
+    if (sortBy == 'popular') {
+      query = query.orderBy('likesCount', descending: true);
+    } else if (sortBy == 'most_discussed') {
+      query = query.orderBy('commentsCount', descending: true);
+    } else {
+      query = query.orderBy('timestamp', descending: true);
+    }
+
+    final snapshot = await query
+        .startAfterDocument(_lastDocument!)
+        .limit(_pageSize)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      _lastDocument = snapshot.docs.last;
+    }
+
+    return snapshot.docs
+        .map((doc) => CommunityPostModel.fromSnapshot(doc))
+        .toList();
+  }
+
+  // ✅ NEW: Reset pagination cursor
+  void resetPagination() {
+    _lastDocument = null;
   }
 
   // 2. GET PLACES (For tagging locations)
@@ -77,7 +115,7 @@ class FirebaseCommunityRepository {
     await _postsRef.add({
       'userId': user.uid,
       'userName': userDetails['name'],
-      'userFlag': '🇪🇬',
+      'userFlag': userDetails['flag'] ?? '🇪🇬',
       'userAvatar': userDetails['avatar'],
       'content': content,
       'images': imageUrls,
@@ -135,6 +173,7 @@ class FirebaseCommunityRepository {
     final user = FirebaseAuth.instance.currentUser;
     String name = "Traveler";
     String avatar = "";
+    String flag = '🇪🇬';
     if (user != null) {
       final userDoc = await _usersRef.doc(user.uid).get();
       if (userDoc.exists) {
@@ -143,9 +182,97 @@ class FirebaseCommunityRepository {
         String last = data['lastName'] ?? "";
         if (first.isNotEmpty || last.isNotEmpty) name = "$first $last".trim();
         avatar = data['profileImageUrl'] ?? "";
+        // Attempt to derive flag from stored nationality (ISO code preferred)
+        final nat = (data['nationality'] ?? '').toString();
+        if (nat.length == 2) {
+          flag = _countryCodeToEmoji(nat);
+        } else if (nat.isNotEmpty) {
+          // common mapping fallback (extended)
+          final lower = nat.toLowerCase();
+          if (lower.contains('egypt'))
+            flag = '🇪🇬';
+          else if (lower.contains('algeria') || lower.contains('algerian'))
+            flag = '🇩🇿';
+          else if (lower.contains('morocco') || lower.contains('moroccan'))
+            flag = '🇲🇦';
+          else if (lower.contains('tunisia') || lower.contains('tunisian'))
+            flag = '🇹🇳';
+          else if (lower.contains('libya') || lower.contains('libyan'))
+            flag = '🇱🇾';
+          else if (lower.contains('sudan') || lower.contains('sudanese'))
+            flag = '🇸🇩';
+          else if (lower.contains('united states') ||
+              lower.contains('usa') ||
+              lower.contains('us'))
+            flag = '🇺🇸';
+          else if (lower.contains('united kingdom') ||
+              lower.contains('uk') ||
+              lower.contains('britain'))
+            flag = '🇬🇧';
+          else if (lower.contains('saudi'))
+            flag = '🇸🇦';
+          else if (lower.contains('france') || lower.contains('french'))
+            flag = '🇫🇷';
+          else if (lower.contains('germany') || lower.contains('german'))
+            flag = '🇩🇪';
+          else if (lower.contains('canada') || lower.contains('canadian'))
+            flag = '🇨🇦';
+          // else leave default
+        }
       }
     }
-    return {'name': name, 'avatar': avatar};
+    return {'name': name, 'avatar': avatar, 'flag': flag};
+  }
+
+  // Convert ISO country code (2 letters) to regional indicator emoji flag
+  String _countryCodeToEmoji(String code) {
+    final upper = code.toUpperCase();
+    if (upper.length != 2) return '🏳️';
+    final int first = upper.codeUnitAt(0) - 0x41 + 0x1F1E6;
+    final int second = upper.codeUnitAt(1) - 0x41 + 0x1F1E6;
+    return String.fromCharCodes([first, second]);
+  }
+
+  /// Refreshes user posts to ensure their `userFlag` matches current profile
+  Future<void> refreshUserPostsFlag(String uid) async {
+    if (uid.isEmpty) return;
+    final userDoc = await _usersRef.doc(uid).get();
+    if (!userDoc.exists) return;
+    final data = userDoc.data() as Map<String, dynamic>;
+    String flag = '🇪🇬';
+    final nat = (data['nationality'] ?? '').toString();
+    if (nat.length == 2)
+      flag = _countryCodeToEmoji(nat);
+    else if (nat.isNotEmpty) {
+      final lower = nat.toLowerCase();
+      if (lower.contains('alger'))
+        flag = '🇩🇿';
+      else if (lower.contains('egypt'))
+        flag = '🇪🇬';
+      else if (lower.contains('morocco'))
+        flag = '🇲🇦';
+      else if (lower.contains('tunisia'))
+        flag = '🇹🇳';
+      else if (lower.contains('libya'))
+        flag = '🇱🇾';
+      else if (lower.contains('sudan'))
+        flag = '🇸🇩';
+      else if (lower.contains('france'))
+        flag = '🇫🇷';
+      else if (lower.contains('germany'))
+        flag = '🇩🇪';
+      else if (lower.contains('canada'))
+        flag = '🇨🇦';
+    }
+
+    final snapshot = await _postsRef.where('userId', isEqualTo: uid).get();
+    if (snapshot.docs.isEmpty) return;
+    final batch = FirebaseFirestore.instance.batch();
+    for (final doc in snapshot.docs) {
+      final current = (doc.data() as Map<String, dynamic>)['userFlag'] ?? '';
+      if (current != flag) batch.update(doc.reference, {'userFlag': flag});
+    }
+    await batch.commit();
   }
 
   Future<void> deletePost(String postId) async {
@@ -318,6 +445,7 @@ class FirebaseCommunityRepository {
         .orderBy('timestamp', descending: true)
         .snapshots();
   }
+
   // GET UNREAD NOTIFICATIONS COUNT
   Stream<int> getUnreadCountStream() {
     final user = FirebaseAuth.instance.currentUser;
@@ -329,10 +457,12 @@ class FirebaseCommunityRepository {
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
   }
+
   // MARK NOTIFICATION AS READ
   Future<void> markNotificationAsRead(String notificationId) async {
     await _notificationsRef.doc(notificationId).update({'isRead': true});
   }
+
   Future<void> markAllNotificationsAsRead() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -347,7 +477,7 @@ class FirebaseCommunityRepository {
 
     // 2. Batch update (Much faster than updating one by one)
     final batch = FirebaseFirestore.instance.batch();
-    
+
     for (final doc in snapshot.docs) {
       batch.update(doc.reference, {'isRead': true});
     }

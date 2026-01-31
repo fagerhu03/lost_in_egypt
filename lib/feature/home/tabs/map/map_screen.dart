@@ -6,7 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 import './data/map_repository.dart';
 import '../home/data/models/map_item_models.dart';
-import './domain/place_importance.dart';
+// import './domain/place_importance.dart';
 import './services/marker_filter_service.dart';
 import './services/map_focus_service.dart';
 import './place_detail_screen.dart';
@@ -117,8 +117,9 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
-    MapFocusService.instance.focusedItemNotifier
-        .removeListener(_onFocusRequested);
+    MapFocusService.instance.focusedItemNotifier.removeListener(
+      _onFocusRequested,
+    );
     super.dispose();
   }
 
@@ -153,6 +154,8 @@ class _MapScreenState extends State<MapScreen> {
         'transport',
       ];
 
+      int failedCount = 0;
+
       for (final pinName in pinNames) {
         try {
           final icon = await _loadPngMarkerIcon(
@@ -164,6 +167,7 @@ class _MapScreenState extends State<MapScreen> {
         } catch (e) {
           debugPrint('⚠️ Failed to load marker $pinName: $e');
           _markerIcons[pinName] = BitmapDescriptor.defaultMarker;
+          failedCount++;
         }
       }
 
@@ -173,14 +177,43 @@ class _MapScreenState extends State<MapScreen> {
         _updateVisibleMarkers();
       }
 
-      debugPrint('🎨 All custom markers loaded! Total: ${_markerIcons.length}');
+      // ✅ NEW: Log summary of load results
+      if (failedCount > 0) {
+        debugPrint(
+          '⚠️ Marker Loading Summary: ${pinNames.length - failedCount}/${pinNames.length} loaded successfully',
+        );
+      } else {
+        debugPrint(
+          '🎨 All custom markers loaded! Total: ${_markerIcons.length}',
+        );
+      }
     } catch (e) {
       debugPrint('❌ Error loading custom markers: $e');
       _iconsLoaded = true;
+
+      // ✅ NEW: Fallback - use default markers for all
+      for (final name in [
+        'default',
+        'entertainment',
+        'historical',
+        'hotels',
+        'museum',
+        'nature',
+        'religious',
+        'resturants',
+        'shopping',
+        'tourism',
+        'transport',
+      ]) {
+        _markerIcons[name] = BitmapDescriptor.defaultMarker;
+      }
     }
   }
 
-  Future<BitmapDescriptor> _loadPngMarkerIcon(String assetPath, int width) async {
+  Future<BitmapDescriptor> _loadPngMarkerIcon(
+    String assetPath,
+    int width,
+  ) async {
     final ByteData data = await rootBundle.load(assetPath);
 
     final ui.Codec codec = await ui.instantiateImageCodec(
@@ -239,12 +272,14 @@ class _MapScreenState extends State<MapScreen> {
       // "All" selected → Apply zoom-based importance filtering
       filteredItems = MarkerFilterService.filterByZoom(_allItems, _currentZoom);
       debugPrint(
-          '🔍 Filter: ALL with zoom filtering (zoom: ${_currentZoom.toStringAsFixed(1)})');
+        '🔍 Filter: ALL with zoom filtering (zoom: ${_currentZoom.toStringAsFixed(1)})',
+      );
     } else {
       // Specific category selected → NO zoom filtering
       filteredItems = List.from(_allItems);
       debugPrint(
-          '🔍 Filter: Category "$_selectedUiCategoryId" - NO zoom filtering');
+        '🔍 Filter: Category "$_selectedUiCategoryId" - NO zoom filtering',
+      );
     }
 
     // Filter out excluded categories
@@ -298,7 +333,8 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _focusOnPlace(MapItem place) async {
     debugPrint('🎯 _focusOnPlace: ${place.title}');
     debugPrint(
-        '   📍 Lat: ${place.coordinate.latitude}, Lng: ${place.coordinate.longitude}');
+      '   📍 Lat: ${place.coordinate.latitude}, Lng: ${place.coordinate.longitude}',
+    );
 
     if (_mapController == null) {
       debugPrint('   ⏳ Waiting for map controller...');
@@ -323,8 +359,10 @@ class _MapScreenState extends State<MapScreen> {
       await _mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            target:
-                LatLng(place.coordinate.latitude, place.coordinate.longitude),
+            target: LatLng(
+              place.coordinate.latitude,
+              place.coordinate.longitude,
+            ),
             zoom: 17,
           ),
         ),
@@ -349,8 +387,9 @@ class _MapScreenState extends State<MapScreen> {
     }
     if (_darkMapStyle == null) {
       try {
-        _darkMapStyle =
-            await rootBundle.loadString('assets/map_style_dark.json');
+        _darkMapStyle = await rootBundle.loadString(
+          'assets/map_style_dark.json',
+        );
       } catch (_) {
         _darkMapStyle = _lightMapStyle;
       }
@@ -513,8 +552,10 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 // Title
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       const Text(
@@ -565,10 +606,12 @@ class _MapScreenState extends State<MapScreen> {
                       final count = category.id == 'all'
                           ? _allItemsCache.where(_shouldShowItem).length
                           : _allItemsCache
-                              .where((item) =>
-                                  item.category.toLowerCase() ==
-                                  category.id.toLowerCase())
-                              .length;
+                                .where(
+                                  (item) =>
+                                      item.category.toLowerCase() ==
+                                      category.id.toLowerCase(),
+                                )
+                                .length;
 
                       return ListTile(
                         leading: Container(
@@ -576,7 +619,9 @@ class _MapScreenState extends State<MapScreen> {
                           height: 40,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Theme.of(context).primaryColor.withOpacity(0.1)
+                                ? Theme.of(
+                                    context,
+                                  ).primaryColor.withOpacity(0.1)
                                 : Colors.grey.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -590,8 +635,9 @@ class _MapScreenState extends State<MapScreen> {
                         title: Text(
                           category.label,
                           style: TextStyle(
-                            fontWeight:
-                                isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             color: isSelected
                                 ? Theme.of(context).primaryColor
                                 : null,
@@ -653,7 +699,8 @@ class _MapScreenState extends State<MapScreen> {
                   MapFocusService.instance.focusedItemNotifier.value;
               if (pendingFocus != null) {
                 debugPrint(
-                    '🎯 Processing pending focus: ${pendingFocus.title}');
+                  '🎯 Processing pending focus: ${pendingFocus.title}',
+                );
                 _focusOnPlace(pendingFocus);
               }
             },
@@ -677,19 +724,23 @@ class _MapScreenState extends State<MapScreen> {
             right: 0,
             child: Center(
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 10)
+                    BoxShadow(color: Colors.black12, blurRadius: 10),
                   ],
                 ),
                 child: const Text(
                   "Lost In Egypt",
                   style: TextStyle(
-                      fontWeight: FontWeight.bold, fontFamily: "Marcellus"),
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "Marcellus",
+                  ),
                 ),
               ),
             ),
@@ -705,7 +756,7 @@ class _MapScreenState extends State<MapScreen> {
                 color: Colors.white.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 6)
+                  BoxShadow(color: Colors.black12, blurRadius: 6),
                 ],
               ),
               child: Column(
@@ -724,8 +775,7 @@ class _MapScreenState extends State<MapScreen> {
                       _categories
                           .firstWhere(
                             (c) => c.id == _selectedUiCategoryId,
-                            orElse: () =>
-                                const _UiCategory('', 'Unknown', ''),
+                            orElse: () => const _UiCategory('', 'Unknown', ''),
                           )
                           .label,
                       style: TextStyle(
@@ -746,15 +796,17 @@ class _MapScreenState extends State<MapScreen> {
             child: GestureDetector(
               onTap: _openCategorySheet,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: _selectedUiCategoryId == 'all'
                       ? Colors.white
                       : Theme.of(context).primaryColor,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 6)
+                    BoxShadow(color: Colors.black12, blurRadius: 6),
                   ],
                 ),
                 child: Row(
@@ -801,8 +853,9 @@ class _MapScreenState extends State<MapScreen> {
               },
               child: Icon(
                 Icons.my_location,
-                color:
-                    _isLocationPermissionGranted ? Colors.blue : Colors.black87,
+                color: _isLocationPermissionGranted
+                    ? Colors.blue
+                    : Colors.black87,
               ),
             ),
           ),
@@ -836,12 +889,14 @@ class _MapScreenState extends State<MapScreen> {
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.95),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: const [
-                          BoxShadow(color: Colors.black12, blurRadius: 10)
+                          BoxShadow(color: Colors.black12, blurRadius: 10),
                         ],
                       ),
                       child: const Row(

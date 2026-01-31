@@ -30,8 +30,18 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _selectedYear;
 
   final List<String> _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   List<String> get _days {
@@ -69,7 +79,7 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _validateForm() {
     // Name Regex: Letters and spaces only, min 2 chars
     final nameRegex = RegExp(r"^[a-zA-Z\s]{2,}$");
-    
+
     if (!nameRegex.hasMatch(_firstNameController.text.trim())) {
       _showError("First Name must contain valid letters (min 2).");
       return false;
@@ -80,7 +90,9 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     // Date Strict Check
-    if (_selectedMonth == null || _selectedDay == null || _selectedYear == null) {
+    if (_selectedMonth == null ||
+        _selectedDay == null ||
+        _selectedYear == null) {
       _showError("Please select your full Date of Birth.");
       return false;
     }
@@ -127,18 +139,23 @@ class _SignupScreenState extends State<SignupScreen> {
       return false;
     }
 
-    // Email Regex
-    final emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+    // Email Regex - ✅ IMPROVED: More strict validation
+    final emailRegex = RegExp(
+      r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+    );
     if (!emailRegex.hasMatch(_emailController.text.trim())) {
       _showError("Please enter a valid email address.");
       return false;
     }
 
     // Password Regex: 8+ chars, 1 letter, 1 number
-    final passwordRegex =
-        RegExp(r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$");
+    final passwordRegex = RegExp(
+      r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$",
+    );
     if (!passwordRegex.hasMatch(_passwordController.text)) {
-      _showError("Password must be 8+ chars, with at least 1 letter and 1 number.");
+      _showError(
+        "Password must be 8+ chars, with at least 1 letter and 1 number.",
+      );
       return false;
     }
 
@@ -196,7 +213,8 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     } on FirebaseAuthException catch (e) {
       String msg = "Signup Failed";
-      if (e.code == 'email-already-in-use') msg = "This email is already registered.";
+      if (e.code == 'email-already-in-use')
+        msg = "This email is already registered.";
       if (e.code == 'weak-password') msg = "The password is too weak.";
       if (mounted) _showError(msg);
     } catch (e) {
@@ -319,17 +337,19 @@ class _SignupScreenState extends State<SignupScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
-                        child: _isLoading 
-                          ? const CircularProgressIndicator(color: Colors.black87) 
-                          : const Text(
-                              "Sign up",
-                              style: TextStyle(
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
                                 color: Colors.black87,
-                                fontSize: 18,
-                                fontFamily: "Marcellus",
-                                fontWeight: FontWeight.w700,
+                              )
+                            : const Text(
+                                "Sign up",
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 18,
+                                  fontFamily: "Marcellus",
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                            ),
                       ),
                     ),
                   ),

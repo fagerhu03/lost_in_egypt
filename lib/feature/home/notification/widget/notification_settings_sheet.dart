@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
 class NotificationSettingsSheet {
-  static const Color _text = Color(0xFF7C6A4D);
-  static const Color _chip = Color(0xFF4D5420);
-
   static void open(BuildContext context) {
     showModalBottomSheet(
       context: context,

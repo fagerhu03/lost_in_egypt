@@ -1,14 +1,66 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'edit_profile_screen_enhanced.dart';
+import '../../../auth/data/models/user.dart';
 
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
+
+  @override
+  State<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  String _profileImageUrl = "";
+  bool _isLoading = false;
 
   static const Color _bg = Color(0xFFF6F2E6);
   static const Color _text = Color(0xFF714611);
   static const Color _gold = Color(0xFFC79A00);
 
   @override
+  void initState() {
+    super.initState();
+    _loadProfileImage();
+  }
+
+  Future<void> _loadProfileImage() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (doc.exists) {
+        final userModel = UserModel.fromMap(doc.data()!, doc.id);
+        setState(() => _profileImageUrl = userModel.profileImageUrl);
+      }
+    } catch (e) {
+      debugPrint("Error loading profile image: $e");
+    }
+  }
+
+  // ✅ Helper to handle Sign Out - IMPROVED: Clears state
+  Future<void> _handleSignOut(BuildContext context) async {
+    // ✅ Clear state before signing out
+    FirebaseAuth.instance.signOut();
+
+    if (context.mounted) {
+      // Navigate to login and remove all previous routes
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // ✅ Get the current user
+    final User? user = FirebaseAuth.instance.currentUser;
+    final String displayName = user?.displayName ?? "User";
+    final String email = user?.email ?? "";
+
     return Scaffold(
       backgroundColor: _bg,
       body: Stack(
@@ -22,6 +74,7 @@ class AccountScreen extends StatelessWidget {
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
                 repeat: ImageRepeat.repeat,
+                errorBuilder: (c, o, s) => Container(), // Safety check
               ),
             ),
           ),
@@ -29,7 +82,7 @@ class AccountScreen extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
-                // ✅ Back Arrow (pop)
+                // Back Arrow
                 Padding(
                   padding: const EdgeInsets.only(left: 4, top: 6, bottom: 10),
                   child: Align(
@@ -51,7 +104,7 @@ class AccountScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Avatar + name
+                        // ✅ Dynamic Avatar + Name + Email
                         Row(
                           children: [
                             Container(
@@ -62,25 +115,58 @@ class AccountScreen extends StatelessWidget {
                               ),
                               child: ClipOval(
                                 child: Container(
-                                  color: const Color(0xFF714611).withOpacity(0.50),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Colors.white,
-                                      size: 60,
-                                    ),
-                                  ),
+                                  color: const Color(
+                                    0xFF714611,
+                                  ).withOpacity(0.50),
+                                  // ✅ Show Firestore profile image if available
+                                  child: _profileImageUrl.isNotEmpty
+                                      ? Image.network(
+                                          _profileImageUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (c, o, s) =>
+                                              const Center(
+                                                child: Icon(
+                                                  Icons.person,
+                                                  color: Colors.white,
+                                                  size: 60,
+                                                ),
+                                              ),
+                                        )
+                                      : const Center(
+                                          child: Icon(
+                                            Icons.person,
+                                            color: Colors.white,
+                                            size: 60,
+                                          ),
+                                        ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 12),
-                            const Text(
-                              "Nicole John",
-                              style: TextStyle(
-                                color: _text,
-                                fontSize: 24,
-                                fontFamily: "Marcellus",
-                                fontWeight: FontWeight.bold,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    displayName,
+                                    style: const TextStyle(
+                                      color: _text,
+                                      fontSize: 24,
+                                      fontFamily: "Marcellus",
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (email.isNotEmpty)
+                                    Text(
+                                      email,
+                                      style: TextStyle(
+                                        color: _text.withOpacity(0.7),
+                                        fontSize: 14,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
                               ),
                             ),
                           ],
@@ -100,15 +186,28 @@ class AccountScreen extends StatelessWidget {
 
                         const SizedBox(height: 10),
 
-                        const _AccountTile(title: "Edit Profile"),
+                        // ✅ Added onTap placeholders for future steps
+                        _AccountTile(
+                          title: "Edit Profile",
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const EditProfileScreenEnhanced(),
+                              ),
+                            );
+                            // ✅ Reload profile image after returning from edit
+                            _loadProfileImage();
+                          },
+                        ),
+                        _AccountTile(title: "Places", onTap: () {}),
                         const SizedBox(height: 12),
-                        const _AccountTile(title: "Places"),
+                        _AccountTile(title: "Cards Detail", onTap: () {}),
                         const SizedBox(height: 12),
-                        const _AccountTile(title: "Cards Detail"),
+                        _AccountTile(title: "Registered tours", onTap: () {}),
                         const SizedBox(height: 12),
-                        const _AccountTile(title: "Registered tours"),
-                        const SizedBox(height: 12),
-                        const _AccountTile(title: "Your plan"),
+                        _AccountTile(title: "Your plan", onTap: () {}),
 
                         const SizedBox(height: 24),
                       ],
@@ -116,14 +215,14 @@ class AccountScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Button
+                // ✅ Working Sign Out Button
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => _handleSignOut(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _gold,
                         foregroundColor: Colors.black,
@@ -154,38 +253,48 @@ class AccountScreen extends StatelessWidget {
 
 class _AccountTile extends StatelessWidget {
   final String title;
-  const _AccountTile({required this.title});
+  final VoidCallback onTap; // ✅ Added onTap
+
+  const _AccountTile({required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFBF7ED),
+      // ✅ FIX: Force vertical spacing with margin
+      margin: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 10,
-            offset: Offset(0, 3),
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFBF7ED),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1A000000),
+                blurRadius: 10,
+                offset: Offset(0, 3),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFF7C6A4D),
-              fontSize: 14,
-              fontFamily: "Marcellus",
-              fontWeight: FontWeight.w500,
-            ),
+          child: Row(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFF7C6A4D),
+                  fontSize: 14,
+                  fontFamily: "Marcellus",
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              const Icon(Icons.chevron_right, color: Color(0xFF7C6A4D)),
+            ],
           ),
-          const Spacer(),
-          const Icon(Icons.chevron_right, color: Color(0xFF7C6A4D)),
-        ],
+        ),
       ),
     );
   }
