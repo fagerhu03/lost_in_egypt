@@ -10,8 +10,12 @@ import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repository_impl/auth_repository_impl.dart';
 
 // --- HOME SCREEN IMPORT ---
-// import '../../../home/tabs/home/home_screen.dart'; 
+// import '../../../home/tabs/home/home_screen.dart';
 import '../../../home/tabs/navigator/home_wrapper.dart';
+
+// ✅ NEW: Import error handler and constants
+import '../../../../core/utils/error_handler.dart';
+import '../../../../core/constants/strings.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,12 +43,12 @@ class _LoginScreenState extends State<LoginScreen> {
   // ===========================================================================
   // 2. HELPER METHODS (NAVIGATION)
   // ===========================================================================
-  
+
   /// Navigates to the Home Screen and removes all previous screens (Login/Onboarding)
   void _navigateToHome() {
     Navigator.of(context).pushAndRemoveUntil(
       // CHANGE HERE: Navigate to HomeWrapper, NOT HomeScreen
-      MaterialPageRoute(builder: (context) => const HomeWrapper()), 
+      MaterialPageRoute(builder: (context) => const HomeWrapper()),
       (route) => false,
     );
   }
@@ -63,9 +67,22 @@ class _LoginScreenState extends State<LoginScreen> {
   /// Handles Standard Email/Password Login
   Future<void> _handleLogin() async {
     // A. Validation
-    if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both email and password")),
+        const SnackBar(
+          content: Text(AppStrings.requiredField),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // ✅ NEW: Validate email format
+    final emailError = ErrorHandler.validateEmail(_emailController.text.trim());
+    if (emailError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(emailError), backgroundColor: Colors.red),
       );
       return;
     }
@@ -91,7 +108,11 @@ class _LoginScreenState extends State<LoginScreen> {
         (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(failure.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
             );
           }
         },
@@ -99,7 +120,9 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text("Welcome back, ${userEntity.firstName}!"),
+                content: Text(
+                  "${AppStrings.loginSuccess} ${userEntity.firstName}!",
+                ),
                 backgroundColor: Colors.green,
               ),
             );
@@ -107,10 +130,28 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         },
       );
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
+      // ✅ NEW: Use centralized error handler
+      final errorMsg = ErrorHandler.handleAuthError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      // ✅ NEW: Use generic error handler
+      final errorMsg = ErrorHandler.handleGenericError(e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     } finally {
@@ -134,7 +175,10 @@ class _LoginScreenState extends State<LoginScreen> {
         (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(failure.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -142,11 +186,15 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mounted) {
             if (userEntity != null) {
               // EXISTING USER -> GO HOME
-              Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/home', (route) => false);
             } else {
               // NEW USER -> COMPLETE PROFILE
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const CompleteProfileScreen(),
+                ),
               );
             }
           }
@@ -179,7 +227,10 @@ class _LoginScreenState extends State<LoginScreen> {
         (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(failure.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -220,7 +271,10 @@ class _LoginScreenState extends State<LoginScreen> {
         (failure) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(failure.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -295,11 +349,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: const Color(0xFF7A8450).withOpacity(0.70),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 3,
+                    ),
                     // Removed 'const', Added 'controller'
                     child: TextField(
-                      controller: _emailController, 
-                      style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
+                      controller: _emailController,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: "Marcellus",
+                      ),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         hintText: "Enter your email",
@@ -319,12 +379,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: const Color(0xFF7A8450).withOpacity(0.70),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 3,
+                    ),
                     // Added 'controller'
                     child: TextField(
                       controller: _passwordController,
                       obscureText: obscure,
-                      style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: "Marcellus",
+                      ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Enter your password",
@@ -361,7 +427,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: Center(
                         child: _isLoading
-                            ? const CircularProgressIndicator(color: Colors.black87)
+                            ? const CircularProgressIndicator(
+                                color: Colors.black87,
+                              )
                             : const Text(
                                 "Log In",
                                 style: TextStyle(
@@ -431,21 +499,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       // Google
                       GestureDetector(
                         onTap: _isLoading ? null : _handleGoogleLogin,
-                        child: Image.asset("assets/social/google.png", height: 40),
+                        child: Image.asset(
+                          "assets/social/google.png",
+                          height: 40,
+                        ),
                       ),
                       const SizedBox(width: 20),
-                      
+
                       // Apple
                       GestureDetector(
                         onTap: _isLoading ? null : _handleAppleLogin,
-                        child: Image.asset("assets/social/apple.png", height: 40),
+                        child: Image.asset(
+                          "assets/social/apple.png",
+                          height: 40,
+                        ),
                       ),
                       const SizedBox(width: 20),
-                      
+
                       // Facebook
                       GestureDetector(
                         onTap: _isLoading ? null : _handleFacebookLogin,
-                        child: Image.asset("assets/social/facebook.png", height: 40),
+                        child: Image.asset(
+                          "assets/social/facebook.png",
+                          height: 40,
+                        ),
                       ),
                     ],
                   ),
@@ -458,7 +535,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const Text(
                         "Don't have an account?",
-                        style: TextStyle(color: Colors.black87, fontFamily: "Marcellus"),
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontFamily: "Marcellus",
+                        ),
                       ),
                       const SizedBox(width: 5),
                       GestureDetector(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 // import 'package:firebase_auth/firebase_auth.dart';
-import '../../community/data/repositories/firebase_community_repository.dart';
-import '../../../notification/notification_screen.dart'; // Import Notification Screen
+// import '../../community/data/repositories/firebase_community_repository.dart';
+// import '../../../notification/notification_screen.dart'; // Import Notification Screen
 
 class SearchHeader extends StatelessWidget {
   final String? profileImageUrl;

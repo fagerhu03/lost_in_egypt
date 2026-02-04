@@ -4,6 +4,7 @@ import '../../../../core/error/failures.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
+import '../models/user.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -39,9 +40,15 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> login({required String email, required String password}) async {
+  Future<Either<Failure, UserEntity>> login({
+    required String email,
+    required String password,
+  }) async {
     try {
-      final userModel = await remoteDataSource.login(email: email, password: password);
+      final userModel = await remoteDataSource.login(
+        email: email,
+        password: password,
+      );
       return Right(userModel);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -105,21 +112,22 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, void>> completeSocialProfile({
-    required String birthMonth, 
-    required String birthDay, 
-    required String birthYear
+    required String birthMonth,
+    required String birthDay,
+    required String birthYear,
   }) async {
     try {
       await remoteDataSource.completeSocialProfile(
-        birthMonth: birthMonth, 
-        birthDay: birthDay, 
-        birthYear: birthYear
+        birthMonth: birthMonth,
+        birthDay: birthDay,
+        birthYear: birthYear,
       );
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }
+
   @override
   Future<Either<Failure, bool>> checkEmailExists(String email) async {
     try {
@@ -127,6 +135,46 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(exists);
     } catch (e) {
       // Even if it fails, we return Left to handle it gracefully
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> getUserProfile(String uid) async {
+    try {
+      final userModel = await remoteDataSource.getUserProfile(uid);
+      return Right(userModel); // UserModel extends UserEntity, so this is valid
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  // ✅ NEW: UPDATE PROFILE IMPLEMENTATION
+  @override
+  Future<Either<Failure, void>> updateUserProfile(UserEntity user) async {
+    try {
+      // ⚠️ Critical Step: Convert Domain Entity -> Data Model
+      // The DataSource requires a UserModel because it has the .toMap() method.
+      final userModel = UserModel(
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        birthDate: user.birthDate,
+        role: user.role,
+        profileImageUrl: user.profileImageUrl,
+        // New fields
+        phoneNumber: user.phoneNumber,
+        nationality: user.nationality,
+        isNotificationsEnabled: user.isNotificationsEnabled,
+        isDarkMode: user.isDarkMode,
+        language: user.language,
+        createdAt: user.createdAt,
+      );
+
+      await remoteDataSource.updateUserProfile(userModel);
+      return const Right(null);
+    } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }

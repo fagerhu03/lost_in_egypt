@@ -17,26 +17,57 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   bool obscure2 = true;
   bool _isLoading = false;
 
-  bool _validatePassword() {
-    final passwordRegex = RegExp(
-      r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$",
-    );
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Rebuild UI when password changes to show requirements
+    _passController.addListener(() {
+      setState(() {});
+    });
+  }
 
-    if (!passwordRegex.hasMatch(_passController.text)) {
+  @override
+  void dispose() {
+    _passController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  // ✅ ENHANCED: Better password validation with detailed messages
+  String? _validatePasswordStrength() {
+    final password = _passController.text;
+
+    if (password.isEmpty) {
+      return 'Password is required';
+    }
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters';
+    }
+    if (!RegExp(r'[a-zA-Z]').hasMatch(password)) {
+      return 'Password must contain at least one letter';
+    }
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      return 'Password must contain at least one number';
+    }
+    return null;
+  }
+
+  bool _validatePassword() {
+    // 1. Check password strength
+    final strengthError = _validatePasswordStrength();
+    if (strengthError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Password must be 8+ chars, with 1 letter & 1 number"),
-          backgroundColor: Colors.redAccent,
-        ),
+        SnackBar(content: Text(strengthError), backgroundColor: Colors.red),
       );
       return false;
     }
 
+    // 2. Check passwords match
     if (_passController.text != _confirmController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Passwords do not match"),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: Colors.red,
         ),
       );
       return false;
@@ -49,7 +80,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // CALL THE CLOUD FUNCTION (The "God Mode" script you deployed)
+      // CALL THE CLOUD FUNCTION to reset password
       final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable(
         'forceResetPassword',
       );
@@ -62,7 +93,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Password changed successfully!"),
+            content: Text("Password changed successfully! ✅"),
             backgroundColor: Colors.green,
           ),
         );
@@ -72,18 +103,36 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
         ).pushNamedAndRemoveUntil('/login', (route) => false);
       }
     } on FirebaseFunctionsException catch (e) {
+      // ✅ Better error handling for specific Firebase errors
+      String errorMsg = e.message ?? 'Password reset failed';
+
+      if (e.code == 'invalid-argument') {
+        errorMsg = 'Invalid email or password. Please try again.';
+      } else if (e.code == 'not-found') {
+        errorMsg = 'User not found. Please check the email.';
+      } else if (e.code == 'permission-denied') {
+        errorMsg = 'You do not have permission to reset this password.';
+      } else if (e.code == 'unavailable') {
+        errorMsg = 'Service temporarily unavailable. Please try again later.';
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Server Error: ${e.message}"),
+            content: Text(errorMsg),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("Error: ${e.toString()}"),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
         );
       }
     } finally {
@@ -104,13 +153,13 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
         decoration: const BoxDecoration(
           color: Color(0xFFFCFBE8),
           image: DecorationImage(
-            image: AssetImage("assets/pattern_comp .png"),
+            image: AssetImage("assets/pattern_comp.png"),
             fit: BoxFit.cover,
             opacity: 0.4,
           ),
         ),
         child: Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(30.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -144,6 +193,45 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   () => setState(() => obscure1 = !obscure1),
                 ),
                 const SizedBox(height: 15),
+
+                // ✅ NEW: Password requirements indicator
+                if (_passController.text.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F1E8),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFE8E2C8)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Password must contain:',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF714611),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        _buildRequirement(
+                          'At least 8 characters',
+                          _passController.text.length >= 8,
+                        ),
+                        _buildRequirement(
+                          'At least one letter',
+                          RegExp(r'[a-zA-Z]').hasMatch(_passController.text),
+                        ),
+                        _buildRequirement(
+                          'At least one number',
+                          RegExp(r'[0-9]').hasMatch(_passController.text),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                const SizedBox(height: 15),
                 _passwordField(
                   "Confirm Password",
                   _confirmController,
@@ -153,27 +241,30 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                 const SizedBox(height: 30),
                 GestureDetector(
                   onTap: _isLoading ? null : _handlePasswordReset,
-                  child: Container(
-                    width: double.infinity,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD6A00F),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
-                      child: _isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.black87,
-                            )
-                          : const Text(
-                              "Reset Password",
-                              style: TextStyle(
+                  child: Opacity(
+                    opacity: _isLoading ? 0.5 : 1.0,
+                    child: Container(
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD6A00F),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
                                 color: Colors.black87,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                fontFamily: "Marcellus",
+                              )
+                            : const Text(
+                                "Reset Password",
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: "Marcellus",
+                                ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
                 ),
@@ -181,6 +272,32 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ✅ NEW: Helper widget to show password requirement status
+  Widget _buildRequirement(String text, bool met) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(
+            met ? Icons.check_circle : Icons.circle_outlined,
+            size: 14,
+            color: met ? Colors.green : Colors.grey,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              color: met
+                  ? Colors.green
+                  : const Color(0xFF714611).withOpacity(0.6),
+            ),
+          ),
+        ],
       ),
     );
   }

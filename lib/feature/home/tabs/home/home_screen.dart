@@ -8,7 +8,7 @@ import '../navigator/widget/account_menu_button.dart';
 import './data/datasources/local_mock_data.dart';
 import './data/models/map_item_models.dart';
 import '../navigator/widget/search_header.dart';
-import 'dart:convert'; // For json.decode
+//import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,7 +24,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _fetchUserProfile();
-    // _uploadNewDataset();
+    
+    // 🔧 Uncomment this line to upload data (run ONCE then comment it back)
+    //_uploadNewDataset();
   }
 
   Future<void> _fetchUserProfile() async {
@@ -54,41 +56,53 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // 🔧 FIXED: Now uploads importance and tags
   // Future<void> _uploadNewDataset() async {
   //   print("🚀 STARTING UPLOAD...");
 
   //   try {
-  //     // 1. Load the JSON file from assets
+  //     1. Load the JSON file from assets
   //     final String response = await rootBundle.loadString('assets/final_places_clean_v2.json');
   //     final List<dynamic> data = json.decode(response);
 
   //     final firestore = FirebaseFirestore.instance;
   //     int count = 0;
 
-  //     // 2. Loop through every place and upload
-  //     for (var item remembers) {
-
-  //       // Convert JSON coordinates to Firestore GeoPoint
-  //       // Check if your python script used 'lat' or 'latitude' keys
+  //     2. Loop through every place and upload
+  //     for (var item in data) {
+  //       Convert JSON coordinates to Firestore GeoPoint
   //       double lat = item['coordinate']['latitude'];
   //       double lng = item['coordinate']['longitude'];
+
+  //       🆕 Get importance (default to 5 if not present)
+  //       int importance = item['importance'] ?? 5;
+
+  //       🆕 Get tags (default to empty list if not present)
+  //       List<String> tags = [];
+  //       if (item['tags'] != null) {
+  //         tags = List<String>.from(item['tags']);
+  //       }
 
   //       await firestore.collection('places').doc(item['id']).set({
   //         'id': item['id'],
   //         'title': item['title'],
   //         'category': item['category'],
-  //         'coordinate': GeoPoint(lat, lng), // 👈 Crucial Step
+  //         'coordinate': GeoPoint(lat, lng),
   //         'description': item['description'],
-  //         'imagePath': item['imagePath'], // Defaults to "assets/images/default.jpg"
+  //         'imagePath': item['imagePath'],
   //         'locationAddress': item['locationAddress'],
   //         'rating': item['rating'],
   //         'isOpenNow': item['isOpenNow'],
+          
+  //         🆕 IMPORTANT: These were missing before!
+  //         'importance': importance,
+  //         'tags': tags,
 
-  //         // Defaults for fields we didn't scrape
+  //         Defaults for fields we didn't scrape
   //         'price': 0.0,
   //         'duration': '2 hours',
   //         'weather': '25°C',
-  //       }, SetOptions(merge: true)); // merge: true prevents overwriting if you edit later
+  //       }, SetOptions(merge: true));
 
   //       count++;
   //       if (count % 10 == 0) print("   Saved $count places...");
@@ -96,7 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //     print("✅ SUCCESS! Uploaded $count places to Firestore.");
 
-  //     // Optional: Show a snackbar on the phone
   //     if (mounted) {
   //       ScaffoldMessenger.of(context).showSnackBar(
   //         SnackBar(content: Text("Successfully added $count new places!")),
@@ -108,6 +121,22 @@ class _HomeScreenState extends State<HomeScreen> {
   //   }
   // }
 
+  // 🔧 Optional: Clear all places before re-uploading
+  // Future<void> _clearPlacesCollection() async {
+  //   print("🗑️ Clearing places collection...");
+  //   final firestore = FirebaseFirestore.instance;
+  //   final snapshot = await firestore.collection('places').get();
+    
+  //   int count = 0;
+  //   for (var doc in snapshot.docs) {
+  //     await doc.reference.delete();
+  //     count++;
+  //     if (count % 50 == 0) print("   Deleted $count places...");
+  //   }
+    
+  //   print("✅ Cleared $count places");
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          // 🖼 HERO IMAGE + SEARCH (NO TOP GAP)
+            // 🖼 HERO IMAGE + SEARCH
             Stack(
               children: [
                 Container(
@@ -129,27 +158,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-
                 Container(
                   height: 260,
                   width: double.infinity,
                   color: Colors.black.withOpacity(0.08),
                 ),
-
                 Padding(
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).padding.top + 8,
                     left: 16,
                     right: 16,
                   ),
-                  child:  Row(
+                  child: Row(
                     children: [
-                      Expanded(child: SearchHeader(onSignOut: () {},)),
+                      Expanded(child: SearchHeader(onSignOut: () {})),
                       const SizedBox(width: 12),
-                      AccountMenuButton(profileImageUrl: _profileImageUrl, onSignOut: _handleSignOut),
+                      AccountMenuButton(
+                        profileImageUrl: _profileImageUrl,
+                        onSignOut: _handleSignOut,
+                      ),
                     ],
-                ),
-
+                  ),
                 ),
                 Positioned(
                   bottom: 0,
@@ -227,13 +256,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 10),
 
-            // ⭐ REAL-TIME EVENTS LIST (LIMITED SAMPLE)
+            // ⭐ REAL-TIME EVENTS LIST
             SizedBox(
               height: 170,
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('events')
-                    .limit(5) // 🟢 THIS LIMITS IT TO A SAMPLE OF 5
+                    .limit(5)
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -330,7 +359,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ✅ UPDATED EVENT CARD (LIKE YOUR IMAGE)
   Widget _eventCard(String title, String imagePath) {
     return Container(
       width: 200,
@@ -349,7 +377,6 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🖼 IMAGE + HEART
           ClipRRect(
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(16),
@@ -383,13 +410,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               Container(
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.image_not_supported),
-                              ),
+                            color: Colors.grey.shade300,
+                            child: const Icon(Icons.image_not_supported),
+                          ),
                         ),
                 ),
-
-                // ❤️ HEART
                 Positioned(
                   top: 10,
                   right: 10,
@@ -410,8 +435,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
-          // 🧾 TITLE AREA (WHITE BELOW IMAGE)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Text(

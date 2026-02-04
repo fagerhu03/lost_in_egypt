@@ -4,12 +4,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// ✅ Ensure these imports match your project structure
 import '../../navigator/widget/account_menu_button.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import '../domain/entities/community_post.dart';
 import './community_post_card.dart';
 import 'post_detail_screen.dart';
-import '../../../notification/notification_screen.dart';
+import '../../../../auth/phone_verif/phone_verification_screen.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -26,9 +27,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
   // State Variables
   String _searchQuery = "";
   String? _profileImageUrl;
-  bool _isPosting = false;
+  bool _isPosting = false; // ✅ NEW: Prevent duplicate posts
   String? _selectedLocationName;
   String? _selectedLocationId;
+
   // Filter & Image State
   String _sortBy = 'newest'; // 'newest' or 'popular'
   List<File> _selectedImages = [];
@@ -57,10 +59,61 @@ class _CommunityScreenState extends State<CommunityScreen> {
           setState(() {
             _profileImageUrl = doc.data()?['profileImageUrl'];
           });
+          // Ensure existing posts by this user have correct flag
+          try {
+            await _repository.refreshUserPostsFlag(user.uid);
+          } catch (e) {
+            debugPrint('Error refreshing post flags: $e');
+          }
         }
       } catch (e) {
         debugPrint("Error fetching profile: $e");
       }
+    }
+  }
+
+  // ✅ CRITICAL FIX: The Gatekeeper Logic
+  // This checks for phone verification BEFORE allowing the post to happen.
+  void _handlePostAction() async {
+    // ✅ NEW: Prevent rapid/duplicate posts
+    if (_isPosting) return;
+
+    // 1. Basic validation (don't bother checking phone if text is empty)
+    if (_postController.text.trim().isEmpty && _selectedImages.isEmpty) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    // 🔒 CHECK: Is user phone-verified in Firestore?
+    bool isPhoneVerified = false;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .get();
+
+      if (doc.exists) {
+        isPhoneVerified = doc.data()?['phoneVerified'] ?? false;
+      }
+    } catch (e) {
+      debugPrint('Error checking phone verification: $e');
+    }
+
+    if (!isPhoneVerified) {
+      // 🛑 BLOCKED: Show Verification Screen
+      final bool? verified = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PhoneVerificationScreen(),
+        ),
+      );
+
+      // If they came back and verified == true, let them post
+      if (verified == true) {
+        _handlePost(); // ✅ Proceed to actual posting
+      }
+    } else {
+      // ✅ ALLOWED: User is already verified
+      _handlePost(); // ✅ Proceed to actual posting
     }
   }
 
@@ -71,18 +124,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
     await showDialog(
       context: context,
       builder: (ctx) {
-        // StatefulBuilder is crucial: It allows the dialog to rebuild
-        // when we setDialogState (loading spinner, new results)
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
               title: const Text("Tag a Location"),
               content: SizedBox(
                 width: double.maxFinite,
-                height: 400, // Fixed height so it doesn't jump
+                height: 400,
                 child: Column(
                   children: [
-                    // Search Input
                     TextField(
                       autofocus: true,
                       decoration: InputDecoration(
@@ -103,12 +153,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
                           setDialogState(() => searchResults = []);
                           return;
                         }
-
                         setDialogState(() => isLoading = true);
-
-                        // 1. Call your Repository to search Firestore
-                        final results = await _repository.searchPlaces(val);
-
+                        final results = await _repository.searchPlaces(
+                          val,
+                        ); // Make sure this method exists in your repo
                         if (context.mounted) {
                           setDialogState(() {
                             searchResults = results;
@@ -118,8 +166,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
                       },
                     ),
                     const SizedBox(height: 10),
-
-                    // Results List
                     if (isLoading)
                       const Padding(
                         padding: EdgeInsets.all(20.0),
@@ -141,7 +187,24 @@ class _CommunityScreenState extends State<CommunityScreen> {
                           separatorBuilder: (c, i) => const Divider(height: 1),
                           itemBuilder: (context, index) {
                             final place = searchResults[index];
+                            // Handle image (network or asset or fallback)
                             final imagePath = place['image'] ?? '';
+                            Widget leadingImage;
+                            if (imagePath.startsWith('http')) {
+                              leadingImage = Image.network(
+                                imagePath,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    const Icon(Icons.place, color: Colors.grey),
+                              );
+                            } else {
+                              leadingImage = Image.asset(
+                                imagePath,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    const Icon(Icons.place, color: Colors.grey),
+                              );
+                            }
 
                             return ListTile(
                               contentPadding: const EdgeInsets.symmetric(
@@ -153,23 +216,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                 child: SizedBox(
                                   width: 50,
                                   height: 50,
-                                  child: (imagePath.startsWith('http'))
-                                      ? Image.network(
-                                          imagePath,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (c, e, s) => const Icon(
-                                            Icons.place,
-                                            color: Colors.grey,
-                                          ),
-                                        )
-                                      : Image.asset(
-                                          imagePath,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (c, e, s) => const Icon(
-                                            Icons.place,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
+                                  child: leadingImage,
                                 ),
                               ),
                               title: Text(
@@ -179,7 +226,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                 ),
                               ),
                               onTap: () {
-                                // 2. Update the parent screen state
                                 setState(() {
                                   _selectedLocationName = place['title'];
                                   _selectedLocationId = place['id'];
@@ -210,8 +256,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   Future<void> _pickImages() async {
-    if (_selectedImages.length >= 4) return; // Limit to 4
-
+    if (_selectedImages.length >= 4) return;
     try {
       final List<XFile> picked = await _picker.pickMultiImage(
         limit: 4 - _selectedImages.length,
@@ -226,30 +271,30 @@ class _CommunityScreenState extends State<CommunityScreen> {
     }
   }
 
+  // ✅ Actual Logic to Upload Post
   Future<void> _handlePost() async {
-    if (_postController.text.trim().isEmpty && _selectedImages.isEmpty) return;
-
     setState(() => _isPosting = true);
     try {
       await _repository.addPost(
         _postController.text.trim(),
         _selectedImages,
-        locationName: _selectedLocationName, // 👈 Pass location
+        locationName: _selectedLocationName,
         locationId: _selectedLocationId,
       );
 
       _postController.clear();
       setState(() {
         _selectedImages.clear();
-        _selectedLocationName = null; // Clear location
+        _selectedLocationName = null;
         _selectedLocationId = null;
       });
       if (mounted) FocusScope.of(context).unfocus();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
     } finally {
       if (mounted) setState(() => _isPosting = false);
     }
@@ -261,19 +306,13 @@ class _CommunityScreenState extends State<CommunityScreen> {
     Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFEF0),
       body: Stack(
         children: [
-          // Background Color
           Container(color: const Color(0xFFFCFBE8)),
-
-          // Background Pattern
           Positioned.fill(
             child: Opacity(
               opacity: 0.35,
@@ -285,20 +324,14 @@ class _CommunityScreenState extends State<CommunityScreen> {
               ),
             ),
           ),
-
           SafeArea(
             child: Column(
               children: [
-                // 1. HEADER (Search + Profile)
                 _buildSearchHeader(context),
-
-                // 2. FILTER BAR
                 _buildFilterBar(),
-
                 Expanded(
                   child: Column(
                     children: [
-                      // 3. COMPOSER (Write Post)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(12, 6, 12, 14),
                         child: Column(
@@ -306,21 +339,16 @@ class _CommunityScreenState extends State<CommunityScreen> {
                           children: [_buildComposer()],
                         ),
                       ),
-
-                      // 4. FEED (Posts List)
                       Expanded(
                         child: StreamBuilder<List<CommunityPost>>(
                           stream: _repository.getPostsStream(sortBy: _sortBy),
                           builder: (context, snapshot) {
-                            // 1. Loading State
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
                                 child: CircularProgressIndicator(),
                               );
                             }
-
-                            // 2. ⭐ ERROR STATE (This is what was missing!)
                             if (snapshot.hasError) {
                               return Center(
                                 child: Padding(
@@ -335,8 +363,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             }
 
                             final allPosts = snapshot.data ?? [];
-
-                            // Filter logic (Search)
                             final filteredPosts = _searchQuery.isEmpty
                                 ? allPosts
                                 : allPosts
@@ -352,7 +378,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                 child: Text("No posts yet. Be the first!"),
                               );
                             }
-
                             if (filteredPosts.isEmpty) {
                               return Center(
                                 child: Text("No results for '$_searchQuery'"),
@@ -368,7 +393,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                   const SizedBox(height: 12),
                               itemBuilder: (context, index) {
                                 final post = filteredPosts[index];
-                                return GestureDetector(
+                                return CommunityPostCard(
+                                  post: post,
                                   onTap: () {
                                     Navigator.push(
                                       context,
@@ -378,7 +404,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                       ),
                                     );
                                   },
-                                  child: CommunityPostCard(post: post),
                                 );
                               },
                             );
@@ -398,6 +423,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   // --- WIDGETS ---
 
+  // (Search Header and Filter Bar remain the same as your code)
   Widget _buildSearchHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
@@ -431,14 +457,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   ),
                   prefixIcon: Icon(Icons.search, color: Colors.white),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 12),
-
-          // ✅ REPLACED PROFILE ICON WITH YOUR AccountMenuButton
           AccountMenuButton(
             profileImageUrl: _profileImageUrl,
             onSignOut: _handleSignOut,
@@ -518,16 +545,13 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     : null,
               ),
               const SizedBox(width: 10),
-
               Expanded(
                 child: TextField(
                   controller: _postController,
                   maxLines: null,
-                  // 👇 FIX: Removed 'const' here because 'suffix' changes dynamically
                   decoration: InputDecoration(
                     hintText: "Share your thoughts...",
                     border: InputBorder.none,
-                    // Show chip if location is selected
                     suffix: _selectedLocationName != null
                         ? Padding(
                             padding: const EdgeInsets.only(left: 8.0),
@@ -625,8 +649,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 ],
               ),
 
+              // ✅ FIXED BUTTON: Calls _handlePostAction (The Gatekeeper) instead of _handlePost
               ElevatedButton(
-                onPressed: _isPosting ? null : _handlePost,
+                onPressed: _isPosting ? null : _handlePostAction,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF714611),
                   shape: RoundedRectangleBorder(

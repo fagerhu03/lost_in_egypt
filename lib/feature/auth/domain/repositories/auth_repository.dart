@@ -18,19 +18,23 @@ abstract class AuthRepository {
     required String password
   });
 
-  Future<Either<Failure, void>> forgetPassword({
-    required String email
-  });
+  Future<Either<Failure, void>> forgetPassword({required String email});
 
   Future<Either<Failure, UserEntity?>> signInWithGoogle();
   
-  
   Future<Either<Failure, UserEntity?>> signInWithFacebook();
   
+  Future<Either<Failure, UserEntity?>> signInWithApple();
+
   Future<Either<Failure, void>> completeSocialProfile({
     required String birthMonth,
     required String birthDay,
     required String birthYear,
   });
+
   Future<Either<Failure, bool>> checkEmailExists(String email);
+
+  // ✅ NEW METHODS for Edit Profile & Settings
+  Future<Either<Failure, UserEntity>> getUserProfile(String uid);
+  Future<Either<Failure, void>> updateUserProfile(UserEntity user);
 }
