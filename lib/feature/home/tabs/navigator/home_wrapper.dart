@@ -24,7 +24,8 @@ class _HomeWrapperState extends State<HomeWrapper>
   int index = 0;
   bool _isNavBarVisible = true;
 
-  final pages = const [
+  // ✅ FIXED: Static const ensures pages are NEVER recreated during parent rebuilds
+  static const List<Widget> _pages = [
     HomeScreen(),
     CommunityScreen(),
     CameraScreen(),
@@ -90,7 +91,7 @@ class _HomeWrapperState extends State<HomeWrapper>
             });
             _tabController.animateTo(i);
           },
-          children: pages,
+          children: _pages,
         ),
       ),
       bottomNavigationBar: AnimatedSlide(

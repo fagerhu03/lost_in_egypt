@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../auth/login/presentaion/login_screen.dart';
+import '../auth/login/presentation/login_screen.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});

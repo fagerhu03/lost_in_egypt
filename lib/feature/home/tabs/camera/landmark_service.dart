@@ -13,8 +13,7 @@ class LandmarkService {
     final String apiKey = dotenv.env['GOOGLE_CLOUD_VISION_API_KEY'] ?? '';
     
     if (apiKey.isEmpty) {
-      print("⚠️ API Key not found in .env file. Please check your configuration.");
-      return null;
+      throw Exception("API Key not found in .env file. Please check your configuration.");
     }
 
     try {
@@ -76,21 +75,17 @@ class LandmarkService {
             if (landmarks != null && landmarks.isNotEmpty) {
               // Success! Return the name of the first landmark found
               String landmarkName = landmarks[0]['description'];
-              print("✅ Landmark identified: $landmarkName");
               return landmarkName;
             }
           }
         }
-        print("ℹ️ No landmark detected in this image.");
+        return null;
       } else {
-        print("❌ API Error: ${response.statusCode}");
-        print("Body: ${response.body}");
+        throw Exception("API Error: ${response.statusCode} - ${response.body}");
       }
 
     } catch (e) {
-      print("❌ Network or Parsing Error: $e");
+      rethrow;
     }
-    
-    return null; // Return null if nothing found or error occurred
   }
 }

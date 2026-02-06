@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'data/currency_repository.dart';
 
 class CurrencyConverterScreen extends StatefulWidget {
   const CurrencyConverterScreen({super.key});
@@ -9,26 +10,9 @@ class CurrencyConverterScreen extends StatefulWidget {
 }
 
 class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
-  // Exchange rates (relative to USD)
-  static const Map<String, double> exchangeRates = {
-    'USD': 1.0,
-    'EUR': 0.92,
-    'GBP': 0.79,
-    'EGP': 30.5,
-    'SAR': 3.75,
-    'AED': 3.67,
-    'JOD': 0.71,
-    'QAR': 3.64,
-    'KWD': 0.31,
-    'OMR': 0.39,
-    'BHD': 0.38,
-    'JPY': 149.50,
-    'INR': 83.12,
-    'AUD': 1.54,
-    'CAD': 1.36,
-    'CHF': 0.88,
-  };
+  final CurrencyRepository _repository = CurrencyRepository();
 
+  // Currencies list
   final List<String> currencies = [
     'USD',
     'EUR',
@@ -60,7 +44,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
     super.dispose();
   }
 
-  void _convert() {
+  Future<void> _convert() async {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       _showError('Please enter a valid amount');
@@ -69,19 +53,31 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
 
     setState(() => _isConverting = true);
 
-    // Simulate API delay
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        final fromRate = exchangeRates[_fromCurrency] ?? 1.0;
-        final toRate = exchangeRates[_toCurrency] ?? 1.0;
-        final result = (amount / fromRate) * toRate;
+    try {
+      // Fetch rates (Repository handles API -> Local -> Throw)
+      final rates = await _repository.getRates(_fromCurrency);
+      final rate = rates[_toCurrency];
 
-        setState(() {
-          _convertedAmount = result;
-          _isConverting = false;
-        });
+      if (rate != null) {
+        if (mounted) {
+          setState(() {
+            _convertedAmount = amount * rate;
+            _isConverting = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          _showError('Rate not available for $_toCurrency');
+          setState(() => _isConverting = false);
+        }
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        // Show specific error (e.g. "Failed to load... check internet")
+        _showError(e.toString().replaceAll("Exception: ", ""));
+        setState(() => _isConverting = false);
+      }
+    }
   }
 
   void _showError(String message) {
@@ -89,7 +85,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -99,9 +95,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
       final temp = _fromCurrency;
       _fromCurrency = _toCurrency;
       _toCurrency = temp;
-      if (_convertedAmount != null) {
-        _convert();
-      }
+      _convertedAmount = null; // Reset result on swap
     });
   }
 
@@ -172,6 +166,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     onChanged: (value) {
                       if (value != null) {
                         setState(() => _fromCurrency = value);
+                        _convertedAmount = null;
                       }
                     },
                   ),
@@ -222,6 +217,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     onChanged: (value) {
                       if (value != null) {
                         setState(() => _toCurrency = value);
+                        _convertedAmount = null;
                       }
                     },
                   ),
@@ -262,7 +258,9 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                           ? GestureDetector(
                               onTap: () {
                                 _amountController.clear();
-                                setState(() {});
+                                setState(() {
+                                  _convertedAmount = null;
+                                });
                               },
                               child: Icon(
                                 Icons.close,
@@ -276,7 +274,9 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       fontSize: 16,
                       fontFamily: "Marcellus",
                     ),
-                    onChanged: (_) => setState(() {}),
+                    onChanged: (_) => setState(() {
+                      _convertedAmount = null; // Clear result when amount changes
+                    }),
                   ),
 
                   const SizedBox(height: 40),

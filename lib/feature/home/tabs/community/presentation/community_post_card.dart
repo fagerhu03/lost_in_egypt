@@ -28,8 +28,10 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
   // --- ACTIONS ---
 
   void _deletePost() {
+    print("🗑️ Attempting to delete post: ${widget.post.id}");
     showDialog(
       context: context,
+      useRootNavigator: true,
       builder: (ctx) => AlertDialog(
         title: const Text("Delete Post"),
         content: const Text("Are you sure? This cannot be undone."),
@@ -41,8 +43,12 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await _repo.deletePost(widget.post.id);
-              if (widget.isDetail && mounted) Navigator.pop(context);
+              try {
+                await _repo.deletePost(widget.post.id);
+                if (widget.isDetail && mounted) Navigator.pop(context);
+              } catch (e) {
+                print("❌ Error deleting post: $e");
+              }
             },
             child: const Text("Delete", style: TextStyle(color: Colors.red)),
           ),
@@ -52,11 +58,13 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
   }
 
   void _editPost() {
+    print("✏️ Attempting to edit post: ${widget.post.id}");
     final TextEditingController editController = TextEditingController(
       text: widget.post.content,
     );
     showDialog(
       context: context,
+      useRootNavigator: true,
       builder: (ctx) => AlertDialog(
         title: const Text("Edit Post"),
         content: TextField(
@@ -72,10 +80,14 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
           TextButton(
             onPressed: () async {
               if (editController.text.trim().isNotEmpty) {
-                await _repo.editPost(
-                  widget.post.id,
-                  editController.text.trim(),
-                );
+                try {
+                  await _repo.editPost(
+                    widget.post.id,
+                    editController.text.trim(),
+                  );
+                } catch (e) {
+                  print("❌ Error editing post: $e");
+                }
               }
               Navigator.pop(ctx);
             },
@@ -115,295 +127,310 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
   @override
   Widget build(BuildContext context) {
     final String currentUid = FirebaseAuth.instance.currentUser?.uid ?? "";
-    final bool isOwner = widget.post.userId == currentUid;
+    final bool isOwner =
+        widget.post.userId.isNotEmpty && (widget.post.userId == currentUid);
 
     final textDark = const Color(0xFF4A3D2E);
     final textMid = const Color(0xFF7A6A55);
     final activeColor = const Color(0xFFE6A44A);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFEF0),
         borderRadius: BorderRadius.circular(18),
-        onTap: widget.onTap,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFEF0),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFFFFEF0)),
-            boxShadow: [
-              BoxShadow(
-                blurRadius: 10,
-                offset: const Offset(0, 6),
-                color: Colors.black.withOpacity(0.06),
+        border: Border.all(color: const Color(0xFFFFFEF0)),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+            color: Colors.black.withOpacity(0.06),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. HEADER (Excludes menu from navigation tap)
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 17,
+                backgroundColor: const Color(0xFF2E1F16),
+                backgroundImage: (widget.post.userAvatar.isNotEmpty)
+                    ? NetworkImage(widget.post.userAvatar)
+                    : null,
+                child: widget.post.userAvatar.isEmpty
+                    ? const Icon(
+                        Icons.person,
+                        size: 20,
+                        color: Color(0xFFE6A44A),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            widget.post.userName,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: textDark,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          widget.post.userFlag,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.post.timeAgo,
+                      style: TextStyle(color: textMid, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ⭐ MENU (Replaced PopupMenuButton with stable IconButton + BottomSheet)
+              IconButton(
+                icon: Icon(Icons.more_horiz_rounded, color: textMid),
+                onPressed: () {
+                  final String myUid =
+                      FirebaseAuth.instance.currentUser?.uid ?? "";
+                  final bool amIOwner = widget.post.userId.isNotEmpty &&
+                      (widget.post.userId == myUid);
+
+                  showModalBottomSheet(
+                    context: context,
+                    useRootNavigator: true,
+                    backgroundColor: Colors.white,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    builder: (ctx) => SafeArea(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (amIOwner) ...[
+                            ListTile(
+                              leading: const Icon(Icons.edit),
+                              title: const Text("Edit Post"),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                Future.delayed(
+                                    const Duration(milliseconds: 100),
+                                    () => _editPost());
+                              },
+                            ),
+                            ListTile(
+                              leading:
+                                  const Icon(Icons.delete, color: Colors.red),
+                              title: const Text("Delete Post",
+                                  style: TextStyle(color: Colors.red)),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                Future.delayed(
+                                    const Duration(milliseconds: 100),
+                                    () => _deletePost());
+                              },
+                            ),
+                          ],
+                          if (!amIOwner)
+                            ListTile(
+                              leading:
+                                  const Icon(Icons.flag, color: Colors.orange),
+                              title: const Text("Report Post"),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                _reportPost();
+                              },
+                            ),
+                          const SizedBox(height: 10),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
+
+          const SizedBox(height: 10),
+
+          // 2. NAVIGATION AREA (Wrapped in Material/InkWell)
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 17,
-                    backgroundColor: const Color(0xFF2E1F16),
-                    backgroundImage: (widget.post.userAvatar.isNotEmpty)
-                        ? NetworkImage(widget.post.userAvatar)
-                        : null,
-                    child: widget.post.userAvatar.isEmpty
-                        ? const Icon(
-                            Icons.person,
-                            size: 20,
-                            color: Color(0xFFE6A44A),
-                          )
-                        : null,
+                  Text(
+                    widget.post.content,
+                    style: TextStyle(
+                      color: textDark,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      fontFamily: "Mako",
+                      height: 1.4,
+                    ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+
+                  // Location Chip
+                  if (widget.post.locationName != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xff4D5420).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Flexible(
-                              child: Text(
-                                widget.post.userName,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: textDark,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
-                                ),
-                              ),
+                            const Icon(
+                              Icons.location_on,
+                              size: 14,
+                              color: Color(0xff4D5420),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 4),
                             Text(
-                              widget.post.userFlag,
-                              style: const TextStyle(fontSize: 13),
+                              widget.post.locationName!,
+                              style: const TextStyle(
+                                color: Color(0xff4D5420),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.post.timeAgo,
-                          style: TextStyle(color: textMid, fontSize: 12),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
 
-                  // ⭐ MENU (Delete, Edit, Report)
-                  PopupMenuButton<String>(
-                    icon: Icon(Icons.more_horiz_rounded, color: textMid),
-                    // 👇 THIS IS THE FIX: Ensure all 3 map to functions
-                    onSelected: (value) {
-                      if (value == 'delete') _deletePost();
-                      if (value == 'edit') _editPost();
-                      if (value == 'report') _reportPost();
-                    },
-                    itemBuilder: (context) => [
-                      if (isOwner) ...[
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit, size: 18),
-                              SizedBox(width: 8),
-                              Text("Edit"),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete, color: Colors.red, size: 18),
-                              SizedBox(width: 8),
-                              Text(
-                                "Delete",
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (!isOwner)
-                        const PopupMenuItem(
-                          value: 'report',
-                          child: Row(
-                            children: [
-                              Icon(Icons.flag, color: Colors.orange, size: 18),
-                              SizedBox(width: 8),
-                              Text("Report"),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-
-              // Content
-              Text(
-                widget.post.content,
-                style: TextStyle(
-                  color: textDark,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  fontFamily: "Mako", // Using the font you requested
-                  height: 1.4,
-                ),
-              ),
-
-              // Location Chip
-              if (widget.post.locationName != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Color(0xff4D5420).withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  // Images
+                  if (widget.post.images.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Column(
                       children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: Color(0xff4D5420),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.post.locationName!,
-                          style: const TextStyle(
-                            color: Color(0xff4D5420),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-              // Images
-              if (widget.post.images.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Column(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        height: widget.isDetail ? 400 : 220,
-                        width: double.infinity,
-                        color: widget.isDetail
-                            ? Colors.black.withOpacity(0.03)
-                            : Colors.transparent,
-                        child: PageView.builder(
-                          itemCount: widget.post.images.length,
-                          onPageChanged: (index) =>
-                              setState(() => _currentImageIndex = index),
-                          itemBuilder: (context, index) => Image.network(
-                            widget.post.images[index],
-                            fit: widget.isDetail
-                                ? BoxFit.contain
-                                : BoxFit.cover,
-                            errorBuilder: (c, e, s) => Container(
-                              color: Colors.grey.shade200,
-                              child: const Icon(Icons.error),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            height: widget.isDetail ? 400 : 220,
+                            width: double.infinity,
+                            color: widget.isDetail
+                                ? Colors.black.withOpacity(0.03)
+                                : Colors.transparent,
+                            child: PageView.builder(
+                              itemCount: widget.post.images.length,
+                              onPageChanged: (index) =>
+                                  setState(() => _currentImageIndex = index),
+                              itemBuilder: (context, index) => Image.network(
+                                widget.post.images[index],
+                                fit: widget.isDetail
+                                    ? BoxFit.contain
+                                    : BoxFit.cover,
+                                errorBuilder: (c, e, s) => Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.error),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                        if (widget.post.images.length > 1)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(widget.post.images.length,
+                                  (index) {
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  height: 6,
+                                  width: _currentImageIndex == index ? 12 : 6,
+                                  decoration: BoxDecoration(
+                                    color: _currentImageIndex == index
+                                        ? activeColor
+                                        : Colors.grey.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+                      ],
                     ),
-                    if (widget.post.images.length > 1)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(widget.post.images.length, (
-                            index,
-                          ) {
-                            return AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              height: 6,
-                              width: _currentImageIndex == index ? 12 : 6,
-                              decoration: BoxDecoration(
-                                color: _currentImageIndex == index
-                                    ? activeColor
-                                    : Colors.grey.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
                   ],
-                ),
-              ],
-
-              const SizedBox(height: 10),
-
-              // Actions
-              Row(
-                children: [
-                  _ActionButton(
-                    icon: widget.post.isLikedByMe
-                        ? Icons.thumb_up
-                        : Icons.thumb_up_alt_outlined,
-                    value: widget.post.likes,
-                    color: widget.post.isLikedByMe ? activeColor : textMid,
-                    onTap: () => _repo.togglePostLike(widget.post.id, true),
-                  ),
-                  const SizedBox(width: 14),
-
-                  _ActionButton(
-                    icon: widget.post.isDislikedByMe
-                        ? Icons.thumb_down
-                        : Icons.thumb_down_alt_outlined,
-                    value: widget.post.dislikes,
-                    color: widget.post.isDislikedByMe
-                        ? Colors.red.shade400
-                        : textMid,
-                    onTap: () => _repo.togglePostLike(widget.post.id, false),
-                  ),
-                  const SizedBox(width: 14),
-
-                  _ActionButton(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    value: widget.post.comments,
-                    color: textMid,
-                    onTap: widget.onCommentTap,
-                  ),
-
-                  const Spacer(),
-
-                  InkWell(
-                    onTap: () => _repo.toggleSavePost(
-                      widget.post.id,
-                      widget.post.isSavedByMe,
-                    ),
-                    child: Icon(
-                      widget.post.isSavedByMe
-                          ? Icons.bookmark
-                          : Icons.bookmark_border,
-                      color: widget.post.isSavedByMe ? activeColor : textMid,
-                    ),
-                  ),
                 ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // 3. ACTIONS ROW (Separate from navigation tap)
+          Row(
+            children: [
+              _ActionButton(
+                icon: widget.post.isLikedByMe
+                    ? Icons.thumb_up
+                    : Icons.thumb_up_alt_outlined,
+                value: widget.post.likes,
+                color: widget.post.isLikedByMe ? activeColor : textMid,
+                onTap: () => _repo.togglePostLike(widget.post.id, true),
+              ),
+              const SizedBox(width: 14),
+              _ActionButton(
+                icon: widget.post.isDislikedByMe
+                    ? Icons.thumb_down
+                    : Icons.thumb_down_alt_outlined,
+                value: widget.post.dislikes,
+                color:
+                    widget.post.isDislikedByMe ? Colors.red.shade400 : textMid,
+                onTap: () => _repo.togglePostLike(widget.post.id, false),
+              ),
+              const SizedBox(width: 14),
+              _ActionButton(
+                icon: Icons.chat_bubble_outline_rounded,
+                value: widget.post.comments,
+                color: textMid,
+                onTap: widget.onCommentTap,
+              ),
+              const Spacer(),
+              InkWell(
+                onTap: () => _repo.toggleSavePost(
+                  widget.post.id,
+                  widget.post.isSavedByMe,
+                ),
+                child: Icon(
+                  widget.post.isSavedByMe
+                      ? Icons.bookmark
+                      : Icons.bookmark_border,
+                  color: widget.post.isSavedByMe ? activeColor : textMid,
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -428,11 +455,11 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Color(0xff714611)),
+          Icon(icon, size: 20, color: const Color(0xff714611)),
           const SizedBox(width: 6),
           Text(
             "$value",
-            style: TextStyle(
+            style: const TextStyle(
               color: Color(0xff714611),
               fontWeight: FontWeight.w800,
               fontSize: 13,

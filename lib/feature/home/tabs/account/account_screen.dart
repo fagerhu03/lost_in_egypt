@@ -13,7 +13,6 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   String _profileImageUrl = "";
-  bool _isLoading = false;
 
   static const Color _bg = Color(0xFFF6F2E6);
   static const Color _text = Color(0xFF714611);

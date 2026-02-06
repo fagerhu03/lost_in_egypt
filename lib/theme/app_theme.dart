@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lost_in_egypt/them/theme.dart';
+import 'package:lost_in_egypt/theme/theme.dart';
 
 class AppTheme {
   // LIGHT THEME

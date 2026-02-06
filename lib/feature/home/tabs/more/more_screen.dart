@@ -1,11 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import '../../../auth/data/models/user.dart';
 import '../navigator/widget/account_menu_button.dart';
 import 'settings_screen.dart';
 import 'currency_converter_screen.dart';
 import 'translator_screen.dart';
+import 'data/settings_repository.dart';
 
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
@@ -15,6 +13,7 @@ class MoreScreen extends StatefulWidget {
 }
 
 class _MoreScreenState extends State<MoreScreen> {
+  final SettingsRepository _repository = SettingsRepository();
   String? _profileImageUrl;
 
   @override
@@ -23,32 +22,19 @@ class _MoreScreenState extends State<MoreScreen> {
     _loadUserProfile();
   }
 
-  // ✅ Fetch user photo from Firestore on init
+  // ✅ Fetch user photo from Repository on init
   Future<void> _loadUserProfile() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
-      if (doc.exists) {
-        final user = UserModel.fromMap(doc.data()!, doc.id);
-        if (mounted) {
-          setState(() {
-            _profileImageUrl = user.profileImageUrl;
-          });
-        }
-      }
-    } catch (_) {
-      // Silent fail
+    final user = await _repository.fetchCurrentUser();
+    if (user != null && mounted) {
+      setState(() {
+        _profileImageUrl = user.profileImageUrl;
+      });
     }
   }
 
   Future<void> _handleSignOut() async {
     // ✅ Clear state before signing out
-    await FirebaseAuth.instance.signOut();
+    await _repository.signOut();
     if (mounted) {
       Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     }

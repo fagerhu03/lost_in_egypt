@@ -24,9 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _fetchUserProfile();
-    
-    // 🔧 Uncomment this line to upload data (run ONCE then comment it back)
-    //_uploadNewDataset();
   }
 
   Future<void> _fetchUserProfile() async {
@@ -56,86 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 🔧 FIXED: Now uploads importance and tags
-  // Future<void> _uploadNewDataset() async {
-  //   print("🚀 STARTING UPLOAD...");
-
-  //   try {
-  //     1. Load the JSON file from assets
-  //     final String response = await rootBundle.loadString('assets/final_places_clean_v2.json');
-  //     final List<dynamic> data = json.decode(response);
-
-  //     final firestore = FirebaseFirestore.instance;
-  //     int count = 0;
-
-  //     2. Loop through every place and upload
-  //     for (var item in data) {
-  //       Convert JSON coordinates to Firestore GeoPoint
-  //       double lat = item['coordinate']['latitude'];
-  //       double lng = item['coordinate']['longitude'];
-
-  //       🆕 Get importance (default to 5 if not present)
-  //       int importance = item['importance'] ?? 5;
-
-  //       🆕 Get tags (default to empty list if not present)
-  //       List<String> tags = [];
-  //       if (item['tags'] != null) {
-  //         tags = List<String>.from(item['tags']);
-  //       }
-
-  //       await firestore.collection('places').doc(item['id']).set({
-  //         'id': item['id'],
-  //         'title': item['title'],
-  //         'category': item['category'],
-  //         'coordinate': GeoPoint(lat, lng),
-  //         'description': item['description'],
-  //         'imagePath': item['imagePath'],
-  //         'locationAddress': item['locationAddress'],
-  //         'rating': item['rating'],
-  //         'isOpenNow': item['isOpenNow'],
-          
-  //         🆕 IMPORTANT: These were missing before!
-  //         'importance': importance,
-  //         'tags': tags,
-
-  //         Defaults for fields we didn't scrape
-  //         'price': 0.0,
-  //         'duration': '2 hours',
-  //         'weather': '25°C',
-  //       }, SetOptions(merge: true));
-
-  //       count++;
-  //       if (count % 10 == 0) print("   Saved $count places...");
-  //     }
-
-  //     print("✅ SUCCESS! Uploaded $count places to Firestore.");
-
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text("Successfully added $count new places!")),
-  //       );
-  //     }
-
-  //   } catch (e) {
-  //     print("❌ ERROR UPLOADING: $e");
-  //   }
-  // }
-
-  // 🔧 Optional: Clear all places before re-uploading
-  // Future<void> _clearPlacesCollection() async {
-  //   print("🗑️ Clearing places collection...");
-  //   final firestore = FirebaseFirestore.instance;
-  //   final snapshot = await firestore.collection('places').get();
-    
-  //   int count = 0;
-  //   for (var doc in snapshot.docs) {
-  //     await doc.reference.delete();
-  //     count++;
-  //     if (count % 50 == 0) print("   Deleted $count places...");
-  //   }
-    
-  //   print("✅ Cleared $count places");
-  // }
 
   @override
   Widget build(BuildContext context) {

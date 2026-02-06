@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../auth/data/models/user.dart';
+import 'data/settings_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,6 +11,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen>
     with WidgetsBindingObserver {
+  final SettingsRepository _repository = SettingsRepository();
   UserModel? _currentUser;
   bool _isLoading = true;
 
@@ -37,22 +37,16 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _loadData() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get();
-      if (doc.exists) {
+      final user = await _repository.fetchCurrentUser();
+      if (mounted) {
         setState(() {
-          _currentUser = UserModel.fromMap(doc.data()!, doc.id);
+          _currentUser = user;
           _isLoading = false;
         });
       }
     } catch (_) {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -60,32 +54,36 @@ class _SettingsScreenState extends State<SettingsScreen>
     if (_currentUser == null) return;
 
     // Optimistic Update locally
+    final updatedUser = UserModel(
+      id: _currentUser!.id,
+      email: _currentUser!.email,
+      firstName: _currentUser!.firstName,
+      lastName: _currentUser!.lastName,
+      birthDate: _currentUser!.birthDate,
+      role: _currentUser!.role,
+      profileImageUrl: _currentUser!.profileImageUrl,
+      phoneNumber: _currentUser!.phoneNumber,
+      nationality: _currentUser!.nationality,
+      isNotificationsEnabled: key == 'notif'
+          ? value
+          : _currentUser!.isNotificationsEnabled,
+      isDarkMode: key == 'theme' ? value : _currentUser!.isDarkMode,
+      language: key == 'lang' ? value : _currentUser!.language,
+      createdAt: _currentUser!.createdAt,
+      phoneVerified: _currentUser!.phoneVerified,
+      emailVerified: _currentUser!.emailVerified,
+      instagramHandle: _currentUser!.instagramHandle,
+      twitterHandle: _currentUser!.twitterHandle,
+      bio: _currentUser!.bio,
+      interests: _currentUser!.interests,
+    );
+
     setState(() {
-      _currentUser = UserModel(
-        id: _currentUser!.id,
-        email: _currentUser!.email,
-        firstName: _currentUser!.firstName,
-        lastName: _currentUser!.lastName,
-        birthDate: _currentUser!.birthDate,
-        role: _currentUser!.role,
-        profileImageUrl: _currentUser!.profileImageUrl,
-        phoneNumber: _currentUser!.phoneNumber,
-        nationality: _currentUser!.nationality,
-        // Update specific field
-        isNotificationsEnabled: key == 'notif'
-            ? value
-            : _currentUser!.isNotificationsEnabled,
-        isDarkMode: key == 'theme' ? value : _currentUser!.isDarkMode,
-        language: key == 'lang' ? value : _currentUser!.language,
-        createdAt: _currentUser!.createdAt,
-      );
+      _currentUser = updatedUser;
     });
 
-    // Save to DB
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(_currentUser!.id)
-        .set(_currentUser!.toMap(), SetOptions(merge: true));
+    // Save to DB via Repository
+    await _repository.updateSetting(_currentUser!, key, value);
   }
 
   @override
