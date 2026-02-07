@@ -53,8 +53,6 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     '🌅 Sunset',
   ];
 
-  final List<String> _roles = ['tourist', 'local', 'guide'];
-
   @override
   void initState() {
     super.initState();
@@ -75,8 +73,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     }
   }
 
-  Future<void> _uploadProfileImage() async {
-    if (_selectedImage == null || _firebaseUser == null) return;
+  Future<bool> _uploadProfileImage() async {
+    if (_selectedImage == null || _firebaseUser == null) return false;
 
     setState(() => _isUploadingImage = true);
 
@@ -96,7 +94,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         debugPrint('Upload progress: $progress%');
       });
 
-      await uploadTask;
+      // ✅ FIX: Use whenComplete and timeout to prevent hanging
+      await uploadTask.whenComplete(() {}).timeout(const Duration(seconds: 45));
       final imageUrl = await ref.getDownloadURL();
 
       // Update Firestore with new image URL
@@ -108,8 +107,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       // Update local state
       if (mounted) {
         setState(() {
-          _currentUser =
-              _currentUser?.copyWith(profileImageUrl: imageUrl) as UserModel?;
+          _currentUser = _currentUser?.copyWith(profileImageUrl: imageUrl);
           _selectedImage = null;
         });
 
@@ -120,15 +118,18 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           ),
         );
       }
+      return true;
     } catch (e) {
+      debugPrint("Upload error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error uploading photo: $e"),
+            content: Text("Error uploading photo. Please try again."),
             backgroundColor: Colors.red,
           ),
         );
       }
+      return false;
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);
     }
@@ -141,8 +142,10 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(_firebaseUser.uid)
-          .get();
+          .doc(_firebaseUser!.uid)
+          .get()
+          .timeout(const Duration(seconds: 10)); // ✅ FIX: Timeout prevents infinite loading
+
       if (doc.exists) {
         _currentUser = UserModel.fromMap(doc.data()!, doc.id);
 
@@ -162,6 +165,31 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+
+    // ✅ AUTO-VERIFY: Check if logged in via Google/Facebook (Background Task)
+    if (_currentUser != null && mounted) {
+      bool isSocialLogin = _firebaseUser!.providerData.any((userInfo) =>
+          userInfo.providerId == 'google.com' ||
+          userInfo.providerId == 'facebook.com');
+
+      if (isSocialLogin && !_currentUser!.emailVerified) {
+        try {
+          debugPrint("Auto-verifying email for social login user");
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(_currentUser!.id)
+              .update({'emailVerified': true});
+
+          if (mounted) {
+            setState(() {
+              _currentUser = _currentUser!.copyWith(emailVerified: true);
+            });
+          }
+        } catch (e) {
+          debugPrint("Error auto-verifying: $e");
+        }
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -169,7 +197,11 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
     // Upload image first if one was selected
     if (_selectedImage != null) {
-      await _uploadProfileImage();
+      final success = await _uploadProfileImage();
+      if (!success) {
+         // Stop if upload failed
+         return; 
+      }
     }
 
     if (_completePhoneNumber.isNotEmpty && _completePhoneNumber.length < 10) {
@@ -230,7 +262,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(updatedUser.id)
-          .set(updatedUser.toMap(), SetOptions(merge: true));
+          .set(updatedUser.toMap(), SetOptions(merge: true))
+          .timeout(const Duration(seconds: 10)); // ✅ Timeout for save too
 
       if ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty) {
         await FirebaseFirestore.instance
@@ -305,6 +338,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                             const SizedBox(height: 20),
 
                             _buildLabel("Email"),
+                            // ✅ VISUAL HINT: Read-only visual indication
                             _buildField(_emailController, readOnly: true),
                             const SizedBox(height: 20),
 
@@ -496,19 +530,25 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF8F2),
+        // ✅ VISUAL HINT: Different background for read-only
+        color: readOnly ? Colors.grey.withOpacity(0.15) : const Color(0xFFFBF8F2),
         borderRadius: BorderRadius.circular(25),
-        boxShadow: const [
+        boxShadow: readOnly ? [] : const [
           BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
         ],
+        border: readOnly ? Border.all(color: Colors.grey.withOpacity(0.3)) : null,
       ),
       child: TextField(
         controller: controller,
         readOnly: readOnly,
-        style: const TextStyle(color: Color(0xFF5A3E18)),
-        decoration: const InputDecoration(
+        style: TextStyle(
+          color: readOnly ? Colors.grey[700] : const Color(0xFF5A3E18),
+        ),
+        decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          // ✅ VISUAL HINT: Lock icon for read-only
+          suffixIcon: readOnly ? const Icon(Icons.lock_outline, color: Colors.grey, size: 20) : null,
         ),
       ),
     );
@@ -686,31 +726,6 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           hintStyle: const TextStyle(color: Color(0xFFB3A896)),
         ),
       ),
-    );
-  }
-
-  Widget _buildPreferenceRow(
-    String label,
-    bool value,
-    Function(bool) onChanged,
-  ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF714611),
-            fontSize: 14,
-            fontFamily: "Marcellus",
-          ),
-        ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: const Color(0xFFC79A00),
-        ),
-      ],
     );
   }
 

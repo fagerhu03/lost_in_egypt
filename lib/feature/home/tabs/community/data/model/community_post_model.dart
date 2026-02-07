@@ -42,6 +42,11 @@ class CommunityPostModel extends CommunityPost {
     final List dislikesList = (data['dislikes'] is List) ? data['dislikes'] : [];
     final List savedList = (data['savedBy'] is List) ? data['savedBy'] : [];
 
+    // Debug Logging
+    if (data['userId'] == null || data['userId'] == '') {
+      print("⚠️ CommunityPostModel: userId is NULL or empty for post ${doc.id}");
+    }
+
     return CommunityPostModel(
       id: doc.id,
       userId: data['userId'] ?? '',

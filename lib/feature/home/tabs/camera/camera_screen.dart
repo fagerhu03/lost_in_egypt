@@ -98,28 +98,33 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
       await _fetchPlaceAndShowSheet(landmarkName);
     } catch (e) {
-      _showErrorDialog("Could not analyze image.");
+      _showErrorDialog(e.toString().replaceAll("Exception: ", ""));
       setState(() => _isAnalyzing = false);
     }
   }
 
   Future<void> _pickFromGallery() async {
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image == null) return;
 
-    setState(() => _isAnalyzing = true);
+      setState(() => _isAnalyzing = true);
 
-    final String? landmarkName =
-    await LandmarkService.identifyLandmark(File(image.path));
+      final String? landmarkName =
+      await LandmarkService.identifyLandmark(File(image.path));
 
-    if (landmarkName == null) {
-      _showErrorDialog("Could not identify any landmark.");
+      if (landmarkName == null) {
+        _showErrorDialog("Could not identify any landmark.");
+        setState(() => _isAnalyzing = false);
+        return;
+      }
+
+      await _fetchPlaceAndShowSheet(landmarkName);
+    } catch (e) {
+      _showErrorDialog(e.toString().replaceAll("Exception: ", ""));
       setState(() => _isAnalyzing = false);
-      return;
     }
-
-    await _fetchPlaceAndShowSheet(landmarkName);
   }
 
   Future<void> _fetchPlaceAndShowSheet(String placeName) async {

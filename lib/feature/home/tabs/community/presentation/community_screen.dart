@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // ✅ Ensure these imports match your project structure
 import '../../navigator/widget/account_menu_button.dart';
@@ -19,9 +20,13 @@ class CommunityScreen extends StatefulWidget {
   State<CommunityScreen> createState() => _CommunityScreenState();
 }
 
-class _CommunityScreenState extends State<CommunityScreen> {
+class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   final FirebaseCommunityRepository _repository = FirebaseCommunityRepository();
   final TextEditingController _postController = TextEditingController();
+  final FocusNode _composerFocusNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
 
   // State Variables
@@ -44,6 +49,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
   @override
   void dispose() {
     _postController.dispose();
+    _composerFocusNode.dispose();
     super.dispose();
   }
 
@@ -191,10 +197,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             final imagePath = place['image'] ?? '';
                             Widget leadingImage;
                             if (imagePath.startsWith('http')) {
-                              leadingImage = Image.network(
-                                imagePath,
+                              leadingImage = CachedNetworkImage(
+                                imageUrl: imagePath,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
+                                placeholder: (context, url) =>
+                                    Container(color: Colors.grey[200]),
+                                errorWidget: (_, __, ___) =>
                                     const Icon(Icons.place, color: Colors.grey),
                               );
                             } else {
@@ -288,7 +296,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
         _selectedLocationName = null;
         _selectedLocationId = null;
       });
-      if (mounted) FocusScope.of(context).unfocus();
+      if (mounted) _composerFocusNode.unfocus();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -308,6 +316,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: const Color(0xFFFFFEF0),
       body: Stack(
@@ -385,6 +394,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             }
 
                             return ListView.separated(
+                              key: const PageStorageKey('community_list'), // ✅ KEEP SCROLL POSITION
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                               ),
@@ -394,6 +404,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                               itemBuilder: (context, index) {
                                 final post = filteredPosts[index];
                                 return CommunityPostCard(
+                                  key: ValueKey(post.id),
                                   post: post,
                                   onTap: () {
                                     Navigator.push(
@@ -538,8 +549,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 backgroundColor: Colors.grey.shade200,
                 backgroundImage:
                     (_profileImageUrl != null && _profileImageUrl!.isNotEmpty)
-                    ? NetworkImage(_profileImageUrl!)
-                    : null,
+                        ? CachedNetworkImageProvider(_profileImageUrl!)
+                        : null,
                 child: (_profileImageUrl == null || _profileImageUrl!.isEmpty)
                     ? const Icon(Icons.person, size: 20)
                     : null,
@@ -548,6 +559,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
               Expanded(
                 child: TextField(
                   controller: _postController,
+                  focusNode: _composerFocusNode,
                   maxLines: null,
                   decoration: InputDecoration(
                     hintText: "Share your thoughts...",

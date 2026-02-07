@@ -1,22 +1,16 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle, ByteData;
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
 import './data/map_repository.dart';
 import '../home/data/models/map_item_models.dart';
-// import './domain/place_importance.dart';
 import './services/marker_filter_service.dart';
 import './services/map_focus_service.dart';
+import './services/map_marker_service.dart';
 import './place_detail_screen.dart';
-
-class _UiCategory {
-  final String id;
-  final String label;
-  final String icon;
-  const _UiCategory(this.id, this.label, this.icon);
-}
+import './map_config.dart';
+import './widgets/map_filter_sheet.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -27,6 +21,8 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   final MapRepository _repository = MapRepository();
+  final MapMarkerService _markerService = MapMarkerService();
+  
   GoogleMapController? _mapController;
 
   Set<Marker> _markers = {};
@@ -45,72 +41,15 @@ class _MapScreenState extends State<MapScreen> {
   String? _darkMapStyle;
   Brightness? _lastBrightness;
 
-  // ═══════════════════════════════════════════════════════════
-  // 🎨 CUSTOM MARKER ICONS
-  // ═══════════════════════════════════════════════════════════
-
-  Map<String, BitmapDescriptor> _markerIcons = {};
-  bool _iconsLoaded = false;
-
-  // Categories to EXCLUDE from the map
-  static const Set<String> _excludedCategories = {
-    'sports',
-    'health',
-    'government',
-  };
-
-  // Category mapping: data category -> pin file name
-  // Each category now has its own pin!
-  static const Map<String, String> _categoryToPinMap = {
-    'tourism': 'tourism',
-    'historical': 'historical',
-    'museum': 'museum',
-    'hotel': 'hotels',
-    'food': 'resturants',
-    'nature': 'nature',
-    'entertainment': 'entertainment',
-    'shopping': 'shopping',
-    'transport': 'transport',
-    'religious': 'religious',
-    'education': 'default',
-  };
-
-  // Marker size - adjust if needed
-  static const int _markerSize = 120;
-
-  static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(30.0444, 31.2357),
-    zoom: 10,
-  );
-
-  // ═══════════════════════════════════════════════════════════
-  // 📂 CATEGORIES
-  // ═══════════════════════════════════════════════════════════
-
-  static const List<_UiCategory> _categories = [
-    _UiCategory('all', 'All', '🗺️'),
-    _UiCategory('tourism', 'Tourism', '🏛️'),
-    _UiCategory('historical', 'Historical', '🏺'),
-    _UiCategory('museum', 'Museums', '🖼️'),
-    _UiCategory('hotel', 'Hotels', '🏨'),
-    _UiCategory('religious', 'Religious', '🕌'),
-    _UiCategory('food', 'Food & Dining', '🍽️'),
-    _UiCategory('nature', 'Nature', '🌿'),
-    _UiCategory('entertainment', 'Entertainment', '🎭'),
-    _UiCategory('education', 'Education', '🎓'),
-    _UiCategory('shopping', 'Shopping', '🛍️'),
-    _UiCategory('transport', 'Transport', '🚌'),
-  ];
-
-  // ═══════════════════════════════════════════════════════════
-  // 🎬 LIFECYCLE METHODS
-  // ═══════════════════════════════════════════════════════════
-
   @override
   void initState() {
     super.initState();
-    _loadCustomMarkerIcons();
-    _checkLocationPermission();
+    _initializeMap();
+  }
+
+  Future<void> _initializeMap() async {
+    await _markerService.loadCustomMarkerIcons();
+    await _checkLocationPermission();
     _loadByCategory('all');
     MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequested);
   }
@@ -133,126 +72,8 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // 🎨 CUSTOM PNG MARKER LOADING - ALL YOUR PINS
-  // ═══════════════════════════════════════════════════════════
-
-  Future<void> _loadCustomMarkerIcons() async {
-    try {
-      // All your pin files
-      final pinNames = [
-        'default',
-        'entertainment',
-        'historical',
-        'hotels',
-        'museum',
-        'nature',
-        'religious',
-        'resturants',
-        'shopping',
-        'tourism',
-        'transport',
-      ];
-
-      int failedCount = 0;
-
-      for (final pinName in pinNames) {
-        try {
-          final icon = await _loadPngMarkerIcon(
-            'assets/pins/$pinName.png',
-            _markerSize,
-          );
-          _markerIcons[pinName] = icon;
-          debugPrint('✅ Loaded marker: $pinName');
-        } catch (e) {
-          debugPrint('⚠️ Failed to load marker $pinName: $e');
-          _markerIcons[pinName] = BitmapDescriptor.defaultMarker;
-          failedCount++;
-        }
-      }
-
-      _iconsLoaded = true;
-
-      if (_allItems.isNotEmpty && mounted) {
-        _updateVisibleMarkers();
-      }
-
-      // ✅ NEW: Log summary of load results
-      if (failedCount > 0) {
-        debugPrint(
-          '⚠️ Marker Loading Summary: ${pinNames.length - failedCount}/${pinNames.length} loaded successfully',
-        );
-      } else {
-        debugPrint(
-          '🎨 All custom markers loaded! Total: ${_markerIcons.length}',
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ Error loading custom markers: $e');
-      _iconsLoaded = true;
-
-      // ✅ NEW: Fallback - use default markers for all
-      for (final name in [
-        'default',
-        'entertainment',
-        'historical',
-        'hotels',
-        'museum',
-        'nature',
-        'religious',
-        'resturants',
-        'shopping',
-        'tourism',
-        'transport',
-      ]) {
-        _markerIcons[name] = BitmapDescriptor.defaultMarker;
-      }
-    }
-  }
-
-  Future<BitmapDescriptor> _loadPngMarkerIcon(
-    String assetPath,
-    int width,
-  ) async {
-    final ByteData data = await rootBundle.load(assetPath);
-
-    final ui.Codec codec = await ui.instantiateImageCodec(
-      data.buffer.asUint8List(),
-      targetWidth: width,
-    );
-
-    final ui.FrameInfo frameInfo = await codec.getNextFrame();
-
-    final ByteData? byteData = await frameInfo.image.toByteData(
-      format: ui.ImageByteFormat.png,
-    );
-
-    frameInfo.image.dispose();
-
-    if (byteData == null) {
-      throw Exception('Failed to convert image to bytes');
-    }
-
-    return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
-  }
-
-  BitmapDescriptor _getMarkerIconByCategory(MapItem item, bool isSelected) {
-    if (!_iconsLoaded || _markerIcons.isEmpty) {
-      return BitmapDescriptor.defaultMarker;
-    }
-
-    final category = item.category.toLowerCase();
-    final pinName = _categoryToPinMap[category] ?? 'default';
-
-    if (_markerIcons.containsKey(pinName)) {
-      return _markerIcons[pinName]!;
-    }
-
-    return _markerIcons['default'] ?? BitmapDescriptor.defaultMarker;
-  }
-
   bool _shouldShowItem(MapItem item) {
-    return !_excludedCategories.contains(item.category.toLowerCase());
+    return !MapConfig.excludedCategories.contains(item.category.toLowerCase());
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -303,7 +124,7 @@ class _MapScreenState extends State<MapScreen> {
           title: item.title,
           snippet: item.category.toUpperCase(),
         ),
-        icon: _getMarkerIconByCategory(item, isSelected),
+        icon: _markerService.getMarkerIconByCategory(item, isSelected),
         anchor: const Offset(0.5, 1.0),
         onTap: () => _onMarkerTapped(item),
       );
@@ -520,10 +341,6 @@ class _MapScreenState extends State<MapScreen> {
     _updateVisibleMarkers();
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // 📂 CATEGORY SHEET
-  // ═══════════════════════════════════════════════════════════
-
   Future<void> _openCategorySheet() async {
     final chosen = await showModalBottomSheet<String>(
       context: context,
@@ -532,140 +349,10 @@ class _MapScreenState extends State<MapScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.3,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (context, scrollController) {
-            return Column(
-              children: [
-                // Handle bar
-                Container(
-                  margin: const EdgeInsets.only(top: 12, bottom: 8),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                // Title
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      const Text(
-                        "Filter by Category",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _selectedUiCategoryId == 'all'
-                              ? Colors.blue.withOpacity(0.1)
-                              : Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          _selectedUiCategoryId == 'all'
-                              ? 'Zoom Filter ON'
-                              : 'Showing All',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: _selectedUiCategoryId == 'all'
-                                ? Colors.blue
-                                : Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                // Category list
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      final category = _categories[index];
-                      final isSelected = category.id == _selectedUiCategoryId;
-
-                      final count = category.id == 'all'
-                          ? _allItemsCache.where(_shouldShowItem).length
-                          : _allItemsCache
-                                .where(
-                                  (item) =>
-                                      item.category.toLowerCase() ==
-                                      category.id.toLowerCase(),
-                                )
-                                .length;
-
-                      return ListTile(
-                        leading: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Theme.of(
-                                    context,
-                                  ).primaryColor.withOpacity(0.1)
-                                : Colors.grey.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: Text(
-                              category.icon,
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          category.label,
-                          style: TextStyle(
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isSelected
-                                ? Theme.of(context).primaryColor
-                                : null,
-                          ),
-                        ),
-                        subtitle: Text(
-                          category.id == 'all'
-                              ? '$count places • Zoom to see more'
-                              : '$count places',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        trailing: isSelected
-                            ? Icon(
-                                Icons.check_circle,
-                                color: Theme.of(context).primaryColor,
-                              )
-                            : const Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey,
-                              ),
-                        onTap: () => Navigator.pop(context, category.id),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
+        return MapFilterSheet(
+          selectedCategory: _selectedUiCategoryId,
+          allItems: _allItemsCache,
+          onCategorySelected: (category) => Navigator.pop(context, category),
         );
       },
     );
@@ -685,7 +372,7 @@ class _MapScreenState extends State<MapScreen> {
         children: [
           // 🗺️ GOOGLE MAP
           GoogleMap(
-            initialCameraPosition: _initialPosition,
+            initialCameraPosition: MapConfig.initialPosition,
             markers: _markers,
             myLocationEnabled: _isLocationPermissionGranted,
             myLocationButtonEnabled: false,
@@ -772,10 +459,10 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                   if (_selectedUiCategoryId != 'all')
                     Text(
-                      _categories
+                      MapConfig.categories
                           .firstWhere(
                             (c) => c.id == _selectedUiCategoryId,
-                            orElse: () => const _UiCategory('', 'Unknown', ''),
+                            orElse: () => const UiCategory('', 'Unknown', ''),
                           )
                           .label,
                       style: TextStyle(
@@ -822,10 +509,10 @@ class _MapScreenState extends State<MapScreen> {
                     if (_selectedUiCategoryId != 'all') ...[
                       const SizedBox(width: 6),
                       Text(
-                        _categories
+                        MapConfig.categories
                             .firstWhere(
                               (c) => c.id == _selectedUiCategoryId,
-                              orElse: () => const _UiCategory('', '', ''),
+                              orElse: () => const UiCategory('', '', ''),
                             )
                             .icon,
                         style: const TextStyle(fontSize: 16),

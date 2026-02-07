@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../auth/data/datasources/auth_remote_datasource.dart';
-import '../../login/presentaion/login_screen.dart'; // Verify this path for your LoginScreen
+import '../../login/presentation/login_screen.dart'; // Verify this path for your LoginScreen
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

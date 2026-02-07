@@ -3,11 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // --- AUTH FEATURE IMPORTS ---
-import '../../forget_password/presentaion/forget_password_screen.dart';
-import '../../sign_up/presentaion/signup_screen.dart';
-import '../../sign_up/presentaion/complete_profile_screen.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
-import '../../data/repository_impl/auth_repository_impl.dart';
+import '../../forget_password/presentation/forget_password_screen.dart';
+import '../../sign_up/presentation/signup_screen.dart';
+import '../../sign_up/presentation/complete_profile_screen.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../../../../core/di/service_locator.dart';
 
 // --- HOME SCREEN IMPORT ---
 // import '../../../home/tabs/home/home_screen.dart';
@@ -90,12 +90,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // B. Dependency Injection (Manual)
-      final dataSource = AuthRemoteDataSourceImpl(
-        firebaseAuth: FirebaseAuth.instance,
-        firestore: FirebaseFirestore.instance,
-      );
-      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+      // B. Dependency Injection (Using GetIt)
+      final repository = sl<AuthRepository>();
 
       // C. Call Repository
       final result = await repository.login(
@@ -163,11 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleGoogleLogin() async {
     setState(() => _isLoading = true);
     try {
-      final dataSource = AuthRemoteDataSourceImpl(
-        firebaseAuth: FirebaseAuth.instance,
-        firestore: FirebaseFirestore.instance,
-      );
-      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+      final repository = sl<AuthRepository>();
 
       final result = await repository.signInWithGoogle();
 
@@ -215,11 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleFacebookLogin() async {
     setState(() => _isLoading = true);
     try {
-      final dataSource = AuthRemoteDataSourceImpl(
-        firebaseAuth: FirebaseAuth.instance,
-        firestore: FirebaseFirestore.instance,
-      );
-      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+      final repository = sl<AuthRepository>();
 
       final result = await repository.signInWithFacebook();
 
@@ -259,11 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleAppleLogin() async {
     setState(() => _isLoading = true);
     try {
-      final dataSource = AuthRemoteDataSourceImpl(
-        firebaseAuth: FirebaseAuth.instance,
-        firestore: FirebaseFirestore.instance,
-      );
-      final repository = AuthRepositoryImpl(remoteDataSource: dataSource);
+      final repository = sl<AuthRepository>();
 
       final result = await repository.signInWithApple();
 
