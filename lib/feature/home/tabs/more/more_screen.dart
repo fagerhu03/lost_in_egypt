@@ -43,14 +43,14 @@ class _MoreScreenState extends State<MoreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F2E6),
+      backgroundColor: const Color(0xFFFCFBE8),
       body: Stack(
         fit: StackFit.expand,
         children: [
           // Background Pattern
           Positioned.fill(
             child: Opacity(
-              opacity: 0.35,
+              opacity: 0.40,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -74,9 +74,9 @@ class _MoreScreenState extends State<MoreScreen> {
                           child: const Text(
                             "More",
                             style: TextStyle(
-                              fontSize: 34,
+                              fontSize: 30,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF7C6A4D),
+                              color: Color(0x8C4D5420),
                             ),
                           ),
                         ),
@@ -118,6 +118,7 @@ class _MoreScreenState extends State<MoreScreen> {
                       _loadUserProfile();
                     },
                   ),
+                  const SizedBox(height: 12),
 
                   _MoreTile(title: "Help", onTap: () {}),
                   const SizedBox(height: 12),
@@ -170,13 +171,13 @@ class _MoreTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
-        height: 56,
+        height: 60,
         decoration: BoxDecoration(
-          color: const Color(0xFFFBF7ED),
+          color: const Color(0xFFFFFEF0),
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x1A000000),
+              color: Color(0x1A714611),
               blurRadius: 10,
               offset: Offset(0, 3),
             ),

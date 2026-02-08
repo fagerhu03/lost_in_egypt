@@ -89,13 +89,13 @@ class _SettingsScreenState extends State<SettingsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F2E6),
+      backgroundColor: const Color(0xFFFCFBE8),
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Opacity(
-              opacity: 0.35,
+              opacity: 0.4,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -126,9 +126,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                       const Text(
                         "Settings",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 30,
                           fontFamily: "Marcellus",
-                          color: Color(0xFF714611),
+                          color: Color(0x8C4D5420),
                         ),
                       ),
                       const SizedBox(width: 24),
@@ -141,178 +141,178 @@ class _SettingsScreenState extends State<SettingsScreen>
                 Expanded(
                   child: _isLoading
                       ? const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFFC79A00),
-                          ),
-                        )
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFC79A00),
+                    ),
+                  )
                       : ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    children: [
+                      _buildTile(
+                        child: Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
                           children: [
-                            _buildTile(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    "Select Language",
-                                    style: TextStyle(
-                                      color: Color(0xFF7C6A4D),
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        _currentUser?.language ?? "English",
-                                        style: TextStyle(
-                                          color: const Color(
-                                            0xFF714611,
-                                          ).withOpacity(0.5),
-                                        ),
-                                      ),
-                                      const Icon(
-                                        Icons.keyboard_arrow_down,
-                                        color: Color(0xFF714611),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              onTap: () {
-                                _updateSetting(
-                                  'lang',
-                                  _currentUser?.language == "English"
-                                      ? "Arabic"
-                                      : "English",
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 16), // ✅ Gap
-
-                            _buildTile(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    "Notification",
-                                    style: TextStyle(
-                                      color: Color(0xFF7C6A4D),
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
-                                    ),
-                                  ),
-                                  Switch(
-                                    value:
-                                        _currentUser?.isNotificationsEnabled ??
-                                        true,
-                                    onChanged: (v) =>
-                                        _updateSetting('notif', v),
-                                    activeColor: Colors.white,
-                                    activeTrackColor: const Color(0xFF5A3E18),
-                                    inactiveThumbColor: const Color(0xFF5A3E18),
-                                    inactiveTrackColor: Colors.white,
-                                  ),
-                                ],
+                            const Text(
+                              "Select Language",
+                              style: TextStyle(
+                                color: Color(0xFF714611),
+                                fontSize: 16,
+                                fontFamily: "Marcellus",
                               ),
                             ),
-                            const SizedBox(height: 16), // ✅ Gap
-
-                            _buildTile(
-                              child: const Text(
-                                "Saved Card",
-                                style: TextStyle(
-                                  color: Color(0xFF7C6A4D),
-                                  fontSize: 16,
-                                  fontFamily: "Marcellus",
+                            Row(
+                              children: [
+                                Text(
+                                  _currentUser?.language ?? "English",
+                                  style: TextStyle(
+                                    color: const Color(
+                                      0xFF714611,
+                                    ).withOpacity(0.7),
+                                  ),
                                 ),
+                                const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Color(0xFF714611),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        onTap: () {
+                          _updateSetting(
+                            'lang',
+                            _currentUser?.language == "English"
+                                ? "Arabic"
+                                : "English",
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16), // ✅ Gap
+
+                      _buildTile(
+                        child: Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Notification",
+                              style: TextStyle(
+                                color: Color(0xFF7C6A4D),
+                                fontSize: 16,
+                                fontFamily: "Marcellus",
                               ),
                             ),
-                            const SizedBox(height: 16), // ✅ Gap
+                            Switch(
+                              value:
+                              _currentUser?.isNotificationsEnabled ??
+                                  true,
+                              onChanged: (v) =>
+                                  _updateSetting('notif', v),
+                              activeColor: Colors.white,
+                              activeTrackColor: const Color(0xFF5A3E18),
+                              inactiveThumbColor: const Color(0xFF5A3E18),
+                              inactiveTrackColor: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16), // ✅ Gap
 
-                            _buildTile(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    "Theme",
-                                    style: TextStyle(
-                                      color: Color(0xFF7C6A4D),
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
-                                    ),
+                      _buildTile(
+                        child: const Text(
+                          "Saved Card",
+                          style: TextStyle(
+                            color: Color(0xFF7C6A4D),
+                            fontSize: 16,
+                            fontFamily: "Marcellus",
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16), // ✅ Gap
+
+                      _buildTile(
+                        child: Row(
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Theme",
+                              style: TextStyle(
+                                color: Color(0xFF714611),
+                                fontSize: 16,
+                                fontFamily: "Marcellus",
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => _updateSetting(
+                                'theme',
+                                !(_currentUser?.isDarkMode ?? false),
+                              ),
+                              child: AnimatedContainer(
+                                duration: const Duration(
+                                  milliseconds: 300,
+                                ),
+                                width: 60,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF5A3E18),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: const Color(0xFF714611),
                                   ),
-                                  GestureDetector(
-                                    onTap: () => _updateSetting(
-                                      'theme',
-                                      !(_currentUser?.isDarkMode ?? false),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    const Positioned(
+                                      left: 6,
+                                      top: 6,
+                                      child: Icon(
+                                        Icons.wb_sunny,
+                                        size: 18,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                    child: AnimatedContainer(
+                                    const Positioned(
+                                      right: 6,
+                                      top: 6,
+                                      child: Icon(
+                                        Icons.nightlight_round,
+                                        size: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    AnimatedAlign(
+                                      alignment:
+                                      (_currentUser?.isDarkMode ??
+                                          false)
+                                          ? Alignment.centerRight
+                                          : Alignment.centerLeft,
                                       duration: const Duration(
                                         milliseconds: 300,
                                       ),
-                                      width: 60,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF5A3E18),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: const Color(0xFF714611),
+                                      child: Container(
+                                        margin:
+                                        const EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        width: 26,
+                                        height: 26,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.white,
                                         ),
                                       ),
-                                      child: Stack(
-                                        children: [
-                                          const Positioned(
-                                            left: 6,
-                                            top: 6,
-                                            child: Icon(
-                                              Icons.wb_sunny,
-                                              size: 18,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          const Positioned(
-                                            right: 6,
-                                            top: 6,
-                                            child: Icon(
-                                              Icons.nightlight_round,
-                                              size: 18,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          AnimatedAlign(
-                                            alignment:
-                                                (_currentUser?.isDarkMode ??
-                                                    false)
-                                                ? Alignment.centerRight
-                                                : Alignment.centerLeft,
-                                            duration: const Duration(
-                                              milliseconds: 300,
-                                            ),
-                                            child: Container(
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 2,
-                                                  ),
-                                              width: 26,
-                                              height: 26,
-                                              decoration: const BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ],
                         ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -330,7 +330,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         padding: const EdgeInsets.symmetric(horizontal: 20),
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
-          color: const Color(0xFFFBF8F2),
+          color: const Color(0xFFFFFEF0), // ✅ UPDATED HERE
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(

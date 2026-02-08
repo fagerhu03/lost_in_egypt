@@ -14,7 +14,7 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   String _profileImageUrl = "";
 
-  static const Color _bg = Color(0xFFF6F2E6);
+  static const Color _bg = Color(0xffFCFBE8);
   static const Color _text = Color(0xFF714611);
   static const Color _gold = Color(0xFFC79A00);
 
@@ -68,7 +68,7 @@ class _AccountScreenState extends State<AccountScreen> {
           // Pattern
           Positioned.fill(
             child: Opacity(
-              opacity: 0.35,
+              opacity: 0.40,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -107,8 +107,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         Row(
                           children: [
                             Container(
-                              width: 90,
-                              height: 90,
+                              width: 100,
+                              height: 100,
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                               ),
@@ -177,7 +177,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           "Account Settings:",
                           style: TextStyle(
                             color: _text,
-                            fontSize: 16,
+                            fontSize: 20,
                             fontFamily: "Marcellus",
                             fontWeight: FontWeight.w600,
                           ),
@@ -196,7 +196,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                     const EditProfileScreenEnhanced(),
                               ),
                             );
-                            // ✅ Reload profile image after returning from edit
+                            // ✅ Reload profile image after edit
                             _loadProfileImage();
                           },
                         ),
@@ -233,7 +233,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       child: const Text(
                         "Sign out",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
                           fontFamily: "Marcellus",
                           fontWeight: FontWeight.w500,
                         ),
@@ -268,11 +268,11 @@ class _AccountTile extends StatelessWidget {
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFFFBF7ED),
+            color: const Color(0xffFFFEF0),
             borderRadius: BorderRadius.circular(16),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x1A000000),
+                color: Color(0x9E7C6A4D),
                 blurRadius: 10,
                 offset: Offset(0, 3),
               ),
@@ -283,14 +283,14 @@ class _AccountTile extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                  color: Color(0xFF7C6A4D),
-                  fontSize: 14,
+                  color: Color(0xFF714611),
+                  fontSize: 16,
                   fontFamily: "Marcellus",
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const Spacer(),
-              const Icon(Icons.chevron_right, color: Color(0xFF7C6A4D)),
+              const Icon(Icons.chevron_right, color: Color(0xFF714611)),
             ],
           ),
         ),

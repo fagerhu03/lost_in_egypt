@@ -144,7 +144,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           .collection('users')
           .doc(_firebaseUser!.uid)
           .get()
-          .timeout(const Duration(seconds: 10)); // ✅ FIX: Timeout prevents infinite loading
+          .timeout(
+            const Duration(seconds: 10),
+          ); // ✅ FIX: Timeout prevents infinite loading
 
       if (doc.exists) {
         _currentUser = UserModel.fromMap(doc.data()!, doc.id);
@@ -168,9 +170,11 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
     // ✅ AUTO-VERIFY: Check if logged in via Google/Facebook (Background Task)
     if (_currentUser != null && mounted) {
-      bool isSocialLogin = _firebaseUser!.providerData.any((userInfo) =>
-          userInfo.providerId == 'google.com' ||
-          userInfo.providerId == 'facebook.com');
+      bool isSocialLogin = _firebaseUser!.providerData.any(
+        (userInfo) =>
+            userInfo.providerId == 'google.com' ||
+            userInfo.providerId == 'facebook.com',
+      );
 
       if (isSocialLogin && !_currentUser!.emailVerified) {
         try {
@@ -199,8 +203,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     if (_selectedImage != null) {
       final success = await _uploadProfileImage();
       if (!success) {
-         // Stop if upload failed
-         return; 
+        // Stop if upload failed
+        return;
       }
     }
 
@@ -299,13 +303,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F2E6),
+      backgroundColor: const Color(0xFFFCFBE8),
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Opacity(
-              opacity: 0.35,
+              opacity: 0.40,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -431,7 +435,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         title,
         style: const TextStyle(
           color: Color(0xFF714611),
-          fontSize: 16,
+          fontSize: 20,
           fontFamily: "Marcellus",
           fontWeight: FontWeight.bold,
         ),
@@ -531,24 +535,43 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     return Container(
       decoration: BoxDecoration(
         // ✅ VISUAL HINT: Different background for read-only
-        color: readOnly ? Colors.grey.withOpacity(0.15) : const Color(0xFFFBF8F2),
+        color: readOnly
+            ? Colors.grey.withOpacity(0.15)
+            : const Color(0xFFFFFEF0),
         borderRadius: BorderRadius.circular(25),
-        boxShadow: readOnly ? [] : const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-        ],
-        border: readOnly ? Border.all(color: Colors.grey.withOpacity(0.3)) : null,
+        boxShadow: readOnly
+            ? []
+            : const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+        border: readOnly
+            ? Border.all(color: Color(0xFF714611).withOpacity(0.4))
+            : null,
       ),
       child: TextField(
         controller: controller,
         readOnly: readOnly,
         style: TextStyle(
-          color: readOnly ? Colors.grey[700] : const Color(0xFF5A3E18),
+          color: readOnly ? Color(0xFF714611) : const Color(0xFF5A3E18),
         ),
         decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 16,
+          ),
           // ✅ VISUAL HINT: Lock icon for read-only
-          suffixIcon: readOnly ? const Icon(Icons.lock_outline, color: Colors.grey, size: 20) : null,
+          suffixIcon: readOnly
+              ? const Icon(
+                  Icons.lock_outline,
+                  color: Color(0xFF714611),
+                  size: 20,
+                )
+              : null,
         ),
       ),
     );
@@ -557,7 +580,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Widget _buildBioField() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF8F2),
+        color: const Color(0xFFFFFEF0),
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
@@ -566,7 +589,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       child: TextField(
         controller: _bioController,
         maxLines: 3,
-        style: const TextStyle(color: Color(0xFF5A3E18)),
+        style: const TextStyle(color: Color(0xFF714611)),
         decoration: const InputDecoration(
           border: InputBorder.none,
           contentPadding: EdgeInsets.all(16),
@@ -580,7 +603,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Widget _buildPhoneField() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF8F2),
+        color: const Color(0xFFFFFEF0),
         borderRadius: BorderRadius.circular(25),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
@@ -621,7 +644,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             });
           },
           countryListTheme: CountryListThemeData(
-            backgroundColor: const Color(0xFFF6F2E6),
+            backgroundColor: const Color(0xFFFFFEF0),
             textStyle: const TextStyle(
               fontFamily: "Marcellus",
               color: Color(0xFF5A3E18),
@@ -644,7 +667,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Widget _buildRoleSelector() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF8F2),
+        color: const Color(0xFFFFFEF0),
         borderRadius: BorderRadius.circular(25),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
@@ -683,19 +706,19 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             decoration: BoxDecoration(
               color: isSelected
                   ? const Color(0xFFC79A00)
-                  : const Color(0xFFFBF8F2),
+                  : const Color(0xFFFFFEF0),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isSelected
                     ? const Color(0xFF714611)
-                    : Colors.grey.shade300,
+                    : Color(0xFFF2F1E0),
               ),
             ),
             child: Text(
               interest,
               style: TextStyle(
                 color: isSelected ? Colors.white : const Color(0xFF5A3E18),
-                fontSize: 12,
+                fontSize: 16,
               ),
             ),
           ),
@@ -707,7 +730,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Widget _buildSocialField(TextEditingController controller, String hint) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF8F2),
+        color: const Color(0xFFFFFEF0),
         borderRadius: BorderRadius.circular(25),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
@@ -733,7 +756,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF8F2),
+        color: const Color(0xFFFFFEF0),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade300),
       ),
@@ -744,7 +767,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             "Verification Status",
             style: TextStyle(
               color: Color(0xFF714611),
-              fontSize: 14,
+              fontSize: 16,
               fontFamily: "Marcellus",
               fontWeight: FontWeight.w600,
             ),
@@ -771,7 +794,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           label,
           style: TextStyle(
             color: isVerified ? Colors.green : Colors.grey,
-            fontSize: 13,
+            fontSize: 14,
           ),
         ),
       ],

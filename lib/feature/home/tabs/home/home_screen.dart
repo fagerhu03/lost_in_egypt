@@ -248,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
       width: 120,
       height: 100,
       decoration: BoxDecoration(
-        color: const Color(0xffFFFDF4),
+        color: const Color(0xffFFFEF0),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -281,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
       width: 200,
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
-        color: const Color(0xffFFFDF4),
+        color: const Color(0xffFFFEF0),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -373,9 +373,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _tripCard(String title) {
     return Container(
-      height: 110,
+      height: 150,
       decoration: BoxDecoration(
-        color: const Color(0xffFFFDF4),
+        color: const Color(0xffFFFEF0),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -385,16 +385,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          title,
-          style: const TextStyle(
-            color: Color(0xff714611),
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            fontFamily: "Marcellus",
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            title == "Guide"
+                ? "assets/icons/guide.png"
+                : "assets/icons/solo_trip.png",
+            width: 90,
           ),
-        ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xff714611),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: "Marcellus",
+            ),
+          ),
+        ],
       ),
     );
   }

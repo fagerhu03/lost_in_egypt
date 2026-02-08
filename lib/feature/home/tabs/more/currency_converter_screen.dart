@@ -102,14 +102,14 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F2E6),
+      backgroundColor: const Color(0xFFFCFBE8),
       body: Stack(
         fit: StackFit.expand,
         children: [
           // Background Pattern
           Positioned.fill(
             child: Opacity(
-              opacity: 0.35,
+              opacity: 0.40,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -140,9 +140,9 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       const Text(
                         "Currency Converter",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 30,
                           fontFamily: "Marcellus",
-                          color: Color(0xFF714611),
+                          color: Color(0x8C4D5420),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -171,7 +171,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 10),
 
                   // Swap Button
                   Center(
@@ -199,8 +199,6 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 25),
 
                   // To Currency
                   Text(
@@ -245,7 +243,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         color: const Color(0xFF714611).withOpacity(0.4),
                       ),
                       filled: true,
-                      fillColor: const Color(0xFFFBF8F2),
+                      fillColor: const Color(0xFFFFFEF0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                         borderSide: BorderSide.none,
@@ -385,7 +383,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF8F2),
+        color: const Color(0xFFFFFEF0),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(

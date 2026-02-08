@@ -198,13 +198,14 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F2E6),
+      backgroundColor: const Color(0xFFFCFBE8),
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // Background Pattern
           Positioned.fill(
             child: Opacity(
-              opacity: 0.35,
+              opacity: 0.40,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -213,6 +214,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               ),
             ),
           ),
+
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
