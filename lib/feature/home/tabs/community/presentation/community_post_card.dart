@@ -25,147 +25,184 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
   int _currentImageIndex = 0;
   final FirebaseCommunityRepository _repo = FirebaseCommunityRepository();
 
-  // --- ACTIONS ---
-
   void _deletePost() {
-    print("🗑️ Attempting to delete post: ${widget.post.id}");
     showDialog(
       context: context,
       useRootNavigator: true,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Delete Post"),
-        content: const Text("Are you sure? This cannot be undone."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final onSurface = theme.colorScheme.onSurface;
+        final surface = theme.colorScheme.surface;
+
+        return AlertDialog(
+          backgroundColor: surface,
+          surfaceTintColor: Colors.transparent,
+          title: Text("Delete Post", style: TextStyle(color: onSurface)),
+          content: Text(
+            "Are you sure? This cannot be undone.",
+            style: TextStyle(color: onSurface.withOpacity(0.8)),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                await _repo.deletePost(widget.post.id);
-                if (widget.isDetail && mounted) Navigator.pop(context);
-              } catch (e) {
-                print("❌ Error deleting post: $e");
-              }
-            },
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text("Cancel", style: TextStyle(color: onSurface.withOpacity(0.7))),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                try {
+                  await _repo.deletePost(widget.post.id);
+                  if (widget.isDetail && mounted) Navigator.pop(context);
+                } catch (e) {
+                  debugPrint("❌ Error deleting post: $e");
+                }
+              },
+              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _editPost() {
-    print("✏️ Attempting to edit post: ${widget.post.id}");
-    final TextEditingController editController = TextEditingController(
-      text: widget.post.content,
-    );
+    final TextEditingController editController =
+    TextEditingController(text: widget.post.content);
+
     showDialog(
       context: context,
       useRootNavigator: true,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Edit Post"),
-        content: TextField(
-          controller: editController,
-          maxLines: 4,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final onSurface = theme.colorScheme.onSurface;
+        final surface = theme.colorScheme.surface;
+        final primary = theme.colorScheme.primary;
+
+        return AlertDialog(
+          backgroundColor: surface,
+          surfaceTintColor: Colors.transparent,
+          title: Text("Edit Post", style: TextStyle(color: onSurface)),
+          content: TextField(
+            controller: editController,
+            maxLines: 4,
+            style: TextStyle(color: onSurface),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: primary),
+              ),
+            ),
           ),
-          TextButton(
-            onPressed: () async {
-              if (editController.text.trim().isNotEmpty) {
-                try {
-                  await _repo.editPost(
-                    widget.post.id,
-                    editController.text.trim(),
-                  );
-                } catch (e) {
-                  print("❌ Error editing post: $e");
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text("Cancel", style: TextStyle(color: onSurface.withOpacity(0.7))),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (editController.text.trim().isNotEmpty) {
+                  try {
+                    await _repo.editPost(widget.post.id, editController.text.trim());
+                  } catch (e) {
+                    debugPrint("❌ Error editing post: $e");
+                  }
                 }
-              }
-              Navigator.pop(ctx);
-            },
-            child: const Text("Save"),
-          ),
-        ],
-      ),
+                Navigator.pop(ctx);
+              },
+              child: Text("Save", style: TextStyle(color: primary)),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _reportPost() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Report Post"),
-        content: const Text("Is this content offensive or spam?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final onSurface = theme.colorScheme.onSurface;
+        final surface = theme.colorScheme.surface;
+
+        return AlertDialog(
+          backgroundColor: surface,
+          surfaceTintColor: Colors.transparent,
+          title: Text("Report Post", style: TextStyle(color: onSurface)),
+          content: Text(
+            "Is this content offensive or spam?",
+            style: TextStyle(color: onSurface.withOpacity(0.8)),
           ),
-          TextButton(
-            onPressed: () {
-              _repo.reportPost(widget.post.id, "User Report");
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Report sent. Thank you.")),
-              );
-            },
-            child: const Text("Report", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text("Cancel", style: TextStyle(color: onSurface.withOpacity(0.7))),
+            ),
+            TextButton(
+              onPressed: () {
+                _repo.reportPost(widget.post.id, "User Report");
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Report sent. Thank you.")),
+                );
+              },
+              child: const Text("Report", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    // Visible shadows:
+    // - light mode: darker + more blur
+    // - dark mode: light glow + more spread so you SEE it
+    final cardShadow = BoxShadow(
+      color: isDark ? Colors.white.withOpacity(0.14) : Colors.black.withOpacity(0.14),
+      blurRadius: 18,
+      spreadRadius: 2,
+      offset: const Offset(0, 10),
+    );
+
+    final borderColor =
+    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+
     final String currentUid = FirebaseAuth.instance.currentUser?.uid ?? "";
     final bool isOwner =
         widget.post.userId.isNotEmpty && (widget.post.userId == currentUid);
 
-    final textDark = const Color(0xFF4A3D2E);
-    final textMid = const Color(0xFF7A6A55);
-    final activeColor = const Color(0xFFE6A44A);
+    final activeColor = primary;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFEF0),
+        color: surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFFFEF0)),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-            color: Colors.black.withOpacity(0.06),
-          ),
-        ],
+        border: Border.all(color: borderColor),
+        boxShadow: [cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. HEADER (Excludes menu from navigation tap)
+          // HEADER
           Row(
             children: [
               CircleAvatar(
                 radius: 17,
-                backgroundColor: const Color(0xFF2E1F16),
-                backgroundImage: (widget.post.userAvatar.isNotEmpty)
-                    ? NetworkImage(widget.post.userAvatar)
-                    : null,
+                backgroundColor: onSurface.withOpacity(0.08),
+                backgroundImage:
+                (widget.post.userAvatar.isNotEmpty) ? NetworkImage(widget.post.userAvatar) : null,
                 child: widget.post.userAvatar.isEmpty
-                    ? const Icon(
-                        Icons.person,
-                        size: 20,
-                        color: Color(0xFFE6A44A),
-                      )
+                    ? Icon(Icons.person, size: 20, color: activeColor)
                     : null,
               ),
               const SizedBox(width: 10),
@@ -180,87 +217,84 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                             widget.post.userName,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: textDark,
+                              color: onSurface,
                               fontWeight: FontWeight.w800,
                               fontSize: 14,
                             ),
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          widget.post.userFlag,
-                          style: const TextStyle(fontSize: 13),
-                        ),
+                        Text(widget.post.userFlag, style: const TextStyle(fontSize: 13)),
                       ],
                     ),
                     const SizedBox(height: 2),
                     Text(
                       widget.post.timeAgo,
-                      style: TextStyle(color: textMid, fontSize: 12),
+                      style: TextStyle(color: onSurface.withOpacity(0.65), fontSize: 12),
                     ),
                   ],
                 ),
               ),
 
-              // ⭐ MENU (Replaced PopupMenuButton with stable IconButton + BottomSheet)
               IconButton(
-                icon: Icon(Icons.more_horiz_rounded, color: textMid),
+                icon: Icon(Icons.more_horiz_rounded, color: onSurface.withOpacity(0.6)),
                 onPressed: () {
-                  final String myUid =
-                      FirebaseAuth.instance.currentUser?.uid ?? "";
-                  final bool amIOwner = widget.post.userId.isNotEmpty &&
-                      (widget.post.userId == myUid);
+                  final String myUid = FirebaseAuth.instance.currentUser?.uid ?? "";
+                  final bool amIOwner =
+                      widget.post.userId.isNotEmpty && (widget.post.userId == myUid);
 
                   showModalBottomSheet(
                     context: context,
                     useRootNavigator: true,
-                    backgroundColor: Colors.white,
+                    backgroundColor: surface,
                     shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                     ),
-                    builder: (ctx) => SafeArea(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (amIOwner) ...[
-                            ListTile(
-                              leading: const Icon(Icons.edit),
-                              title: const Text("Edit Post"),
-                              onTap: () {
-                                Navigator.pop(ctx);
-                                Future.delayed(
-                                    const Duration(milliseconds: 100),
-                                    () => _editPost());
-                              },
-                            ),
-                            ListTile(
-                              leading:
-                                  const Icon(Icons.delete, color: Colors.red),
-                              title: const Text("Delete Post",
-                                  style: TextStyle(color: Colors.red)),
-                              onTap: () {
-                                Navigator.pop(ctx);
-                                Future.delayed(
-                                    const Duration(milliseconds: 100),
-                                    () => _deletePost());
-                              },
-                            ),
-                          ],
-                          if (!amIOwner)
-                            ListTile(
-                              leading:
-                                  const Icon(Icons.flag, color: Colors.orange),
-                              title: const Text("Report Post"),
-                              onTap: () {
-                                Navigator.pop(ctx);
-                                _reportPost();
-                              },
-                            ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    ),
+                    builder: (ctx) {
+                      final t = Theme.of(ctx);
+                      final s = t.colorScheme.surface;
+                      final o = t.colorScheme.onSurface;
+
+                      return SafeArea(
+                        child: Container(
+                          color: s,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (amIOwner) ...[
+                                ListTile(
+                                  leading: Icon(Icons.edit, color: o.withOpacity(0.8)),
+                                  title: Text("Edit Post", style: TextStyle(color: o)),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    Future.delayed(const Duration(milliseconds: 100), _editPost);
+                                  },
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.delete, color: Colors.red),
+                                  title: const Text("Delete Post",
+                                      style: TextStyle(color: Colors.red)),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    Future.delayed(const Duration(milliseconds: 100), _deletePost);
+                                  },
+                                ),
+                              ],
+                              if (!amIOwner)
+                                ListTile(
+                                  leading: const Icon(Icons.flag, color: Colors.orange),
+                                  title: Text("Report Post", style: TextStyle(color: o)),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    _reportPost();
+                                  },
+                                ),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -269,7 +303,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
 
           const SizedBox(height: 10),
 
-          // 2. NAVIGATION AREA (Wrapped in Material/InkWell)
+          // NAV AREA
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -281,7 +315,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                   Text(
                     widget.post.content,
                     style: TextStyle(
-                      color: textDark,
+                      color: onSurface,
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                       fontFamily: "Mako",
@@ -289,32 +323,25 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                     ),
                   ),
 
-                  // Location Chip
                   if (widget.post.locationName != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xff4D5420).withOpacity(0.08),
+                          color: primary.withOpacity(0.10),
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: primary.withOpacity(0.18)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.location_on,
-                              size: 14,
-                              color: Color(0xff4D5420),
-                            ),
+                            Icon(Icons.location_on, size: 14, color: primary),
                             const SizedBox(width: 4),
                             Text(
                               widget.post.locationName!,
-                              style: const TextStyle(
-                                color: Color(0xff4D5420),
+                              style: TextStyle(
+                                color: primary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),
@@ -324,7 +351,6 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                       ),
                     ),
 
-                  // Images
                   if (widget.post.images.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Column(
@@ -334,18 +360,16 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                           child: Container(
                             height: widget.isDetail ? 400 : 220,
                             width: double.infinity,
-                            color: widget.isDetail
-                                ? Colors.black.withOpacity(0.03)
-                                : Colors.transparent,
+                            color: isDark
+                                ? Colors.white.withOpacity(0.04)
+                                : Colors.black.withOpacity(0.03),
                             child: PageView.builder(
                               itemCount: widget.post.images.length,
                               onPageChanged: (index) =>
                                   setState(() => _currentImageIndex = index),
                               itemBuilder: (context, index) => Image.network(
                                 widget.post.images[index],
-                                fit: widget.isDetail
-                                    ? BoxFit.contain
-                                    : BoxFit.cover,
+                                fit: widget.isDetail ? BoxFit.contain : BoxFit.cover,
                                 errorBuilder: (c, e, s) => Container(
                                   color: Colors.grey.shade200,
                                   child: const Icon(Icons.error),
@@ -359,18 +383,16 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(widget.post.images.length,
-                                  (index) {
+                              children: List.generate(widget.post.images.length, (index) {
                                 return AnimatedContainer(
                                   duration: const Duration(milliseconds: 300),
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
                                   height: 6,
                                   width: _currentImageIndex == index ? 12 : 6,
                                   decoration: BoxDecoration(
                                     color: _currentImageIndex == index
                                         ? activeColor
-                                        : Colors.grey.withOpacity(0.3),
+                                        : onSurface.withOpacity(0.20),
                                     borderRadius: BorderRadius.circular(3),
                                   ),
                                 );
@@ -387,15 +409,13 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
 
           const SizedBox(height: 10),
 
-          // 3. ACTIONS ROW (Separate from navigation tap)
+          // ACTIONS ROW
           Row(
             children: [
               _ActionButton(
-                icon: widget.post.isLikedByMe
-                    ? Icons.thumb_up
-                    : Icons.thumb_up_alt_outlined,
+                icon: widget.post.isLikedByMe ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
                 value: widget.post.likes,
-                color: widget.post.isLikedByMe ? activeColor : textMid,
+                color: widget.post.isLikedByMe ? activeColor : onSurface.withOpacity(0.65),
                 onTap: () => _repo.togglePostLike(widget.post.id, true),
               ),
               const SizedBox(width: 14),
@@ -404,28 +424,24 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                     ? Icons.thumb_down
                     : Icons.thumb_down_alt_outlined,
                 value: widget.post.dislikes,
-                color:
-                    widget.post.isDislikedByMe ? Colors.red.shade400 : textMid,
+                color: widget.post.isDislikedByMe
+                    ? Colors.red.shade400
+                    : onSurface.withOpacity(0.65),
                 onTap: () => _repo.togglePostLike(widget.post.id, false),
               ),
               const SizedBox(width: 14),
               _ActionButton(
                 icon: Icons.chat_bubble_outline_rounded,
                 value: widget.post.comments,
-                color: textMid,
+                color: onSurface.withOpacity(0.65),
                 onTap: widget.onCommentTap,
               ),
               const Spacer(),
               InkWell(
-                onTap: () => _repo.toggleSavePost(
-                  widget.post.id,
-                  widget.post.isSavedByMe,
-                ),
+                onTap: () => _repo.toggleSavePost(widget.post.id, widget.post.isSavedByMe),
                 child: Icon(
-                  widget.post.isSavedByMe
-                      ? Icons.bookmark
-                      : Icons.bookmark_border,
-                  color: widget.post.isSavedByMe ? activeColor : textMid,
+                  widget.post.isSavedByMe ? Icons.bookmark : Icons.bookmark_border,
+                  color: widget.post.isSavedByMe ? activeColor : onSurface.withOpacity(0.65),
                 ),
               ),
             ],
@@ -451,16 +467,19 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
     return InkWell(
       onTap: onTap,
       child: Row(
         children: [
-          Icon(icon, size: 20, color: const Color(0xff714611)),
+          Icon(icon, size: 20, color: color),
           const SizedBox(width: 6),
           Text(
             "$value",
-            style: const TextStyle(
-              color: Color(0xff714611),
+            style: TextStyle(
+              color: color,
               fontWeight: FontWeight.w800,
               fontSize: 13,
             ),

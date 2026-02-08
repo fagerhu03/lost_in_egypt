@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'landmark_service.dart';
-
-// ✅ Correct relative path based on your existing structure
 import '../home/data/models/map_item_models.dart';
-
 import 'package:lost_in_egypt/feature/home/tabs/map/services/map_focus_service.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -81,7 +79,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   }
 
   Future<void> _captureAndAnalyze() async {
-    if (_controller == null || !_controller!.value.isInitialized || _isAnalyzing) return;
+    if (_controller == null ||
+        !_controller!.value.isInitialized ||
+        _isAnalyzing) return;
 
     try {
       setState(() => _isAnalyzing = true);
@@ -89,6 +89,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       final XFile imageFile = await _controller!.takePicture();
       final String? landmarkName =
       await LandmarkService.identifyLandmark(File(imageFile.path));
+
+      if (!mounted) return;
 
       if (landmarkName == null) {
         _showErrorDialog("Could not identify any landmark.");
@@ -98,6 +100,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
       await _fetchPlaceAndShowSheet(landmarkName);
     } catch (e) {
+      if (!mounted) return;
       _showErrorDialog(e.toString().replaceAll("Exception: ", ""));
       setState(() => _isAnalyzing = false);
     }
@@ -114,6 +117,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       final String? landmarkName =
       await LandmarkService.identifyLandmark(File(image.path));
 
+      if (!mounted) return;
+
       if (landmarkName == null) {
         _showErrorDialog("Could not identify any landmark.");
         setState(() => _isAnalyzing = false);
@@ -122,6 +127,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
       await _fetchPlaceAndShowSheet(landmarkName);
     } catch (e) {
+      if (!mounted) return;
       _showErrorDialog(e.toString().replaceAll("Exception: ", ""));
       setState(() => _isAnalyzing = false);
     }
@@ -144,42 +150,65 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       }
 
       final doc = snapshot.docs.first;
-
-      // ✅ FIX: PlaceModel has fromMap (MapItem does NOT)
       final PlaceModel identifiedPlace = PlaceModel.fromMap(doc.data(), doc.id);
 
       setState(() => _isAnalyzing = false);
       _showResultSheet(identifiedPlace);
     } catch (e) {
+      if (!mounted) return;
       _showErrorDialog("Database error: $e");
       setState(() => _isAnalyzing = false);
     }
   }
 
   void _showResultSheet(PlaceModel place) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    final borderColor =
+    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+
+    final sheetShadow = BoxShadow(
+      color: isDark
+          ? Colors.white.withOpacity(0.12)
+          : Colors.black.withOpacity(0.12),
+      blurRadius: 22,
+      spreadRadius: 2,
+      offset: const Offset(0, -6),
+    );
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
         return Container(
-          height: 500,
-          decoration: const BoxDecoration(
-            color: Color(0xFFFFFDF4),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          height: 520,
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            border: Border.all(color: borderColor),
+            boxShadow: [sheetShadow],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(30)),
                 child: SizedBox(
                   height: 220,
                   child: Image.network(
                     place.imagePath,
                     fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) =>
-                        Container(color: Colors.grey[300], child: const Icon(Icons.broken_image)),
+                    errorBuilder: (c, e, s) => Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image),
+                    ),
                   ),
                 ),
               ),
@@ -190,20 +219,24 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                   children: [
                     Text(
                       place.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: "Marcellus",
                         fontSize: 26,
-                        color: Color(0xFF4A3D2E),
+                        color: onSurface,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.check_circle, color: Color(0xFFE6A44A), size: 20),
+                        Icon(Icons.check_circle, color: primary, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           "Landmark Identified",
-                          style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: onSurface.withOpacity(0.75),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -212,7 +245,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                       place.description,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: onSurface.withOpacity(0.70)),
                     ),
                     const SizedBox(height: 30),
                     Row(
@@ -221,16 +254,19 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                           child: OutlinedButton.icon(
                             onPressed: () {
                               Navigator.pop(ctx);
-                              // ✅ Works because PlaceModel implements MapItem
                               MapFocusService.instance.triggerFocus(place);
                             },
-                            icon: const Icon(Icons.map_outlined, color: Color(0xFF4D5420)),
-                            label: const Text("Show on Map",
-                                style: TextStyle(color: Color(0xFF4D5420))),
+                            icon: Icon(Icons.map_outlined, color: primary),
+                            label: Text(
+                              "Show on Map",
+                              style: TextStyle(color: primary),
+                            ),
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              side: const BorderSide(color: Color(0xFF4D5420)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              side: BorderSide(color: primary),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                             ),
                           ),
                         ),
@@ -239,11 +275,18 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                           child: ElevatedButton(
                             onPressed: () => Navigator.pop(ctx),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4D5420),
+                              backgroundColor: primary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                             ),
-                            child: const Text("Done", style: TextStyle(color: Colors.white)),
+                            child: Text(
+                              "Done",
+                              style: TextStyle(
+                                color: theme.colorScheme.onPrimary,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -260,10 +303,16 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
     if (!_isCameraInitialized || _controller == null) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFFE6A44A)));
+      return Center(
+        child: CircularProgressIndicator(color: primary),
+      );
     }
 
+    // Camera UI stays dark by design
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -273,52 +322,92 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             width: MediaQuery.of(context).size.width,
             child: CameraPreview(_controller!),
           ),
+
+          // subtle vignette for better readability
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.35),
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.35),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           SafeArea(
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                        icon: const Icon(Icons.arrow_back,
+                            color: Colors.white, size: 28),
                         onPressed: () => MapFocusService.instance.switchToTab(0),
                       ),
                       const Text(
                         "Lens",
-                        style: TextStyle(fontFamily: "Marcellus", color: Colors.white, fontSize: 20),
+                        style: TextStyle(
+                          fontFamily: "Marcellus",
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.flip_camera_ios, color: Colors.white, size: 28),
+                        icon: const Icon(Icons.flip_camera_ios,
+                            color: Colors.white, size: 28),
                         onPressed: _flipCamera,
                       ),
                     ],
                   ),
                 ),
                 const Spacer(),
+
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 40, left: 30, right: 30),
+                  padding:
+                  const EdgeInsets.only(bottom: 40, left: 30, right: 30),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
+                      // Gallery
                       GestureDetector(
                         onTap: _pickFromGallery,
                         child: Container(
                           width: 50,
                           height: 50,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFFDF4).withOpacity(0.9),
+                            color: Colors.white.withOpacity(0.92),
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.25),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.photo_library_outlined, color: Color(0xFF4A3D2E)),
+                          child: Icon(Icons.photo_library_outlined,
+                              color: theme.colorScheme.onSurface),
                         ),
                       ),
+
+                      // Capture + Analyze
                       GestureDetector(
                         onTap: _captureAndAnalyze,
                         child: Container(
-                          width: 80,
-                          height: 80,
+                          width: 84,
+                          height: 84,
                           decoration: BoxDecoration(
                             color: Colors.transparent,
                             shape: BoxShape.circle,
@@ -326,19 +415,31 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                           ),
                           padding: const EdgeInsets.all(4),
                           child: Container(
-                            decoration: const BoxDecoration(color: Color(0xFFFFFDF4), shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.95),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.25),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
                             child: _isAnalyzing
-                                ? const Padding(
-                              padding: EdgeInsets.all(16.0),
+                                ? Padding(
+                              padding: const EdgeInsets.all(18.0),
                               child: CircularProgressIndicator(
-                                color: Color(0xFF4A3D2E),
+                                color: primary,
                                 strokeWidth: 3,
                               ),
                             )
-                                : const Icon(Icons.search, size: 36, color: Color(0xFF4A3D2E)),
+                                : Icon(Icons.search,
+                                size: 36, color: primary),
                           ),
                         ),
                       ),
+
                       const SizedBox(width: 50),
                     ],
                   ),
@@ -353,23 +454,50 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
   }
 
   void _showNoMatchDialog(String label) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Found something..."),
-        content: Text("We identified '$label', but currently don't have a guide for it in our database."),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))],
+        backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        title: Text("Found something...", style: TextStyle(color: onSurface)),
+        content: Text(
+          "We identified '$label', but currently don't have a guide for it in our database.",
+          style: TextStyle(color: onSurface.withOpacity(0.8)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("OK", style: TextStyle(color: primary)),
+          ),
+        ],
       ),
     );
   }
 
   void _showErrorDialog(String msg) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Error"),
-        content: Text(msg),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))],
+        backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        title: Text("Error", style: TextStyle(color: onSurface)),
+        content: Text(msg, style: TextStyle(color: onSurface.withOpacity(0.8))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("OK", style: TextStyle(color: primary)),
+          ),
+        ],
       ),
     );
   }

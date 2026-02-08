@@ -16,6 +16,15 @@ class AccountMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final FirebaseCommunityRepository repo = FirebaseCommunityRepository();
+    final theme = Theme.of(context);
+
+    final isDark = theme.brightness == Brightness.dark;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    final avatarBg = primary.withOpacity(isDark ? 0.25 : 0.18);
+    final borderColor = (isDark ? Colors.white : Colors.black).withOpacity(0.12);
 
     return StreamBuilder<int>(
       stream: repo.getUnreadCountStream(),
@@ -25,7 +34,7 @@ class AccountMenuButton extends StatelessWidget {
 
         return PopupMenuButton<String>(
           offset: const Offset(0, 50),
-          color: const Color(0xffFFFDF4),
+          color: surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -34,10 +43,10 @@ class AccountMenuButton extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xff4D5420).withOpacity(0.50),
+              color: avatarBg,
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withOpacity(0.3),
+                color: borderColor,
                 width: 1,
               ),
             ),
@@ -50,7 +59,8 @@ class AccountMenuButton extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: (profileImageUrl != null && profileImageUrl!.isNotEmpty)
+                    image: (profileImageUrl != null &&
+                        profileImageUrl!.isNotEmpty)
                         ? DecorationImage(
                       image: NetworkImage(profileImageUrl!),
                       fit: BoxFit.cover,
@@ -61,7 +71,7 @@ class AccountMenuButton extends StatelessWidget {
                       ? Icon(
                     Icons.person,
                     size: 26,
-                    color: Colors.white.withOpacity(0.95),
+                    color: onSurface.withOpacity(0.9),
                   )
                       : null,
                 ),
@@ -105,54 +115,49 @@ class AccountMenuButton extends StatelessWidget {
             }
           },
 
-
           itemBuilder: (BuildContext context) {
+            final textStyle = TextStyle(
+              fontFamily: "Marcellus",
+              color: onSurface.withOpacity(0.9),
+            );
+
+            final iconColor = onSurface.withOpacity(0.75);
+
             return [
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'account',
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.person_outline,
-                      color: Color(0xFF7A6A55),
-                      size: 20,
-                    ),
-                    SizedBox(width: 10),
+                    Icon(Icons.person_outline, color: iconColor, size: 20),
+                    const SizedBox(width: 10),
                     Text(
                       "My Account",
-                      style: TextStyle(
-                        fontFamily: "Marcellus",
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xff4D5420),
-                      ),
+                      style: textStyle.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
-              const PopupMenuDivider(),
+              PopupMenuDivider(height: 1, color: onSurface.withOpacity(0.12)),
 
               PopupMenuItem<String>(
                 value: 'notifications',
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(
-                          Icons.notifications_outlined,
-                          color: Color(0xFF7A6A55),
-                          size: 20,
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          "Notification Centre",
-                          style: TextStyle(fontFamily: "Marcellus"),
-                        ),
+                        Icon(Icons.notifications_outlined,
+                            color: iconColor, size: 20),
+                        const SizedBox(width: 10),
+                        Text("Notification Centre", style: textStyle),
                       ],
                     ),
                     if (unreadCount > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(10),
@@ -170,16 +175,13 @@ class AccountMenuButton extends StatelessWidget {
                 ),
               ),
 
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'logout',
                 child: Row(
                   children: [
-                    Icon(Icons.logout, color: Colors.red, size: 20),
-                    SizedBox(width: 10),
-                    Text(
-                      "Sign Out",
-                      style: TextStyle(fontFamily: "Marcellus"),
-                    ),
+                    const Icon(Icons.logout, color: Colors.red, size: 20),
+                    const SizedBox(width: 10),
+                    Text("Sign Out", style: textStyle),
                   ],
                 ),
               ),

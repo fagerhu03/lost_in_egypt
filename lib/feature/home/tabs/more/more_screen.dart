@@ -22,7 +22,6 @@ class _MoreScreenState extends State<MoreScreen> {
     _loadUserProfile();
   }
 
-  // ✅ Fetch user photo from Repository on init
   Future<void> _loadUserProfile() async {
     final user = await _repository.fetchCurrentUser();
     if (user != null && mounted) {
@@ -33,7 +32,6 @@ class _MoreScreenState extends State<MoreScreen> {
   }
 
   Future<void> _handleSignOut() async {
-    // ✅ Clear state before signing out
     await _repository.signOut();
     if (mounted) {
       Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
@@ -42,15 +40,23 @@ class _MoreScreenState extends State<MoreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final isDark = theme.brightness == Brightness.dark;
+    final patternOpacity = isDark ? 0.1 : 0.4;
+
+    final bg = theme.scaffoldBackgroundColor;
+    final surface = theme.colorScheme.surface;
+    final textColor = theme.colorScheme.onSurface;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFCFBE8),
+      backgroundColor: bg,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Pattern
           Positioned.fill(
             child: Opacity(
-              opacity: 0.40,
+              opacity: patternOpacity,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -71,17 +77,17 @@ class _MoreScreenState extends State<MoreScreen> {
                       const SizedBox(width: 44),
                       Expanded(
                         child: Center(
-                          child: const Text(
+                          child: Text(
                             "More",
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.w500,
-                              color: Color(0x8C4D5420),
+                              color: textColor.withOpacity(0.75),
+                              fontFamily: "Marcellus",
                             ),
                           ),
                         ),
                       ),
-                      // ✅ Now passes the real image URL
                       AccountMenuButton(
                         profileImageUrl: _profileImageUrl,
                         onSignOut: _handleSignOut,
@@ -91,9 +97,11 @@ class _MoreScreenState extends State<MoreScreen> {
 
                   const SizedBox(height: 18),
 
-                  // Tiles
                   _MoreTile(
                     title: "Currency",
+                    surfaceColor: surface,
+                    textColor: textColor,
+                    trailingColor: textColor.withOpacity(0.75),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -107,6 +115,9 @@ class _MoreScreenState extends State<MoreScreen> {
 
                   _MoreTile(
                     title: "Settings",
+                    surfaceColor: surface,
+                    textColor: textColor,
+                    trailingColor: textColor.withOpacity(0.75),
                     onTap: () async {
                       await Navigator.push(
                         context,
@@ -114,17 +125,25 @@ class _MoreScreenState extends State<MoreScreen> {
                           builder: (context) => const SettingsScreen(),
                         ),
                       );
-                      // Refresh profile image after returning from Settings
                       _loadUserProfile();
                     },
                   ),
                   const SizedBox(height: 12),
 
-                  _MoreTile(title: "Help", onTap: () {}),
+                  _MoreTile(
+                    title: "Help",
+                    surfaceColor: surface,
+                    textColor: textColor,
+                    trailingColor: textColor.withOpacity(0.75),
+                    onTap: () {},
+                  ),
                   const SizedBox(height: 12),
 
                   _MoreTile(
                     title: "Translator",
+                    surfaceColor: surface,
+                    textColor: textColor,
+                    trailingColor: textColor.withOpacity(0.75),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -139,6 +158,9 @@ class _MoreScreenState extends State<MoreScreen> {
                   _MoreTile(
                     title: "Contact us",
                     trailing: Icons.keyboard_arrow_down,
+                    surfaceColor: surface,
+                    textColor: textColor,
+                    trailingColor: textColor.withOpacity(0.75),
                     onTap: () {},
                   ),
 
@@ -153,33 +175,45 @@ class _MoreScreenState extends State<MoreScreen> {
   }
 }
 
-// ... _MoreTile class remains the same ...
 class _MoreTile extends StatelessWidget {
   final String title;
   final IconData trailing;
   final VoidCallback onTap;
 
+  // Theme-driven colors
+  final Color surfaceColor;
+  final Color textColor;
+  final Color trailingColor;
+
   const _MoreTile({
     required this.title,
     required this.onTap,
+    required this.surfaceColor,
+    required this.textColor,
+    required this.trailingColor,
     this.trailing = Icons.chevron_right,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
         height: 60,
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFEF0),
+          color: surfaceColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
+          // ✅ LIGHT SHADOW IN DARK MODE
+          boxShadow: [
             BoxShadow(
-              color: Color(0x1A714611),
+              color: isDark
+                  ? Colors.white.withOpacity(0.06)
+                  : Colors.black.withOpacity(0.08),
               blurRadius: 10,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -188,14 +222,15 @@ class _MoreTile extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                color: Color(0xFF7C6A4D),
+              style: TextStyle(
+                color: textColor.withOpacity(0.85),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
+                fontFamily: "Marcellus",
               ),
             ),
             const Spacer(),
-            Icon(trailing, color: const Color(0xFF7C6A4D)),
+            Icon(trailing, color: trailingColor),
           ],
         ),
       ),

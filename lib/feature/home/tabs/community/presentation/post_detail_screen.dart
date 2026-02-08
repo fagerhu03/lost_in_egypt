@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../domain/entities/community_post.dart';
-import '../data/model/community_post_model.dart'; // Needed for conversion
+import '../data/model/community_post_model.dart';
 import './community_post_card.dart';
 import '../data/repositories/firebase_community_repository.dart';
 
 class PostDetailScreen extends StatefulWidget {
-  final CommunityPost post; // Initial post data
+  final CommunityPost post;
   const PostDetailScreen({super.key, required this.post});
 
   @override
@@ -28,9 +29,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void _handleReply(String userName) {
-    // Tag logic
-    String currentText = _commentController.text;
-    String tag = "@$userName ";
+    final tag = "@$userName ";
+    final currentText = _commentController.text;
     _commentController.text = "$tag$currentText";
     _commentController.selection = TextSelection.fromPosition(
       TextPosition(offset: _commentController.text.length),
@@ -41,35 +41,78 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   void _deleteComment(String commentId) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Delete Comment"),
-        content: const Text("Are you sure you want to delete this comment?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final surface = theme.colorScheme.surface;
+        final onSurface = theme.colorScheme.onSurface;
+
+        return AlertDialog(
+          backgroundColor: surface,
+          surfaceTintColor: Colors.transparent,
+          title: Text("Delete Comment", style: TextStyle(color: onSurface)),
+          content: Text(
+            "Are you sure you want to delete this comment?",
+            style: TextStyle(color: onSurface.withOpacity(0.8)),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _repository.deleteComment(widget.post.id, commentId);
-            },
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: onSurface.withOpacity(0.7)),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _repository.deleteComment(widget.post.id, commentId);
+              },
+              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
     );
   }
 
   @override
+  void dispose() {
+    _commentController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final bg = theme.scaffoldBackgroundColor;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    final dividerColor = onSurface.withOpacity(0.12);
+    final borderColor =
+    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+
+    final cardShadow = BoxShadow(
+      color: isDark
+          ? Colors.white.withOpacity(0.12)
+          : Colors.black.withOpacity(0.12),
+      blurRadius: 18,
+      spreadRadius: 2,
+      offset: const Offset(0, 10),
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFEF0),
+      backgroundColor: bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const BackButton(color: Color(0xFF4A3D2E)),
-        title: const Text("Thread", style: TextStyle(color: Color(0xFF4A3D2E))),
+        surfaceTintColor: Colors.transparent,
+        leading: BackButton(color: onSurface),
+        title: Text("Thread", style: TextStyle(color: onSurface)),
       ),
       body: Column(
         children: [
@@ -77,7 +120,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             child: ListView(
               padding: const EdgeInsets.all(12),
               children: [
-                // 1. THE MAIN POST (Wrapped in Stream to update Likes live)
+                // MAIN POST (live updates)
                 StreamBuilder<DocumentSnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('community_posts')
@@ -85,28 +128,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData || !snapshot.data!.exists) {
-                      // Fallback to passed data if loading or deleted
                       return CommunityPostCard(post: widget.post, isDetail: true);
                     }
-                    // Convert live Firestore data to our Entity
-                    final livePost = CommunityPostModel.fromSnapshot(
-                      snapshot.data!,
-                    );
+                    final livePost =
+                    CommunityPostModel.fromSnapshot(snapshot.data!);
                     return CommunityPostCard(post: livePost, isDetail: true);
                   },
                 ),
 
-                const Divider(height: 30),
-                const Text(
+                const SizedBox(height: 14),
+                Divider(color: dividerColor, height: 24),
+
+                Text(
                   "Comments",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF7A6A55),
+                    color: onSurface.withOpacity(0.75),
                   ),
                 ),
                 const SizedBox(height: 10),
 
-                // 2. COMMENTS LIST
+                // COMMENTS LIST
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('community_posts')
@@ -115,119 +157,114 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       .orderBy('timestamp', descending: false)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData)
-                      return const Center(child: CircularProgressIndicator());
+                    if (!snapshot.hasData) {
+                      return Center(
+                        child: CircularProgressIndicator(color: primary),
+                      );
+                    }
+
                     final comments = snapshot.data!.docs;
 
-                    if (comments.isEmpty)
-                      return const Padding(
-                        padding: EdgeInsets.all(20.0),
+                    if (comments.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(20.0),
                         child: Text(
                           "No comments yet.",
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(color: onSurface.withOpacity(0.55)),
                         ),
                       );
+                    }
 
                     return Column(
                       children: comments.map((doc) {
                         final data = doc.data() as Map<String, dynamic>;
                         final commentId = doc.id;
-                        final String ownerId = data['userId'] ?? "";
+                        final ownerId = (data['userId'] ?? "") as String;
 
-                        // Like/Dislike Arrays
-                        final List likes = (data['likes'] is List)
-                            ? data['likes']
-                            : [];
+                        final List likes =
+                        (data['likes'] is List) ? (data['likes'] as List) : [];
                         final List dislikes = (data['dislikes'] is List)
-                            ? data['dislikes']
+                            ? (data['dislikes'] as List)
                             : [];
 
-                        final bool isLiked = likes.contains(_currentUid);
-                        final bool isDisliked = dislikes.contains(_currentUid);
+                        final isLiked = likes.contains(_currentUid);
+                        final isDisliked = dislikes.contains(_currentUid);
 
-                        // Reply Detection (Visual Indent)
-                        final bool isReply = (data['text'] as String? ?? "")
-                            .startsWith("@");
+                        final text = (data['text'] ?? "") as String;
+                        final isReply = text.startsWith("@");
 
                         return Container(
                           margin: EdgeInsets.only(
                             bottom: 12,
-                            left: isReply
-                                ? 20
-                                : 0, // Indent if it looks like a reply
+                            left: isReply ? 20 : 0,
                           ),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFEFE6D6)),
+                            border: Border.all(color: borderColor),
+                            boxShadow: [cardShadow],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Top Row: User Info + Menu
                               Row(
                                 children: [
                                   CircleAvatar(
                                     radius: 12,
-                                    backgroundColor: const Color(0xFFE6A44A),
-                                    backgroundImage:
-                                        (data['userAvatar'] != null &&
-                                            data['userAvatar'] != "")
+                                    backgroundColor: onSurface.withOpacity(0.08),
+                                    backgroundImage: (data['userAvatar'] != null &&
+                                        data['userAvatar'] != "")
                                         ? NetworkImage(data['userAvatar'])
                                         : null,
-                                    child:
-                                        (data['userAvatar'] == null ||
-                                            data['userAvatar'] == "")
-                                        ? const Icon(
-                                            Icons.person,
-                                            size: 14,
-                                            color: Colors.white,
-                                          )
+                                    child: (data['userAvatar'] == null ||
+                                        data['userAvatar'] == "")
+                                        ? Icon(Icons.person,
+                                        size: 14, color: primary)
                                         : null,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    data['userName'] ?? 'User',
-                                    style: const TextStyle(
+                                    (data['userName'] ?? 'User') as String,
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
+                                      color: onSurface,
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  Text(data['userFlag'] ?? '🇪🇬', style: const TextStyle(fontSize: 12)),   
+                                  Text(
+                                    (data['userFlag'] ?? '🇪🇬') as String,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
                                   const Spacer(),
 
-                                  // ⭐ THREE DOTS MENU (Delete)
                                   if (ownerId == _currentUid)
                                     PopupMenuButton<String>(
-                                      icon: const Icon(
+                                      icon: Icon(
                                         Icons.more_vert,
                                         size: 18,
-                                        color: Colors.grey,
+                                        color: onSurface.withOpacity(0.55),
                                       ),
+                                      color: surface,
+                                      surfaceTintColor: Colors.transparent,
                                       onSelected: (value) {
-                                        if (value == 'delete')
+                                        if (value == 'delete') {
                                           _deleteComment(commentId);
+                                        }
                                       },
-                                      itemBuilder: (context) => [
-                                        const PopupMenuItem(
+                                      itemBuilder: (context) => const [
+                                        PopupMenuItem(
                                           value: 'delete',
                                           child: Row(
                                             children: [
-                                              Icon(
-                                                Icons.delete,
-                                                color: Colors.red,
-                                                size: 18,
-                                              ),
+                                              Icon(Icons.delete,
+                                                  color: Colors.red, size: 18),
                                               SizedBox(width: 8),
-                                              Text(
-                                                "Delete",
-                                                style: TextStyle(
-                                                  color: Colors.red,
-                                                ),
-                                              ),
+                                              Text("Delete",
+                                                  style: TextStyle(
+                                                      color: Colors.red)),
                                             ],
                                           ),
                                         ),
@@ -238,95 +275,110 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               const SizedBox(height: 6),
 
                               Text(
-                                data['text'] ?? '',
-                                style: const TextStyle(
+                                text,
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFF4A3D2E),
+                                  color: onSurface.withOpacity(0.92),
                                 ),
                               ),
                               const SizedBox(height: 10),
 
-                              // Actions Row
                               Row(
                                 children: [
-                                  // LIKE BUTTON
+                                  // LIKE
                                   GestureDetector(
-                                    onTap: () => _repository.toggleCommentLike(widget.post.id, commentId, true),
-                                    behavior: HitTestBehavior.opaque, // Ensures tap is caught
+                                    onTap: () => _repository.toggleCommentLike(
+                                        widget.post.id, commentId, true),
+                                    behavior: HitTestBehavior.opaque,
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4, horizontal: 4),
                                       child: Row(
                                         children: [
                                           Icon(
-                                            isLiked ? Icons.thumb_up : Icons.thumb_up_outlined, 
-                                            size: 16, 
-                                            color: isLiked ? const Color(0xFFE6A44A) : Colors.grey
+                                            isLiked
+                                                ? Icons.thumb_up
+                                                : Icons.thumb_up_outlined,
+                                            size: 16,
+                                            color: isLiked
+                                                ? primary
+                                                : onSurface.withOpacity(0.45),
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            "${likes.length}", 
+                                            "${likes.length}",
                                             style: TextStyle(
-                                              fontSize: 12, 
-                                              color: isLiked ? const Color(0xFFE6A44A) : Colors.grey,
-                                              fontWeight: FontWeight.bold
-                                            )
+                                              fontSize: 12,
+                                              color: isLiked
+                                                  ? primary
+                                                  : onSurface.withOpacity(0.45),
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  
+
                                   const SizedBox(width: 16),
-                                  
-                                  // DISLIKE BUTTON
+
+                                  // DISLIKE
                                   GestureDetector(
-                                    onTap: () => _repository.toggleCommentLike(widget.post.id, commentId, false),
+                                    onTap: () => _repository.toggleCommentLike(
+                                        widget.post.id, commentId, false),
                                     behavior: HitTestBehavior.opaque,
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4, horizontal: 4),
                                       child: Row(
                                         children: [
                                           Icon(
-                                            isDisliked ? Icons.thumb_down : Icons.thumb_down_outlined, 
-                                            size: 16, 
-                                            color: isDisliked ? Colors.red.shade400 : Colors.grey
+                                            isDisliked
+                                                ? Icons.thumb_down
+                                                : Icons.thumb_down_outlined,
+                                            size: 16,
+                                            color: isDisliked
+                                                ? Colors.red.shade400
+                                                : onSurface.withOpacity(0.45),
                                           ),
                                           const SizedBox(width: 4),
-                                          // Only show number if > 0
                                           if (dislikes.isNotEmpty)
                                             Text(
-                                              "${dislikes.length}", 
+                                              "${dislikes.length}",
                                               style: TextStyle(
-                                                fontSize: 12, 
-                                                color: isDisliked ? Colors.red.shade400 : Colors.grey,
-                                                fontWeight: FontWeight.bold
-                                              )
+                                                fontSize: 12,
+                                                color: isDisliked
+                                                    ? Colors.red.shade400
+                                                    : onSurface.withOpacity(0.45),
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  
+
                                   const SizedBox(width: 16),
 
-                                  // REPLY BUTTON
+                                  // REPLY
                                   GestureDetector(
-                                    onTap: () => _handleReply(data['userName'] ?? "User"),
+                                    onTap: () => _handleReply(
+                                        (data['userName'] ?? "User") as String),
                                     behavior: HitTestBehavior.opaque,
                                     child: Padding(
                                       padding: const EdgeInsets.all(4.0),
-                                      child: const Text(
-                                        "Reply", 
+                                      child: Text(
+                                        "Reply",
                                         style: TextStyle(
-                                          fontSize: 12, 
-                                          color: Color(0xFFE6A44A), 
-                                          fontWeight: FontWeight.bold
-                                        )
+                                          fontSize: 12,
+                                          color: primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ],
-                              )
+                              ),
                             ],
                           ),
                         );
@@ -338,12 +390,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           ),
 
-          // 3. COMMENT INPUT
+          // COMMENT INPUT
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Color(0xFFEFE6D6))),
+            decoration: BoxDecoration(
+              color: surface,
+              border: Border(top: BorderSide(color: dividerColor)),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.06)
+                      : Colors.black.withOpacity(0.06),
+                  blurRadius: 14,
+                  offset: const Offset(0, -6),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -351,18 +412,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   child: TextField(
                     controller: _commentController,
                     focusNode: _focusNode,
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: onSurface),
+                    decoration: InputDecoration(
                       hintText: "Write a comment...",
+                      hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10),
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
-                    Icons.send_rounded,
-                    color: Color(0xFFE6A44A),
-                  ),
+                  icon: Icon(Icons.send_rounded, color: primary),
                   onPressed: _submitComment,
                 ),
               ],

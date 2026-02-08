@@ -197,15 +197,24 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final isDark = theme.brightness == Brightness.dark;
+    final patternOpacity = isDark ? 0.1 : 0.4;
+
+    final bg = theme.scaffoldBackgroundColor;
+    final surface = theme.colorScheme.surface;
+    final textColor = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFCFBE8),
+      backgroundColor: bg,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Pattern
           Positioned.fill(
             child: Opacity(
-              opacity: 0.40,
+              opacity: patternOpacity,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -227,18 +236,18 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                     children: [
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back_ios_new,
                           size: 20,
-                          color: Color(0xFF714611),
+                          color: textColor,
                         ),
                       ),
-                      const Text(
+                      Text(
                         "Translator",
                         style: TextStyle(
                           fontSize: 24,
                           fontFamily: "Marcellus",
-                          color: Color(0xFF714611),
+                          color: textColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -253,33 +262,35 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF3CD),
+                        color: isDark
+                            ? primary.withOpacity(0.15)
+                            : const Color(0xFFFFF3CD),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFFC79A00),
+                          color: primary,
                           width: 1,
                         ),
                       ),
                       child: Row(
                         children: [
-                          const SizedBox(
+                          SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFC79A00),
+                                primary,
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               "Downloading translation models for offline use...",
                               style: TextStyle(
                                 fontSize: 12,
                                 fontFamily: "Marcellus",
-                                color: Color(0xFF714611),
+                                color: textColor,
                               ),
                             ),
                           ),
@@ -292,7 +303,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD4EDDA),
+                        color: Colors.green.withOpacity(isDark ? 0.15 : 0.2),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.green, width: 1),
                       ),
@@ -304,13 +315,13 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             size: 20,
                           ),
                           const SizedBox(width: 12),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               "Works offline - models cached on device",
                               style: TextStyle(
                                 fontSize: 12,
                                 fontFamily: "Marcellus",
-                                color: Color(0xFF155724),
+                                color: textColor,
                               ),
                             ),
                           ),
@@ -320,10 +331,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Vertically stacked input/output section
+                  // Input/output container
                   Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFBF8F2),
+                      color: surface,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
@@ -344,6 +355,8 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           ),
                           child: _buildLanguageDropdown(
                             value: _sourceLanguage,
+                            surfaceColor: surface,
+                            textColor: textColor,
                             onChanged: (lang) {
                               setState(() => _sourceLanguage = lang);
                               _initializeTranslator();
@@ -364,7 +377,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             decoration: InputDecoration(
                               hintText: "Enter text",
                               hintStyle: TextStyle(
-                                color: const Color(0xFF714611).withOpacity(0.4),
+                                color: textColor.withOpacity(0.4),
                                 fontFamily: "Marcellus",
                               ),
                               border: OutlineInputBorder(
@@ -372,7 +385,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: surface,
                               contentPadding: const EdgeInsets.all(16),
                               suffixIcon: Padding(
                                 padding: const EdgeInsets.all(8),
@@ -384,21 +397,20 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                                     Icons.mic,
                                     color: _isListening
                                         ? Colors.red
-                                        : const Color(
-                                            0xFF714611,
-                                          ).withOpacity(0.6),
+                                        : textColor.withOpacity(0.6),
                                     size: 20,
                                   ),
                                 ),
                               ),
                             ),
-                            style: const TextStyle(
-                              color: Color(0xFF714611),
+                            style: TextStyle(
+                              color: textColor,
                               fontSize: 14,
                               fontFamily: "Marcellus",
                             ),
                           ),
                         ),
+
                         // Swap button
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -408,7 +420,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF714611),
+                                color: primary,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
@@ -426,6 +438,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             ),
                           ),
                         ),
+
                         // Target language dropdown and textbox
                         Padding(
                           padding: const EdgeInsets.only(
@@ -435,6 +448,8 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           ),
                           child: _buildLanguageDropdown(
                             value: _targetLanguage,
+                            surfaceColor: surface,
+                            textColor: textColor,
                             onChanged: (lang) {
                               setState(() => _targetLanguage = lang);
                               _initializeTranslator();
@@ -454,7 +469,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             decoration: InputDecoration(
                               hintText: "Translation",
                               hintStyle: TextStyle(
-                                color: const Color(0xFF714611).withOpacity(0.4),
+                                color: textColor.withOpacity(0.4),
                                 fontFamily: "Marcellus",
                               ),
                               border: OutlineInputBorder(
@@ -462,23 +477,23 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: surface,
                               contentPadding: const EdgeInsets.all(16),
                               suffixIcon: Padding(
                                 padding: const EdgeInsets.all(8),
                                 child: GestureDetector(
                                   onTap: () =>
                                       _speak(_translatedText, _targetLanguage),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.volume_up,
-                                    color: Color(0xFF714611),
+                                    color: textColor.withOpacity(0.9),
                                     size: 20,
                                   ),
                                 ),
                               ),
                             ),
-                            style: const TextStyle(
-                              color: Color(0xFF714611),
+                            style: TextStyle(
+                              color: textColor,
                               fontSize: 14,
                               fontFamily: "Marcellus",
                             ),
@@ -487,7 +502,9 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 35),
+
                   // Translate Button
                   if (_sourceText.isNotEmpty)
                     SizedBox(
@@ -496,10 +513,8 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       child: ElevatedButton(
                         onPressed: _isTranslating ? null : _translate,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFC79A00),
-                          disabledBackgroundColor: const Color(
-                            0xFFC79A00,
-                          ).withOpacity(0.6),
+                          backgroundColor: primary,
+                          disabledBackgroundColor: primary.withOpacity(0.6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -507,24 +522,24 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         ),
                         child: _isTranslating
                             ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                  strokeWidth: 2,
-                                ),
-                              )
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                            strokeWidth: 2,
+                          ),
+                        )
                             : const Text(
-                                "Translate",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: "Marcellus",
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                          "Translate",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: "Marcellus",
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   const SizedBox(height: 20),
@@ -540,10 +555,12 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   Widget _buildLanguageDropdown({
     required String value,
     required Function(String) onChanged,
+    required Color surfaceColor,
+    required Color textColor,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF8F2),
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -566,10 +583,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Text(
                 lang,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontFamily: "Marcellus",
-                  color: Color(0xFF714611),
+                  color: textColor,
                 ),
               ),
             ),

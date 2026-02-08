@@ -24,7 +24,6 @@ class _HomeWrapperState extends State<HomeWrapper>
   int index = 0;
   bool _isNavBarVisible = true;
 
-  // ✅ FIXED: Static const ensures pages are NEVER recreated during parent rebuilds
   static const List<Widget> _pages = [
     HomeScreen(),
     CommunityScreen(),
@@ -64,6 +63,14 @@ class _HomeWrapperState extends State<HomeWrapper>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final bg = theme.scaffoldBackgroundColor;
+    final primary = theme.colorScheme.primary;
+    final inactive = theme.colorScheme.onSurface.withOpacity(0.60);
+
+    final bool isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       extendBody: true,
       body: NotificationListener<UserScrollNotification>(
@@ -94,35 +101,50 @@ class _HomeWrapperState extends State<HomeWrapper>
           children: _pages,
         ),
       ),
+
       bottomNavigationBar: AnimatedSlide(
         duration: const Duration(milliseconds: 200),
         offset: _isNavBarVisible ? Offset.zero : const Offset(0, 1),
-        child: ConvexAppBar(
-          controller: _tabController,
-          style: TabStyle.react,
-          height: 55,
-          curveSize: 90,
-          backgroundColor: const Color(0xffFCFBE8),
-          activeColor: const Color(0xff714611),
-          color: const Color(0xff714611).withOpacity(0.60),
-          elevation: 12,
-          items: const [
-            TabItem(icon: Icons.home_filled, title: "Home"),
-            TabItem(icon: Icons.people_rounded, title: "Community"),
-            TabItem(icon: Icons.camera_alt_rounded, title: "Camera"),
-            TabItem(icon: Icons.map_rounded, title: "Map"),
-            TabItem(icon: Icons.more_horiz, title: "More"),
-          ],
-          onTap: (i) {
-            setState(() {
-              index = i;
-              _isNavBarVisible = true;
-            });
-            _tabController.animateTo(i);
-            _pageController.jumpToPage(i);
-          },
+        child: Container(
+          decoration: BoxDecoration(
+            // ✅ shadow goes UP (visible)
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.white.withOpacity(0.1) // visible glow in dark mode
+                    : Colors.black.withOpacity(0.1), // visible shadow in light mode
+                blurRadius: 28,
+                spreadRadius: 6,
+                offset: const Offset(0, -10), // IMPORTANT: negative = shadow up
+              ),
+            ],
+          ),
+          child: ConvexAppBar(
+            controller: _tabController,
+            style: TabStyle.react,
+            height: 55,
+            curveSize: 90,
+            backgroundColor: bg,
+            activeColor: primary,
+            color: inactive,
+            elevation: 0, // keep 0, we use BoxShadow instead
+            items: const [
+              TabItem(icon: Icons.home_filled, title: "Home"),
+              TabItem(icon: Icons.people_rounded, title: "Community"),
+              TabItem(icon: Icons.camera_alt_rounded, title: "Camera"),
+              TabItem(icon: Icons.map_rounded, title: "Map"),
+              TabItem(icon: Icons.more_horiz, title: "More"),
+            ],
+            onTap: (i) {
+              setState(() {
+                index = i;
+                _isNavBarVisible = true;
+              });
+              _tabController.animateTo(i);
+              _pageController.jumpToPage(i);
+            },
+          ),
         ),
-      ),
-    );
+      ),    );
   }
 }

@@ -34,15 +34,16 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           .collection('users')
           .doc(uidToLoad)
           .get();
+
       if (userDoc.exists) {
         _user = UserModel.fromMap(userDoc.data()!, userDoc.id);
       }
 
-      // Attempt to count posts (best-effort). Field name used: 'userId' or 'authorId' -> check both.
       final query1 = await FirebaseFirestore.instance
           .collection('posts')
           .where('userId', isEqualTo: uidToLoad)
           .get();
+
       if (query1.docs.isNotEmpty) {
         _postCount = query1.size;
       } else {
@@ -61,166 +62,263 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final bg = theme.scaffoldBackgroundColor;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    // visible shadows: dark in light mode, glow in dark mode
+    final cardShadow = BoxShadow(
+      color: isDark
+          ? Colors.white.withOpacity(0.14)
+          : Colors.black.withOpacity(0.14),
+      blurRadius: 18,
+      spreadRadius: 1,
+      offset: const Offset(0, 10),
+    );
+
+    final borderColor =
+    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F2E6),
+      backgroundColor: bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Profile'),
+        title: Text('Profile', style: TextStyle(color: onSurface)),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF714611)),
+          icon: Icon(Icons.arrow_back_ios_new, color: onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFC79A00)),
-            )
+          ? Center(child: CircularProgressIndicator(color: primary))
           : _user == null
-          ? const Center(child: Text('User not found'))
+          ? Center(
+        child: Text(
+          'User not found',
+          style: TextStyle(color: onSurface.withOpacity(0.8)),
+        ),
+      )
           : ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        children: [
+          Center(
+            child: Column(
               children: [
-                Center(
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 54,
-                        backgroundColor: const Color(0xFF4A3B2A),
-                        backgroundImage: _user!.profileImageUrl.isNotEmpty
-                            ? NetworkImage(_user!.profileImageUrl)
-                                  as ImageProvider
-                            : null,
-                        child: _user!.profileImageUrl.isEmpty
-                            ? const Icon(
-                                Icons.person,
-                                size: 48,
-                                color: Colors.white,
-                              )
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '${_user!.firstName} ${_user!.lastName}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontFamily: 'Marcellus',
-                          color: Color(0xFF714611),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _user!.nationality.isNotEmpty ? _user!.nationality : '',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildBadge('Email', _user!.emailVerified),
-                          const SizedBox(width: 12),
-                          _buildBadge('Phone', _user!.phoneVerified),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildStat('Posts', _postCount),
-                          const SizedBox(width: 24),
-                          _buildStat('Role', 0, label: _user!.role),
-                        ],
-                      ),
-                    ],
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [cardShadow],
+                  ),
+                  child: CircleAvatar(
+                    radius: 54,
+                    backgroundColor: primary.withOpacity(0.18),
+                    backgroundImage: _user!.profileImageUrl.isNotEmpty
+                        ? NetworkImage(_user!.profileImageUrl)
+                        : null,
+                    child: _user!.profileImageUrl.isEmpty
+                        ? Icon(Icons.person,
+                        size: 48, color: onSurface)
+                        : null,
                   ),
                 ),
-
-                const SizedBox(height: 24),
-                if (_user!.bio.isNotEmpty) ...[
-                  const Text(
-                    'About',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF714611),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _user!.bio,
-                    style: const TextStyle(color: Color(0xFF5A3E18)),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-
-                if (_user!.interests.isNotEmpty) ...[
-                  const Text(
-                    'Interests',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF714611),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _user!.interests
-                        .map((i) => Chip(label: Text(i)))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-
-                if (_user!.instagramHandle.isNotEmpty ||
-                    _user!.twitterHandle.isNotEmpty) ...[
-                  const Text(
-                    'Social',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF714611),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (_user!.instagramHandle.isNotEmpty)
-                    _buildSocialRow('Instagram', _user!.instagramHandle),
-                  if (_user!.twitterHandle.isNotEmpty)
-                    _buildSocialRow('Twitter', _user!.twitterHandle),
-                  const SizedBox(height: 20),
-                ],
-
-                const Text(
-                  'Contact',
+                const SizedBox(height: 12),
+                Text(
+                  '${_user!.firstName} ${_user!.lastName}',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF714611),
+                    fontSize: 20,
+                    fontFamily: 'Marcellus',
+                    color: onSurface,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
+                if (_user!.nationality.isNotEmpty)
+                  Text(
+                    _user!.nationality,
+                    style: TextStyle(
+                      color: onSurface.withOpacity(0.55),
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildBadge('Email', _user!.emailVerified),
+                    const SizedBox(width: 12),
+                    _buildBadge('Phone', _user!.phoneVerified),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildStat('Posts', _postCount, onSurface),
+                    const SizedBox(width: 24),
+                    _buildStat('Role', 0, onSurface,
+                        label: _user!.role),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          if (_user!.bio.isNotEmpty)
+            _sectionCard(
+              title: 'About',
+              child: Text(
+                _user!.bio,
+                style: TextStyle(color: onSurface.withOpacity(0.85)),
+              ),
+              surface: surface,
+              onSurface: onSurface,
+              shadow: cardShadow,
+              borderColor: borderColor,
+            ),
+
+          if (_user!.interests.isNotEmpty)
+            _sectionCard(
+              title: 'Interests',
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _user!.interests
+                    .map(
+                      (i) => Chip(
+                    label: Text(
+                      i,
+                      style:
+                      TextStyle(color: onSurface.withOpacity(0.9)),
+                    ),
+                    backgroundColor: surface,
+                    side: BorderSide(color: borderColor),
+                  ),
+                )
+                    .toList(),
+              ),
+              surface: surface,
+              onSurface: onSurface,
+              shadow: cardShadow,
+              borderColor: borderColor,
+            ),
+
+          if (_user!.instagramHandle.isNotEmpty ||
+              _user!.twitterHandle.isNotEmpty)
+            _sectionCard(
+              title: 'Social',
+              child: Column(
+                children: [
+                  if (_user!.instagramHandle.isNotEmpty)
+                    _buildSocialRow(
+                      'Instagram',
+                      _user!.instagramHandle,
+                      onSurface,
+                    ),
+                  if (_user!.twitterHandle.isNotEmpty)
+                    _buildSocialRow(
+                      'Twitter',
+                      _user!.twitterHandle,
+                      onSurface,
+                    ),
+                ],
+              ),
+              surface: surface,
+              onSurface: onSurface,
+              shadow: cardShadow,
+              borderColor: borderColor,
+            ),
+
+          _sectionCard(
+            title: 'Contact',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
                   _user!.email,
-                  style: const TextStyle(color: Color(0xFF5A3E18)),
+                  style:
+                  TextStyle(color: onSurface.withOpacity(0.85)),
                 ),
                 const SizedBox(height: 6),
                 if (_user!.phoneNumber.isNotEmpty)
                   Text(
                     _user!.phoneNumber,
-                    style: const TextStyle(color: Color(0xFF5A3E18)),
+                    style: TextStyle(
+                        color: onSurface.withOpacity(0.85)),
                   ),
-
-                const SizedBox(height: 30),
-                if (widget.uid == null || widget.uid == _currentUid) ...[
-                  ElevatedButton(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, '/edit_profile_enhanced'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC79A00),
-                    ),
-                    child: const Text('Edit profile'),
-                  ),
-                ],
               ],
             ),
+            surface: surface,
+            onSurface: onSurface,
+            shadow: cardShadow,
+            borderColor: borderColor,
+          ),
+
+          const SizedBox(height: 18),
+
+          if (widget.uid == null || widget.uid == _currentUid)
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pushNamed(
+                    context, '/edit_profile_enhanced'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primary,
+                  foregroundColor: Colors.white,
+                  elevation: 8,
+                  shadowColor: isDark
+                      ? Colors.white.withOpacity(0.18)
+                      : Colors.black.withOpacity(0.22),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text('Edit profile'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionCard({
+    required String title,
+    required Widget child,
+    required Color surface,
+    required Color onSurface,
+    required BoxShadow shadow,
+    required Color borderColor,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [shadow],
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: onSurface,
+            ),
+          ),
+          const SizedBox(height: 10),
+          child,
+        ],
+      ),
     );
   }
 
@@ -238,38 +336,38 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
     );
   }
 
-  Widget _buildStat(String name, int value, {String? label}) {
+  Widget _buildStat(String name, int value, Color onSurface, {String? label}) {
     return Column(
       children: [
         Text(
           label ?? value.toString(),
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFF714611),
+            color: onSurface,
           ),
         ),
         const SizedBox(height: 4),
-        Text(name, style: const TextStyle(color: Colors.grey)),
+        Text(name, style: TextStyle(color: onSurface.withOpacity(0.55))),
       ],
     );
   }
 
-  Widget _buildSocialRow(String service, String handle) {
+  Widget _buildSocialRow(String service, String handle, Color onSurface) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Text(
             '$service: ',
-            style: const TextStyle(
-              color: Color(0xFF714611),
+            style: TextStyle(
+              color: onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
           Expanded(
             child: Text(
               handle,
-              style: const TextStyle(color: Color(0xFF5A3E18)),
+              style: TextStyle(color: onSurface.withOpacity(0.85)),
             ),
           ),
         ],

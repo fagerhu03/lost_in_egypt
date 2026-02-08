@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:country_picker/country_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:country_picker/country_picker.dart';
-import 'dart:io';
+
 import '../../../auth/data/models/user.dart';
 import '../../../auth/phone_verif/phone_verification_screen.dart';
 
@@ -38,7 +40,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   File? _selectedImage;
   bool _isUploadingImage = false;
 
-  final List<String> _availableInterests = [
+  final List<String> _availableInterests = const [
     '🏛️ History',
     '🍽️ Food',
     '🥾 Hiking',
@@ -94,17 +96,14 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         debugPrint('Upload progress: $progress%');
       });
 
-      // ✅ FIX: Use whenComplete and timeout to prevent hanging
       await uploadTask.whenComplete(() {}).timeout(const Duration(seconds: 45));
       final imageUrl = await ref.getDownloadURL();
 
-      // Update Firestore with new image URL
       await FirebaseFirestore.instance
           .collection('users')
           .doc(_firebaseUser!.uid)
           .update({'profileImageUrl': imageUrl});
 
-      // Update local state
       if (mounted) {
         setState(() {
           _currentUser = _currentUser?.copyWith(profileImageUrl: imageUrl);
@@ -112,9 +111,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Profile photo updated ✅"),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text("Profile photo updated ✅"),
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
       }
@@ -123,7 +122,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       debugPrint("Upload error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text("Error uploading photo. Please try again."),
             backgroundColor: Colors.red,
           ),
@@ -144,15 +143,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           .collection('users')
           .doc(_firebaseUser!.uid)
           .get()
-          .timeout(
-            const Duration(seconds: 10),
-          ); // ✅ FIX: Timeout prevents infinite loading
+          .timeout(const Duration(seconds: 10));
 
       if (doc.exists) {
         _currentUser = UserModel.fromMap(doc.data()!, doc.id);
 
         _fullNameController.text =
-            "${_currentUser!.firstName} ${_currentUser!.lastName}";
+        "${_currentUser!.firstName} ${_currentUser!.lastName}";
         _emailController.text = _currentUser!.email;
         _nationalityController.text = _currentUser!.nationality;
         _completePhoneNumber = _currentUser!.phoneNumber;
@@ -168,17 +165,16 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       if (mounted) setState(() => _isLoading = false);
     }
 
-    // ✅ AUTO-VERIFY: Check if logged in via Google/Facebook (Background Task)
+    // Auto-verify email for social login users
     if (_currentUser != null && mounted) {
-      bool isSocialLogin = _firebaseUser!.providerData.any(
-        (userInfo) =>
-            userInfo.providerId == 'google.com' ||
+      final isSocialLogin = _firebaseUser!.providerData.any(
+            (userInfo) =>
+        userInfo.providerId == 'google.com' ||
             userInfo.providerId == 'facebook.com',
       );
 
       if (isSocialLogin && !_currentUser!.emailVerified) {
         try {
-          debugPrint("Auto-verifying email for social login user");
           await FirebaseFirestore.instance
               .collection('users')
               .doc(_currentUser!.id)
@@ -199,13 +195,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Future<void> _submit() async {
     if (_currentUser == null) return;
 
-    // Upload image first if one was selected
     if (_selectedImage != null) {
       final success = await _uploadProfileImage();
-      if (!success) {
-        // Stop if upload failed
-        return;
-      }
+      if (!success) return;
     }
 
     if (_completePhoneNumber.isNotEmpty && _completePhoneNumber.length < 10) {
@@ -255,10 +247,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         isNotificationsEnabled: _currentUser!.isNotificationsEnabled,
         isDarkMode: _currentUser!.isDarkMode,
         language: _currentUser!.language,
-        phoneVerified:
-            _currentUser!.phoneVerified ||
-            ((isPhoneAdded || isPhoneChanged) &&
-                _completePhoneNumber.isNotEmpty),
+        phoneVerified: _currentUser!.phoneVerified ||
+            ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty),
         emailVerified: _currentUser!.emailVerified,
         createdAt: _currentUser!.createdAt,
       );
@@ -267,7 +257,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           .collection('users')
           .doc(updatedUser.id)
           .set(updatedUser.toMap(), SetOptions(merge: true))
-          .timeout(const Duration(seconds: 10)); // ✅ Timeout for save too
+          .timeout(const Duration(seconds: 10));
 
       if ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty) {
         await FirebaseFirestore.instance
@@ -280,9 +270,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Profile Updated ✅"),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text("Profile Updated ✅"),
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
         Navigator.pop(context);
@@ -295,102 +285,148 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.red),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final bg = theme.scaffoldBackgroundColor;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    final patternOpacity = isDark ? 0.20 : 0.40;
+
+    // visible shadows (dark in light, glow in dark)
+    final fieldShadow = BoxShadow(
+      color: isDark
+          ? Colors.white.withOpacity(0.14)
+          : Colors.black.withOpacity(0.12),
+      blurRadius: 16,
+      spreadRadius: 1,
+      offset: const Offset(0, 8),
+    );
+
+    final borderColor =
+    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFCFBE8),
+      backgroundColor: bg,
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Opacity(
-              opacity: 0.40,
+              opacity: patternOpacity,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
                 repeat: ImageRepeat.repeat,
+                errorBuilder: (c, o, s) => const SizedBox.shrink(),
               ),
             ),
           ),
           SafeArea(
             child: Column(
               children: [
-                _buildHeader(context),
+                _buildHeader(context, onSurface),
                 Expanded(
                   child: _isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFFC79A00),
-                          ),
-                        )
+                      ? Center(
+                    child: CircularProgressIndicator(color: primary),
+                  )
                       : ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          children: [
-                            const SizedBox(height: 20),
-                            _buildAvatar(),
-                            const SizedBox(height: 30),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    children: [
+                      const SizedBox(height: 20),
+                      _buildAvatar(primary, onSurface, fieldShadow),
+                      const SizedBox(height: 30),
 
-                            // Basic Info Section
-                            _buildSectionTitle("Basic Information"),
-                            _buildLabel("Full name"),
-                            _buildField(_fullNameController),
-                            const SizedBox(height: 20),
+                      _buildSectionTitle("Basic Information", onSurface),
+                      _buildLabel("Full name", onSurface),
+                      _buildField(
+                        controller: _fullNameController,
+                        surface: surface,
+                        onSurface: onSurface,
+                        shadow: fieldShadow,
+                        borderColor: borderColor,
+                      ),
+                      const SizedBox(height: 20),
 
-                            _buildLabel("Email"),
-                            // ✅ VISUAL HINT: Read-only visual indication
-                            _buildField(_emailController, readOnly: true),
-                            const SizedBox(height: 20),
+                      _buildLabel("Email", onSurface),
+                      _buildField(
+                        controller: _emailController,
+                        readOnly: true,
+                        surface: surface,
+                        onSurface: onSurface,
+                        shadow: fieldShadow,
+                        borderColor: borderColor,
+                      ),
+                      const SizedBox(height: 20),
 
-                            _buildLabel("Role"),
-                            _buildRoleSelector(),
-                            const SizedBox(height: 20),
+                      _buildLabel("Role", onSurface),
+                      _buildRoleSelector(surface, onSurface, fieldShadow, borderColor),
+                      const SizedBox(height: 20),
 
-                            // Contact Info Section
-                            _buildSectionTitle("Contact Information"),
-                            _buildLabel("Phone number"),
-                            _buildPhoneField(),
-                            const SizedBox(height: 20),
+                      _buildSectionTitle("Contact Information", onSurface),
+                      _buildLabel("Phone number", onSurface),
+                      _buildPhoneField(surface, onSurface, fieldShadow, borderColor),
+                      const SizedBox(height: 20),
 
-                            _buildLabel("Nationality"),
-                            _buildNationalityPicker(),
-                            const SizedBox(height: 30),
+                      _buildLabel("Nationality", onSurface),
+                      _buildNationalityPicker(
+                        surface,
+                        onSurface,
+                        fieldShadow,
+                        borderColor,
+                        primary,
+                      ),
+                      const SizedBox(height: 30),
 
-                            // About Section
-                            _buildSectionTitle("About You"),
-                            _buildLabel("Bio"),
-                            _buildBioField(),
-                            const SizedBox(height: 20),
+                      _buildSectionTitle("About You", onSurface),
+                      _buildLabel("Bio", onSurface),
+                      _buildBioField(surface, onSurface, fieldShadow, borderColor),
+                      const SizedBox(height: 20),
 
-                            _buildLabel("Interests"),
-                            _buildInterestsTags(),
-                            const SizedBox(height: 30),
+                      _buildLabel("Interests", onSurface),
+                      _buildInterestsTags(surface, onSurface, primary, borderColor),
+                      const SizedBox(height: 30),
 
-                            // Social Links Section
-                            _buildSectionTitle("Social Links (Optional)"),
-                            _buildLabel("Instagram"),
-                            _buildSocialField(
-                              _instagramController,
-                              "@username",
-                            ),
-                            const SizedBox(height: 20),
+                      _buildSectionTitle("Social Links (Optional)", onSurface),
+                      _buildLabel("Instagram", onSurface),
+                      _buildSocialField(
+                        controller: _instagramController,
+                        hint: "@username",
+                        surface: surface,
+                        onSurface: onSurface,
+                        shadow: fieldShadow,
+                        borderColor: borderColor,
+                      ),
+                      const SizedBox(height: 20),
 
-                            _buildLabel("Twitter/X"),
-                            _buildSocialField(_twitterController, "@username"),
-                            const SizedBox(height: 30),
+                      _buildLabel("Twitter/X", onSurface),
+                      _buildSocialField(
+                        controller: _twitterController,
+                        hint: "@username",
+                        surface: surface,
+                        onSurface: onSurface,
+                        shadow: fieldShadow,
+                        borderColor: borderColor,
+                      ),
+                      const SizedBox(height: 30),
 
-                            // Verification Status
-                            _buildVerificationStatus(),
-                            const SizedBox(height: 40),
+                      _buildVerificationStatus(surface, onSurface, borderColor),
+                      const SizedBox(height: 40),
 
-                            _buildSubmitButton(),
-                            const SizedBox(height: 20),
-                          ],
-                        ),
+                      _buildSubmitButton(primary, onSurface),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -400,7 +436,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, Color onSurface) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -408,18 +444,14 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(
-              Icons.arrow_back_ios_new,
-              size: 20,
-              color: Color(0xFF714611),
-            ),
+            icon: Icon(Icons.arrow_back_ios_new, size: 20, color: onSurface),
           ),
-          const Text(
+          Text(
             "Edit profile",
             style: TextStyle(
               fontSize: 20,
               fontFamily: "Marcellus",
-              color: Color(0xFF714611),
+              color: onSurface,
             ),
           ),
           const SizedBox(width: 24),
@@ -428,13 +460,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, Color onSurface) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16, top: 10),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Color(0xFF714611),
+        style: TextStyle(
+          color: onSurface,
           fontSize: 20,
           fontFamily: "Marcellus",
           fontWeight: FontWeight.bold,
@@ -443,26 +475,32 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(Color primary, Color onSurface, BoxShadow shadow) {
     return Center(
       child: Stack(
         children: [
           Container(
             width: 120,
             height: 120,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFF4A3B2A),
+              color: primary.withOpacity(0.18),
+              boxShadow: [shadow],
             ),
             child: ClipOval(
               child: _selectedImage != null
                   ? Image.file(_selectedImage!, fit: BoxFit.cover)
-                  : _currentUser?.profileImageUrl.isNotEmpty == true
+                  : (_currentUser?.profileImageUrl.isNotEmpty == true)
                   ? Image.network(
-                      _currentUser!.profileImageUrl,
-                      fit: BoxFit.cover,
-                    )
-                  : const Icon(Icons.person, color: Colors.white, size: 60),
+                _currentUser!.profileImageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (c, o, s) => Center(
+                  child: Icon(Icons.person, color: onSurface, size: 60),
+                ),
+              )
+                  : Center(
+                child: Icon(Icons.person, color: onSurface, size: 60),
+              ),
             ),
           ),
           Positioned(
@@ -472,25 +510,31 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
               onTap: _isUploadingImage ? null : _pickImage,
               child: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFFFBF7ED),
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                  color: Theme.of(context).colorScheme.surface,
+                  boxShadow: [shadow],
+                  border: Border.all(
+                    color: (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black)
+                        .withOpacity(0.08),
+                  ),
                 ),
                 child: _isUploadingImage
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Color(0xFF714611)),
-                        ),
-                      )
-                    : const Icon(
-                        Icons.camera_alt_outlined,
-                        size: 20,
-                        color: Color(0xFF714611),
-                      ),
+                    ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(primary),
+                  ),
+                )
+                    : Icon(
+                  Icons.camera_alt_outlined,
+                  size: 20,
+                  color: primary,
+                ),
               ),
             ),
           ),
@@ -515,12 +559,12 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildLabel(String text) => Padding(
+  Widget _buildLabel(String text, Color onSurface) => Padding(
     padding: const EdgeInsets.only(bottom: 8, left: 4),
     child: Text(
       text,
-      style: const TextStyle(
-        color: Color(0xFF714611),
+      style: TextStyle(
+        color: onSurface.withOpacity(0.85),
         fontSize: 14,
         fontFamily: "Marcellus",
         fontWeight: FontWeight.w600,
@@ -528,86 +572,77 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     ),
   );
 
-  Widget _buildField(
-    TextEditingController controller, {
+  Widget _buildField({
+    required TextEditingController controller,
+    required Color surface,
+    required Color onSurface,
+    required BoxShadow shadow,
+    required Color borderColor,
     bool readOnly = false,
   }) {
     return Container(
       decoration: BoxDecoration(
-        // ✅ VISUAL HINT: Different background for read-only
-        color: readOnly
-            ? Colors.grey.withOpacity(0.15)
-            : const Color(0xFFFFFEF0),
+        color: readOnly ? surface.withOpacity(0.70) : surface,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: readOnly
-            ? []
-            : const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
-        border: readOnly
-            ? Border.all(color: Color(0xFF714611).withOpacity(0.4))
-            : null,
+        boxShadow: readOnly ? [] : [shadow],
+        border: Border.all(
+          color: readOnly ? borderColor.withOpacity(1) : borderColor,
+        ),
       ),
       child: TextField(
         controller: controller,
         readOnly: readOnly,
-        style: TextStyle(
-          color: readOnly ? Color(0xFF714611) : const Color(0xFF5A3E18),
-        ),
+        style: TextStyle(color: onSurface),
         decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 16,
-          ),
-          // ✅ VISUAL HINT: Lock icon for read-only
+          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           suffixIcon: readOnly
-              ? const Icon(
-                  Icons.lock_outline,
-                  color: Color(0xFF714611),
-                  size: 20,
-                )
+              ? Icon(Icons.lock_outline, color: onSurface.withOpacity(0.7), size: 20)
               : null,
         ),
       ),
     );
   }
 
-  Widget _buildBioField() {
+  Widget _buildBioField(
+      Color surface,
+      Color onSurface,
+      BoxShadow shadow,
+      Color borderColor,
+      ) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFEF0),
+        color: surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-        ],
+        boxShadow: [shadow],
+        border: Border.all(color: borderColor),
       ),
       child: TextField(
         controller: _bioController,
         maxLines: 3,
-        style: const TextStyle(color: Color(0xFF714611)),
-        decoration: const InputDecoration(
+        style: TextStyle(color: onSurface),
+        decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.all(16),
+          contentPadding: const EdgeInsets.all(16),
           hintText: "Tell us about yourself...",
-          hintStyle: TextStyle(color: Color(0xFFB3A896)),
+          hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
         ),
       ),
     );
   }
 
-  Widget _buildPhoneField() {
+  Widget _buildPhoneField(
+      Color surface,
+      Color onSurface,
+      BoxShadow shadow,
+      Color borderColor,
+      ) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFEF0),
+        color: surface,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-        ],
+        boxShadow: [shadow],
+        border: Border.all(color: borderColor),
       ),
       child: IntlPhoneField(
         initialValue: _completePhoneNumber,
@@ -617,12 +652,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           counterText: "",
         ),
         initialCountryCode: _isoCode,
-        style: const TextStyle(color: Color(0xFF5A3E18)),
-        dropdownTextStyle: const TextStyle(color: Color(0xFF5A3E18)),
-        dropdownIcon: const Icon(
-          Icons.arrow_drop_down,
-          color: Color(0xFF5A3E18),
-        ),
+        style: TextStyle(color: onSurface),
+        dropdownTextStyle: TextStyle(color: onSurface),
+        dropdownIcon: Icon(Icons.arrow_drop_down, color: onSurface.withOpacity(0.8)),
         onChanged: (phone) {
           _completePhoneNumber = phone.completeNumber;
           _isoCode = phone.countryISOCode;
@@ -631,7 +663,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildNationalityPicker() {
+  Widget _buildNationalityPicker(
+      Color surface,
+      Color onSurface,
+      BoxShadow shadow,
+      Color borderColor,
+      Color primary,
+      ) {
     return GestureDetector(
       onTap: () {
         showCountryPicker(
@@ -639,45 +677,66 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           showPhoneCode: false,
           onSelect: (Country country) {
             setState(() {
-              _nationalityController.text =
-                  "${country.flagEmoji} ${country.name}";
+              _nationalityController.text = "${country.flagEmoji} ${country.name}";
             });
           },
           countryListTheme: CountryListThemeData(
-            backgroundColor: const Color(0xFFFFFEF0),
-            textStyle: const TextStyle(
+            backgroundColor: surface,
+            textStyle: TextStyle(
               fontFamily: "Marcellus",
-              color: Color(0xFF5A3E18),
+              color: onSurface,
             ),
             borderRadius: BorderRadius.circular(20),
-            inputDecoration: const InputDecoration(
+            inputDecoration: InputDecoration(
               hintText: 'Search nationality',
-              prefixIcon: Icon(Icons.search, color: Color(0xFF5A3E18)),
+              prefixIcon: Icon(Icons.search, color: onSurface.withOpacity(0.8)),
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF5A3E18)),
+                borderSide: BorderSide(color: borderColor),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: borderColor),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: primary, width: 1.4),
+                borderRadius: BorderRadius.circular(14),
               ),
             ),
           ),
         );
       },
-      child: AbsorbPointer(child: _buildField(_nationalityController)),
+      child: AbsorbPointer(
+        child: _buildField(
+          controller: _nationalityController,
+          surface: surface,
+          onSurface: onSurface,
+          shadow: shadow,
+          borderColor: borderColor,
+        ),
+      ),
     );
   }
 
-  Widget _buildRoleSelector() {
+  Widget _buildRoleSelector(
+      Color surface,
+      Color onSurface,
+      BoxShadow shadow,
+      Color borderColor,
+      ) {
+    // you can replace this later with real selector UI
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFEF0),
+        color: surface,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-        ],
+        boxShadow: [shadow],
+        border: Border.all(color: borderColor),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Text(
         '🧳 Traveler',
-        style: const TextStyle(
-          color: Color(0xFF5A3E18),
+        style: TextStyle(
+          color: onSurface,
           fontSize: 16,
           fontFamily: 'Marcellus',
         ),
@@ -685,7 +744,12 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildInterestsTags() {
+  Widget _buildInterestsTags(
+      Color surface,
+      Color onSurface,
+      Color primary,
+      Color borderColor,
+      ) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -704,21 +768,17 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFFC79A00)
-                  : const Color(0xFFFFFEF0),
+              color: isSelected ? primary : surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF714611)
-                    : Color(0xFFF2F1E0),
+                color: isSelected ? primary.withOpacity(0.8) : borderColor,
               ),
             ),
             child: Text(
               interest,
               style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF5A3E18),
-                fontSize: 16,
+                color: isSelected ? Colors.white : onSurface.withOpacity(0.9),
+                fontSize: 15,
               ),
             ),
           ),
@@ -727,46 +787,49 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildSocialField(TextEditingController controller, String hint) {
+  Widget _buildSocialField({
+    required TextEditingController controller,
+    required String hint,
+    required Color surface,
+    required Color onSurface,
+    required BoxShadow shadow,
+    required Color borderColor,
+  }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFEF0),
+        color: surface,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-        ],
+        boxShadow: [shadow],
+        border: Border.all(color: borderColor),
       ),
       child: TextField(
         controller: controller,
-        style: const TextStyle(color: Color(0xFF5A3E18)),
+        style: TextStyle(color: onSurface),
         decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 14,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           hintText: hint,
-          hintStyle: const TextStyle(color: Color(0xFFB3A896)),
+          hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
         ),
       ),
     );
   }
 
-  Widget _buildVerificationStatus() {
+  Widget _buildVerificationStatus(Color surface, Color onSurface, Color borderColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFEF0),
+        color: surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Verification Status",
             style: TextStyle(
-              color: Color(0xFF714611),
+              color: onSurface,
               fontSize: 16,
               fontFamily: "Marcellus",
               fontWeight: FontWeight.w600,
@@ -801,15 +864,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildSubmitButton() {
+  Widget _buildSubmitButton(Color primary, Color onSurface) {
     return SizedBox(
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
         onPressed: _submit,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFC79A00),
-          foregroundColor: Colors.black,
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

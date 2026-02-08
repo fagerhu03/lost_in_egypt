@@ -22,7 +22,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapRepository _repository = MapRepository();
   final MapMarkerService _markerService = MapMarkerService();
-  
+
   GoogleMapController? _mapController;
 
   Set<Marker> _markers = {};
@@ -90,23 +90,19 @@ class _MapScreenState extends State<MapScreen> {
     List<MapItem> filteredItems;
 
     if (_selectedUiCategoryId == 'all') {
-      // "All" selected → Apply zoom-based importance filtering
       filteredItems = MarkerFilterService.filterByZoom(_allItems, _currentZoom);
       debugPrint(
         '🔍 Filter: ALL with zoom filtering (zoom: ${_currentZoom.toStringAsFixed(1)})',
       );
     } else {
-      // Specific category selected → NO zoom filtering
       filteredItems = List.from(_allItems);
       debugPrint(
         '🔍 Filter: Category "$_selectedUiCategoryId" - NO zoom filtering',
       );
     }
 
-    // Filter out excluded categories
     filteredItems = filteredItems.where(_shouldShowItem).toList();
 
-    // Force include selected place if needed
     if (forceInclude != null &&
         !filteredItems.any((p) => p.id == forceInclude.id)) {
       if (_shouldShowItem(forceInclude)) {
@@ -152,22 +148,12 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _focusOnPlace(MapItem place) async {
-    debugPrint('🎯 _focusOnPlace: ${place.title}');
-    debugPrint(
-      '   📍 Lat: ${place.coordinate.latitude}, Lng: ${place.coordinate.longitude}',
-    );
-
     if (_mapController == null) {
-      debugPrint('   ⏳ Waiting for map controller...');
       await Future.delayed(const Duration(milliseconds: 500));
-      if (_mapController == null) {
-        debugPrint('   ❌ Map controller still null');
-        return;
-      }
+      if (_mapController == null) return;
     }
 
     if (!_allItems.any((p) => p.id == place.id)) {
-      debugPrint('   ➕ Adding place to _allItems');
       _allItems.add(place);
     }
 
@@ -175,7 +161,6 @@ class _MapScreenState extends State<MapScreen> {
       _selectedPlace = place;
     });
 
-    debugPrint('   🎥 Animating camera...');
     try {
       await _mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
@@ -188,9 +173,8 @@ class _MapScreenState extends State<MapScreen> {
           ),
         ),
       );
-      debugPrint('   ✅ Camera animation complete');
     } catch (e) {
-      debugPrint('   ❌ Camera animation error: $e');
+      debugPrint('Camera animation error: $e');
     }
 
     _currentZoom = 17;
@@ -208,9 +192,7 @@ class _MapScreenState extends State<MapScreen> {
     }
     if (_darkMapStyle == null) {
       try {
-        _darkMapStyle = await rootBundle.loadString(
-          'assets/map_style_dark.json',
-        );
+        _darkMapStyle = await rootBundle.loadString('assets/map_style_dark.json');
       } catch (_) {
         _darkMapStyle = _lightMapStyle;
       }
@@ -267,9 +249,7 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _loadAllItemsIfNeeded() async {
     if (_allItemsCache.isEmpty) {
-      debugPrint('📦 Loading all items into cache...');
       _allItemsCache = await _repository.fetchByUiCategory('all', limit: 3000);
-      debugPrint('📦 Cached ${_allItemsCache.length} items');
       _debugAvailableCategories();
     }
   }
@@ -300,15 +280,12 @@ class _MapScreenState extends State<MapScreen> {
 
     if (uiCategoryId == 'all') {
       items = _allItemsCache.where(_shouldShowItem).toList();
-      debugPrint('📦 Showing ALL categories: ${items.length} items');
     } else {
       items = _allItemsCache.where((item) {
         final itemCategory = item.category.toLowerCase().trim();
         final filterCategory = uiCategoryId.toLowerCase().trim();
         return itemCategory == filterCategory;
       }).toList();
-
-      debugPrint('📦 Filtered "$uiCategoryId": ${items.length} items');
     }
 
     _allItems = items;
@@ -322,7 +299,6 @@ class _MapScreenState extends State<MapScreen> {
   // ═══════════════════════════════════════════════════════════
 
   void _onMarkerTapped(MapItem place) {
-    debugPrint('📍 Marker tapped: ${place.title}');
     setState(() {
       _selectedPlace = place;
     });
@@ -345,6 +321,7 @@ class _MapScreenState extends State<MapScreen> {
     final chosen = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -367,6 +344,24 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    // shadows: dark shadow in light mode, light glow in dark mode
+    final shadowColor = isDark
+        ? Colors.white.withOpacity(0.18)
+        : Colors.black.withOpacity(0.18);
+
+    Color chipBg({bool strong = false}) {
+      // readable on map in both themes
+      final base = surface.withOpacity(strong ? (isDark ? 0.92 : 0.95) : 0.92);
+      return base;
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -378,16 +373,12 @@ class _MapScreenState extends State<MapScreen> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             onMapCreated: (controller) async {
-              debugPrint('🗺️ Map created!');
               _mapController = controller;
               await _loadAndApplyMapStyleIfNeeded();
 
               final pendingFocus =
                   MapFocusService.instance.focusedItemNotifier.value;
               if (pendingFocus != null) {
-                debugPrint(
-                  '🎯 Processing pending focus: ${pendingFocus.title}',
-                );
                 _focusOnPlace(pendingFocus);
               }
             },
@@ -411,22 +402,27 @@ class _MapScreenState extends State<MapScreen> {
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: chipBg(strong: true),
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: shadowColor,
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
                   ],
+                  border: Border.all(
+                    color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+                  ),
                 ),
-                child: const Text(
+                child: Text(
                   "Lost In Egypt",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: "Marcellus",
+                    color: onSurface.withOpacity(0.95),
                   ),
                 ),
               ),
@@ -438,13 +434,20 @@ class _MapScreenState extends State<MapScreen> {
             top: 110,
             left: 20,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: chipBg(),
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 6),
+                boxShadow: [
+                  BoxShadow(
+                    color: shadowColor,
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
                 ],
+                border: Border.all(
+                  color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,9 +455,10 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   Text(
                     '${_markers.length}/${_allItems.length} places',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
+                      color: onSurface.withOpacity(0.9),
                     ),
                   ),
                   if (_selectedUiCategoryId != 'all')
@@ -462,13 +466,13 @@ class _MapScreenState extends State<MapScreen> {
                       MapConfig.categories
                           .firstWhere(
                             (c) => c.id == _selectedUiCategoryId,
-                            orElse: () => const UiCategory('', 'Unknown', ''),
-                          )
+                        orElse: () => const UiCategory('', 'Unknown', ''),
+                      )
                           .label,
                       style: TextStyle(
                         fontSize: 10,
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.w500,
+                        color: primary,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                 ],
@@ -483,18 +487,22 @@ class _MapScreenState extends State<MapScreen> {
             child: GestureDetector(
               onTap: _openCategorySheet,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 decoration: BoxDecoration(
                   color: _selectedUiCategoryId == 'all'
-                      ? Colors.white
-                      : Theme.of(context).primaryColor,
+                      ? chipBg()
+                      : primary.withOpacity(isDark ? 0.90 : 0.95),
                   borderRadius: BorderRadius.circular(30),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: shadowColor,
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
                   ],
+                  border: Border.all(
+                    color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -502,7 +510,7 @@ class _MapScreenState extends State<MapScreen> {
                     Icon(
                       Icons.tune,
                       color: _selectedUiCategoryId == 'all'
-                          ? Colors.black87
+                          ? onSurface.withOpacity(0.9)
                           : Colors.white,
                       size: 20,
                     ),
@@ -512,8 +520,8 @@ class _MapScreenState extends State<MapScreen> {
                         MapConfig.categories
                             .firstWhere(
                               (c) => c.id == _selectedUiCategoryId,
-                              orElse: () => const UiCategory('', '', ''),
-                            )
+                          orElse: () => const UiCategory('', '', ''),
+                        )
                             .icon,
                         style: const TextStyle(fontSize: 16),
                       ),
@@ -530,7 +538,7 @@ class _MapScreenState extends State<MapScreen> {
             right: 20,
             child: FloatingActionButton(
               heroTag: "location_btn",
-              backgroundColor: Colors.white,
+              backgroundColor: surface.withOpacity(isDark ? 0.92 : 0.95),
               onPressed: () {
                 if (_isLocationPermissionGranted) {
                   _goToUserLocation();
@@ -541,8 +549,8 @@ class _MapScreenState extends State<MapScreen> {
               child: Icon(
                 Icons.my_location,
                 color: _isLocationPermissionGranted
-                    ? Colors.blue
-                    : Colors.black87,
+                    ? primary
+                    : onSurface.withOpacity(0.9),
               ),
             ),
           ),
@@ -554,12 +562,12 @@ class _MapScreenState extends State<MapScreen> {
               left: 20,
               child: FloatingActionButton.extended(
                 heroTag: "reset_filter_btn",
-                backgroundColor: Colors.white,
+                backgroundColor: surface.withOpacity(isDark ? 0.92 : 0.95),
                 onPressed: () => _loadByCategory('all'),
-                icon: const Icon(Icons.close, color: Colors.black87, size: 18),
-                label: const Text(
+                icon: Icon(Icons.close, color: onSurface.withOpacity(0.9), size: 18),
+                label: Text(
                   'Reset',
-                  style: TextStyle(color: Colors.black87),
+                  style: TextStyle(color: onSurface.withOpacity(0.9)),
                 ),
               ),
             ),
@@ -575,27 +583,37 @@ class _MapScreenState extends State<MapScreen> {
                   padding: const EdgeInsets.all(12),
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.95),
+                        color: chipBg(strong: true),
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black12, blurRadius: 10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: shadowColor,
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
                         ],
+                        border: Border.all(
+                          color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+                        ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: primary,
+                            ),
                           ),
-                          SizedBox(width: 10),
-                          Text("Loading..."),
+                          const SizedBox(width: 10),
+                          Text(
+                            "Loading...",
+                            style: TextStyle(color: onSurface.withOpacity(0.9)),
+                          ),
                         ],
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../theme/theme_controller.dart';
 import '../../../auth/data/models/user.dart';
 import 'data/settings_repository.dart';
 
@@ -30,7 +31,6 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Refresh data when returning to this screen
     if (state == AppLifecycleState.resumed) {
       _loadData();
     }
@@ -44,6 +44,9 @@ class _SettingsScreenState extends State<SettingsScreen>
           _currentUser = user;
           _isLoading = false;
         });
+
+        // apply saved theme
+        ThemeController.setDark(user?.isDarkMode ?? false);
       }
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
@@ -53,7 +56,6 @@ class _SettingsScreenState extends State<SettingsScreen>
   Future<void> _updateSetting(String key, dynamic value) async {
     if (_currentUser == null) return;
 
-    // Optimistic Update locally
     final updatedUser = UserModel(
       id: _currentUser!.id,
       email: _currentUser!.email,
@@ -64,9 +66,8 @@ class _SettingsScreenState extends State<SettingsScreen>
       profileImageUrl: _currentUser!.profileImageUrl,
       phoneNumber: _currentUser!.phoneNumber,
       nationality: _currentUser!.nationality,
-      isNotificationsEnabled: key == 'notif'
-          ? value
-          : _currentUser!.isNotificationsEnabled,
+      isNotificationsEnabled:
+      key == 'notif' ? value : _currentUser!.isNotificationsEnabled,
       isDarkMode: key == 'theme' ? value : _currentUser!.isDarkMode,
       language: key == 'lang' ? value : _currentUser!.language,
       createdAt: _currentUser!.createdAt,
@@ -82,20 +83,31 @@ class _SettingsScreenState extends State<SettingsScreen>
       _currentUser = updatedUser;
     });
 
-    // Save to DB via Repository
+    // ✅ change theme instantly
+    if (key == 'theme') {
+      ThemeController.setDark(value == true);
+    }
+
     await _repository.updateSetting(_currentUser!, key, value);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final textColor = theme.colorScheme.onSurface;
+
+    final isDark = theme.brightness == Brightness.dark;
+    final patternOpacity = isDark ? 0.1 : 0.4;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFCFBE8),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Opacity(
-              opacity: 0.4,
+              opacity: patternOpacity, // ✅ 0.4 light / 0.2 dark
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -117,18 +129,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.arrow_back_ios_new,
                           size: 20,
-                          color: Color(0xFF714611),
+                          color: textColor,
                         ),
                       ),
-                      const Text(
+                      Text(
                         "Settings",
                         style: TextStyle(
                           fontSize: 30,
                           fontFamily: "Marcellus",
-                          color: Color(0x8C4D5420),
+                          color: textColor.withOpacity(0.75),
                         ),
                       ),
                       const SizedBox(width: 24),
@@ -137,26 +149,26 @@ class _SettingsScreenState extends State<SettingsScreen>
                 ),
                 const SizedBox(height: 20),
 
-                // List
                 Expanded(
                   child: _isLoading
-                      ? const Center(
+                      ? Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFFC79A00),
+                      color: theme.colorScheme.primary,
                     ),
                   )
                       : ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     children: [
                       _buildTile(
+                        surfaceColor: surface,
                         child: Row(
                           mainAxisAlignment:
                           MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               "Select Language",
                               style: TextStyle(
-                                color: Color(0xFF714611),
+                                color: textColor,
                                 fontSize: 16,
                                 fontFamily: "Marcellus",
                               ),
@@ -166,14 +178,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                                 Text(
                                   _currentUser?.language ?? "English",
                                   style: TextStyle(
-                                    color: const Color(
-                                      0xFF714611,
-                                    ).withOpacity(0.7),
+                                    color: textColor.withOpacity(0.7),
                                   ),
                                 ),
-                                const Icon(
+                                Icon(
                                   Icons.keyboard_arrow_down,
-                                  color: Color(0xFF714611),
+                                  color: textColor,
                                 ),
                               ],
                             ),
@@ -188,17 +198,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                           );
                         },
                       ),
-                      const SizedBox(height: 16), // ✅ Gap
+                      const SizedBox(height: 16),
 
                       _buildTile(
+                        surfaceColor: surface,
                         child: Row(
                           mainAxisAlignment:
                           MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               "Notification",
                               style: TextStyle(
-                                color: Color(0xFF7C6A4D),
+                                color: textColor.withOpacity(0.85),
                                 fontSize: 16,
                                 fontFamily: "Marcellus",
                               ),
@@ -210,36 +221,39 @@ class _SettingsScreenState extends State<SettingsScreen>
                               onChanged: (v) =>
                                   _updateSetting('notif', v),
                               activeColor: Colors.white,
-                              activeTrackColor: const Color(0xFF5A3E18),
-                              inactiveThumbColor: const Color(0xFF5A3E18),
+                              activeTrackColor: theme.colorScheme.primary,
+                              inactiveThumbColor:
+                              theme.colorScheme.primary,
                               inactiveTrackColor: Colors.white,
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16), // ✅ Gap
+                      const SizedBox(height: 16),
 
                       _buildTile(
-                        child: const Text(
+                        surfaceColor: surface,
+                        child: Text(
                           "Saved Card",
                           style: TextStyle(
-                            color: Color(0xFF7C6A4D),
+                            color: textColor.withOpacity(0.85),
                             fontSize: 16,
                             fontFamily: "Marcellus",
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16), // ✅ Gap
+                      const SizedBox(height: 16),
 
                       _buildTile(
+                        surfaceColor: surface,
                         child: Row(
                           mainAxisAlignment:
                           MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               "Theme",
                               style: TextStyle(
-                                color: Color(0xFF714611),
+                                color: textColor,
                                 fontSize: 16,
                                 fontFamily: "Marcellus",
                               ),
@@ -250,16 +264,15 @@ class _SettingsScreenState extends State<SettingsScreen>
                                 !(_currentUser?.isDarkMode ?? false),
                               ),
                               child: AnimatedContainer(
-                                duration: const Duration(
-                                  milliseconds: 300,
-                                ),
+                                duration:
+                                const Duration(milliseconds: 300),
                                 width: 60,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF5A3E18),
+                                  color: theme.colorScheme.primary,
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: const Color(0xFF714611),
+                                    color: textColor.withOpacity(0.4),
                                   ),
                                 ),
                                 child: Stack(
@@ -289,13 +302,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                                           ? Alignment.centerRight
                                           : Alignment.centerLeft,
                                       duration: const Duration(
-                                        milliseconds: 300,
-                                      ),
+                                          milliseconds: 300),
                                       child: Container(
                                         margin:
                                         const EdgeInsets.symmetric(
-                                          horizontal: 2,
-                                        ),
+                                            horizontal: 2),
                                         width: 26,
                                         height: 26,
                                         decoration: const BoxDecoration(
@@ -322,7 +333,11 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  Widget _buildTile({required Widget child, VoidCallback? onTap}) {
+  Widget _buildTile({
+    required Widget child,
+    required Color surfaceColor,
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -330,7 +345,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         padding: const EdgeInsets.symmetric(horizontal: 20),
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFEF0), // ✅ UPDATED HERE
+          color: surfaceColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(

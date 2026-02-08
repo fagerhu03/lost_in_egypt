@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-// ✅ Ensure these imports match your project structure
 import '../../navigator/widget/account_menu_button.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import '../domain/entities/community_post.dart';
@@ -20,7 +19,8 @@ class CommunityScreen extends StatefulWidget {
   State<CommunityScreen> createState() => _CommunityScreenState();
 }
 
-class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAliveClientMixin {
+class _CommunityScreenState extends State<CommunityScreen>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -29,15 +29,13 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
   final FocusNode _composerFocusNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
 
-  // State Variables
   String _searchQuery = "";
   String? _profileImageUrl;
-  bool _isPosting = false; // ✅ NEW: Prevent duplicate posts
+  bool _isPosting = false;
   String? _selectedLocationName;
   String? _selectedLocationId;
 
-  // Filter & Image State
-  String _sortBy = 'newest'; // 'newest' or 'popular'
+  String _sortBy = 'newest';
   List<File> _selectedImages = [];
 
   @override
@@ -65,7 +63,6 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
           setState(() {
             _profileImageUrl = doc.data()?['profileImageUrl'];
           });
-          // Ensure existing posts by this user have correct flag
           try {
             await _repository.refreshUserPostsFlag(user.uid);
           } catch (e) {
@@ -78,18 +75,12 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
     }
   }
 
-  // ✅ CRITICAL FIX: The Gatekeeper Logic
-  // This checks for phone verification BEFORE allowing the post to happen.
   void _handlePostAction() async {
-    // ✅ NEW: Prevent rapid/duplicate posts
     if (_isPosting) return;
-
-    // 1. Basic validation (don't bother checking phone if text is empty)
     if (_postController.text.trim().isEmpty && _selectedImages.isEmpty) return;
 
     final user = FirebaseAuth.instance.currentUser;
 
-    // 🔒 CHECK: Is user phone-verified in Firestore?
     bool isPhoneVerified = false;
     try {
       final doc = await FirebaseFirestore.instance
@@ -105,7 +96,6 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
     }
 
     if (!isPhoneVerified) {
-      // 🛑 BLOCKED: Show Verification Screen
       final bool? verified = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -113,13 +103,11 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
         ),
       );
 
-      // If they came back and verified == true, let them post
       if (verified == true) {
-        _handlePost(); // ✅ Proceed to actual posting
+        _handlePost();
       }
     } else {
-      // ✅ ALLOWED: User is already verified
-      _handlePost(); // ✅ Proceed to actual posting
+      _handlePost();
     }
   }
 
@@ -130,10 +118,20 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
     await showDialog(
       context: context,
       builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final isDark = theme.brightness == Brightness.dark;
+        final surface = theme.colorScheme.surface;
+        final onSurface = theme.colorScheme.onSurface;
+
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text("Tag a Location"),
+              backgroundColor: surface,
+              surfaceTintColor: Colors.transparent,
+              title: Text(
+                "Tag a Location",
+                style: TextStyle(color: onSurface),
+              ),
               content: SizedBox(
                 width: double.maxFinite,
                 height: 400,
@@ -141,18 +139,34 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                   children: [
                     TextField(
                       autofocus: true,
+                      style: TextStyle(color: onSurface),
                       decoration: InputDecoration(
                         hintText: "Search places...",
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.grey,
-                        ),
+                        hintStyle: TextStyle(color: onSurface.withOpacity(0.6)),
+                        prefixIcon: Icon(Icons.search, color: onSurface.withOpacity(0.7)),
+                        filled: true,
+                        fillColor: isDark
+                            ? surface.withOpacity(0.7)
+                            : surface.withOpacity(0.9),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: onSurface.withOpacity(0.12),
+                          ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: onSurface.withOpacity(0.12),
+                          ),
                         ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary.withOpacity(0.8),
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                       onChanged: (val) async {
                         if (val.trim().length < 2) {
@@ -160,9 +174,7 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                           return;
                         }
                         setDialogState(() => isLoading = true);
-                        final results = await _repository.searchPlaces(
-                          val,
-                        ); // Make sure this method exists in your repo
+                        final results = await _repository.searchPlaces(val);
                         if (context.mounted) {
                           setDialogState(() {
                             searchResults = results;
@@ -173,16 +185,18 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                     ),
                     const SizedBox(height: 10),
                     if (isLoading)
-                      const Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: CircularProgressIndicator(),
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: CircularProgressIndicator(
+                          color: theme.colorScheme.primary,
+                        ),
                       )
                     else if (searchResults.isEmpty)
-                      const Expanded(
+                      Expanded(
                         child: Center(
                           child: Text(
                             "Type to search places...",
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(color: onSurface.withOpacity(0.55)),
                           ),
                         ),
                       )
@@ -190,10 +204,12 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                       Expanded(
                         child: ListView.separated(
                           itemCount: searchResults.length,
-                          separatorBuilder: (c, i) => const Divider(height: 1),
+                          separatorBuilder: (c, i) => Divider(
+                            height: 1,
+                            color: onSurface.withOpacity(0.10),
+                          ),
                           itemBuilder: (context, index) {
                             final place = searchResults[index];
-                            // Handle image (network or asset or fallback)
                             final imagePath = place['image'] ?? '';
                             Widget leadingImage;
                             if (imagePath.startsWith('http')) {
@@ -203,14 +219,14 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                                 placeholder: (context, url) =>
                                     Container(color: Colors.grey[200]),
                                 errorWidget: (_, __, ___) =>
-                                    const Icon(Icons.place, color: Colors.grey),
+                                    Icon(Icons.place, color: onSurface.withOpacity(0.6)),
                               );
                             } else {
                               leadingImage = Image.asset(
                                 imagePath,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) =>
-                                    const Icon(Icons.place, color: Colors.grey),
+                                    Icon(Icons.place, color: onSurface.withOpacity(0.6)),
                               );
                             }
 
@@ -229,8 +245,9 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                               ),
                               title: Text(
                                 place['title'],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
+                                  color: onSurface,
                                 ),
                               ),
                               onTap: () {
@@ -250,9 +267,9 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text(
+                  child: Text(
                     "Cancel",
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: onSurface.withOpacity(0.6)),
                   ),
                 ),
               ],
@@ -279,7 +296,6 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
     }
   }
 
-  // ✅ Actual Logic to Upload Post
   Future<void> _handlePost() async {
     setState(() => _isPosting = true);
     try {
@@ -299,9 +315,12 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
       if (mounted) _composerFocusNode.unfocus();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isPosting = false);
@@ -317,14 +336,34 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final bg = theme.scaffoldBackgroundColor;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    // pattern opacity: 0.4 light / 0.2 dark
+    final patternOpacity = isDark ? 0.1 : 0.4;
+
+    // shadow: dark in light / light in dark
+    final boxShadow = BoxShadow(
+      color: isDark ? Colors.white.withOpacity(0.10) : Colors.black.withOpacity(0.08),
+      blurRadius: 14,
+      offset: const Offset(0, 8),
+      spreadRadius: 1,
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFEF0),
+      backgroundColor: bg,
       body: Stack(
         children: [
-          Container(color: const Color(0xFFFCFBE8)),
+          Positioned.fill(child: Container(color: bg)),
           Positioned.fill(
             child: Opacity(
-              opacity: 0.35,
+              opacity: patternOpacity,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -336,8 +375,8 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
           SafeArea(
             child: Column(
               children: [
-                _buildSearchHeader(context),
-                _buildFilterBar(),
+                _buildSearchHeader(context, surface, onSurface, primary, boxShadow),
+                _buildFilterBar(primary, onSurface, surface),
                 Expanded(
                   child: Column(
                     children: [
@@ -345,17 +384,18 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                         padding: const EdgeInsets.fromLTRB(12, 6, 12, 14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [_buildComposer()],
+                          children: [
+                            _buildComposer(theme, surface, onSurface, primary, boxShadow),
+                          ],
                         ),
                       ),
                       Expanded(
                         child: StreamBuilder<List<CommunityPost>>(
                           stream: _repository.getPostsStream(sortBy: _sortBy),
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(color: primary),
                               );
                             }
                             if (snapshot.hasError) {
@@ -375,32 +415,33 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                             final filteredPosts = _searchQuery.isEmpty
                                 ? allPosts
                                 : allPosts
-                                      .where(
-                                        (p) => p.content.toLowerCase().contains(
-                                          _searchQuery.toLowerCase(),
-                                        ),
-                                      )
-                                      .toList();
+                                .where((p) => p.content
+                                .toLowerCase()
+                                .contains(_searchQuery.toLowerCase()))
+                                .toList();
 
                             if (allPosts.isEmpty) {
-                              return const Center(
-                                child: Text("No posts yet. Be the first!"),
+                              return Center(
+                                child: Text(
+                                  "No posts yet. Be the first!",
+                                  style: TextStyle(color: onSurface.withOpacity(0.75)),
+                                ),
                               );
                             }
                             if (filteredPosts.isEmpty) {
                               return Center(
-                                child: Text("No results for '$_searchQuery'"),
+                                child: Text(
+                                  "No results for '$_searchQuery'",
+                                  style: TextStyle(color: onSurface.withOpacity(0.75)),
+                                ),
                               );
                             }
 
                             return ListView.separated(
-                              key: const PageStorageKey('community_list'), // ✅ KEEP SCROLL POSITION
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
+                              key: const PageStorageKey('community_list'),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                               itemCount: filteredPosts.length,
-                              separatorBuilder: (c, i) =>
-                                  const SizedBox(height: 12),
+                              separatorBuilder: (c, i) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {
                                 final post = filteredPosts[index];
                                 return CommunityPostCard(
@@ -410,8 +451,7 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) =>
-                                            PostDetailScreen(post: post),
+                                        builder: (_) => PostDetailScreen(post: post),
                                       ),
                                     );
                                   },
@@ -434,8 +474,19 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
 
   // --- WIDGETS ---
 
-  // (Search Header and Filter Bar remain the same as your code)
-  Widget _buildSearchHeader(BuildContext context) {
+  Widget _buildSearchHeader(
+      BuildContext context,
+      Color surface,
+      Color onSurface,
+      Color primary,
+      BoxShadow shadow,
+      ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final searchBg = primary.withOpacity(isDark ? 0.25 : 0.18);
+    final borderColor = (isDark ? Colors.white : Colors.black).withOpacity(0.10);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
       child: Row(
@@ -444,31 +495,32 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
             child: Container(
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xff4D5420).withOpacity(0.50),
+                color: searchBg,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFE0D8C3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                border: Border.all(color: borderColor),
+                boxShadow: [shadow],
               ),
               child: TextField(
                 onChanged: (val) => setState(() => _searchQuery = val),
-                decoration: const InputDecoration(
-                  fillColor: Colors.white,
+                style: TextStyle(
+                  color: isDark ? onSurface : Colors.white,
+                  fontFamily: "Marcellus",
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: InputDecoration(
                   hintText: "Search posts...",
                   hintStyle: TextStyle(
-                    color: Colors.white,
+                    color: (isDark ? onSurface : Colors.white).withOpacity(0.85),
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     fontFamily: "Marcellus",
                   ),
-                  prefixIcon: Icon(Icons.search, color: Colors.white),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: (isDark ? onSurface : Colors.white).withOpacity(0.9),
+                  ),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
+                  contentPadding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 10,
                   ),
@@ -486,57 +538,69 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
     );
   }
 
-  Widget _buildFilterBar() {
+  Widget _buildFilterBar(Color primary, Color onSurface, Color surface) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          _filterChip("Newest", "newest"),
+          _filterChip("Newest", "newest", primary, onSurface, surface),
           const SizedBox(width: 10),
-          _filterChip("Top Rated", "popular"),
+          _filterChip("Top Rated", "popular", primary, onSurface, surface),
           const SizedBox(width: 10),
-          _filterChip("Most Discussed", "most_discussed"),
+          _filterChip("Most Discussed", "most_discussed", primary, onSurface, surface),
         ],
       ),
     );
   }
 
-  Widget _filterChip(String label, String value) {
+  Widget _filterChip(
+      String label,
+      String value,
+      Color primary,
+      Color onSurface,
+      Color surface,
+      ) {
     final isSelected = _sortBy == value;
+
     return GestureDetector(
       onTap: () => setState(() => _sortBy = value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF714611) : Colors.transparent,
+          color: isSelected ? primary : surface.withOpacity(0.0),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFF714611)),
+          border: Border.all(color: primary),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : const Color(0xFF714611),
+            color: isSelected ? Colors.white : primary,
             fontWeight: FontWeight.bold,
+            fontFamily: "Marcellus",
           ),
         ),
       ),
     );
   }
 
-  Widget _buildComposer() {
+  Widget _buildComposer(
+      ThemeData theme,
+      Color surface,
+      Color onSurface,
+      Color primary,
+      BoxShadow shadow,
+      ) {
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFEF0),
+        color: surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFEFE6D6)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+        ),
+        boxShadow: [shadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -546,13 +610,13 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: Colors.grey.shade200,
+                backgroundColor: (isDark ? Colors.white : Colors.black).withOpacity(0.06),
                 backgroundImage:
-                    (_profileImageUrl != null && _profileImageUrl!.isNotEmpty)
-                        ? CachedNetworkImageProvider(_profileImageUrl!)
-                        : null,
+                (_profileImageUrl != null && _profileImageUrl!.isNotEmpty)
+                    ? CachedNetworkImageProvider(_profileImageUrl!)
+                    : null,
                 child: (_profileImageUrl == null || _profileImageUrl!.isEmpty)
-                    ? const Icon(Icons.person, size: 20)
+                    ? Icon(Icons.person, size: 20, color: onSurface.withOpacity(0.75))
                     : null,
               ),
               const SizedBox(width: 10),
@@ -561,27 +625,32 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                   controller: _postController,
                   focusNode: _composerFocusNode,
                   maxLines: null,
+                  style: TextStyle(color: onSurface),
                   decoration: InputDecoration(
                     hintText: "Share your thoughts...",
+                    hintStyle: TextStyle(color: onSurface.withOpacity(0.55)),
                     border: InputBorder.none,
                     suffix: _selectedLocationName != null
                         ? Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Chip(
-                              label: Text(
-                                _selectedLocationName!,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              deleteIcon: const Icon(Icons.close, size: 12),
-                              onDeleted: () => setState(() {
-                                _selectedLocationName = null;
-                                _selectedLocationId = null;
-                              }),
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          )
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: Chip(
+                        backgroundColor: primary.withOpacity(0.12),
+                        label: Text(
+                          _selectedLocationName!,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: onSurface.withOpacity(0.9),
+                          ),
+                        ),
+                        deleteIcon: Icon(Icons.close, size: 12, color: onSurface.withOpacity(0.7)),
+                        onDeleted: () => setState(() {
+                          _selectedLocationName = null;
+                          _selectedLocationId = null;
+                        }),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    )
                         : null,
                   ),
                 ),
@@ -589,7 +658,6 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
             ],
           ),
 
-          // IMAGE PREVIEW
           if (_selectedImages.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 10, bottom: 10),
@@ -616,16 +684,11 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
                           top: 0,
                           right: 8,
                           child: GestureDetector(
-                            onTap: () =>
-                                setState(() => _selectedImages.removeAt(index)),
+                            onTap: () => setState(() => _selectedImages.removeAt(index)),
                             child: const CircleAvatar(
                               radius: 10,
                               backgroundColor: Colors.black54,
-                              child: Icon(
-                                Icons.close,
-                                size: 12,
-                                color: Colors.white,
-                              ),
+                              child: Icon(Icons.close, size: 12, color: Colors.white),
                             ),
                           ),
                         ),
@@ -636,50 +699,48 @@ class _CommunityScreenState extends State<CommunityScreen> with AutomaticKeepAli
               ),
             ),
 
-          // ACTION BUTTONS
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(
-                      Icons.image_outlined,
-                      color: Color(0xFF7A6A55),
-                    ),
+                    icon: Icon(Icons.image_outlined, color: onSurface.withOpacity(0.75)),
                     onPressed: _pickImages,
                   ),
                   IconButton(
                     icon: Icon(
                       Icons.location_on_outlined,
                       color: _selectedLocationName != null
-                          ? Colors.blue
-                          : const Color(0xFF7A6A55),
+                          ? primary
+                          : onSurface.withOpacity(0.75),
                     ),
                     onPressed: _pickLocation,
                   ),
                 ],
               ),
-
-              // ✅ FIXED BUTTON: Calls _handlePostAction (The Gatekeeper) instead of _handlePost
               ElevatedButton(
                 onPressed: _isPosting ? null : _handlePostAction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF714611),
+                  backgroundColor: primary,
+                  disabledBackgroundColor: primary.withOpacity(0.6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
                 child: _isPosting
                     ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text("Post", style: TextStyle(color: Colors.white)),
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                    : const Text(
+                  "Post",
+                  style: TextStyle(color: Colors.white, fontFamily: "Marcellus"),
+                ),
               ),
             ],
           ),

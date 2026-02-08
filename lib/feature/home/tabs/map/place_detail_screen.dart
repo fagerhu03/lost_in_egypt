@@ -18,10 +18,38 @@ class PlaceDetailSheet extends StatefulWidget {
 }
 
 class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
-  final DraggableScrollableController _sheetController = DraggableScrollableController();
+  final DraggableScrollableController _sheetController =
+  DraggableScrollableController();
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    // Visible in both modes:
+    // - light mode: dark shadow
+    // - dark mode: light glow
+    final sheetShadow = isDark
+        ? BoxShadow(
+      color: Colors.white.withOpacity(0.18),
+      blurRadius: 26,
+      spreadRadius: 2,
+      offset: const Offset(0, -10),
+    )
+        : BoxShadow(
+      color: Colors.black.withOpacity(0.18),
+      blurRadius: 26,
+      spreadRadius: 2,
+      offset: const Offset(0, -10),
+    );
+
+    final borderColor =
+    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+
     return DraggableScrollableSheet(
       controller: _sheetController,
       initialChildSize: 0.55,
@@ -31,17 +59,11 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
       snapSizes: const [0.2, 0.55, 0.95],
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 15,
-                spreadRadius: 5,
-                offset: Offset(0, -5),
-              )
-            ],
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(color: borderColor),
+            boxShadow: [sheetShadow],
           ),
           child: ListView(
             controller: scrollController,
@@ -53,7 +75,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                   width: 40,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: onSurface.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(2.5),
                   ),
                 ),
@@ -67,9 +89,29 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       widget.place.imagePath,
                       fit: BoxFit.cover,
                       errorBuilder: (c, e, s) => Container(
-                        color: Colors.grey[100],
-                        child: const Center(
-                          child: Icon(Icons.broken_image, color: Colors.grey, size: 50),
+                        color: onSurface.withOpacity(0.06),
+                        child: Center(
+                          child: Icon(
+                            Icons.broken_image,
+                            color: onSurface.withOpacity(0.35),
+                            size: 50,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.center,
+                            colors: [
+                              Colors.black.withOpacity(0.25),
+                              Colors.transparent,
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -78,10 +120,11 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     top: 10,
                     right: 10,
                     child: CircleAvatar(
-                      backgroundColor: Colors.black54,
+                      backgroundColor: Colors.black.withOpacity(0.55),
                       radius: 18,
                       child: IconButton(
-                        icon: const Icon(Icons.close, size: 20, color: Colors.white),
+                        icon: const Icon(Icons.close,
+                            size: 20, color: Colors.white),
                         onPressed: widget.onClose,
                         padding: EdgeInsets.zero,
                       ),
@@ -96,28 +139,32 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                   children: [
                     Text(
                       widget.place.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: "Marcellus",
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF4A3D2E),
+                        color: onSurface,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE9E4BC),
+                            color: primary.withOpacity(isDark ? 0.18 : 0.12),
                             borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: primary.withOpacity(0.25),
+                            ),
                           ),
                           child: Text(
                             widget.place.category.toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF4D5420),
+                              color: primary,
                             ),
                           ),
                         ),
@@ -125,7 +172,10 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         const Icon(Icons.star, size: 16, color: Colors.amber),
                         Text(
                           " ${widget.place.rating}",
-                          style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                          style: TextStyle(
+                            color: onSurface.withOpacity(0.65),
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),
@@ -137,6 +187,9 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           icon: Icons.map_outlined,
                           label: "Show on Map",
                           isPrimary: true,
+                          primary: primary,
+                          onSurface: onSurface,
+                          isDark: isDark,
                           onTap: () {
                             _sheetController.animateTo(
                               0.2,
@@ -150,29 +203,42 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           icon: Icons.directions,
                           label: "Directions",
                           isPrimary: false,
+                          primary: primary,
+                          onSurface: onSurface,
+                          isDark: isDark,
                           onTap: () {},
                         ),
                         _buildActionButton(
                           icon: Icons.share,
                           label: "Share",
                           isPrimary: false,
+                          primary: primary,
+                          onSurface: onSurface,
+                          isDark: isDark,
                           onTap: () {},
                         ),
                         _buildActionButton(
                           icon: Icons.bookmark_border,
                           label: "Save",
                           isPrimary: false,
+                          primary: primary,
+                          onSurface: onSurface,
+                          isDark: isDark,
                           onTap: () {},
                         ),
                       ],
                     ),
-                    const Divider(height: 40, thickness: 1),
-                    const Text(
+                    Divider(
+                      height: 40,
+                      thickness: 1,
+                      color: onSurface.withOpacity(0.10),
+                    ),
+                    Text(
                       "About",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF4A3D2E),
+                        color: onSurface,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -180,29 +246,33 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       widget.place.description.isNotEmpty
                           ? widget.place.description
                           : "Explore the ancient wonders and hidden gems of Egypt. This location offers a unique glimpse into the rich history and culture of the region.",
-                      style: const TextStyle(
+                      style: TextStyle(
                         height: 1.6,
-                        color: Colors.black87,
+                        color: onSurface.withOpacity(0.85),
                         fontSize: 15,
                       ),
                     ),
                     const SizedBox(height: 24),
                     if (widget.place.locationAddress.isNotEmpty)
                       _buildInfoTile(
-                        Icons.location_on_outlined,
-                        widget.place.locationAddress,
-                        Colors.blue,
+                        icon: Icons.location_on_outlined,
+                        text: widget.place.locationAddress,
+                        iconColor: primary,
+                        onSurface: onSurface,
                       ),
                     _buildInfoTile(
-                      Icons.access_time,
-                      "Open • Closes 10:00 PM",
-                      Colors.orange,
+                      icon: Icons.access_time,
+                      text: "Open • Closes 10:00 PM",
+                      iconColor: Colors.orange,
+                      onSurface: onSurface,
                     ),
                     if (widget.place.price > 0)
                       _buildInfoTile(
-                        Icons.confirmation_number_outlined,
+                        icon: Icons.confirmation_number_outlined,
+                        text:
                         "${widget.place.price.toStringAsFixed(0)} EGP Entry Fee",
-                        Colors.green,
+                        iconColor: Colors.green,
+                        onSurface: onSurface,
                       ),
                     const SizedBox(height: 100),
                   ],
@@ -215,7 +285,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     );
   }
 
-  Widget _buildInfoTile(IconData icon, String text, Color iconColor) {
+  Widget _buildInfoTile({
+    required IconData icon,
+    required String text,
+    required Color iconColor,
+    required Color onSurface,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
@@ -226,9 +301,9 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
-                color: Colors.black87,
+                color: onSurface.withOpacity(0.85),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -243,7 +318,29 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     required String label,
     required bool isPrimary,
     required VoidCallback onTap,
+    required Color primary,
+    required Color onSurface,
+    required bool isDark,
   }) {
+    final bg = isPrimary ? primary : Colors.transparent;
+
+    final border = Border.all(
+      color: isPrimary
+          ? Colors.transparent
+          : onSurface.withOpacity(isDark ? 0.18 : 0.20),
+    );
+
+    final buttonShadow = isPrimary
+        ? [
+      BoxShadow(
+        color: (isDark ? Colors.white : Colors.black).withOpacity(0.14),
+        blurRadius: 10,
+        spreadRadius: 1,
+        offset: const Offset(0, 6),
+      )
+    ]
+        : <BoxShadow>[];
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -252,21 +349,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: isPrimary ? const Color(0xFF4D5420) : Colors.white,
+              color: bg,
               shape: BoxShape.circle,
-              border: isPrimary ? null : Border.all(color: Colors.grey[300]!),
-              boxShadow: [
-                if (isPrimary)
-                  const BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  )
-              ],
+              border: isPrimary ? null : border,
+              boxShadow: buttonShadow,
             ),
             child: Icon(
               icon,
-              color: isPrimary ? Colors.white : const Color(0xFF4D5420),
+              color: isPrimary ? Colors.white : primary,
               size: 24,
             ),
           ),
@@ -274,7 +364,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           Text(
             label,
             style: TextStyle(
-              color: isPrimary ? const Color(0xFF4D5420) : Colors.grey[700],
+              color: isPrimary ? primary : onSurface.withOpacity(0.70),
               fontWeight: FontWeight.w600,
               fontSize: 12,
             ),

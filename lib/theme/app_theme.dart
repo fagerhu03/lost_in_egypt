@@ -2,77 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
 
 class AppTheme {
-  // LIGHT THEME
   static ThemeData light = ThemeData(
-    brightness: Brightness.light,
-    fontFamily: "Marcellus",
+    useMaterial3: true,
     scaffoldBackgroundColor: AppColors.lightBackground,
-
-    textTheme: const TextTheme(
-      bodyMedium: TextStyle(color: AppColors.lightText),
-      bodySmall: TextStyle(color: AppColors.lightText),
-      titleLarge: TextStyle(color: AppColors.lightText),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.lightPrimaryButton,
+      brightness: Brightness.light,
+      background: AppColors.lightBackground,
+      surface: const Color(0xFFFFFEF0),
     ),
-
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: AppColors.lightField.withOpacity(0.70),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      hintStyle: const TextStyle(color: Colors.white70),
-    ),
-
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.lightPrimaryButton,
-        foregroundColor: Colors.black,
-        textStyle: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.lightBackground,
+      foregroundColor: AppColors.lightText,
+      elevation: 0,
     ),
   );
 
-  // DARK THEME
   static ThemeData dark = ThemeData(
-    brightness: Brightness.dark,
-    fontFamily: "Marcellus",
+    useMaterial3: true,
     scaffoldBackgroundColor: AppColors.darkBackground,
-
-    textTheme: const TextTheme(
-      bodyMedium: TextStyle(color: AppColors.darkText),
-      bodySmall: TextStyle(color: AppColors.darkText),
-      titleLarge: TextStyle(color: AppColors.darkText),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.darkPrimaryButton,
+      brightness: Brightness.dark,
+      background: AppColors.darkBackground,
+      surface: const Color(0xFF112B36),
     ),
-
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: AppColors.darkField.withOpacity(0.70),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      hintStyle: const TextStyle(color: Colors.white60),
-    ),
-
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.darkPrimaryButton,
-        foregroundColor: Colors.black,
-        textStyle: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.darkBackground,
+      foregroundColor: AppColors.darkText,
+      elevation: 0,
     ),
   );
 }
