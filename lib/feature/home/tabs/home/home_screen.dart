@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                "What's New",
+                "Where do you want to go?",
                 style: TextStyle(
                   color: onSurface.withOpacity(0.9),
                   fontSize: 22,
@@ -457,7 +457,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? "assets/icons/guide.png"
                 : "assets/icons/solo_trip.png",
             width: 90,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
             colorBlendMode: BlendMode.srcIn,
           ),
           const SizedBox(height: 6),

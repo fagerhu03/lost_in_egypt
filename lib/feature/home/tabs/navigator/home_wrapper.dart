@@ -27,8 +27,8 @@ class _HomeWrapperState extends State<HomeWrapper>
   static const List<Widget> _pages = [
     HomeScreen(),
     CommunityScreen(),
-    CameraScreen(),
     MapScreen(),
+    CameraScreen(),
     MoreScreen(),
   ];
 
@@ -111,7 +111,7 @@ class _HomeWrapperState extends State<HomeWrapper>
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.white.withOpacity(0.1) // visible glow in dark mode
+                    ? Colors.white.withOpacity(0.02) // visible glow in dark mode
                     : Colors.black.withOpacity(0.1), // visible shadow in light mode
                 blurRadius: 28,
                 spreadRadius: 6,
@@ -131,8 +131,8 @@ class _HomeWrapperState extends State<HomeWrapper>
             items: const [
               TabItem(icon: Icons.home_filled, title: "Home"),
               TabItem(icon: Icons.people_rounded, title: "Community"),
+              TabItem(icon: Icons.location_pin, title: "Map"),
               TabItem(icon: Icons.camera_alt_rounded, title: "Camera"),
-              TabItem(icon: Icons.map_rounded, title: "Map"),
               TabItem(icon: Icons.more_horiz, title: "More"),
             ],
             onTap: (i) {
