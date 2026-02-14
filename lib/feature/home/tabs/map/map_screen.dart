@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -37,6 +37,12 @@ class _MapScreenState extends State<MapScreen> {
 
   MapItem? _selectedPlace;
 
+  // ─────────────────────────────────────────────
+  // Map styles (Light / Dark)
+  // Files expected:
+  //   assets/map_style.json
+  //   assets/darkmode_map_style.json
+  // ─────────────────────────────────────────────
   String? _lightMapStyle;
   String? _darkMapStyle;
   Brightness? _lastBrightness;
@@ -50,21 +56,22 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _initializeMap() async {
     await _markerService.loadCustomMarkerIcons();
     await _checkLocationPermission();
-    _loadByCategory('all');
+    await _loadByCategory('all');
+
     MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequested);
   }
 
   @override
   void dispose() {
-    MapFocusService.instance.focusedItemNotifier.removeListener(
-      _onFocusRequested,
-    );
+    MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
     super.dispose();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    // Re-apply style if theme brightness changed (light <-> dark)
     final brightness = Theme.of(context).brightness;
     if (_lastBrightness != brightness) {
       _lastBrightness = brightness;
@@ -82,7 +89,7 @@ class _MapScreenState extends State<MapScreen> {
 
   void _updateVisibleMarkers({MapItem? forceInclude}) {
     if (_allItems.isEmpty && forceInclude == null) {
-      setState(() => _markers = {});
+      if (mounted) setState(() => _markers = {});
       debugPrint('⚠️ No items to display');
       return;
     }
@@ -96,15 +103,12 @@ class _MapScreenState extends State<MapScreen> {
       );
     } else {
       filteredItems = List.from(_allItems);
-      debugPrint(
-        '🔍 Filter: Category "$_selectedUiCategoryId" - NO zoom filtering',
-      );
+      debugPrint('🔍 Filter: Category "$_selectedUiCategoryId" - NO zoom filtering');
     }
 
     filteredItems = filteredItems.where(_shouldShowItem).toList();
 
-    if (forceInclude != null &&
-        !filteredItems.any((p) => p.id == forceInclude.id)) {
+    if (forceInclude != null && !filteredItems.any((p) => p.id == forceInclude.id)) {
       if (_shouldShowItem(forceInclude)) {
         filteredItems = [...filteredItems, forceInclude];
         debugPrint('   ➕ Force included: ${forceInclude.title}');
@@ -113,6 +117,7 @@ class _MapScreenState extends State<MapScreen> {
 
     final markers = filteredItems.map((item) {
       final isSelected = _selectedPlace?.id == item.id;
+
       return Marker(
         markerId: MarkerId(item.id),
         position: LatLng(item.coordinate.latitude, item.coordinate.longitude),
@@ -126,9 +131,7 @@ class _MapScreenState extends State<MapScreen> {
       );
     }).toSet();
 
-    if (mounted) {
-      setState(() => _markers = markers);
-    }
+    if (mounted) setState(() => _markers = markers);
 
     debugPrint('📍 Showing: ${markers.length}/${_allItems.length} places');
   }
@@ -157,18 +160,17 @@ class _MapScreenState extends State<MapScreen> {
       _allItems.add(place);
     }
 
-    setState(() {
-      _selectedPlace = place;
-    });
+    if (mounted) {
+      setState(() {
+        _selectedPlace = place;
+      });
+    }
 
     try {
       await _mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            target: LatLng(
-              place.coordinate.latitude,
-              place.coordinate.longitude,
-            ),
+            target: LatLng(place.coordinate.latitude, place.coordinate.longitude),
             zoom: 17,
           ),
         ),
@@ -183,28 +185,33 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // 🎨 MAP STYLE METHODS
+  // 🎨 MAP STYLE METHODS (Light/Dark)
   // ═══════════════════════════════════════════════════════════
 
   Future<void> _loadAndApplyMapStyleIfNeeded() async {
-    if (_lightMapStyle == null) {
-      _lightMapStyle = await rootBundle.loadString('assets/map_style.json');
-    }
+    // Load once & cache
+    _lightMapStyle ??= await rootBundle.loadString('assets/map_style.json');
+
     if (_darkMapStyle == null) {
       try {
-        _darkMapStyle = await rootBundle.loadString('assets/map_style_dark.json');
+        _darkMapStyle =
+            await rootBundle.loadString('assets/darkmode_map_style.json');
       } catch (_) {
+        // If the dark file is missing, fallback to light style
         _darkMapStyle = _lightMapStyle;
       }
     }
+
     await _applyCurrentMapStyle();
   }
 
   Future<void> _applyCurrentMapStyle() async {
     final controller = _mapController;
     if (controller == null) return;
-    final isDark = (Theme.of(context).brightness == Brightness.dark);
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final style = isDark ? _darkMapStyle : _lightMapStyle;
+
     if (style != null) {
       await controller.setMapStyle(style);
     }
@@ -230,9 +237,11 @@ class _MapScreenState extends State<MapScreen> {
       await _checkLocationPermission();
       if (!_isLocationPermissionGranted) return;
     }
+
     final position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
+
     _mapController?.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
@@ -269,10 +278,12 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _loadByCategory(String uiCategoryId) async {
-    setState(() {
-      _loading = true;
-      _selectedUiCategoryId = uiCategoryId;
-    });
+    if (mounted) {
+      setState(() {
+        _loading = true;
+        _selectedUiCategoryId = uiCategoryId;
+      });
+    }
 
     await _loadAllItemsIfNeeded();
 
@@ -299,9 +310,7 @@ class _MapScreenState extends State<MapScreen> {
   // ═══════════════════════════════════════════════════════════
 
   void _onMarkerTapped(MapItem place) {
-    setState(() {
-      _selectedPlace = place;
-    });
+    if (mounted) setState(() => _selectedPlace = place);
 
     _mapController?.animateCamera(
       CameraUpdate.newLatLng(
@@ -311,9 +320,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _closeDetailSheet() {
-    setState(() {
-      _selectedPlace = null;
-    });
+    if (mounted) setState(() => _selectedPlace = null);
     _updateVisibleMarkers();
   }
 
@@ -351,13 +358,11 @@ class _MapScreenState extends State<MapScreen> {
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
-    // shadows: dark shadow in light mode, light glow in dark mode
     final shadowColor = isDark
         ? Colors.white.withOpacity(0.18)
         : Colors.black.withOpacity(0.18);
 
     Color chipBg({bool strong = false}) {
-      // readable on map in both themes
       final base = surface.withOpacity(strong ? (isDark ? 0.92 : 0.95) : 0.92);
       return base;
     }
@@ -376,8 +381,7 @@ class _MapScreenState extends State<MapScreen> {
               _mapController = controller;
               await _loadAndApplyMapStyleIfNeeded();
 
-              final pendingFocus =
-                  MapFocusService.instance.focusedItemNotifier.value;
+              final pendingFocus = MapFocusService.instance.focusedItemNotifier.value;
               if (pendingFocus != null) {
                 _focusOnPlace(pendingFocus);
               }
@@ -466,8 +470,8 @@ class _MapScreenState extends State<MapScreen> {
                       MapConfig.categories
                           .firstWhere(
                             (c) => c.id == _selectedUiCategoryId,
-                        orElse: () => const UiCategory('', 'Unknown', ''),
-                      )
+                            orElse: () => const UiCategory('', 'Unknown', ''),
+                          )
                           .label,
                       style: TextStyle(
                         fontSize: 10,
@@ -520,8 +524,8 @@ class _MapScreenState extends State<MapScreen> {
                         MapConfig.categories
                             .firstWhere(
                               (c) => c.id == _selectedUiCategoryId,
-                          orElse: () => const UiCategory('', '', ''),
-                        )
+                              orElse: () => const UiCategory('', '', ''),
+                            )
                             .icon,
                         style: const TextStyle(fontSize: 16),
                       ),

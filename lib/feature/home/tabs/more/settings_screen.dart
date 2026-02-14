@@ -39,17 +39,22 @@ class _SettingsScreenState extends State<SettingsScreen>
   Future<void> _loadData() async {
     try {
       final user = await _repository.fetchCurrentUser();
-      if (mounted) {
-        setState(() {
-          _currentUser = user;
-          _isLoading = false;
-        });
+      if (!mounted) return;
 
-        // apply saved theme
-        ThemeController.setDark(user?.isDarkMode ?? false);
-      }
+      setState(() {
+        _currentUser = user;
+        _isLoading = false;
+      });
+
+      // IMPORTANT:
+      // Do NOT apply theme here.
+      // Theme is applied once in AuthGate (startup).
+      // Otherwise, opening settings can change the app theme unexpectedly.
+      //
+      // ThemeController.setDark(user?.isDarkMode ?? false);
     } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
     }
   }
 
@@ -67,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       phoneNumber: _currentUser!.phoneNumber,
       nationality: _currentUser!.nationality,
       isNotificationsEnabled:
-      key == 'notif' ? value : _currentUser!.isNotificationsEnabled,
+          key == 'notif' ? value : _currentUser!.isNotificationsEnabled,
       isDarkMode: key == 'theme' ? value : _currentUser!.isDarkMode,
       language: key == 'lang' ? value : _currentUser!.language,
       createdAt: _currentUser!.createdAt,
@@ -79,16 +84,13 @@ class _SettingsScreenState extends State<SettingsScreen>
       interests: _currentUser!.interests,
     );
 
-    setState(() {
-      _currentUser = updatedUser;
-    });
-
-    // ✅ change theme instantly
-    if (key == 'theme') {
-      ThemeController.setDark(value == true);
+    if (mounted) {
+      setState(() {
+        _currentUser = updatedUser;
+      });
     }
 
-    await _repository.updateSetting(_currentUser!, key, value);
+    await _repository.updateSetting(updatedUser, key, value);
   }
 
   @override
@@ -107,7 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         children: [
           Positioned.fill(
             child: Opacity(
-              opacity: patternOpacity, // ✅ 0.4 light / 0.2 dark
+              opacity: patternOpacity,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -152,178 +154,205 @@ class _SettingsScreenState extends State<SettingsScreen>
                 Expanded(
                   child: _isLoading
                       ? Center(
-                    child: CircularProgressIndicator(
-                      color: theme.colorScheme.primary,
-                    ),
-                  )
-                      : ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    children: [
-                      _buildTile(
-                        surfaceColor: surface,
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Select Language",
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 16,
-                                fontFamily: "Marcellus",
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  _currentUser?.language ?? "English",
-                                  style: TextStyle(
-                                    color: textColor.withOpacity(0.7),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.keyboard_arrow_down,
-                                  color: textColor,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          _updateSetting(
-                            'lang',
-                            _currentUser?.language == "English"
-                                ? "Arabic"
-                                : "English",
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildTile(
-                        surfaceColor: surface,
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Notification",
-                              style: TextStyle(
-                                color: textColor.withOpacity(0.85),
-                                fontSize: 16,
-                                fontFamily: "Marcellus",
-                              ),
-                            ),
-                            Switch(
-                              value:
-                              _currentUser?.isNotificationsEnabled ??
-                                  true,
-                              onChanged: (v) =>
-                                  _updateSetting('notif', v),
-                              activeColor: Colors.white,
-                              activeTrackColor: theme.colorScheme.primary,
-                              inactiveThumbColor:
-                              theme.colorScheme.primary,
-                              inactiveTrackColor: Colors.white,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildTile(
-                        surfaceColor: surface,
-                        child: Text(
-                          "Saved Card",
-                          style: TextStyle(
-                            color: textColor.withOpacity(0.85),
-                            fontSize: 16,
-                            fontFamily: "Marcellus",
+                          child: CircularProgressIndicator(
+                            color: theme.colorScheme.primary,
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildTile(
-                        surfaceColor: surface,
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                        )
+                      : ListView(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           children: [
-                            Text(
-                              "Theme",
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 16,
-                                fontFamily: "Marcellus",
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => _updateSetting(
-                                'theme',
-                                !(_currentUser?.isDarkMode ?? false),
-                              ),
-                              child: AnimatedContainer(
-                                duration:
-                                const Duration(milliseconds: 300),
-                                width: 60,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: textColor.withOpacity(0.4),
+                            // Language
+                            _buildTile(
+                              surfaceColor: surface,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Select Language",
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 16,
+                                      fontFamily: "Marcellus",
+                                    ),
                                   ),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    const Positioned(
-                                      left: 6,
-                                      top: 6,
-                                      child: Icon(
-                                        Icons.wb_sunny,
-                                        size: 18,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const Positioned(
-                                      right: 6,
-                                      top: 6,
-                                      child: Icon(
-                                        Icons.nightlight_round,
-                                        size: 18,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    AnimatedAlign(
-                                      alignment:
-                                      (_currentUser?.isDarkMode ??
-                                          false)
-                                          ? Alignment.centerRight
-                                          : Alignment.centerLeft,
-                                      duration: const Duration(
-                                          milliseconds: 300),
-                                      child: Container(
-                                        margin:
-                                        const EdgeInsets.symmetric(
-                                            horizontal: 2),
-                                        width: 26,
-                                        height: 26,
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
+                                  Row(
+                                    children: [
+                                      Text(
+                                        _currentUser?.language ?? "English",
+                                        style: TextStyle(
+                                          color: textColor.withOpacity(0.7),
                                         ),
                                       ),
+                                      Icon(
+                                        Icons.keyboard_arrow_down,
+                                        color: textColor,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              onTap: _currentUser == null
+                                  ? null
+                                  : () {
+                                      _updateSetting(
+                                        'lang',
+                                        (_currentUser?.language ?? "English") ==
+                                                "English"
+                                            ? "Arabic"
+                                            : "English",
+                                      );
+                                    },
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Notification
+                            _buildTile(
+                              surfaceColor: surface,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Notification",
+                                    style: TextStyle(
+                                      color: textColor.withOpacity(0.85),
+                                      fontSize: 16,
+                                      fontFamily: "Marcellus",
                                     ),
-                                  ],
+                                  ),
+                                  Switch(
+                                    value: _currentUser
+                                            ?.isNotificationsEnabled ??
+                                        true,
+                                    onChanged: _currentUser == null
+                                        ? null
+                                        : (v) => _updateSetting('notif', v),
+                                    activeColor: Colors.white,
+                                    activeTrackColor:
+                                        theme.colorScheme.primary,
+                                    inactiveThumbColor:
+                                        theme.colorScheme.primary,
+                                    inactiveTrackColor: Colors.white,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Saved Card
+                            _buildTile(
+                              surfaceColor: surface,
+                              child: Text(
+                                "Saved Card",
+                                style: TextStyle(
+                                  color: textColor.withOpacity(0.85),
+                                  fontSize: 16,
+                                  fontFamily: "Marcellus",
                                 ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Theme (single source of truth: ThemeController.mode)
+                            _buildTile(
+                              surfaceColor: surface,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Theme",
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 16,
+                                      fontFamily: "Marcellus",
+                                    ),
+                                  ),
+                                  ValueListenableBuilder<ThemeMode>(
+                                    valueListenable: ThemeController.mode,
+                                    builder: (context, mode, _) {
+                                      final isDarkNow =
+                                          mode == ThemeMode.dark;
+
+                                      return GestureDetector(
+                                        onTap: () async {
+                                          final newValue = !isDarkNow;
+
+                                          // 1) change theme instantly
+                                          ThemeController.setDark(newValue);
+
+                                          // 2) save to Firestore (if user exists)
+                                          if (_currentUser != null) {
+                                            await _updateSetting(
+                                              'theme',
+                                              newValue,
+                                            );
+                                          }
+                                        },
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                              milliseconds: 300),
+                                          width: 60,
+                                          height: 32,
+                                          decoration: BoxDecoration(
+                                            color: theme.colorScheme.primary,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            border: Border.all(
+                                              color:
+                                                  textColor.withOpacity(0.4),
+                                            ),
+                                          ),
+                                          child: Stack(
+                                            children: [
+                                              const Positioned(
+                                                left: 6,
+                                                top: 6,
+                                                child: Icon(
+                                                  Icons.wb_sunny,
+                                                  size: 18,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              const Positioned(
+                                                right: 6,
+                                                top: 6,
+                                                child: Icon(
+                                                  Icons.nightlight_round,
+                                                  size: 18,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              AnimatedAlign(
+                                                alignment: isDarkNow
+                                                    ? Alignment.centerRight
+                                                    : Alignment.centerLeft,
+                                                duration: const Duration(
+                                                    milliseconds: 300),
+                                                child: Container(
+                                                  margin: const EdgeInsets
+                                                      .symmetric(horizontal: 2),
+                                                  width: 26,
+                                                  height: 26,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),

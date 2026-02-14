@@ -101,6 +101,8 @@ flutter:
     - assets/pattern_comp.png
     - .env
     - assets/pins/
+    - assets/darkmode_map_style.json
+    - assets/map_style.json
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
