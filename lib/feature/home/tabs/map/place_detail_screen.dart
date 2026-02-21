@@ -5,12 +5,14 @@ class PlaceDetailSheet extends StatefulWidget {
   final MapItem place;
   final VoidCallback onClose;
   final VoidCallback onShowOnMap;
+  final VoidCallback onDirections; // ← NEW
 
   const PlaceDetailSheet({
     super.key,
     required this.place,
     required this.onClose,
     required this.onShowOnMap,
+    required this.onDirections, // ← NEW
   });
 
   @override
@@ -19,7 +21,7 @@ class PlaceDetailSheet extends StatefulWidget {
 
 class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   final DraggableScrollableController _sheetController =
-  DraggableScrollableController();
+      DraggableScrollableController();
 
   @override
   Widget build(BuildContext context) {
@@ -30,25 +32,22 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
-    // Visible in both modes:
-    // - light mode: dark shadow
-    // - dark mode: light glow
     final sheetShadow = isDark
         ? BoxShadow(
-      color: Colors.white.withOpacity(0.18),
-      blurRadius: 26,
-      spreadRadius: 2,
-      offset: const Offset(0, -10),
-    )
+            color: Colors.white.withOpacity(0.18),
+            blurRadius: 26,
+            spreadRadius: 2,
+            offset: const Offset(0, -10),
+          )
         : BoxShadow(
-      color: Colors.black.withOpacity(0.18),
-      blurRadius: 26,
-      spreadRadius: 2,
-      offset: const Offset(0, -10),
-    );
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 26,
+            spreadRadius: 2,
+            offset: const Offset(0, -10),
+          );
 
-    final borderColor =
-    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+    final borderColor = (isDark ? Colors.white : Colors.black)
+        .withOpacity(isDark ? 0.10 : 0.06);
 
     return DraggableScrollableSheet(
       controller: _sheetController,
@@ -61,7 +60,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
         return Container(
           decoration: BoxDecoration(
             color: surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border.all(color: borderColor),
             boxShadow: [sheetShadow],
           ),
@@ -69,6 +69,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             controller: scrollController,
             padding: EdgeInsets.zero,
             children: [
+              // Drag handle
               Center(
                 child: Container(
                   margin: const EdgeInsets.only(top: 12, bottom: 8),
@@ -80,6 +81,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                   ),
                 ),
               ),
+
+              // Image
               Stack(
                 children: [
                   SizedBox(
@@ -132,11 +135,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                   ),
                 ],
               ),
+
+              // Content
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Title
                     Text(
                       widget.place.title,
                       style: TextStyle(
@@ -147,13 +153,16 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       ),
                     ),
                     const SizedBox(height: 6),
+
+                    // Category + rating
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: primary.withOpacity(isDark ? 0.18 : 0.12),
+                            color:
+                                primary.withOpacity(isDark ? 0.18 : 0.12),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: primary.withOpacity(0.25),
@@ -169,7 +178,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Icon(Icons.star, size: 16, color: Colors.amber),
+                        const Icon(Icons.star,
+                            size: 16, color: Colors.amber),
                         Text(
                           " ${widget.place.rating}",
                           style: TextStyle(
@@ -180,6 +190,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       ],
                     ),
                     const SizedBox(height: 24),
+
+                    // Action buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -193,7 +205,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           onTap: () {
                             _sheetController.animateTo(
                               0.2,
-                              duration: const Duration(milliseconds: 300),
+                              duration:
+                                  const Duration(milliseconds: 300),
                               curve: Curves.easeOut,
                             );
                             widget.onShowOnMap();
@@ -206,7 +219,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           primary: primary,
                           onSurface: onSurface,
                           isDark: isDark,
-                          onTap: () {},
+                          onTap: widget.onDirections, // ← UPDATED
                         ),
                         _buildActionButton(
                           icon: Icons.share,
@@ -228,11 +241,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                       ],
                     ),
+
                     Divider(
                       height: 40,
                       thickness: 1,
                       color: onSurface.withOpacity(0.10),
                     ),
+
+                    // About
                     Text(
                       "About",
                       style: TextStyle(
@@ -245,7 +261,9 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     Text(
                       widget.place.description.isNotEmpty
                           ? widget.place.description
-                          : "Explore the ancient wonders and hidden gems of Egypt. This location offers a unique glimpse into the rich history and culture of the region.",
+                          : "Explore the ancient wonders and hidden gems of Egypt. "
+                              "This location offers a unique glimpse into the rich "
+                              "history and culture of the region.",
                       style: TextStyle(
                         height: 1.6,
                         color: onSurface.withOpacity(0.85),
@@ -253,6 +271,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       ),
                     ),
                     const SizedBox(height: 24),
+
+                    // Info tiles
                     if (widget.place.locationAddress.isNotEmpty)
                       _buildInfoTile(
                         icon: Icons.location_on_outlined,
@@ -270,7 +290,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       _buildInfoTile(
                         icon: Icons.confirmation_number_outlined,
                         text:
-                        "${widget.place.price.toStringAsFixed(0)} EGP Entry Fee",
+                            "${widget.place.price.toStringAsFixed(0)} EGP Entry Fee",
                         iconColor: Colors.green,
                         onSurface: onSurface,
                       ),
@@ -332,13 +352,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
 
     final buttonShadow = isPrimary
         ? [
-      BoxShadow(
-        color: (isDark ? Colors.white : Colors.black).withOpacity(0.14),
-        blurRadius: 10,
-        spreadRadius: 1,
-        offset: const Offset(0, 6),
-      )
-    ]
+            BoxShadow(
+              color: (isDark ? Colors.white : Colors.black)
+                  .withOpacity(0.14),
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: const Offset(0, 6),
+            )
+          ]
         : <BoxShadow>[];
 
     return GestureDetector(
