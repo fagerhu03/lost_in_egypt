@@ -59,11 +59,16 @@ dependencies:
   flutter_svg: ^2.0.9
   intl_phone_field: ^3.2.0
   country_picker: ^2.0.27
-  google_mlkit_translation: ^0.13.0
+  google_mlkit_translation: ^0.11.1
   speech_to_text: ^7.3.0
   flutter_tts: ^4.2.5
   shared_preferences: ^2.5.4
   get_it: ^7.7.0
+  url_launcher: ^6.3.1
+  google_generative_ai: ^0.4.5
+  google_mlkit_text_recognition: ^0.13.1
+  flutter_bloc: ^9.1.1
+  provider: ^6.1.5+1
 
 dev_dependencies:
   flutter_test:
@@ -101,6 +106,8 @@ flutter:
     - assets/pattern_comp.png
     - .env
     - assets/pins/
+    - assets/darkmode_map_style.json
+    - assets/map_style.json
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
