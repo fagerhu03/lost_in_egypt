@@ -157,25 +157,67 @@ class CameraCubit extends ChangeNotifier {
   }
 
   /// Toggle AR translation mode
-  void toggleTranslateMode() {
+  Future<void> toggleTranslateMode() async {
     if (_state is! CameraReady) return;
     
     final currentState = _state as CameraReady;
     final newMode = !currentState.isTranslateMode;
     
-    if (newMode && _controller != null && _controller!.value.isInitialized) {
-      _startImageStream();
+    if (newMode) {
+      _emit(const CameraAnalyzing());
+      
+      try {
+        await _downloadModelsIfNeeded();
+        
+        // Re-emit CameraReady with translation mode on
+        _emit(currentState.copyWith(
+          isTranslateMode: true,
+          clearRecognizedText: true,
+          translations: {},
+          clearGalleryImage: true,
+        ));
+        
+        if (_controller != null && _controller!.value.isInitialized) {
+          _startImageStream();
+        }
+      } catch (e) {
+        debugPrint("Failed to initialize translation: $e");
+        _emit(CameraError('Failed to initialize translation models. Please check your internet connection.'));
+        return;
+      }
     } else {
       _stopImageStream();
+      _emit(currentState.copyWith(
+        isTranslateMode: false,
+        clearRecognizedText: true,
+        translations: {},
+        clearGalleryImage: true,
+      ));
     }
-    
-    _emit(currentState.copyWith(
-      isTranslateMode: newMode,
-      clearRecognizedText: true,
-      translations: {},
-      clearGalleryImage: true,
-    ));
   }
+
+  Future<void> _downloadModelsIfNeeded() async {
+    final modelManager = OnDeviceTranslatorModelManager();
+    final sourceMlLang = _mlLanguages[_sourceLang]!;
+    final targetMlLang = _mlLanguages[_targetLang]!;
+
+    bool sourceDownloaded = await modelManager.isModelDownloaded(sourceMlLang.bcpCode);
+    bool targetDownloaded = await modelManager.isModelDownloaded(targetMlLang.bcpCode);
+
+    if (!sourceDownloaded) {
+      await modelManager.downloadModel(sourceMlLang.bcpCode);
+    }
+    if (!targetDownloaded) {
+      await modelManager.downloadModel(targetMlLang.bcpCode);
+    }
+
+    _translator = OnDeviceTranslator(
+      sourceLanguage: sourceMlLang,
+      targetLanguage: targetMlLang,
+    );
+    _translatorInitialized = true;
+  }
+
 
   void _startImageStream() {
     if (_controller == null || !_controller!.value.isInitialized) return;
@@ -184,6 +226,7 @@ class CameraCubit extends ChangeNotifier {
       if (_isProcessingFrame || _state is! CameraReady) return;
       final currentState = _state as CameraReady;
       if (!currentState.isTranslateMode) return;
+      if (currentState.galleryImagePath != null) return; // Prevent live stream from overwriting gallery mode
       
       _processCameraImage(image);
     });
@@ -367,19 +410,7 @@ class CameraCubit extends ChangeNotifier {
         }
       }
 
-      Map<String, String> currentTranslations = {};
-      for (final TextBlock block in recognizedText.blocks) {
-        final originalText = block.text.trim();
-        if (originalText.isNotEmpty && _translator != null) {
-          try {
-            final translated = await _translator!.translateText(originalText);
-            currentTranslations[originalText] = translated;
-          } catch (e) {
-            debugPrint("Translation error: $e");
-            currentTranslations[originalText] = originalText;
-          }
-        }
-      }
+      Map<String, String> currentTranslations = await _translateExistingText(recognizedText);
 
       if (recognizedText.blocks.any((block) => block.text.trim().isNotEmpty)) {
         // Show the gallery image with AR overlay!
@@ -442,27 +473,91 @@ class CameraCubit extends ChangeNotifier {
   /// Change source language for translation
   Future<void> setSourceLanguage(String lang) async {
     _sourceLang = lang;
-    await _initTranslator();
-    if (_state is CameraReady) {
-      _emit((_state as CameraReady).copyWith(
-        sourceLang: lang,
-        clearRecognizedText: true,
-        translations: {},
-      ));
+    if (_state is CameraReady && (_state as CameraReady).isTranslateMode) {
+      final currentState = _state as CameraReady;
+      
+      // If we have a gallery image, keep the text and just re-translate
+      // Otherwise list clears for live camera
+      _emit(currentState.galleryImagePath != null 
+          ? const CameraAnalyzing(isGalleryImage: true) 
+          : const CameraAnalyzing());
+          
+      try {
+        await _downloadModelsIfNeeded();
+        
+        if (currentState.galleryImagePath != null && currentState.recognizedText != null) {
+          final newTranslations = await _translateExistingText(currentState.recognizedText!);
+          _emit(currentState.copyWith(
+            sourceLang: lang,
+            translations: newTranslations,
+          ));
+        } else {
+          _emit(currentState.copyWith(
+            sourceLang: lang,
+            clearRecognizedText: true,
+            translations: {},
+          ));
+        }
+      } catch (e) {
+        _emit(CameraError('Failed to download language model: $e'));
+      }
+    } else if (_state is CameraReady) {
+      _emit((_state as CameraReady).copyWith(sourceLang: lang));
     }
   }
 
   /// Change target language for translation
   Future<void> setTargetLanguage(String lang) async {
     _targetLang = lang;
-    await _initTranslator();
-    if (_state is CameraReady) {
-      _emit((_state as CameraReady).copyWith(
-        targetLang: lang,
-        clearRecognizedText: true,
-        translations: {},
-      ));
+    if (_state is CameraReady && (_state as CameraReady).isTranslateMode) {
+      final currentState = _state as CameraReady;
+      
+      // If we have a gallery image, keep the text and just re-translate
+      // Otherwise list clears for live camera
+      _emit(currentState.galleryImagePath != null 
+          ? const CameraAnalyzing(isGalleryImage: true) 
+          : const CameraAnalyzing());
+          
+      try {
+        await _downloadModelsIfNeeded();
+        
+        if (currentState.galleryImagePath != null && currentState.recognizedText != null) {
+          final newTranslations = await _translateExistingText(currentState.recognizedText!);
+          _emit(currentState.copyWith(
+            targetLang: lang,
+            translations: newTranslations,
+          ));
+        } else {
+          _emit(currentState.copyWith(
+            targetLang: lang,
+            clearRecognizedText: true,
+            translations: {},
+          ));
+        }
+      } catch (e) {
+        _emit(CameraError('Failed to download language model: $e'));
+      }
+    } else if (_state is CameraReady) {
+      _emit((_state as CameraReady).copyWith(targetLang: lang));
     }
+  }
+
+  Future<Map<String, String>> _translateExistingText(RecognizedText text) async {
+    Map<String, String> currentTranslations = {};
+    if (_translator == null) return currentTranslations;
+    for (final TextBlock block in text.blocks) {
+      final originalText = block.text.trim();
+      if (originalText.isNotEmpty) {
+        try {
+          final translated = await _translator!.translateText(originalText);
+          currentTranslations[originalText] = translated;
+        } catch (e) {
+          debugPrint("Translation error: $e");
+          currentTranslations[originalText] = originalText;
+        }
+      }
+    }
+    return currentTranslations;
   }
 
   /// Return to ready state - called when user dismisses dialog

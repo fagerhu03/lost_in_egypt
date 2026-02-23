@@ -88,7 +88,7 @@ class _HomeWrapperState extends State<HomeWrapper>
         },
         child: PageView(
           controller: _pageController,
-          physics: index == 3
+          physics: (index == 2 || index == 3)
               ? const NeverScrollableScrollPhysics()
               : const BouncingScrollPhysics(),
           onPageChanged: (i) {

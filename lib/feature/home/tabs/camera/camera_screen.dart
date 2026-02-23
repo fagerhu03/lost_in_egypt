@@ -6,7 +6,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 
 import '../../../../core/services/ai_storyteller_service.dart';
 import '../home/data/models/map_item_models.dart';
-import 'ar_overlay_painter.dart';
+import 'widgets/ar_bubble_overlay.dart';
 import '../map/services/map_focus_service.dart';
 import 'presentation/bloc/camera_cubit.dart';
 import 'presentation/bloc/camera_state.dart';
@@ -170,18 +170,18 @@ class _CameraScreenState extends State<CameraScreen> {
               margin: const EdgeInsets.all(24),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: Color(0xFFE6A44A)),
-                  SizedBox(height: 16),
+                  CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(height: 16),
                   Text(
                     'Analyzing image...',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 18,
                     ),
                   ),
@@ -211,15 +211,15 @@ class _CameraScreenState extends State<CameraScreen> {
               margin: const EdgeInsets.all(24),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.search_off,
-                    color: Colors.orange,
+                    color: Theme.of(context).colorScheme.primary,
                     size: 64,
                   ),
                   const SizedBox(height: 16),
@@ -228,8 +228,8 @@ class _CameraScreenState extends State<CameraScreen> {
                         ? 'We found "${state.identifiedLabel}" but it\'s not in our database'
                         : 'Could not identify any landmark',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                     ),
                   ),
@@ -237,7 +237,8 @@ class _CameraScreenState extends State<CameraScreen> {
                   ElevatedButton(
                     onPressed: () => _cameraCubit.resetToReady(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE6A44A),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
                     child: const Text('Try Again'),
                   ),
@@ -265,39 +266,68 @@ class _CameraScreenState extends State<CameraScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Show gallery image OR camera preview
+          // Show gallery image OR camera preview with Overlay
           SizedBox(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             child: showGalleryImage
-                ? Image.file(
-                    File(galleryImagePath),
-                    fit: BoxFit.contain,
+                ? InteractiveViewer(
+                    panEnabled: true,
+                    scaleEnabled: true,
+                    maxScale: 4.0,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Image.file(
+                            File(galleryImagePath),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        if (isTranslateMode && recognizedText != null && imageSize != null)
+                          Positioned.fill(
+                            child: ARBubbleOverlay(
+                              recognizedText: recognizedText,
+                              imageSize: imageSize,
+                              rotation: InputImageRotation.rotation0deg,
+                              translations: translations,
+                              targetLang: state.targetLang,
+                              widgetSize: Size(
+                                MediaQuery.of(context).size.width,
+                                MediaQuery.of(context).size.height,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   )
-                : (controller != null && controller.value.isInitialized
-                    ? CameraPreview(controller)
-                    : const Center(child: CircularProgressIndicator())),
+                : Stack(
+                    children: [
+                      Positioned.fill(
+                        child: (controller != null && controller.value.isInitialized)
+                            ? CameraPreview(controller)
+                            : const Center(child: CircularProgressIndicator()),
+                      ),
+                      if (isTranslateMode && recognizedText != null && imageSize != null)
+                        Positioned.fill(
+                          child: ARBubbleOverlay(
+                            recognizedText: recognizedText,
+                            imageSize: imageSize,
+                            rotation: controller != null 
+                                ? (InputImageRotationValue.fromRawValue(
+                                    controller.description.sensorOrientation,
+                                  ) ?? InputImageRotation.rotation0deg)
+                                : InputImageRotation.rotation0deg,
+                            translations: translations,
+                            targetLang: state.targetLang,
+                            widgetSize: Size(
+                              MediaQuery.of(context).size.width,
+                              MediaQuery.of(context).size.height,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
           ),
-          
-          // AR Overlay
-          if (isTranslateMode && recognizedText != null && imageSize != null)
-            Positioned.fill(
-              child: CustomPaint(
-                painter: AROverlayPainter(
-                  recognizedText: recognizedText,
-                  imageSize: imageSize,
-                  // For gallery images, assume no rotation
-                  rotation: showGalleryImage 
-                      ? InputImageRotation.rotation0deg
-                      : (controller != null 
-                          ? (InputImageRotationValue.fromRawValue(
-                              controller.description.sensorOrientation,
-                            ) ?? InputImageRotation.rotation0deg)
-                          : InputImageRotation.rotation0deg),
-                  translations: translations,
-                ),
-              ),
-            ),
           
           SafeArea(
             child: Column(
@@ -351,31 +381,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     alignment: Alignment.centerRight,
                     child: Column(
                       children: [
-                        FloatingActionButton.small(
-                          heroTag: "translate_btn",
-                          onPressed: () => _cameraCubit.toggleTranslateMode(),
-                          backgroundColor: isTranslateMode
-                              ? Colors.greenAccent
-                              : Colors.white24,
-                          child: Icon(
-                            Icons.translate,
-                            color: isTranslateMode
-                                ? Colors.black87
-                                : Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "AR Trans",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(blurRadius: 4, color: Colors.black),
-                            ],
-                          ),
-                        ),
+
                         const SizedBox(height: 16),
                         if (isTranslateMode)
                           _buildLanguageDropdown(
@@ -399,62 +405,105 @@ class _CameraScreenState extends State<CameraScreen> {
                     left: 30,
                     right: 30,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: () => _cameraCubit.pickFromGallery(),
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.92),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isTranslateMode
-                                ? Icons.translate_outlined
-                                : Icons.photo_library_outlined,
-                            color: const Color(0xFF4A3D2E),
+                  child: SizedBox(
+                    height: 84, // ensures the stack has the height of the largest element
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              GestureDetector(
+                                onTap: () => _cameraCubit.pickFromGallery(),
+                                child: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.92),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.photo_library_outlined,
+                                    color: Color(0xFF4A3D2E),
+                                  ),
+                                ),
+                              ),
+                              // Hide capture button when showing gallery image
+                              if (!showGalleryImage)
+                                GestureDetector(
+                                  onTap: () => _cameraCubit.captureAndAnalyze(),
+                                  child: Container(
+                                    width: 84,
+                                    height: 84,
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: Colors.white, width: 4),
+                                    ),
+                                    padding: const EdgeInsets.all(4),
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFFFFDF4),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.search,
+                                        size: 36,
+                                        color: Color(0xFF4A3D2E),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              else
+                                const SizedBox(width: 84),
+                              const SizedBox(width: 50),
+                            ],
                           ),
                         ),
-                      ),
-                      // Hide capture button when showing gallery image
-                      if (!showGalleryImage)
-                        GestureDetector(
-                          onTap: () => _cameraCubit.captureAndAnalyze(),
-                          child: Container(
-                            width: 84,
-                            height: 84,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 4),
-                            ),
-                            padding: const EdgeInsets.all(4),
+                        // AR Translate Button
+                        Positioned(
+                          left: MediaQuery.of(context).size.width * 0.21,
+                          top: -20, // Slightly above the capture/gallery buttons
+                          child: GestureDetector(
+                            onTap: () => _cameraCubit.toggleTranslateMode(),
                             child: Container(
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFFFFDF4),
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: isTranslateMode
+                                    ? const Color(0xFF4A3D2E)
+                                    : Colors.white.withOpacity(0.92),
                                 shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                              child: const Icon(
-                                Icons.search,
-                                size: 36,
-                                color: Color(0xFF4A3D2E),
+                              child: Icon(
+                                Icons.translate,
+                                size: 20,
+                                color: isTranslateMode
+                                    ? Colors.white
+                                    : const Color(0xFF4A3D2E),
                               ),
                             ),
                           ),
-                        )
-                      else
-                        const SizedBox(width: 84),
-                      const SizedBox(width: 50),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
               ],
             ),
           ),
+          if (showGalleryImage && translations.isNotEmpty)
+            _buildDraggableTranslationPanel(translations, state.targetLang),
         ],
       ),
     );
@@ -493,6 +542,94 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 
+  Widget _buildDraggableTranslationPanel(Map<String, String> translations, String targetLang) {
+    // Combine all translated values
+    final String fullTranslation = translations.values
+        .where((t) => t.isNotEmpty && t != "Translating...")
+        .join('\n');
+
+    if (fullTranslation.trim().isEmpty) return const SizedBox.shrink();
+
+    final isArabic = targetLang == 'Arabic';
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.25,
+      minChildSize: 0.08,
+      maxChildSize: 0.6,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.95), // Theme surface color
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: ListView(
+            controller: scrollController,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(top: 12, bottom: 20),
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.translate,
+                      color: Theme.of(context).colorScheme.onSurface, // Theme text color
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Translation Result",
+                      style: TextStyle(
+                        fontFamily: "Marcellus",
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.black26, height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Directionality(
+                  textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+                  child: Text(
+                    fullTranslation,
+                    textAlign: isArabic ? TextAlign.right : TextAlign.left,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 16,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _showResultSheet(PlaceModel place) {
     String? story;
     bool isLoadingStory = false;
@@ -512,8 +649,8 @@ class _CameraScreenState extends State<CameraScreen> {
               minChildSize: 0.4,
               maxChildSize: 0.9,
               builder: (_, scrollController) => Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFFDF4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
                 child: ListView(
@@ -544,25 +681,25 @@ class _CameraScreenState extends State<CameraScreen> {
                         children: [
                           Text(
                             place.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: "Marcellus",
                               fontSize: 26,
-                              color: Color(0xFF4A3D2E),
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.check_circle,
-                                color: Color(0xFFE6A44A),
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 "Landmark Identified",
                                 style: TextStyle(
-                                  color: Colors.grey[700],
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -578,7 +715,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                   : place.description.length > 100 
                                       ? '${place.description.substring(0, 100)}...' 
                                       : place.description,
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                             ),
                             if (place.description.length > 100)
                               TextButton(
@@ -589,8 +726,8 @@ class _CameraScreenState extends State<CameraScreen> {
                                 },
                                 child: Text(
                                   showFullDescription ? 'Read Less' : 'Read More',
-                                  style: const TextStyle(
-                                    color: Color(0xFFE6A44A),
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -600,20 +737,18 @@ class _CameraScreenState extends State<CameraScreen> {
                               height: 150,
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE6A44A).withOpacity(0.1),
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: const Color(
-                                    0xFFE6A44A,
-                                  ).withOpacity(0.3),
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                                 ),
                               ),
                               child: SingleChildScrollView(
                                 child: Text(
                                   story!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontStyle: FontStyle.italic,
-                                    color: Color(0xFF4A3D2E),
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ),
@@ -639,17 +774,17 @@ class _CameraScreenState extends State<CameraScreen> {
                                         });
                                       },
                                 icon: isLoadingStory
-                                    ? const SizedBox(
+                                    ? SizedBox(
                                         width: 20,
                                         height: 20,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onPrimary,
                                         ),
                                       )
-                                    : const Icon(
+                                    : Icon(
                                         Icons.auto_awesome,
-                                        color: Colors.white,
+                                        color: Theme.of(context).colorScheme.onPrimary,
                                       ),
                                 label: Text(
                                   isLoadingStory
@@ -657,7 +792,8 @@ class _CameraScreenState extends State<CameraScreen> {
                                       : "Tell me a story",
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE6A44A),
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
                                   ),
@@ -692,13 +828,14 @@ class _CameraScreenState extends State<CameraScreen> {
                                       isSpeaking
                                           ? Icons.stop
                                           : Icons.play_arrow,
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onPrimary,
                                     ),
                                     label: Text(
                                       isSpeaking ? "Stop" : "Listen to Story",
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFE6A44A),
+                                      backgroundColor: Theme.of(context).colorScheme.primary,
+                                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 12,
                                       ),
@@ -721,20 +858,20 @@ class _CameraScreenState extends State<CameraScreen> {
                                       place,
                                     );
                                   },
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.map_outlined,
-                                    color: Color(0xFF4D5420),
+                                    color: Theme.of(context).colorScheme.secondary,
                                   ),
-                                  label: const Text(
+                                  label: Text(
                                     "Show on Map",
-                                    style: TextStyle(color: Color(0xFF4D5420)),
+                                    style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                                   ),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 16,
                                     ),
-                                    side: const BorderSide(
-                                      color: Color(0xFF4D5420),
+                                    side: BorderSide(
+                                      color: Theme.of(context).colorScheme.secondary,
                                     ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
@@ -747,7 +884,8 @@ class _CameraScreenState extends State<CameraScreen> {
                                 child: ElevatedButton(
                                   onPressed: () => Navigator.pop(ctx),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF4D5420),
+                                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                                    foregroundColor: Theme.of(context).colorScheme.onSecondary,
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 16,
                                     ),
