@@ -2,6 +2,9 @@ import 'package:equatable/equatable.dart';
 import '../../home/data/models/map_item_models.dart';
 import '../models/route_info.dart';
 
+/// Sentinel value to distinguish "not passed" from "explicitly null"
+const Object _undefined = Object();
+
 class MapState extends Equatable {
   final bool isLoading;
   final bool isLocationPermissionGranted;
@@ -48,16 +51,16 @@ class MapState extends Equatable {
     String? selectedUiCategoryId,
     List<MapItem>? allItems,
     List<MapItem>? allItemsCache,
-    MapItem? selectedPlace,
+    Object? selectedPlace = _undefined,
     double? currentZoom,
     List<MapItem>? searchResults,
     bool? isSearchActive,
-    RouteInfo? currentRoute,
+    Object? currentRoute = _undefined,
     bool? isNavigationMode,
     bool? isLoadingRoute,
     String? selectedTravelMode,
-    MapItem? navigationDestination,
-    String? error,
+    Object? navigationDestination = _undefined,
+    Object? error = _undefined,
   }) {
     return MapState(
       isLoading: isLoading ?? this.isLoading,
@@ -65,16 +68,16 @@ class MapState extends Equatable {
       selectedUiCategoryId: selectedUiCategoryId ?? this.selectedUiCategoryId,
       allItems: allItems ?? this.allItems,
       allItemsCache: allItemsCache ?? this.allItemsCache,
-      selectedPlace: selectedPlace, // Handle null properly? It's fine for simple copyWith if we allow clearing by passing null? Wait, standard copyWith doesn't handle null well if we want to clear it. For this codebase, let's keep it simple.
+      selectedPlace: selectedPlace == _undefined ? this.selectedPlace : selectedPlace as MapItem?,
       currentZoom: currentZoom ?? this.currentZoom,
       searchResults: searchResults ?? this.searchResults,
       isSearchActive: isSearchActive ?? this.isSearchActive,
-      currentRoute: currentRoute,
+      currentRoute: currentRoute == _undefined ? this.currentRoute : currentRoute as RouteInfo?,
       isNavigationMode: isNavigationMode ?? this.isNavigationMode,
       isLoadingRoute: isLoadingRoute ?? this.isLoadingRoute,
       selectedTravelMode: selectedTravelMode ?? this.selectedTravelMode,
-      navigationDestination: navigationDestination,
-      error: error,
+      navigationDestination: navigationDestination == _undefined ? this.navigationDestination : navigationDestination as MapItem?,
+      error: error == _undefined ? this.error : error as String?,
     );
   }
 

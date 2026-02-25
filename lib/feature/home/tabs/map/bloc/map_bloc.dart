@@ -30,6 +30,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<MapNavigationModeChanged>(_onMapNavigationModeChanged);
     on<MapNavigationCleared>(_onMapNavigationCleared);
     on<MapLocationPermissionUpdated>(_onMapLocationPermissionUpdated);
+    on<MapErrorCleared>(_onMapErrorCleared);
   }
 
   bool _shouldShowItem(MapItem item) {
@@ -228,5 +229,12 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     Emitter<MapState> emit,
   ) {
     emit(state.copyWith(isLocationPermissionGranted: event.isGranted));
+  }
+
+  void _onMapErrorCleared(
+    MapErrorCleared event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(error: null));
   }
 }

@@ -88,20 +88,51 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                   SizedBox(
                     height: 220,
                     width: double.infinity,
-                    child: Image.network(
-                      widget.place.imagePath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => Container(
-                        color: onSurface.withOpacity(0.06),
-                        child: Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            color: onSurface.withOpacity(0.35),
-                            size: 50,
+                    child: widget.place.imagePath.isNotEmpty
+                        ? Image.network(
+                            widget.place.imagePath,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                color: onSurface.withOpacity(0.06),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: primary,
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (c, e, s) => Container(
+                              color: onSurface.withOpacity(0.06),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.image_not_supported_outlined,
+                                        color: onSurface.withOpacity(0.35), size: 50),
+                                    const SizedBox(height: 8),
+                                    Text('Photo not available',
+                                        style: TextStyle(
+                                            color: onSurface.withOpacity(0.4),
+                                            fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: primary.withOpacity(isDark ? 0.15 : 0.08),
+                            child: Center(
+                              child: Icon(Icons.place,
+                                  color: primary.withOpacity(0.4), size: 64),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
                   ),
                   Positioned.fill(
                     child: IgnorePointer(

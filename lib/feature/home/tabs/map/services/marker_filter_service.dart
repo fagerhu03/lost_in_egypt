@@ -3,9 +3,26 @@ import '../domain/place_importance.dart';
 
 class MarkerFilterService {
   
+  /// Categories that represent Egypt's identity — shown at wider zoom levels
+  static const Set<String> _highlightCategories = {
+    'tourism', 'historical', 'museum', 'nature', 'entertainment', 'religious',
+  };
+
+  /// Minimum zoom to show commercial/detail categories (hotels, food, shopping)
+  static const double _commercialMinZoom = 13.0;
+
   static List<MapItem> filterByZoom(List<MapItem> items, double currentZoom) {
     return items.where((item) {
-      return ImportanceConfig.isVisibleAtZoom(item.importance, currentZoom);
+      final category = item.category.toLowerCase();
+      
+      if (_highlightCategories.contains(category)) {
+        // Highlight categories: use normal importance-based zoom
+        return ImportanceConfig.isVisibleAtZoom(item.importance, currentZoom);
+      } else {
+        // Commercial categories: require higher zoom + importance check
+        if (currentZoom < _commercialMinZoom) return false;
+        return ImportanceConfig.isVisibleAtZoom(item.importance, currentZoom);
+      }
     }).toList();
   }
 

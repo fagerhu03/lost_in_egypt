@@ -84,3 +84,7 @@ class MapLocationPermissionUpdated extends MapEvent {
   @override
   List<Object> get props => [isGranted];
 }
+
+class MapErrorCleared extends MapEvent {
+  const MapErrorCleared();
+}

@@ -83,6 +83,37 @@ class _MapScreenViewState extends State<MapScreenView> {
     await _checkLocationPermission();
 
     MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequested);
+
+    // Rebuild markers now that custom icons are loaded
+    if (mounted) {
+      final state = context.read<MapBloc>().state;
+      _updateVisibleMarkers(state, forceInclude: state.selectedPlace);
+    }
+
+    // Zoom to user's location when map opens
+    await _zoomToUserLocation();
+  }
+
+  Future<void> _zoomToUserLocation() async {
+    try {
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always) {
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+        );
+        _mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(position.latitude, position.longitude),
+              zoom: 14,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Could not zoom to user location: $e');
+    }
   }
 
   @override
@@ -153,11 +184,26 @@ class _MapScreenViewState extends State<MapScreenView> {
       return;
     }
 
+    // In navigation mode, only show the destination pin
+    if (state.isNavigationMode && state.navigationDestination != null) {
+      final dest = state.navigationDestination!;
+      final destMarker = Marker(
+        markerId: MarkerId(dest.id),
+        position: LatLng(dest.coordinate.latitude, dest.coordinate.longitude),
+        icon: _markerService.getMarkerIconByCategory(dest, true),
+        anchor: const Offset(0.5, 1.0),
+      );
+      if (mounted) setState(() => _markers = {destMarker});
+      return;
+    }
+
     List<MapItem> filteredItems;
-    if (state.selectedUiCategoryId == 'all') {
-      filteredItems = MarkerFilterService.filterByZoom(state.allItems, state.currentZoom);
+    if (state.selectedUiCategoryId != 'all') {
+      // Category filter active → show ALL places in that category, no zoom filter
+      filteredItems = state.allItems;
     } else {
-      filteredItems = List.from(state.allItems);
+      // 'All' mode → use zoom + category-aware filtering
+      filteredItems = MarkerFilterService.filterByZoom(state.allItems, state.currentZoom);
     }
 
     if (forceInclude != null && !filteredItems.any((p) => p.id == forceInclude.id)) {
@@ -169,13 +215,11 @@ class _MapScreenViewState extends State<MapScreenView> {
       return Marker(
         markerId: MarkerId(item.id),
         position: LatLng(item.coordinate.latitude, item.coordinate.longitude),
-        infoWindow: InfoWindow(
-          title: item.title,
-          snippet: item.category.toUpperCase(),
-        ),
+        // No InfoWindow — detail sheet handles place info
         icon: _markerService.getMarkerIconByCategory(item, isSelected),
         anchor: const Offset(0.5, 1.0),
         onTap: () {
+          debugPrint('📍 Marker tapped: ${item.title} (id: ${item.id})');
           _searchController.clear();
           _searchFocusNode.unfocus();
           context.read<MapBloc>().add(MapPlaceSelected(item));
@@ -301,6 +345,8 @@ class _MapScreenViewState extends State<MapScreenView> {
       listener: (context, state) {
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error!)));
+          // Clear the error so it doesn't repeat on next rebuild
+          context.read<MapBloc>().add(const MapErrorCleared());
         }
         _updateVisibleMarkers(state, forceInclude: state.selectedPlace);
         _updatePolylines(state);

@@ -29,6 +29,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  await dotenv.load(fileName: ".env");
+
   await di.init();
 
   // ⭐ FORCE LATEST MAP RENDERER
@@ -38,8 +40,6 @@ void main() async {
     mapsImplementation.useAndroidViewSurface = true;
     mapsImplementation.initializeWithRenderer(AndroidMapRenderer.latest);
   }
-
-  await dotenv.load(fileName: ".env");
 
   runApp(const MyApp());
 }
