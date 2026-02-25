@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../home/data/models/map_item_models.dart';
 import '../models/route_info.dart';
 
@@ -25,6 +26,11 @@ class MapState extends Equatable {
   final String selectedTravelMode;
   final MapItem? navigationDestination;
   
+  // Live navigation
+  final bool isLiveNavigating;
+  final int currentStepIndex;
+  final LatLng? userLocation;
+  
   final String? error;
 
   const MapState({
@@ -42,6 +48,9 @@ class MapState extends Equatable {
     this.isLoadingRoute = false,
     this.selectedTravelMode = 'driving',
     this.navigationDestination,
+    this.isLiveNavigating = false,
+    this.currentStepIndex = 0,
+    this.userLocation,
     this.error,
   });
 
@@ -60,6 +69,9 @@ class MapState extends Equatable {
     bool? isLoadingRoute,
     String? selectedTravelMode,
     Object? navigationDestination = _undefined,
+    bool? isLiveNavigating,
+    int? currentStepIndex,
+    Object? userLocation = _undefined,
     Object? error = _undefined,
   }) {
     return MapState(
@@ -77,6 +89,9 @@ class MapState extends Equatable {
       isLoadingRoute: isLoadingRoute ?? this.isLoadingRoute,
       selectedTravelMode: selectedTravelMode ?? this.selectedTravelMode,
       navigationDestination: navigationDestination == _undefined ? this.navigationDestination : navigationDestination as MapItem?,
+      isLiveNavigating: isLiveNavigating ?? this.isLiveNavigating,
+      currentStepIndex: currentStepIndex ?? this.currentStepIndex,
+      userLocation: userLocation == _undefined ? this.userLocation : userLocation as LatLng?,
       error: error == _undefined ? this.error : error as String?,
     );
   }
@@ -113,6 +128,9 @@ class MapState extends Equatable {
       isLoadingRoute: isLoadingRoute ?? this.isLoadingRoute,
       selectedTravelMode: selectedTravelMode ?? this.selectedTravelMode,
       navigationDestination: navigationDestination,
+      isLiveNavigating: false,
+      currentStepIndex: 0,
+      userLocation: null,
       error: error,
     );
   }
@@ -133,6 +151,9 @@ class MapState extends Equatable {
         isLoadingRoute,
         selectedTravelMode,
         navigationDestination,
+        isLiveNavigating,
+        currentStepIndex,
+        userLocation,
         error,
       ];
 }

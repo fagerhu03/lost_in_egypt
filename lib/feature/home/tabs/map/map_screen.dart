@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -62,6 +63,8 @@ class _MapScreenViewState extends State<MapScreenView> {
   String? _darkMapStyle;
   Brightness? _lastBrightness;
 
+  StreamSubscription<Position>? _positionStream;
+
   @override
   void initState() {
     super.initState();
@@ -118,6 +121,7 @@ class _MapScreenViewState extends State<MapScreenView> {
 
   @override
   void dispose() {
+    _positionStream?.cancel();
     MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
     _searchController.dispose();
     _searchFocusNode.dispose();
@@ -297,6 +301,43 @@ class _MapScreenViewState extends State<MapScreenView> {
         CameraPosition(target: LatLng(position.latitude, position.longitude), zoom: 15),
       ),
     );
+  }
+
+  void _startLiveNavigation() {
+    context.read<MapBloc>().add(const MapLiveNavigationStarted());
+    
+    _positionStream?.cancel();
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10, // Update every 10 meters
+      ),
+    ).listen((Position position) {
+      if (!mounted) return;
+      
+      // Update bloc with new position
+      context.read<MapBloc>().add(
+        MapUserLocationUpdated(position.latitude, position.longitude),
+      );
+      
+      // Move camera to follow user with tilt for navigation feel
+      _mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 17,
+            tilt: 60, // Tilted for driving perspective
+            bearing: position.heading, // Face direction of travel
+          ),
+        ),
+      );
+    });
+  }
+
+  void _stopLiveNavigation() {
+    _positionStream?.cancel();
+    _positionStream = null;
+    context.read<MapBloc>().add(const MapLiveNavigationStopped());
   }
 
   Future<void> _openGoogleMapsNavigation(MapState state) async {
@@ -506,16 +547,19 @@ class _MapScreenViewState extends State<MapScreenView> {
                   ),
                 ),
 
-              if (state.isNavigationMode)
+              if (state.isNavigationMode && !state.isLiveNavigating)
                 Positioned(
-                  bottom: 0, left: 0, right: 0,
+                  bottom: 80, left: 0, right: 0,
                   child: state.currentRoute != null
                       ? NavigationInfoBar(
                           routeInfo: state.currentRoute!,
                           selectedMode: state.selectedTravelMode,
                           isLoadingRoute: state.isLoadingRoute,
-                          onClose: () => context.read<MapBloc>().add(MapNavigationCleared()),
-                          onStartNavigation: () => _openGoogleMapsNavigation(state),
+                          onClose: () {
+                            _stopLiveNavigation();
+                            context.read<MapBloc>().add(MapNavigationCleared());
+                          },
+                          onStartNavigation: _startLiveNavigation,
                           onShowSteps: () {
                             showModalBottomSheet(
                               context: context,
@@ -559,6 +603,105 @@ class _MapScreenViewState extends State<MapScreenView> {
                           : const SizedBox.shrink(),
                 ),
 
+              // ─── LIVE NAVIGATION INSTRUCTION BAR ───
+              if (state.isLiveNavigating && state.currentRoute != null)
+                Positioned(
+                  top: 0, left: 0, right: 0,
+                  child: SafeArea(
+                    child: Container(
+                      margin: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: surface,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: shadowColor, blurRadius: 16, spreadRadius: 1)],
+                        border: Border.all(color: primary.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Current step instruction
+                          if (state.currentStepIndex < state.currentRoute!.steps.length) ...[
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: primary.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(Icons.navigation_rounded, color: primary, size: 22),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        state.currentRoute!.steps[state.currentStepIndex].instruction,
+                                        style: TextStyle(
+                                          color: onSurface,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${state.currentRoute!.steps[state.currentStepIndex].distance} · ${state.currentRoute!.steps[state.currentStepIndex].duration}',
+                                        style: TextStyle(
+                                          color: onSurface.withOpacity(0.5),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            // Step progress bar
+                            Row(
+                              children: [
+                                Text(
+                                  'Step ${state.currentStepIndex + 1}/${state.currentRoute!.steps.length}',
+                                  style: TextStyle(color: onSurface.withOpacity(0.5), fontSize: 12),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: LinearProgressIndicator(
+                                    value: (state.currentStepIndex + 1) / state.currentRoute!.steps.length,
+                                    backgroundColor: onSurface.withOpacity(0.1),
+                                    valueColor: AlwaysStoppedAnimation(primary),
+                                    minHeight: 4,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () {
+                                    _stopLiveNavigation();
+                                    context.read<MapBloc>().add(MapNavigationCleared());
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.stop_rounded, color: Colors.red, size: 18),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               if (state.isLoading)
                 Positioned(
                   left: 0, right: 0, top: 0,
@@ -600,6 +743,7 @@ class _MapScreenViewState extends State<MapScreenView> {
                   ),
                 ),
 
+              if (!state.isLiveNavigating)
               Positioned(
                 top: 50, left: 0, right: 0,
                 child: Column(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -31,6 +32,9 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<MapNavigationCleared>(_onMapNavigationCleared);
     on<MapLocationPermissionUpdated>(_onMapLocationPermissionUpdated);
     on<MapErrorCleared>(_onMapErrorCleared);
+    on<MapLiveNavigationStarted>(_onLiveNavigationStarted);
+    on<MapLiveNavigationStopped>(_onMapLiveNavigationStopped);
+    on<MapUserLocationUpdated>(_onMapUserLocationUpdated);
   }
 
   bool _shouldShowItem(MapItem item) {
@@ -44,38 +48,47 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final items = await _mapRepository.fetchByUiCategory('all', limit: 3000);
+      final items = await _mapRepository.fetchAllMapItemsLimited();
       final filteredItems = items.where(_shouldShowItem).toList();
+      debugPrint('🗺️ Loaded ${filteredItems.length} items for map');
       
       emit(state.copyWith(
-        allItemsCache: items,
-        allItems: filteredItems,
         isLoading: false,
+        allItems: filteredItems,
+        allItemsCache: filteredItems,
       ));
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
+      debugPrint('❌ Error loading map items: $e');
+      emit(state.copyWith(isLoading: false, error: 'Error loading places: $e'));
     }
   }
 
-  void _onMapCategoryChanged(
+  Future<void> _onMapCategoryChanged(
     MapCategoryChanged event,
     Emitter<MapState> emit,
-  ) {
-    List<MapItem> items;
-    if (event.categoryId == 'all') {
-      items = state.allItemsCache.where(_shouldShowItem).toList();
-    } else {
-      items = state.allItemsCache.where((item) {
-        final itemCategory = item.category.toLowerCase().trim();
-        final filterCategory = event.categoryId.toLowerCase().trim();
-        return itemCategory == filterCategory && _shouldShowItem(item);
-      }).toList();
-    }
-
+  ) async {
     emit(state.copyWith(
       selectedUiCategoryId: event.categoryId,
-      allItems: items,
+      isLoading: true,
     ));
+
+    try {
+      List<MapItem> items;
+      if (event.categoryId == 'all') {
+        items = state.allItemsCache;
+      } else {
+        items = await _mapRepository.fetchByUiCategory(event.categoryId);
+      }
+
+      final filtered = items.where(_shouldShowItem).toList();
+
+      emit(state.copyWith(
+        isLoading: false,
+        allItems: filtered,
+      ));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, error: 'Error loading category: $e'));
+    }
   }
 
   void _onMapSearchQueryChanged(
@@ -236,5 +249,55 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     Emitter<MapState> emit,
   ) {
     emit(state.copyWith(error: null));
+  }
+
+  void _onLiveNavigationStarted(
+    MapLiveNavigationStarted event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(
+      isLiveNavigating: true,
+      currentStepIndex: 0,
+    ));
+  }
+
+  void _onMapLiveNavigationStopped(
+    MapLiveNavigationStopped event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(
+      isLiveNavigating: false,
+      currentStepIndex: 0,
+      userLocation: null,
+    ));
+  }
+
+  void _onMapUserLocationUpdated(
+    MapUserLocationUpdated event,
+    Emitter<MapState> emit,
+  ) {
+    final userPos = LatLng(event.latitude, event.longitude);
+    
+    // Advance step if user is close to the current step's end location
+    int stepIndex = state.currentStepIndex;
+    if (state.currentRoute != null && state.currentRoute!.steps.isNotEmpty) {
+      final steps = state.currentRoute!.steps;
+      if (stepIndex < steps.length) {
+        final stepEnd = steps[stepIndex].endLocation;
+        final dist = Geolocator.distanceBetween(
+          event.latitude, event.longitude,
+          stepEnd.latitude, stepEnd.longitude,
+        );
+        // Advance to next step when within 50 meters
+        if (dist < 50 && stepIndex < steps.length - 1) {
+          stepIndex++;
+        }
+      }
+    }
+
+    emit(state.copyWith(
+      userLocation: userPos,
+      currentStepIndex: stepIndex,
+    ));
   }
 }
