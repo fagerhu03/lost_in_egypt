@@ -29,20 +29,21 @@ class MapMarkerService {
 
       int failedCount = 0;
 
-      for (final pinName in pinNames) {
+      // Load all icons in parallel for faster startup
+      final futures = pinNames.map((pinName) async {
         try {
           final icon = await _loadPngMarkerIcon(
             'assets/pins/$pinName.png',
             MapConfig.markerSize,
           );
           _markerIcons[pinName] = icon;
-          debugPrint('✅ Loaded marker: $pinName');
         } catch (e) {
           debugPrint('⚠️ Failed to load marker $pinName: $e');
           _markerIcons[pinName] = BitmapDescriptor.defaultMarker;
           failedCount++;
         }
-      }
+      });
+      await Future.wait(futures);
 
       _iconsLoaded = true;
 

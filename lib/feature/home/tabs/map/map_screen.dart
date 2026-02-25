@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../../../core/di/service_locator.dart';
@@ -55,6 +54,9 @@ class _MapScreenViewState extends State<MapScreenView> {
 
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
+  bool _routeBoundsApplied = false;
+  bool _isFollowingUser = true;
+  bool _isProgrammaticMove = false;
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -238,13 +240,27 @@ class _MapScreenViewState extends State<MapScreenView> {
   void _updatePolylines(MapState state) {
     if (state.currentRoute == null) {
       if (mounted) setState(() => _polylines = {});
+      _routeBoundsApplied = false;
       return;
+    }
+
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final Color routeColor;
+    switch (state.selectedTravelMode) {
+      case 'walking':
+        routeColor = isDarkMode ? const Color(0xFF4DB6AC) : const Color(0xFF00897B); // Teal
+        break;
+      case 'transit':
+        routeColor = isDarkMode ? const Color(0xFFFFB74D) : const Color(0xFFEF6C00); // Amber/Orange
+        break;
+      default:
+        routeColor = isDarkMode ? const Color(0xFF64B5F6) : const Color(0xFF1976D2); // Blue
     }
 
     final polyline = Polyline(
       polylineId: const PolylineId('navigation_route'),
       points: state.currentRoute!.polylinePoints,
-      color: Theme.of(context).colorScheme.primary,
+      color: routeColor,
       width: 5,
       patterns: state.selectedTravelMode == 'walking'
           ? [PatternItem.dot, PatternItem.gap(10)]
@@ -253,9 +269,13 @@ class _MapScreenViewState extends State<MapScreenView> {
 
     if (mounted) setState(() => _polylines = {polyline});
     
-    _mapController?.animateCamera(
-      CameraUpdate.newLatLngBounds(state.currentRoute!.bounds, 80),
-    );
+    // Only zoom to fit route bounds ONCE when route first appears
+    if (!_routeBoundsApplied) {
+      _routeBoundsApplied = true;
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngBounds(state.currentRoute!.bounds, 80),
+      );
+    }
   }
 
   Future<void> _loadAndApplyMapStyleIfNeeded() async {
@@ -303,60 +323,71 @@ class _MapScreenViewState extends State<MapScreenView> {
     );
   }
 
-  void _startLiveNavigation() {
+  void _startLiveNavigation() async {
     context.read<MapBloc>().add(const MapLiveNavigationStarted());
+    _isFollowingUser = true;
     
+    // Get actual user position for initial camera
+    try {
+      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      _mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(pos.latitude, pos.longitude),
+            zoom: 17,
+            tilt: 45,
+          ),
+        ),
+      );
+    } catch (_) {}
+
     _positionStream?.cancel();
     _positionStream = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update every 10 meters
+        distanceFilter: 10,
       ),
     ).listen((Position position) {
       if (!mounted) return;
       
-      // Update bloc with new position
       context.read<MapBloc>().add(
         MapUserLocationUpdated(position.latitude, position.longitude),
       );
       
-      // Move camera to follow user with tilt for navigation feel
-      _mapController?.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(position.latitude, position.longitude),
-            zoom: 17,
-            tilt: 60, // Tilted for driving perspective
-            bearing: position.heading, // Face direction of travel
+      // Only move camera if user hasn't manually panned away
+      if (_isFollowingUser) {
+        _isProgrammaticMove = true;
+        _mapController?.animateCamera(
+          CameraUpdate.newLatLng(
+            LatLng(position.latitude, position.longitude),
           ),
-        ),
-      );
+        );
+      }
     });
   }
 
-  void _stopLiveNavigation() {
+  void _stopLiveNavigation() async {
     _positionStream?.cancel();
     _positionStream = null;
+    _isFollowingUser = true;
     context.read<MapBloc>().add(const MapLiveNavigationStopped());
-  }
-
-  Future<void> _openGoogleMapsNavigation(MapState state) async {
-    if (state.navigationDestination == null) return;
-    final destLat = state.navigationDestination!.coordinate.latitude;
-    final destLng = state.navigationDestination!.coordinate.longitude;
-
-    final mode = state.selectedTravelMode == 'driving' ? 'd' : (state.selectedTravelMode == 'walking' ? 'w' : 'r');
-    final url = Uri.parse('google.navigation:q=$destLat,$destLng&mode=$mode');
-    final webUrl = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$destLat,$destLng&travelmode=${state.selectedTravelMode}');
-
+    // Reset camera tilt using current position
     try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url);
-      } else if (await canLaunchUrl(webUrl)) {
-        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
-      }
+      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      _mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(pos.latitude, pos.longitude),
+            zoom: 14,
+            tilt: 0,
+          ),
+        ),
+      );
     } catch (_) {
-      launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      // Just reset tilt without moving
+      _mapController?.animateCamera(
+        CameraUpdate.zoomTo(14),
+      );
     }
   }
 
@@ -381,14 +412,45 @@ class _MapScreenViewState extends State<MapScreenView> {
                previous.selectedUiCategoryId != current.selectedUiCategoryId ||
                previous.currentZoom != current.currentZoom ||
                previous.currentRoute != current.currentRoute ||
+               previous.isLiveNavigating != current.isLiveNavigating ||
+               previous.hasArrived != current.hasArrived ||
                previous.error != current.error;
       },
       listener: (context, state) {
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error!)));
-          // Clear the error so it doesn't repeat on next rebuild
           context.read<MapBloc>().add(const MapErrorCleared());
         }
+        
+        // Arrival detection — show dialog and stop tracking
+        if (state.hasArrived && state.navigationDestination != null) {
+          _stopLiveNavigation();
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Row(
+                children: [
+                  Text('🎉 ', style: TextStyle(fontSize: 28)),
+                  Text('You\'ve Arrived!'),
+                ],
+              ),
+              content: Text(
+                'You have arrived at ${state.navigationDestination!.title}',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    context.read<MapBloc>().add(MapNavigationCleared());
+                  },
+                  child: const Text('Done'),
+                ),
+              ],
+            ),
+          );
+        }
+
         _updateVisibleMarkers(state, forceInclude: state.selectedPlace);
         _updatePolylines(state);
       },
@@ -408,11 +470,23 @@ class _MapScreenViewState extends State<MapScreenView> {
                   _mapController = controller;
                   await _loadAndApplyMapStyleIfNeeded();
                 },
-                onCameraMove: (position) {
-                  context.read<MapBloc>().add(MapZoomChanged(position.zoom));
+                onCameraMoveStarted: () {
+                  // Pause auto-follow only if this was a user gesture, not our programmatic move
+                  if (state.isLiveNavigating && _isFollowingUser && !_isProgrammaticMove) {
+                    setState(() => _isFollowingUser = false);
+                  }
+                  _isProgrammaticMove = false;
                 },
-                onCameraIdle: () {
-                  _updateVisibleMarkers(state, forceInclude: state.selectedPlace);
+                onCameraMove: (_) {
+                  // Don't dispatch zoom changes during gestures
+                },
+                onCameraIdle: () async {
+                  // Skip zoom updates during live navigation to avoid interference
+                  if (state.isLiveNavigating) return;
+                  final zoom = await _mapController?.getZoomLevel() ?? state.currentZoom;
+                  if (mounted) {
+                    context.read<MapBloc>().add(MapZoomChanged(zoom));
+                  }
                 },
                 onTap: (_) {
                   if (state.isSearchActive) {
@@ -647,7 +721,7 @@ class _MapScreenViewState extends State<MapScreenView> {
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      const SizedBox(height: 4),
+                                       const SizedBox(height: 4),
                                       Text(
                                         '${state.currentRoute!.steps[state.currentStepIndex].distance} · ${state.currentRoute!.steps[state.currentStepIndex].duration}',
                                         style: TextStyle(
@@ -659,6 +733,24 @@ class _MapScreenViewState extends State<MapScreenView> {
                                   ),
                                 ),
                               ],
+                            ),
+                            // Overall ETA
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.flag_rounded, color: primary, size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${state.currentRoute!.distance} · ${state.currentRoute!.duration} total',
+                                    style: TextStyle(
+                                      color: onSurface.withOpacity(0.6),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 10),
                             // Step progress bar
@@ -699,6 +791,32 @@ class _MapScreenViewState extends State<MapScreenView> {
                         ],
                       ),
                     ),
+                  ),
+                ),
+
+              // ─── RE-CENTER BUTTON (when user pans away during live nav) ───
+              if (state.isLiveNavigating && !_isFollowingUser)
+                Positioned(
+                  bottom: 30, right: 16,
+                  child: FloatingActionButton.small(
+                    heroTag: 'recenter',
+                    backgroundColor: primary,
+                    onPressed: () async {
+                      setState(() => _isFollowingUser = true);
+                      try {
+                        final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+                        _mapController?.animateCamera(
+                          CameraUpdate.newCameraPosition(
+                            CameraPosition(
+                              target: LatLng(pos.latitude, pos.longitude),
+                              zoom: 17,
+                              tilt: 45,
+                            ),
+                          ),
+                        );
+                      } catch (_) {}
+                    },
+                    child: const Icon(Icons.my_location_rounded, color: Colors.white, size: 20),
                   ),
                 ),
 

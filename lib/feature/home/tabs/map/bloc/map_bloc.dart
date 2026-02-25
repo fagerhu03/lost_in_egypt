@@ -63,32 +63,25 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
 
-  Future<void> _onMapCategoryChanged(
+  void _onMapCategoryChanged(
     MapCategoryChanged event,
     Emitter<MapState> emit,
-  ) async {
+  ) {
+    List<MapItem> items;
+    if (event.categoryId == 'all') {
+      items = state.allItemsCache.where(_shouldShowItem).toList();
+    } else {
+      items = state.allItemsCache.where((item) {
+        final itemCategory = item.category.toLowerCase().trim();
+        final filterCategory = event.categoryId.toLowerCase().trim();
+        return itemCategory == filterCategory && _shouldShowItem(item);
+      }).toList();
+    }
+
     emit(state.copyWith(
       selectedUiCategoryId: event.categoryId,
-      isLoading: true,
+      allItems: items,
     ));
-
-    try {
-      List<MapItem> items;
-      if (event.categoryId == 'all') {
-        items = state.allItemsCache;
-      } else {
-        items = await _mapRepository.fetchByUiCategory(event.categoryId);
-      }
-
-      final filtered = items.where(_shouldShowItem).toList();
-
-      emit(state.copyWith(
-        isLoading: false,
-        allItems: filtered,
-      ));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, error: 'Error loading category: $e'));
-    }
   }
 
   void _onMapSearchQueryChanged(
@@ -278,6 +271,23 @@ class MapBloc extends Bloc<MapEvent, MapState> {
   ) {
     final userPos = LatLng(event.latitude, event.longitude);
     
+    // Check if arrived at destination
+    if (state.navigationDestination != null) {
+      final destLat = state.navigationDestination!.coordinate.latitude;
+      final destLng = state.navigationDestination!.coordinate.longitude;
+      final distToDest = Geolocator.distanceBetween(
+        event.latitude, event.longitude, destLat, destLng,
+      );
+      if (distToDest < 50) {
+        emit(state.copyWith(
+          userLocation: userPos,
+          hasArrived: true,
+          isLiveNavigating: false,
+        ));
+        return;
+      }
+    }
+
     // Advance step if user is close to the current step's end location
     int stepIndex = state.currentStepIndex;
     if (state.currentRoute != null && state.currentRoute!.steps.isNotEmpty) {

@@ -30,6 +30,7 @@ class MapState extends Equatable {
   final bool isLiveNavigating;
   final int currentStepIndex;
   final LatLng? userLocation;
+  final bool hasArrived;
   
   final String? error;
 
@@ -51,6 +52,7 @@ class MapState extends Equatable {
     this.isLiveNavigating = false,
     this.currentStepIndex = 0,
     this.userLocation,
+    this.hasArrived = false,
     this.error,
   });
 
@@ -72,6 +74,7 @@ class MapState extends Equatable {
     bool? isLiveNavigating,
     int? currentStepIndex,
     Object? userLocation = _undefined,
+    bool? hasArrived,
     Object? error = _undefined,
   }) {
     return MapState(
@@ -92,6 +95,7 @@ class MapState extends Equatable {
       isLiveNavigating: isLiveNavigating ?? this.isLiveNavigating,
       currentStepIndex: currentStepIndex ?? this.currentStepIndex,
       userLocation: userLocation == _undefined ? this.userLocation : userLocation as LatLng?,
+      hasArrived: hasArrived ?? this.hasArrived,
       error: error == _undefined ? this.error : error as String?,
     );
   }
@@ -131,6 +135,7 @@ class MapState extends Equatable {
       isLiveNavigating: false,
       currentStepIndex: 0,
       userLocation: null,
+      hasArrived: false,
       error: error,
     );
   }
@@ -154,6 +159,7 @@ class MapState extends Equatable {
         isLiveNavigating,
         currentStepIndex,
         userLocation,
+        hasArrived,
         error,
       ];
 }

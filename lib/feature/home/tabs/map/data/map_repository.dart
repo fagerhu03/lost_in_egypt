@@ -15,6 +15,8 @@ class MapRepository {
 
   /// Disk cache file name.
   static const String _cacheFileName = 'places_cache.json';
+  static const String _cacheTimestampFileName = 'places_cache_timestamp.txt';
+  static const int _cacheTtlDays = 7;
 
   MapRepository({
     required PlacesApiService placesApiService,
@@ -29,22 +31,52 @@ class MapRepository {
     return File('${dir.path}/$_cacheFileName');
   }
 
+  Future<File> get _timestampFile async {
+    final dir = await getApplicationDocumentsDirectory();
+    return File('${dir.path}/$_cacheTimestampFileName');
+  }
+
   /// Save raw API JSON to disk so we never have to call the API again.
   Future<void> _saveToDisk(List<Map<String, dynamic>> rawJson) async {
     try {
       final file = await _cacheFile;
       final jsonString = jsonEncode(rawJson);
       await file.writeAsString(jsonString);
+      // Save timestamp
+      final tsFile = await _timestampFile;
+      await tsFile.writeAsString(DateTime.now().toIso8601String());
       debugPrint('💾 Saved ${rawJson.length} places to disk cache');
     } catch (e) {
       debugPrint('⚠️ Failed to save disk cache: $e');
     }
   }
 
+  /// Check if disk cache is expired (older than _cacheTtlDays days).
+  Future<bool> _isCacheExpired() async {
+    try {
+      final tsFile = await _timestampFile;
+      if (!await tsFile.exists()) return true;
+      final tsString = await tsFile.readAsString();
+      final savedAt = DateTime.parse(tsString);
+      final age = DateTime.now().difference(savedAt);
+      if (age.inDays >= _cacheTtlDays) {
+        debugPrint('⏰ Cache expired (${age.inDays} days old)');
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return true;
+    }
+  }
+
   /// Load raw API JSON from disk cache.
-  /// Returns null if no cache exists.
+  /// Returns null if no cache exists or expired.
   Future<List<Map<String, dynamic>>?> _loadFromDisk() async {
     try {
+      if (await _isCacheExpired()) {
+        await clearDiskCache();
+        return null;
+      }
       final file = await _cacheFile;
       if (!await file.exists()) {
         debugPrint('📂 No disk cache found');
@@ -64,10 +96,10 @@ class MapRepository {
   Future<void> clearDiskCache() async {
     try {
       final file = await _cacheFile;
-      if (await file.exists()) {
-        await file.delete();
-        debugPrint('🗑️ Disk cache deleted');
-      }
+      if (await file.exists()) await file.delete();
+      final tsFile = await _timestampFile;
+      if (await tsFile.exists()) await tsFile.delete();
+      debugPrint('🗑️ Disk cache deleted');
     } catch (e) {
       debugPrint('⚠️ Failed to delete disk cache: $e');
     }
