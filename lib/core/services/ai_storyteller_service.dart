@@ -11,7 +11,7 @@ class AIStorytellerService {
     }
 
     try {
-      final model = GenerativeModel(model: 'gemini-flash-latest', apiKey: apiKey);
+      final model = GenerativeModel(model: 'gemini-2.5-flash', apiKey: apiKey);
       
       final prompt = """
         You are a fascinating historical guide for Egypt. 
@@ -27,7 +27,7 @@ class AIStorytellerService {
       return response.text ?? "I'm sorry, I couldn't find a story for this place yet.";
     } catch (e) {
       debugPrint("AI Storyteller error: $e");
-      return "The spirits of history are silent right now. Please try again later.";
+      return "The spirits of history are silent right now. Error: $e";
     }
   }
 }
