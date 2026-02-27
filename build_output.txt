@@ -1,0 +1,565 @@
+[  +92 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[  +11 ms] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[  +49 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +2 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +40 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[   +1 ms] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[  +27 ms] executing: [C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt/] D:\Flutter\flutter\bin\cache\dart-sdk\bin\dart pub --suppress-analytics --directory . get --example
+Resolving dependencies...
+Downloading packages...
+  _flutterfire_internals 1.3.64 (1.3.66 available)
+  archive 4.0.7 (4.0.9 available)
+  camera 0.11.3 (0.12.0 available)
+  camera_android_camerax 0.6.27 (0.7.0+1 available)
+  camera_avfoundation 0.9.22+8 (0.10.0+3 available)
+  characters 1.4.0 (1.4.1 available)
+  cloud_firestore 6.1.0 (6.1.2 available)
+  cloud_firestore_platform_interface 7.0.4 (7.0.6 available)
+  cloud_firestore_web 5.1.0 (5.1.2 available)
+  cloud_functions 6.0.4 (6.0.6 available)
+  cloud_functions_platform_interface 5.8.7 (5.8.9 available)
+  cloud_functions_web 5.1.0 (5.1.2 available)
+  cross_file 0.3.5+1 (0.3.5+2 available)
+  email_otp 3.0.2 (3.1.0 available)
+  equatable 2.0.7 (2.0.8 available)
+  ffi 2.1.4 (2.2.0 available)
+  firebase_auth 6.1.2 (6.1.4 available)
+  firebase_auth_platform_interface 8.1.4 (8.1.6 available)
+  firebase_auth_web 6.1.0 (6.1.2 available)
+  firebase_core 4.2.1 (4.4.0 available)
+  firebase_core_web 3.3.0 (3.4.0 available)
+  firebase_storage 13.0.4 (13.0.6 available)
+  firebase_storage_platform_interface 5.2.15 (5.2.17 available)
+  firebase_storage_web 3.11.0 (3.11.2 available)
+  flutter_facebook_auth 7.1.2 (7.1.5 available)
+  flutter_launcher_icons 0.13.1 (0.14.4 available)
+  flutter_secure_storage 9.2.4 (10.0.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.0 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.0 available)
+  flutter_secure_storage_windows 3.1.2 (4.1.0 available)
+  geolocator 10.1.1 (14.0.2 available)
+  geolocator_android 4.6.2 (5.0.2 available)
+  geolocator_web 2.2.1 (4.1.3 available)
+  get_it 7.7.0 (9.2.1 available)
+  google_maps_flutter 2.14.0 (2.14.2 available)
+  google_maps_flutter_android 2.18.6 (2.19.1 available)
+  google_maps_flutter_ios 2.15.7 (2.17.5 available)
+  google_maps_flutter_platform_interface 2.14.1 (2.14.2 available)
+  google_maps_flutter_web 0.5.14+3 (0.6.1 available)
+  google_mlkit_commons 0.8.1 (0.11.1 available)
+  google_mlkit_text_recognition 0.13.1 (0.15.1 available)
+  google_mlkit_translation 0.11.1 (0.13.1 available)
+  google_sign_in 6.3.0 (7.2.0 available)
+  google_sign_in_android 6.2.1 (7.2.9 available)
+  google_sign_in_ios 5.9.0 (6.3.0 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.2 available)
+  image 4.7.2 (4.8.0 available)
+  image_picker_android 0.8.13+10 (0.8.13+14 available)
+  image_picker_ios 0.8.13+3 (0.8.13+6 available)
+  js 0.6.7 (0.7.2 available)
+  json_annotation 4.9.0 (4.11.0 available)
+  lints 6.0.0 (6.1.0 available)
+  matcher 0.12.17 (0.12.19 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.18.1 available)
+  path_provider_android 2.2.19 (2.2.22 available)
+  path_provider_foundation 2.4.2 (2.6.0 available)
+  petitparser 7.0.1 (7.0.2 available)
+  pinput 6.0.1 (6.0.2 available)
+  posix 6.0.3 (6.5.0 available)
+  shared_preferences_android 2.4.20 (2.4.21 available)
+  source_span 1.10.1 (1.10.2 available)
+  test_api 0.7.6 (0.7.10 available)
+  url_launcher_ios 6.3.6 (6.4.1 available)
+  url_launcher_web 2.4.1 (2.4.2 available)
+  uuid 4.5.2 (4.5.3 available)
+  vector_graphics_compiler 1.1.20 (1.2.0 available)
+  vm_service 15.0.0 (15.0.2 available)
+  win32 5.15.0 (6.0.0 available)
+Got dependencies!
+72 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+[+1366 ms] Found plugin flutter_native_splash at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_native_splash-2.4.7\
+[  +25 ms] Found plugin url_launcher at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[   +2 ms] Found plugin url_launcher_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +3 ms] Found plugin url_launcher_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +2 ms] Found plugin url_launcher_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[   +2 ms] Found plugin url_launcher_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[   +1 ms] Found plugin url_launcher_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[   +1 ms] Found plugin url_launcher_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +3 ms] Found plugin speech_to_text at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text-7.3.0\
+[   +1 ms] Found plugin speech_to_text_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text_windows-1.0.0+beta.8\
+[   +2 ms] Found plugin shared_preferences at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[   +1 ms] Found plugin shared_preferences_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +2 ms] Found plugin path_provider_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +4 ms] Found plugin shared_preferences_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +1 ms] Found plugin path_provider_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +2 ms] Found plugin shared_preferences_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[   +1 ms] Found plugin shared_preferences_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\
+[   +3 ms] Found plugin path_provider at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[   +1 ms] Found plugin path_provider_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.4.2\
+[   +1 ms] Found plugin path_provider_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.19\
+[   +2 ms] Found plugin image_picker at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +2 ms] Found plugin image_picker_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +4 ms] Found plugin file_selector_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +2 ms] Found plugin image_picker_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[   +1 ms] Found plugin file_selector_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[   +1 ms] Found plugin image_picker_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[   +1 ms] Found plugin file_selector_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[        ] Found plugin image_picker_for_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +2 ms] Found plugin image_picker_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[   +1 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[   +1 ms] Found plugin google_sign_in at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in-6.3.0\
+[   +1 ms] Found plugin google_sign_in_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_web-0.12.4+4\
+[   +3 ms] Found plugin google_sign_in_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_ios-5.9.0\
+[   +1 ms] Found plugin google_sign_in_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_android-6.2.1\
+[   +1 ms] Found plugin google_mlkit_translation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_translation-0.11.1\
+[        ] Found plugin google_mlkit_commons at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_commons-0.8.1\
+[   +1 ms] Found plugin google_mlkit_text_recognition at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_text_recognition-0.13.1\
+[   +3 ms] Found plugin google_maps_flutter_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_android-2.18.6\
+[   +1 ms] Found plugin google_maps_flutter at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter-2.14.0\
+[        ] Found plugin google_maps_flutter_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_web-0.5.14+3\
+[   +2 ms] Found plugin google_maps_flutter_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_ios-2.15.7\
+[   +2 ms] Found plugin geolocator at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator-10.1.1\
+[        ] Found plugin geolocator_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_windows-0.2.5\
+[   +1 ms] Found plugin geolocator_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_web-2.2.1\
+[        ] Found plugin geolocator_apple at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_apple-2.3.13\
+[        ] Found plugin geolocator_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-4.6.2\
+[   +1 ms] Found plugin flutter_tts at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_tts-4.2.5\
+[   +4 ms] Found plugin flutter_facebook_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth-7.1.2\
+[        ] Found plugin flutter_facebook_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth_web-6.1.2\
+[   +1 ms] Found plugin facebook_auth_desktop at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\facebook_auth_desktop-2.1.1\
+[        ] Found plugin flutter_secure_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-9.2.4\
+[        ] Found plugin flutter_secure_storage_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-3.1.2\
+[   +4 ms] Found plugin flutter_secure_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-1.2.1\
+[   +1 ms] Found plugin flutter_secure_storage_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_macos-3.1.3\
+[   +1 ms] Found plugin flutter_secure_storage_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-1.2.3\
+[   +4 ms] Found plugin firebase_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage-13.0.4\
+[   +1 ms] Found plugin firebase_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage_web-3.11.0\
+[   +2 ms] Found plugin firebase_core at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core-4.2.1\
+[   +1 ms] Found plugin firebase_core_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core_web-3.3.0\
+[   +3 ms] Found plugin firebase_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth-6.1.2\
+[   +1 ms] Found plugin firebase_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth_web-6.1.0\
+[   +7 ms] Found plugin cloud_functions at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions-6.0.4\
+[   +1 ms] Found plugin cloud_functions_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions_web-5.1.0\
+[   +2 ms] Found plugin cloud_firestore at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore-6.1.0\
+[        ] Found plugin cloud_firestore_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore_web-5.1.0\
+[   +1 ms] Found plugin camera at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera-0.11.3\
+[   +1 ms] Found plugin camera_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_web-0.3.5+3\
+[   +1 ms] Found plugin camera_avfoundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_avfoundation-0.9.22+8\
+[        ] Found plugin camera_android_camerax at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_android_camerax-0.6.27\
+[   +3 ms] Found plugin sqflite at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +2 ms] Found plugin sqflite_darwin at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[        ] Found plugin sqflite_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +45 ms] Found plugin flutter_native_splash at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_native_splash-2.4.7\
+[  +13 ms] Found plugin url_launcher at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +2 ms] Found plugin url_launcher_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[        ] Found plugin url_launcher_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +1 ms] Found plugin speech_to_text at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text-7.3.0\
+[        ] Found plugin speech_to_text_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text_windows-1.0.0+beta.8\
+[   +1 ms] Found plugin shared_preferences at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[        ] Found plugin shared_preferences_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[   +1 ms] Found plugin shared_preferences_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[   +1 ms] Found plugin path_provider_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\
+[   +2 ms] Found plugin path_provider at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.4.2\
+[        ] Found plugin path_provider_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.19\
+[   +1 ms] Found plugin image_picker at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +2 ms] Found plugin file_selector_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[        ] Found plugin image_picker_for_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[        ] Found plugin google_sign_in at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in-6.3.0\
+[        ] Found plugin google_sign_in_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_web-0.12.4+4\
+[   +1 ms] Found plugin google_sign_in_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_ios-5.9.0\
+[        ] Found plugin google_sign_in_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_android-6.2.1\
+[        ] Found plugin google_mlkit_translation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_translation-0.11.1\
+[        ] Found plugin google_mlkit_commons at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_commons-0.8.1\
+[        ] Found plugin google_mlkit_text_recognition at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_text_recognition-0.13.1\
+[   +2 ms] Found plugin google_maps_flutter_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_android-2.18.6\
+[        ] Found plugin google_maps_flutter at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter-2.14.0\
+[        ] Found plugin google_maps_flutter_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_web-0.5.14+3\
+[   +1 ms] Found plugin google_maps_flutter_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_ios-2.15.7\
+[   +2 ms] Found plugin geolocator at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator-10.1.1\
+[        ] Found plugin geolocator_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_windows-0.2.5\
+[   +1 ms] Found plugin geolocator_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_web-2.2.1\
+[        ] Found plugin geolocator_apple at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_apple-2.3.13\
+[        ] Found plugin geolocator_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-4.6.2\
+[   +1 ms] Found plugin flutter_tts at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_tts-4.2.5\
+[   +3 ms] Found plugin flutter_facebook_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth-7.1.2\
+[        ] Found plugin flutter_facebook_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth_web-6.1.2\
+[   +1 ms] Found plugin facebook_auth_desktop at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\facebook_auth_desktop-2.1.1\
+[        ] Found plugin flutter_secure_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-9.2.4\
+[        ] Found plugin flutter_secure_storage_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-3.1.2\
+[   +1 ms] Found plugin flutter_secure_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-1.2.1\
+[   +1 ms] Found plugin flutter_secure_storage_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_macos-3.1.3\
+[        ] Found plugin flutter_secure_storage_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-1.2.3\
+[   +3 ms] Found plugin firebase_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage-13.0.4\
+[        ] Found plugin firebase_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage_web-3.11.0\
+[   +1 ms] Found plugin firebase_core at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core-4.2.1\
+[   +1 ms] Found plugin firebase_core_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core_web-3.3.0\
+[   +1 ms] Found plugin firebase_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth-6.1.2\
+[        ] Found plugin firebase_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth_web-6.1.0\
+[   +4 ms] Found plugin cloud_functions at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions-6.0.4\
+[        ] Found plugin cloud_functions_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions_web-5.1.0\
+[   +1 ms] Found plugin cloud_firestore at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore-6.1.0\
+[        ] Found plugin cloud_firestore_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore_web-5.1.0\
+[   +1 ms] Found plugin camera at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera-0.11.3\
+[        ] Found plugin camera_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_web-0.3.5+3\
+[   +1 ms] Found plugin camera_avfoundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_avfoundation-0.9.22+8\
+[        ] Found plugin camera_android_camerax at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_android_camerax-0.6.27\
+[   +2 ms] Found plugin sqflite at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +2 ms] Found plugin sqflite_darwin at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[        ] Found plugin sqflite_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +11 ms] Skipping generating web_plugin_registrant.dart because it is up-to-date.
+[  +21 ms] Found plugin flutter_native_splash at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_native_splash-2.4.7\
+[  +10 ms] Found plugin url_launcher at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +1 ms] Found plugin url_launcher_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[        ] Found plugin url_launcher_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +1 ms] Found plugin speech_to_text at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text-7.3.0\
+[        ] Found plugin speech_to_text_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text_windows-1.0.0+beta.8\
+[   +1 ms] Found plugin shared_preferences at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[        ] Found plugin shared_preferences_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\
+[   +2 ms] Found plugin path_provider at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.4.2\
+[        ] Found plugin path_provider_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.19\
+[   +1 ms] Found plugin image_picker at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[        ] Found plugin image_picker_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +3 ms] Found plugin file_selector_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[        ] Found plugin image_picker_for_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[   +1 ms] Found plugin flutter_plugin_android_lifecycle at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[        ] Found plugin google_sign_in at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in-6.3.0\
+[        ] Found plugin google_sign_in_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_web-0.12.4+4\
+[   +1 ms] Found plugin google_sign_in_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_ios-5.9.0\
+[        ] Found plugin google_sign_in_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_android-6.2.1\
+[        ] Found plugin google_mlkit_translation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_translation-0.11.1\
+[        ] Found plugin google_mlkit_commons at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_commons-0.8.1\
+[        ] Found plugin google_mlkit_text_recognition at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_text_recognition-0.13.1\
+[   +1 ms] Found plugin google_maps_flutter_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_android-2.18.6\
+[        ] Found plugin google_maps_flutter at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter-2.14.0\
+[        ] Found plugin google_maps_flutter_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_web-0.5.14+3\
+[   +1 ms] Found plugin google_maps_flutter_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_ios-2.15.7\
+[   +1 ms] Found plugin geolocator at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator-10.1.1\
+[        ] Found plugin geolocator_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_windows-0.2.5\
+[   +1 ms] Found plugin geolocator_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_web-2.2.1\
+[        ] Found plugin geolocator_apple at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_apple-2.3.13\
+[        ] Found plugin geolocator_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-4.6.2\
+[   +1 ms] Found plugin flutter_tts at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_tts-4.2.5\
+[   +3 ms] Found plugin flutter_facebook_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth-7.1.2\
+[        ] Found plugin flutter_facebook_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth_web-6.1.2\
+[   +1 ms] Found plugin facebook_auth_desktop at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\facebook_auth_desktop-2.1.1\
+[        ] Found plugin flutter_secure_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-9.2.4\
+[        ] Found plugin flutter_secure_storage_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-3.1.2\
+[   +1 ms] Found plugin flutter_secure_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-1.2.1\
+[   +1 ms] Found plugin flutter_secure_storage_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_macos-3.1.3\
+[        ] Found plugin flutter_secure_storage_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-1.2.3\
+[   +2 ms] Found plugin firebase_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage-13.0.4\
+[        ] Found plugin firebase_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage_web-3.11.0\
+[   +1 ms] Found plugin firebase_core at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core-4.2.1\
+[        ] Found plugin firebase_core_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core_web-3.3.0\
+[   +1 ms] Found plugin firebase_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth-6.1.2\
+[        ] Found plugin firebase_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth_web-6.1.0\
+[   +5 ms] Found plugin cloud_functions at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions-6.0.4\
+[        ] Found plugin cloud_functions_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions_web-5.1.0\
+[   +1 ms] Found plugin cloud_firestore at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore-6.1.0\
+[        ] Found plugin cloud_firestore_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore_web-5.1.0\
+[   +1 ms] Found plugin camera at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera-0.11.3\
+[        ] Found plugin camera_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_web-0.3.5+3\
+[   +1 ms] Found plugin camera_avfoundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_avfoundation-0.9.22+8\
+[        ] Found plugin camera_android_camerax at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_android_camerax-0.6.27\
+[   +2 ms] Found plugin sqflite at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +2 ms] Found plugin sqflite_darwin at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[        ] Found plugin sqflite_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +10 ms] Generating C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\android\app\src\main\java\io\flutter\plugins\GeneratedPluginRegistrant.java
+[   +1 ms] Skipping generating GeneratedPluginRegistrant.java because it is up-to-date.
+[   +2 ms] Skipping generating GeneratedPluginRegistrant.h because it is up-to-date.
+[   +1 ms] Skipping generating GeneratedPluginRegistrant.m because it is up-to-date.
+[  +73 ms] Found plugin flutter_native_splash at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_native_splash-2.4.7\
+[  +15 ms] Found plugin url_launcher at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[  +18 ms] Found plugin url_launcher_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[        ] Found plugin url_launcher_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +2 ms] Found plugin speech_to_text at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text-7.3.0\
+[        ] Found plugin speech_to_text_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text_windows-1.0.0+beta.8\
+[   +2 ms] Found plugin shared_preferences at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[        ] Found plugin shared_preferences_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\
+[   +2 ms] Found plugin path_provider at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.4.2\
+[        ] Found plugin path_provider_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.19\
+[   +2 ms] Found plugin image_picker at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[        ] Found plugin image_picker_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +3 ms] Found plugin file_selector_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[        ] Found plugin image_picker_for_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[        ] Found plugin google_sign_in at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in-6.3.0\
+[        ] Found plugin google_sign_in_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_web-0.12.4+4\
+[   +1 ms] Found plugin google_sign_in_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_ios-5.9.0\
+[        ] Found plugin google_sign_in_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_android-6.2.1\
+[        ] Found plugin google_mlkit_translation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_translation-0.11.1\
+[        ] Found plugin google_mlkit_commons at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_commons-0.8.1\
+[        ] Found plugin google_mlkit_text_recognition at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_text_recognition-0.13.1\
+[   +2 ms] Found plugin google_maps_flutter_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_android-2.18.6\
+[        ] Found plugin google_maps_flutter at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter-2.14.0\
+[        ] Found plugin google_maps_flutter_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_web-0.5.14+3\
+[   +1 ms] Found plugin google_maps_flutter_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_ios-2.15.7\
+[   +1 ms] Found plugin geolocator at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator-10.1.1\
+[   +5 ms] Found plugin geolocator_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_windows-0.2.5\
+[   +2 ms] Found plugin geolocator_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_web-2.2.1\
+[        ] Found plugin geolocator_apple at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_apple-2.3.13\
+[        ] Found plugin geolocator_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-4.6.2\
+[   +1 ms] Found plugin flutter_tts at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_tts-4.2.5\
+[   +3 ms] Found plugin flutter_facebook_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth-7.1.2\
+[        ] Found plugin flutter_facebook_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth_web-6.1.2\
+[   +1 ms] Found plugin facebook_auth_desktop at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\facebook_auth_desktop-2.1.1\
+[        ] Found plugin flutter_secure_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-9.2.4\
+[        ] Found plugin flutter_secure_storage_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-3.1.2\
+[   +2 ms] Found plugin flutter_secure_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-1.2.1\
+[   +1 ms] Found plugin flutter_secure_storage_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_macos-3.1.3\
+[        ] Found plugin flutter_secure_storage_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-1.2.3\
+[   +2 ms] Found plugin firebase_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage-13.0.4\
+[        ] Found plugin firebase_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage_web-3.11.0\
+[   +1 ms] Found plugin firebase_core at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core-4.2.1\
+[        ] Found plugin firebase_core_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core_web-3.3.0\
+[   +2 ms] Found plugin firebase_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth-6.1.2\
+[        ] Found plugin firebase_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth_web-6.1.0\
+[   +4 ms] Found plugin cloud_functions at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions-6.0.4\
+[        ] Found plugin cloud_functions_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions_web-5.1.0\
+[   +1 ms] Found plugin cloud_firestore at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore-6.1.0\
+[        ] Found plugin cloud_firestore_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore_web-5.1.0\
+[   +1 ms] Found plugin camera at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera-0.11.3\
+[        ] Found plugin camera_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_web-0.3.5+3\
+[   +1 ms] Found plugin camera_avfoundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_avfoundation-0.9.22+8\
+[        ] Found plugin camera_android_camerax at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_android_camerax-0.6.27\
+[   +2 ms] Found plugin sqflite at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +2 ms] Found plugin sqflite_darwin at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[        ] Found plugin sqflite_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[   +3 ms] generated_plugin_registrant.dart not found. Skipping.
+[   +1 ms] Compiling lib\main.dart for the Web...
+[   +4 ms] Initializing file store
+[  +22 ms] invalidated build due to missing files: C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\web\*\index.html, C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\web\flutter_bootstrap.js
+[   +1 ms] web_entrypoint: Starting due to {InvalidatedReasonKind.outputSetAddition: The following outputs were added to the output set: C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\main.dart, InvalidatedReasonKind.inputChanged: The following inputs have updated contents: D:\Flutter\flutter\packages\flutter_tools\lib\src\build_system\targets\web.dart}
+[   +1 ms] Skipping target: gen_localizations
+[   +1 ms] web_templated_files: Starting due to {InvalidatedReasonKind.buildKeyChanged: The target build key changed., InvalidatedReasonKind.outputSetAddition: The following outputs were added to the output set: C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\build\web\*\index.html,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\build\web\flutter_bootstrap.js, InvalidatedReasonKind.inputMissing: The following inputs were missing: C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\web\*\index.html,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\web\flutter_bootstrap.js, InvalidatedReasonKind.inputChanged: The following inputs have updated contents: D:\Flutter\flutter\bin\cache\engine.stamp}
+[        ] web_static_assets: Starting due to {InvalidatedReasonKind.inputChanged: The following inputs have updated contents: D:\Flutter\flutter\bin\cache\engine.stamp, InvalidatedReasonKind.outputSetAddition: The following outputs were added to the output set: C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\flutter.js,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\canvaskit.js,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\canvaskit.js.symbols,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\canvaskit.wasm,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\chromium\canvaskit.js,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\chromium\canvaskit.js.symbols,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\chromium\canvaskit.wasm,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\skwasm.js,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\skwasm.js.symbols,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\skwasm.wasm,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\skwasm_heavy.js,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\skwasm_heavy.js.symbols,C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\canvaskit\skwasm_heavy.wasm}
+[ +509 ms] web_static_assets: Complete
+[  +26 ms] web_templated_files: Complete
+[  +26 ms] Found plugin flutter_native_splash at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_native_splash-2.4.7\
+[  +11 ms] Found plugin url_launcher at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher-6.3.2\
+[        ] Found plugin url_launcher_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_windows-3.1.5\
+[   +2 ms] Found plugin url_launcher_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_web-2.4.1\
+[   +1 ms] Found plugin url_launcher_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_macos-3.2.5\
+[        ] Found plugin url_launcher_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_linux-3.2.2\
+[        ] Found plugin url_launcher_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_ios-6.3.6\
+[        ] Found plugin url_launcher_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\url_launcher_android-6.3.28\
+[   +1 ms] Found plugin speech_to_text at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text-7.3.0\
+[        ] Found plugin speech_to_text_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\speech_to_text_windows-1.0.0+beta.8\
+[   +1 ms] Found plugin shared_preferences at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences-2.5.4\
+[        ] Found plugin shared_preferences_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_windows-2.4.1\
+[   +1 ms] Found plugin path_provider_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_windows-2.3.0\
+[   +2 ms] Found plugin shared_preferences_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_web-2.4.3\
+[        ] Found plugin shared_preferences_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_linux-2.4.1\
+[        ] Found plugin path_provider_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_linux-2.2.1\
+[   +1 ms] Found plugin shared_preferences_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_foundation-2.5.6\
+[        ] Found plugin shared_preferences_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\shared_preferences_android-2.4.20\
+[   +2 ms] Found plugin path_provider at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider-2.1.5\
+[        ] Found plugin path_provider_foundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_foundation-2.4.2\
+[        ] Found plugin path_provider_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\path_provider_android-2.2.19\
+[   +1 ms] Found plugin image_picker at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker-1.2.1\
+[   +1 ms] Found plugin image_picker_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_windows-0.2.2\
+[   +3 ms] Found plugin file_selector_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_windows-0.9.3+5\
+[   +1 ms] Found plugin image_picker_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_macos-0.2.2+1\
+[        ] Found plugin file_selector_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_macos-0.9.5\
+[        ] Found plugin image_picker_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_linux-0.2.2\
+[        ] Found plugin file_selector_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\file_selector_linux-0.9.4\
+[        ] Found plugin image_picker_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_ios-0.8.13+3\
+[        ] Found plugin image_picker_for_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_for_web-3.1.1\
+[   +1 ms] Found plugin image_picker_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\image_picker_android-0.8.13+10\
+[        ] Found plugin flutter_plugin_android_lifecycle at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_plugin_android_lifecycle-2.0.33\
+[        ] Found plugin google_sign_in at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in-6.3.0\
+[        ] Found plugin google_sign_in_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_web-0.12.4+4\
+[   +1 ms] Found plugin google_sign_in_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_ios-5.9.0\
+[        ] Found plugin google_sign_in_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_sign_in_android-6.2.1\
+[   +1 ms] Found plugin google_mlkit_translation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_translation-0.11.1\
+[        ] Found plugin google_mlkit_commons at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_commons-0.8.1\
+[        ] Found plugin google_mlkit_text_recognition at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_mlkit_text_recognition-0.13.1\
+[   +1 ms] Found plugin google_maps_flutter_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_android-2.18.6\
+[        ] Found plugin google_maps_flutter at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter-2.14.0\
+[        ] Found plugin google_maps_flutter_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_web-0.5.14+3\
+[   +1 ms] Found plugin google_maps_flutter_ios at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\google_maps_flutter_ios-2.15.7\
+[   +2 ms] Found plugin geolocator at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator-10.1.1\
+[        ] Found plugin geolocator_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_windows-0.2.5\
+[   +1 ms] Found plugin geolocator_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_web-2.2.1\
+[        ] Found plugin geolocator_apple at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_apple-2.3.13\
+[        ] Found plugin geolocator_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\geolocator_android-4.6.2\
+[   +2 ms] Found plugin flutter_tts at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_tts-4.2.5\
+[   +4 ms] Found plugin flutter_facebook_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth-7.1.2\
+[        ] Found plugin flutter_facebook_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_facebook_auth_web-6.1.2\
+[   +1 ms] Found plugin facebook_auth_desktop at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\facebook_auth_desktop-2.1.1\
+[        ] Found plugin flutter_secure_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage-9.2.4\
+[        ] Found plugin flutter_secure_storage_windows at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_windows-3.1.2\
+[   +2 ms] Found plugin flutter_secure_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_web-1.2.1\
+[   +1 ms] Found plugin flutter_secure_storage_macos at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_macos-3.1.3\
+[        ] Found plugin flutter_secure_storage_linux at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_secure_storage_linux-1.2.3\
+[   +2 ms] Found plugin firebase_storage at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage-13.0.4\
+[        ] Found plugin firebase_storage_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_storage_web-3.11.0\
+[   +1 ms] Found plugin firebase_core at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core-4.2.1\
+[        ] Found plugin firebase_core_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_core_web-3.3.0\
+[   +1 ms] Found plugin firebase_auth at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth-6.1.2\
+[        ] Found plugin firebase_auth_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\firebase_auth_web-6.1.0\
+[   +4 ms] Found plugin cloud_functions at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions-6.0.4\
+[        ] Found plugin cloud_functions_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_functions_web-5.1.0\
+[   +1 ms] Found plugin cloud_firestore at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore-6.1.0\
+[        ] Found plugin cloud_firestore_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\cloud_firestore_web-5.1.0\
+[   +1 ms] Found plugin camera at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera-0.11.3\
+[        ] Found plugin camera_web at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_web-0.3.5+3\
+[   +1 ms] Found plugin camera_avfoundation at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_avfoundation-0.9.22+8\
+[        ] Found plugin camera_android_camerax at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\camera_android_camerax-0.6.27\
+[   +2 ms] Found plugin sqflite at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite-2.4.2\
+[   +2 ms] Found plugin sqflite_darwin at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_darwin-2.4.2\
+[        ] Found plugin sqflite_android at C:\Users\Mohamed-PC\AppData\Local\Pub\Cache\hosted\pub.dev\sqflite_android-2.4.2+2\
+[  +14 ms] web_entrypoint: Complete
+[   +1 ms] dart2js: Starting due to {}
+[   +5 ms] executing: D:\Flutter\flutter\bin\cache\dart-sdk\bin\dart.exe compile js --platform-binaries=D:\Flutter\flutter\bin\cache\flutter_web_sdk\kernel --invoker=flutter_tool -Ddart.vm.product=true -DFLUTTER_VERSION=3.35.5 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=ac4e799d23 -DFLUTTER_ENGINE_REVISION=d3d45dcf25 -DFLUTTER_DART_VERSION=3.9.2 -DFLUTTER_WEB_USE_SKIA=true -DFLUTTER_WEB_USE_SKWASM=false -DFLUTTER_WEB_CANVASKIT_URL=https://www.gstatic.com/flutter-canvaskit/d3d45dcf251823c1769909cd43698d126db38deb/ --native-null-assertions --no-source-maps -O4 --minify -o C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\app.dill --packages=C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\package_config.json --cfe-only C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\main.dart
+[   +1 ms] dart2wasm: Starting due to {}
+[   +1 ms] executing: D:\Flutter\flutter\bin\cache\dart-sdk\bin\dart.exe compile wasm --packages=C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\package_config.json --extra-compiler-option=--platform=D:\Flutter\flutter\bin\cache\flutter_web_sdk\kernel\dart2wasm_platform.dill -Ddart.vm.profile=false -Ddart.vm.product=true --extra-compiler-option=--delete-tostring-package-uri=dart:ui --extra-compiler-option=--delete-tostring-package-uri=package:flutter --extra-compiler-option=--import-shared-memory --extra-compiler-option=--shared-memory-max-pages=32768 -DFLUTTER_VERSION=3.35.5 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=ac4e799d23 -DFLUTTER_ENGINE_REVISION=d3d45dcf25 -DFLUTTER_DART_VERSION=3.9.2 -DFLUTTER_WEB_USE_SKIA=false -DFLUTTER_WEB_USE_SKWASM=true -DFLUTTER_WEB_CANVASKIT_URL=https://www.gstatic.com/flutter-canvaskit/d3d45dcf251823c1769909cd43698d126db38deb/ --extra-compiler-option=--depfile=C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\dart2wasm.d -O2 --strip-wasm --no-source-maps --minify --extra-compiler-option=--dry-run -o C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\main.dart.wasm C:\Users\Mohamed-PC\Desktop\LOSTINEGYPT\lost_in_egypt\.dart_tool\flutter_build\e5270f26b8ca63a9f9d964a3ec18e92a\main.dart
+[+12238 ms] Found incompatibilities with WebAssembly.
+
+            package:flutter_secure_storage_web/flutter_secure_storage_web.dart 5:1 - dart:html unsupported (0)
+            package:flutter_secure_storage_web/src/subtle.dart 21:1 - dart:html unsupported (0)
+            package:geolocator_web/src/html_geolocation_manager.dart 1:1 - dart:html unsupported (0)
+            package:geolocator_web/src/html_permissions_manager.dart 1:1 - dart:html unsupported (0)
+            package:js/js.dart 10:1 - dart:js unsupported (1)
+            package:geolocator_web/src/utils.dart 2:1 - dart:html unsupported (0)
+            package:flutter_secure_storage_web/flutter_secure_storage_web.dart 6:1 - JS interop library 'dart:js_util' can't be imported when compiling to Wasm. (2)
+            package:flutter_secure_storage_web/src/subtle.dart 22:1 - JS interop library 'dart:js_util' can't be imported when compiling to Wasm. (2)
+            package:flutter_secure_storage_web/src/subtle.dart 26:1 - JS interop library 'package:js/js.dart' can't be imported when compiling to Wasm. (2)
+[   +6 ms] dart2wasm: Complete
+[+1485 ms] lib/feature/auth/presentation/sign_up/presentation/signup_screen.dart:215:10:
+           Error: 'FirebaseAuthException' isn't a type.
+               } on FirebaseAuthException catch (e) {
+                    ^^^^^^^^^^^^^^^^^^^^^
+           lib/feature/auth/presentation/sign_up/presentation/signup_screen.dart:188:26:
+           Error: The method 'AuthRemoteDataSourceImpl' isn't defined for the type '_SignupScreenState'.
+            - '_SignupScreenState' is from 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/signup_screen.dart' ('lib/feature/auth/presentation/sign_up/presentation/signup_screen.dart').
+                 final dataSource = AuthRemoteDataSourceImpl(
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^
+           lib/feature/auth/presentation/sign_up/presentation/signup_screen.dart:189:23:
+           Error: The getter 'FirebaseAuth' isn't defined for the type '_SignupScreenState'.
+            - '_SignupScreenState' is from 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/signup_screen.dart' ('lib/feature/auth/presentation/sign_up/presentation/signup_screen.dart').
+                   firebaseAuth: FirebaseAuth.instance,
+                                 ^^^^^^^^^^^^
+           lib/feature/auth/presentation/sign_up/presentation/signup_screen.dart:190:20:
+           Error: The getter 'FirebaseFirestore' isn't defined for the type '_SignupScreenState'.
+            - '_SignupScreenState' is from 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/signup_screen.dart' ('lib/feature/auth/presentation/sign_up/presentation/signup_screen.dart').
+                   firestore: FirebaseFirestore.instance,
+                              ^^^^^^^^^^^^^^^^^
+           Error: Compilation failed.
+[   +1 ms] Persisting file store
+[   +2 ms] Done persisting file store
+[   +3 ms] Compiling lib\main.dart for the Web... (completed in 14.5s)
+[        ] "flutter web" took 16,592ms.
+[   +1 ms] Running 1 shutdown hook
+[   +1 ms] Shutdown hooks complete
+[  +60 ms] exiting with code 1

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lost_in_egypt/feature/auth/data/repository_impl/auth_repository_impl.dart';
@@ -127,28 +129,10 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
                 if (!_emailSent) ...[
                   // EMAIL INPUT
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF7A8450).withOpacity(0.70),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 3),
-                    child: TextField(
-                      controller: _emailController,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontFamily: "Marcellus",
-                      ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Enter your email",
-                        hintStyle: TextStyle(
-                          color: Colors.white70,
-                          fontFamily: "Marcellus",
-                        ),
-                      ),
-                    ),
+                  AuthTextField(
+                    controller: _emailController,
+                    hintText: "Enter your email",
+                    keyboardType: TextInputType.emailAddress,
                   ),
 
                   const SizedBox(height: 25),

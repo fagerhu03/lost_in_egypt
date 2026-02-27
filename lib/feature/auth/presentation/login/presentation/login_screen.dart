@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/forget_password/presentation/forget_password_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/complete_profile_screen.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_field.dart';
 import 'package:lost_in_egypt/feature/auth/domain/repositories/auth_repository.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/navigator/home_wrapper.dart';
@@ -10,6 +13,7 @@ import 'package:lost_in_egypt/core/constants/strings.dart';
 import '../bloc/login_bloc.dart';
 import '../bloc/login_event.dart';
 import '../bloc/login_state.dart';
+import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -44,14 +48,14 @@ class _LoginScreenViewState extends State<LoginScreenView> {
 
   void _navigateToHome() {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const HomeWrapper()),
+      FadePageRoute(page: const HomeWrapper()),
       (route) => false,
     );
   }
 
   void _navigateToCompleteProfile() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+      FadePageRoute(page: const CompleteProfileScreen()),
     );
   }
 
@@ -125,71 +129,24 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                        const SizedBox(height: 20),
 
                        // --- EMAIL INPUT ---
-                       Container(
-                         decoration: BoxDecoration(
-                           color: const Color(0xFF7A8450).withOpacity(0.70),
-                           borderRadius: BorderRadius.circular(10),
-                         ),
-                         padding: const EdgeInsets.symmetric(
-                           horizontal: 20,
-                           vertical: 3,
-                         ),
-                         child: TextField(
-                           controller: _emailController,
-                           style: const TextStyle(
-                             color: Colors.white,
-                             fontFamily: "Marcellus",
-                           ),
-                           decoration: const InputDecoration(
-                             border: InputBorder.none,
-                             hintText: "Enter your email",
-                             hintStyle: TextStyle(
-                               color: Colors.white70,
-                               fontFamily: "Marcellus",
-                             ),
-                           ),
-                         ),
+                       AuthTextField(
+                         controller: _emailController,
+                         hintText: "Enter your email",
+                         keyboardType: TextInputType.emailAddress,
                        ),
 
                        const SizedBox(height: 15),
 
                        // --- PASSWORD INPUT ---
-                       Container(
-                         decoration: BoxDecoration(
-                           color: const Color(0xFF7A8450).withOpacity(0.70),
-                           borderRadius: BorderRadius.circular(10),
-                         ),
-                         padding: const EdgeInsets.symmetric(
-                           horizontal: 20,
-                           vertical: 3,
-                         ),
-                         child: TextField(
-                           controller: _passwordController,
-                           obscureText: obscure,
-                           style: const TextStyle(
-                             color: Colors.white,
-                             fontFamily: "Marcellus",
-                           ),
-                           decoration: InputDecoration(
-                             border: InputBorder.none,
-                             hintText: "Enter your password",
-                             hintStyle: const TextStyle(
-                               color: Colors.white60,
-                               fontFamily: "Marcellus",
-                             ),
-                             suffixIcon: IconButton(
-                               icon: Icon(
-                                 obscure ? Icons.visibility_off : Icons.visibility,
-                                 color: Colors.white70,
-                               ),
-                               onPressed: () {
-                                 setState(() {
-                                   obscure = !obscure;
-                                 });
-                               },
-                             ),
-                           ),
-                         ),
+                       AuthPasswordField(
+                         controller: _passwordController,
+                         hintText: "Enter your password",
+                         obscureText: obscure,
+                         onVisibilityToggle: () {
+                           setState(() {
+                             obscure = !obscure;
+                           });
+                         },
                        ),
 
                        const SizedBox(height: 25),
@@ -247,9 +204,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                        GestureDetector(
                          onTap: () {
                            Navigator.of(context).push(
-                             MaterialPageRoute(
-                               builder: (context) => const ForgetPasswordScreen(),
-                             ),
+                             FadePageRoute(page: const ForgetPasswordScreen()),
                            );
                          },
                          child: const Text(
@@ -354,9 +309,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                            GestureDetector(
                              onTap: () {
                                Navigator.of(context).push(
-                                 MaterialPageRoute(
-                                   builder: (context) => const SignupScreen(),
-                                 ),
+                                 FadePageRoute(page: const SignupScreen()),
                                );
                              },
                              child: const Text(

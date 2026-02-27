@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/login/presentation/login_screen.dart'; // Verify this path for your LoginScreen
+import 'package:lost_in_egypt/core/utils/page_transitions.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_field.dart';
+import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -208,7 +212,7 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         );
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          FadePageRoute(page: const LoginScreen()),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -266,12 +270,18 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 10),
 
                   // FIRST NAME
-                  _inputField("First Name", _firstNameController),
+                  AuthTextField(
+                    hintText: "First Name", 
+                    controller: _firstNameController,
+                  ),
 
                   const SizedBox(height: 10),
 
                   // LAST NAME
-                  _inputField("Last Name", _lastNameController),
+                  AuthTextField(
+                    hintText: "Last Name", 
+                    controller: _lastNameController,
+                  ),
 
                   const SizedBox(height: 10),
 
@@ -302,26 +312,30 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 20),
 
                   // EMAIL
-                  _inputField("Email", _emailController),
+                  AuthTextField(
+                    hintText: "Email", 
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
 
                   const SizedBox(height: 15),
 
                   // PASSWORD
-                  _passwordField(
-                    hint: "Enter your password",
-                    obscure: obscure1,
+                  AuthPasswordField(
+                    hintText: "Enter your password",
+                    obscureText: obscure1,
                     controller: _passwordController,
-                    onTap: () => setState(() => obscure1 = !obscure1),
+                    onVisibilityToggle: () => setState(() => obscure1 = !obscure1),
                   ),
 
                   const SizedBox(height: 15),
 
                   // CONFIRM PASSWORD
-                  _passwordField(
-                    hint: "Confirm your password",
-                    obscure: obscure2,
+                  AuthPasswordField(
+                    hintText: "Confirm your password",
+                    obscureText: obscure2,
                     controller: _confirmPassController,
-                    onTap: () => setState(() => obscure2 = !obscure2),
+                    onVisibilityToggle: () => setState(() => obscure2 = !obscure2),
                   ),
 
                   const SizedBox(height: 25),
@@ -369,9 +383,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ),
+                            FadePageRoute(page: const LoginScreen()),
                           );
                         },
                         child: const Text(
@@ -395,63 +407,6 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   // ======================== WIDGETS ========================
-
-  Widget _inputField(String hint, TextEditingController controller) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF7A8450).withOpacity(0.70),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
-      child: TextField(
-        controller: controller,
-        style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: hint,
-          hintStyle: const TextStyle(
-            color: Colors.white70,
-            fontFamily: "Marcellus",
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _passwordField({
-    required String hint,
-    required bool obscure,
-    required VoidCallback onTap,
-    required TextEditingController controller,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF7A8450).withOpacity(0.70),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
-      child: TextField(
-        controller: controller,
-        obscureText: obscure,
-        style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: hint,
-          hintStyle: const TextStyle(
-            color: Colors.white60,
-            fontFamily: "Marcellus",
-          ),
-          suffixIcon: IconButton(
-            icon: Icon(
-              obscure ? Icons.visibility_off : Icons.visibility,
-              color: Colors.white70,
-            ),
-            onPressed: onTap,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _monthDropdown() {
     return Container(
