@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'edit_profile_screen_enhanced.dart';
-import '../../../auth/data/models/user.dart';
+import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
+import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});

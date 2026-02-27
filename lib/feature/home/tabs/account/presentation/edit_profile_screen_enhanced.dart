@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
-import '../../../auth/data/models/user.dart';
-import '../../../auth/phone_verif/phone_verification_screen.dart';
+import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 
 class EditProfileScreenEnhanced extends StatefulWidget {
   const EditProfileScreenEnhanced({super.key});

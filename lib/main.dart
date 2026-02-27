@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:lost_in_egypt/theme/app_theme.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
@@ -14,8 +14,8 @@ import 'core/di/service_locator.dart' as di;
 
 import 'feature/home/tabs/navigator/home_wrapper.dart';
 import 'firebase_options.dart';
-import 'feature/auth/login/presentation/login_screen.dart';
-import 'feature/auth/sign_up/presentation/signup_screen.dart';
+import 'feature/auth/presentation/login/presentation/login_screen.dart';
+import 'feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 import 'feature/onboarding/onboarding_screen.dart';
 
 // ✅ add these imports for saved theme
@@ -24,12 +24,16 @@ import 'feature/auth/data/models/user.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    print("WARNING: .env file not found, Maps API might fail if not injected via CLI.");
+  }
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  await dotenv.load(fileName: ".env");
 
   await di.init();
 

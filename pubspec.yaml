@@ -55,7 +55,6 @@ dependencies:
   camera: ^0.11.0+2
   http: ^1.2.0
   image: ^4.1.7
-  flutter_dotenv: ^5.1.0
   flutter_svg: ^2.0.9
   intl_phone_field: ^3.2.0
   country_picker: ^2.0.27
@@ -71,6 +70,7 @@ dependencies:
   provider: ^6.1.5+1
   path_provider: ^2.1.5
   crypto: ^3.0.7
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -97,7 +97,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
     - assets/onboarding/
@@ -106,11 +105,10 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/pattern_comp.png
-    - .env
     - assets/pins/
     - assets/darkmode_map_style.json
     - assets/map_style.json
-
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

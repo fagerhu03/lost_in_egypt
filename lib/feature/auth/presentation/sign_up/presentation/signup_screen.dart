@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../auth/data/datasources/auth_remote_datasource.dart';
-import '../../login/presentation/login_screen.dart'; // Verify this path for your LoginScreen
+import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/login/presentation/login_screen.dart'; // Verify this path for your LoginScreen
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

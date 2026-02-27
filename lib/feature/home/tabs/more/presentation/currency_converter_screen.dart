@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'data/currency_repository.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/data/currency_repository.dart';
 
 class CurrencyConverterScreen extends StatefulWidget {
   const CurrencyConverterScreen({super.key});

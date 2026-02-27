@@ -4,31 +4,19 @@ import 'dart:typed_data';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:image/image.dart' as img;
 
-/// Custom exception for landmark detection errors
-class LandmarkDetectionException implements Exception {
-  final String message;
-  final bool isApiKeyError;
-
-  LandmarkDetectionException(this.message, {this.isApiKeyError = false});
-
-  @override
-  String toString() => message;
-}
-
-/// Data source for calling Google Cloud Vision API
-class LandmarkRemoteDataSource {
-  /// Identifies a landmark from the given image file
-  /// Throws [LandmarkDetectionException] on errors
-  Future<String?> identifyLandmark(File imageFile) async {
+class LandmarkService {
+  
+  static Future<String?> identifyLandmark(File imageFile) async {
     try {
-      // 1. Read and resize the image for better performance
+      // 1. OPTIMIZATION: Resize the image before uploading
       List<int> imageBytes = await imageFile.readAsBytes();
       
       img.Image? originalImage = img.decodeImage(Uint8List.fromList(imageBytes));
       
       if (originalImage != null) {
-        // Resize to max 800px width for faster API response
+        // Resize to a max width of 800px, maintaining aspect ratio
         img.Image resized = img.copyResize(originalImage, width: 800);
+        // Encode back to JPG with 85% quality
         imageBytes = img.encodeJpg(resized, quality: 85);
       }
 
@@ -49,12 +37,9 @@ class LandmarkRemoteDataSource {
       
       return null;
     } on FirebaseFunctionsException catch (e) {
-      if (e.code == 'unauthenticated') {
-         throw LandmarkDetectionException('You must be logged in to identify landmarks.', isApiKeyError: false);
-      }
-      throw LandmarkDetectionException('Cloud Function Error: \${e.code} - \${e.message}');
+      throw Exception("Cloud Function Error: \${e.code} - \${e.message}");
     } catch (e) {
-      throw LandmarkDetectionException('Failed to identify landmark: \$e');
+      rethrow;
     }
   }
 }

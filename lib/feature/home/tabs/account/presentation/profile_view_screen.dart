@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../auth/data/models/user.dart';
+import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 
 class ProfileViewScreen extends StatefulWidget {
   final String? uid; // optional: view other user's profile if provided

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class PlaceDetailSheet extends StatefulWidget {
   final MapItem place;

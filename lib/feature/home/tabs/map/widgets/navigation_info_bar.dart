@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/route_info.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 
 class NavigationInfoBar extends StatelessWidget {
   final RouteInfo routeInfo;

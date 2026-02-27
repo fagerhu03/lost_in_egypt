@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../map_config.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 import '../../home/data/models/map_item_models.dart';
 
 class MapFilterSheet extends StatelessWidget {

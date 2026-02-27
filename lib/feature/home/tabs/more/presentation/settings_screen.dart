@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/theme_controller.dart';
-import '../../../auth/data/models/user.dart';
-import 'data/settings_repository.dart';
+import 'package:lost_in_egypt/theme/theme_controller.dart';
+import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

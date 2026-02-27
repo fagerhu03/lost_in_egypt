@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../home/data/models/map_item_models.dart';
-import '../map_config.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 import 'places_api_service.dart';
 
 class MapRepository {

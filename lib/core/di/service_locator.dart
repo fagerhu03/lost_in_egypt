@@ -6,16 +6,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../feature/auth/data/datasources/auth_remote_datasource.dart';
 import '../../feature/auth/data/repository_impl/auth_repository_impl.dart';
 import '../../feature/auth/domain/repositories/auth_repository.dart';
-import '../../feature/auth/login/bloc/login_bloc.dart';
+import '../../feature/auth/presentation/login/bloc/login_bloc.dart';
 import '../../feature/home/tabs/map/data/places_api_service.dart';
 import '../../feature/home/tabs/map/data/map_repository.dart';
-import '../../feature/home/tabs/map/services/navigation_service.dart';
+import '../../feature/home/tabs/map/data/datasources/navigation_service.dart';
 import '../../feature/home/tabs/map/bloc/map_bloc.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
-  final apiKey = dotenv.env['GOOGLE_CLOUD_VISION_API_KEY'] ?? '';
+  // Maps APIs require client-side keys.
+  // Reverted to .env temporarily for development speed.
+  final apiKey = dotenv.env['MAPS_API_KEY'] ?? '';
 
   // --- External ---
   sl.registerLazySingleton(() => FirebaseAuth.instance);

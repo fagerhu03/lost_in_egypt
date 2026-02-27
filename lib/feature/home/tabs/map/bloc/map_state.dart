@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../home/data/models/map_item_models.dart';
-import '../models/route_info.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 
 /// Sentinel value to distinguish "not passed" from "explicitly null"
 const Object _undefined = Object();

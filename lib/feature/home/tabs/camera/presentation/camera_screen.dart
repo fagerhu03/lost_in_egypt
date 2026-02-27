@@ -4,12 +4,12 @@ import 'package:camera/camera.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
-import '../../../../core/services/ai_storyteller_service.dart';
-import '../home/data/models/map_item_models.dart';
-import 'widgets/ar_bubble_overlay.dart';
-import '../map/services/map_focus_service.dart';
-import 'presentation/bloc/camera_cubit.dart';
-import 'presentation/bloc/camera_state.dart';
+import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/camera/widgets/ar_bubble_overlay.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_cubit.dart';
+import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_state.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});

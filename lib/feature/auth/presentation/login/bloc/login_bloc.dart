@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../core/utils/error_handler.dart';
-import '../../domain/repositories/auth_repository.dart';
+import 'package:lost_in_egypt/core/utils/error_handler.dart';
+import 'package:lost_in_egypt/feature/auth/domain/repositories/auth_repository.dart';
 import 'login_event.dart';
 import 'login_state.dart';
 

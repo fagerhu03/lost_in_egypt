@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../map/map_config.dart';
+import '../../../map/presentation/map_config.dart';
 import '../../../map/domain/place_importance.dart';
 import '../../../map/data/places_api_service.dart';
 

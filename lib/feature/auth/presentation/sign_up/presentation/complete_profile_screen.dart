@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
-import '../../data/repository_impl/auth_repository_impl.dart';
+import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:lost_in_egypt/feature/auth/data/repository_impl/auth_repository_impl.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});

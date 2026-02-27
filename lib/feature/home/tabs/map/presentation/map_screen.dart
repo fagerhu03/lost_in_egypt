@@ -4,27 +4,28 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import '../../../../core/di/service_locator.dart';
-import '../home/data/models/map_item_models.dart';
-import './services/marker_filter_service.dart';
-import './services/map_focus_service.dart';
-import './services/map_marker_service.dart';
-import './models/route_info.dart';
+
+import 'package:lost_in_egypt/core/di/service_locator.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/marker_filter_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_marker_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 import './place_detail_screen.dart';
 import './map_config.dart';
-import './widgets/map_filter_sheet.dart';
-import './widgets/navigation_info_bar.dart';
-import './widgets/route_steps_sheet.dart';
-import './widgets/map_search_bar.dart';
-import './widgets/map_search_results.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_filter_sheet.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/widgets/navigation_info_bar.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/widgets/route_steps_sheet.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_bar.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_results.dart';
 
-import 'bloc/map_bloc.dart';
-import 'bloc/map_event.dart';
-import 'bloc/map_state.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_bloc.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_event.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_state.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -47,7 +48,7 @@ class MapScreenView extends StatefulWidget {
 
 class _MapScreenViewState extends State<MapScreenView> {
   static String get _directionsApiKey =>
-      dotenv.env['GOOGLE_CLOUD_VISION_API_KEY'] ?? '';
+      dotenv.env['MAPS_API_KEY'] ?? '';
 
   final MapMarkerService _markerService = MapMarkerService();
   GoogleMapController? _mapController;

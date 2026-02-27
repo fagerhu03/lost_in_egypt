@@ -10,7 +10,7 @@ import '../data/repositories/firebase_community_repository.dart';
 import '../domain/entities/community_post.dart';
 import './community_post_card.dart';
 import 'post_detail_screen.dart';
-import '../../../../auth/phone_verif/phone_verification_screen.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});

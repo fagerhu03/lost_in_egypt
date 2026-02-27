@@ -328,11 +328,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<bool> checkEmailExists(String email) async {
     try {
-      final QuerySnapshot result = await firestore
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .get();
-      return result.docs.isNotEmpty;
+      // Firebase removed fetchSignInMethodsForEmail() for security/enumeration prevention.
+      // The modern, secure workaround is attempting a dummy login with a bad password.
+      await firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: "TempInvalidPassword123!\$",
+      );
+      // If it surprisingly succeeds (impossible due to password), the email exists.
+      return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        // Try the DB check, but gracefully fail if Firestore rules block unauthenticated reads
+        try {
+          final QuerySnapshot result = await firestore
+              .collection('users')
+              .where('email', isEqualTo: email)
+              .get();
+          return result.docs.isNotEmpty;
+        } on FirebaseException catch (_) {
+          // Permission Denied because user isn't logged in. 
+          // If Auth says not found, and DB blocks us, we assume it's an unregistered email.
+          return false;
+        } catch (_) {
+          return false;
+        }
+      } else if (e.code == 'wrong-password') {
+        // The email definitely exists!
+        return true;
+      }
+      return false; // Other errors
     } catch (e) {
       return false;
     }

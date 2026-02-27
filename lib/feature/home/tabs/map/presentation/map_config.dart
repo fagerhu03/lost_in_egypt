@@ -1,5 +1,5 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'data/places_api_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
 
 class UiCategory {
   final String id;

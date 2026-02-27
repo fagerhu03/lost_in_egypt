@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../navigator/widget/account_menu_button.dart';
-import 'settings_screen.dart';
-import 'currency_converter_screen.dart';
-import 'translator_screen.dart';
-import 'data/settings_repository.dart';
+import 'package:lost_in_egypt/feature/home/tabs/navigator/widget/account_menu_button.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/presentation/settings_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/presentation/currency_converter_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/presentation/translator_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
 
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});

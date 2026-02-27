@@ -56,7 +56,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDpLn2UsR773pvIN6uVUSWEL_MXwPNqzSw',
+    apiKey: 'AIzaSyBLujcHneXWZcIixoZErhWHbQ7S0_OkKf0',
     appId: '1:435450589544:android:3ec27d857a05cca1f0e6dd',
     messagingSenderId: '435450589544',
     projectId: 'lost-in-egypt-elasly',
@@ -69,6 +69,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '435450589544',
     projectId: 'lost-in-egypt-elasly',
     storageBucket: 'lost-in-egypt-elasly.firebasestorage.app',
+    androidClientId: '435450589544-bsnrckjus7h0evbt5eetckipretuquri.apps.googleusercontent.com',
+    iosClientId: '435450589544-0ri6hl54s9tusfehkkc4kl7ffs3ji0db.apps.googleusercontent.com',
     iosBundleId: 'com.example.lostInEgypt',
   );
+
 }

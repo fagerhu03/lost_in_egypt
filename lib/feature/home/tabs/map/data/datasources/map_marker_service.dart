@@ -2,8 +2,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
-import '../map_config.dart';
-import '../../home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class MapMarkerService {
   final Map<String, BitmapDescriptor> _markerIcons = {};
