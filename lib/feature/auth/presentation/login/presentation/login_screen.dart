@@ -37,12 +37,16 @@ class LoginScreenView extends StatefulWidget {
 class _LoginScreenViewState extends State<LoginScreenView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
   bool obscure = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -51,6 +55,26 @@ class _LoginScreenViewState extends State<LoginScreenView> {
       FadePageRoute(page: const HomeWrapper()),
       (route) => false,
     );
+  }
+
+  void _doLogin(BuildContext context) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(AppStrings.requiredField),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    context.read<LoginBloc>().add(
+          LoginSubmitted(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          ),
+        );
   }
 
   void _navigateToCompleteProfile() {
@@ -133,6 +157,9 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                          controller: _emailController,
                          hintText: "Enter your email",
                          keyboardType: TextInputType.emailAddress,
+                         textInputAction: TextInputAction.next,
+                         focusNode: _emailFocus,
+                         onSubmitted: (_) => _passwordFocus.requestFocus(),
                        ),
 
                        const SizedBox(height: 15),
@@ -142,6 +169,9 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                          controller: _passwordController,
                          hintText: "Enter your password",
                          obscureText: obscure,
+                         textInputAction: TextInputAction.done,
+                         focusNode: _passwordFocus,
+                         onSubmitted: (_) => _doLogin(context),
                          onVisibilityToggle: () {
                            setState(() {
                              obscure = !obscure;
@@ -152,48 +182,31 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                        const SizedBox(height: 25),
 
                        // --- LOGIN BUTTON ---
-                       GestureDetector(
-                         onTap: isLoading
-                             ? null
-                             : () {
-                                 if (_emailController.text.trim().isEmpty || 
-                                     _passwordController.text.isEmpty) {
-                                   ScaffoldMessenger.of(context).showSnackBar(
-                                     const SnackBar(
-                                       content: Text(AppStrings.requiredField),
-                                       backgroundColor: Colors.red,
-                                     ),
-                                   );
-                                   return;
-                                 }
-                                 context.read<LoginBloc>().add(
-                                       LoginSubmitted(
-                                         email: _emailController.text.trim(),
-                                         password: _passwordController.text,
-                                       ),
-                                     );
-                               },
-                         child: Container(
-                           width: double.infinity,
-                           height: 50,
-                           decoration: BoxDecoration(
-                             color: const Color(0xFFD6A00F),
-                             borderRadius: BorderRadius.circular(10),
-                           ),
-                           child: Center(
-                             child: isLoading
-                                 ? const CircularProgressIndicator(
-                                     color: Colors.black87,
-                                   )
-                                 : const Text(
-                                     "Log In",
-                                     style: TextStyle(
-                                       color: Colors.black87,
-                                       fontSize: 18,
-                                       fontWeight: FontWeight.w700,
-                                       fontFamily: "Marcellus",
-                                     ),
-                                   ),
+                       Material(
+                         color: const Color(0xFFD6A00F),
+                         borderRadius: BorderRadius.circular(10),
+                         clipBehavior: Clip.hardEdge,
+                         child: InkWell(
+                           onTap: isLoading ? null : () => _doLogin(context),
+                           borderRadius: BorderRadius.circular(10),
+                           child: SizedBox(
+                             width: double.infinity,
+                             height: 50,
+                             child: Center(
+                              child: isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.black87,
+                                    )
+                                  : const Text(
+                                      "Log In",
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: "Marcellus",
+                                      ),
+                                    ),
+                            ),
                            ),
                          ),
                        ),

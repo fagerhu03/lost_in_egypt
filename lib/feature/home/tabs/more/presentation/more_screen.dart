@@ -198,40 +198,44 @@ class _MoreTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return InkWell(
+    return Material(
+      color: surfaceColor,
       borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: Container(
-        height: 60,
-        decoration: BoxDecoration(
-          color: surfaceColor,
-          borderRadius: BorderRadius.circular(16),
-          // ✅ LIGHT SHADOW IN DARK MODE
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.white.withOpacity(0.06)
-                  : Colors.black.withOpacity(0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        child: Row(
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: textColor.withOpacity(0.85),
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                fontFamily: "Marcellus",
+      clipBehavior: Clip.hardEdge,
+      elevation: 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          height: 60,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.white.withOpacity(0.06)
+                    : Colors.black.withOpacity(0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
-            ),
-            const Spacer(),
-            Icon(trailing, color: trailingColor),
-          ],
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.85),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Marcellus",
+                ),
+              ),
+              const Spacer(),
+              Icon(trailing, color: trailingColor),
+            ],
+          ),
         ),
       ),
     );

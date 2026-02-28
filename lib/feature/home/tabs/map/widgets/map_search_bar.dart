@@ -56,6 +56,7 @@ class MapSearchBar extends StatelessWidget {
                 color: onSurface,
                 fontSize: 15,
               ),
+              textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: 'Search places...',
                 hintStyle: TextStyle(
@@ -68,14 +69,18 @@ class MapSearchBar extends StatelessWidget {
             ),
           ),
           if (searchController.text.isNotEmpty)
-            GestureDetector(
-              onTap: onClearSearch,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Icon(
-                  Icons.close_rounded,
-                  color: onSurface.withOpacity(0.5),
-                  size: 20,
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onClearSearch,
+                customBorder: const CircleBorder(),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: onSurface.withOpacity(0.5),
+                    size: 20,
+                  ),
                 ),
               ),
             )

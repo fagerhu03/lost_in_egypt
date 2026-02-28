@@ -52,9 +52,9 @@ class LandmarkRemoteDataSource {
       if (e.code == 'unauthenticated') {
          throw LandmarkDetectionException('You must be logged in to identify landmarks.', isApiKeyError: false);
       }
-      throw LandmarkDetectionException('Cloud Function Error: \${e.code} - \${e.message}');
+      throw LandmarkDetectionException('Cloud Function Error: ${e.code} - ${e.message}');
     } catch (e) {
-      throw LandmarkDetectionException('Failed to identify landmark: \$e');
+      throw LandmarkDetectionException('Failed to identify landmark: $e');
     }
   }
 }

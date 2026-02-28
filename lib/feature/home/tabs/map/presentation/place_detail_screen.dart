@@ -393,35 +393,39 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           ]
         : <BoxShadow>[];
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: bg,
-              shape: BoxShape.circle,
-              border: isPrimary ? null : border,
-              boxShadow: buttonShadow,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Column(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: bg,
+                shape: BoxShape.circle,
+                border: isPrimary ? null : border,
+                boxShadow: buttonShadow,
+              ),
+              child: Icon(
+                icon,
+                color: isPrimary ? Colors.white : primary,
+                size: 24,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: isPrimary ? Colors.white : primary,
-              size: 24,
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isPrimary ? primary : onSurface.withOpacity(0.70),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: isPrimary ? primary : onSurface.withOpacity(0.70),
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

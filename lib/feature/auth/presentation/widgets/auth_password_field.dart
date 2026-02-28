@@ -5,6 +5,9 @@ class AuthPasswordField extends StatelessWidget {
   final String hintText;
   final bool obscureText;
   final VoidCallback onVisibilityToggle;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final FocusNode? focusNode;
 
   const AuthPasswordField({
     super.key,
@@ -12,6 +15,9 @@ class AuthPasswordField extends StatelessWidget {
     required this.hintText,
     required this.obscureText,
     required this.onVisibilityToggle,
+    this.textInputAction,
+    this.onSubmitted,
+    this.focusNode,
   });
 
   @override
@@ -28,6 +34,9 @@ class AuthPasswordField extends StatelessWidget {
       child: TextField(
         controller: controller,
         obscureText: obscureText,
+        textInputAction: textInputAction,
+        onSubmitted: onSubmitted,
+        focusNode: focusNode,
         style: const TextStyle(
           color: Colors.white,
           fontFamily: "Marcellus",

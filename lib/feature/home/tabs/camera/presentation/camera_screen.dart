@@ -415,43 +415,51 @@ class _CameraScreenState extends State<CameraScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              GestureDetector(
-                                onTap: () => _cameraCubit.pickFromGallery(),
-                                child: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.92),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.photo_library_outlined,
-                                    color: Color(0xFF4A3D2E),
+                              Material(
+                                color: Colors.white.withOpacity(0.92),
+                                shape: const CircleBorder(),
+                                clipBehavior: Clip.hardEdge,
+                                child: InkWell(
+                                  onTap: () => _cameraCubit.pickFromGallery(),
+                                  customBorder: const CircleBorder(),
+                                  child: const SizedBox(
+                                    width: 50,
+                                    height: 50,
+                                    child: Icon(
+                                      Icons.photo_library_outlined,
+                                      color: Color(0xFF4A3D2E),
+                                    ),
                                   ),
                                 ),
                               ),
                               // Hide capture button when showing gallery image
                               if (!showGalleryImage)
-                                GestureDetector(
-                                  onTap: () => _cameraCubit.captureAndAnalyze(),
-                                  child: Container(
-                                    width: 84,
-                                    height: 84,
-                                    decoration: BoxDecoration(
-                                      color: Colors.transparent,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 4),
-                                    ),
-                                    padding: const EdgeInsets.all(4),
+                                Material(
+                                  color: Colors.transparent,
+                                  shape: const CircleBorder(),
+                                  clipBehavior: Clip.hardEdge,
+                                  child: InkWell(
+                                    onTap: () => _cameraCubit.captureAndAnalyze(),
+                                    customBorder: const CircleBorder(),
                                     child: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFFFFDF4),
+                                      width: 84,
+                                      height: 84,
+                                      decoration: BoxDecoration(
+                                        color: Colors.transparent,
                                         shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 4),
                                       ),
-                                      child: const Icon(
-                                        Icons.search,
-                                        size: 36,
-                                        color: Color(0xFF4A3D2E),
+                                      padding: const EdgeInsets.all(4),
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFFFFDF4),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.search,
+                                          size: 36,
+                                          color: Color(0xFF4A3D2E),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -466,30 +474,27 @@ class _CameraScreenState extends State<CameraScreen> {
                         Positioned(
                           left: MediaQuery.of(context).size.width * 0.21,
                           top: -20, // Slightly above the capture/gallery buttons
-                          child: GestureDetector(
-                            onTap: () => _cameraCubit.toggleTranslateMode(),
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: isTranslateMode
-                                    ? const Color(0xFF4A3D2E)
-                                    : Colors.white.withOpacity(0.92),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                Icons.translate,
-                                size: 20,
-                                color: isTranslateMode
-                                    ? Colors.white
-                                    : const Color(0xFF4A3D2E),
+                          child: Material(
+                            color: isTranslateMode
+                                ? const Color(0xFF4A3D2E)
+                                : Colors.white.withOpacity(0.92),
+                            shape: const CircleBorder(),
+                            clipBehavior: Clip.hardEdge,
+                            elevation: 2,
+                            shadowColor: Colors.black.withOpacity(0.2),
+                            child: InkWell(
+                              onTap: () => _cameraCubit.toggleTranslateMode(),
+                              customBorder: const CircleBorder(),
+                              child: SizedBox(
+                                width: 44,
+                                height: 44,
+                                child: Icon(
+                                  Icons.translate,
+                                  size: 20,
+                                  color: isTranslateMode
+                                      ? Colors.white
+                                      : const Color(0xFF4A3D2E),
+                                ),
                               ),
                             ),
                           ),

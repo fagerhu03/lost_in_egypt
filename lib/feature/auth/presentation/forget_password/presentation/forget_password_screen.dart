@@ -20,6 +20,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   bool _emailSent = false;
 
   Future<void> _sendPasswordReset() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     final email = _emailController.text.trim();
 
     // 1. Basic Input Validation
@@ -133,54 +134,62 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     controller: _emailController,
                     hintText: "Enter your email",
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      if (!_isLoading) _sendPasswordReset();
+                    },
                   ),
 
                   const SizedBox(height: 25),
 
-                  GestureDetector(
-                    onTap: _isLoading ? null : _sendPasswordReset,
-                    child: Container(
-                      width: double.infinity,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD6A00F),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: _isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.black87)
-                            : const Text(
-                                "Send Reset Link",
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  fontFamily: "Marcellus",
+                  Material(
+                    color: const Color(0xFFD6A00F),
+                    borderRadius: BorderRadius.circular(10),
+                    clipBehavior: Clip.hardEdge,
+                    child: InkWell(
+                      onTap: _isLoading ? null : _sendPasswordReset,
+                      borderRadius: BorderRadius.circular(10),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: Center(
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.black87)
+                              : const Text(
+                                  "Send Reset Link",
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: "Marcellus",
+                                  ),
                                 ),
-                              ),
+                        ),
                       ),
                     ),
                   ),
                 ] else ...[
                   // BACK TO LOGIN BUTTON
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: double.infinity,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD6A00F),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          "Return to Login",
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: "Marcellus",
+                  Material(
+                    color: const Color(0xFFD6A00F),
+                    borderRadius: BorderRadius.circular(10),
+                    clipBehavior: Clip.hardEdge,
+                    child: InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      borderRadius: BorderRadius.circular(10),
+                      child: const SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: Center(
+                          child: Text(
+                            "Return to Login",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: "Marcellus",
+                            ),
                           ),
                         ),
                       ),

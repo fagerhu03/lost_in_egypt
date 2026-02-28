@@ -25,7 +25,9 @@ class TrianglePanel extends StatelessWidget {
         width: double.infinity,
         color: const Color(0xffFCFBE8).withOpacity(0.7),
         padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Column(
+        child: SafeArea(
+          top: false,
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 50),
@@ -69,17 +71,17 @@ class TrianglePanel extends StatelessWidget {
 
             const SizedBox(height: 28),
 
-            GestureDetector(
-              onTap: onNext,
-              child: Container(
-                width: 110,
-                height: 45,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF7A8450),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(
-                  child: Text(
+            Material(
+              color: const Color(0xFF7A8450),
+              borderRadius: BorderRadius.circular(20),
+              clipBehavior: Clip.hardEdge,
+              child: InkWell(
+                onTap: onNext,
+                child: Container(
+                  width: 110,
+                  height: 45,
+                  alignment: Alignment.center,
+                  child: const Text(
                     "Next",
                     style: TextStyle(
                       color: Colors.white,
@@ -95,6 +97,7 @@ class TrianglePanel extends StatelessWidget {
             const SizedBox(height: 20),
             _dots(index, total),
           ],
+        ),
         ),
       ),
     );

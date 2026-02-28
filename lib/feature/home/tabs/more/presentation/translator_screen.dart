@@ -98,6 +98,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     }
 
     setState(() => _isTranslating = true);
+    FocusManager.instance.primaryFocus?.unfocus();
 
     try {
       final result = await _translator.translateText(_sourceText);
@@ -234,9 +235,9 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Icon(
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(
                           Icons.arrow_back_ios_new,
                           size: 20,
                           color: textColor,
@@ -387,19 +388,16 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               filled: true,
                               fillColor: surface,
                               contentPadding: const EdgeInsets.all(16),
-                              suffixIcon: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: GestureDetector(
-                                  onTap: _isListening
-                                      ? _stopListening
-                                      : _startListening,
-                                  child: Icon(
-                                    Icons.mic,
-                                    color: _isListening
-                                        ? Colors.red
-                                        : textColor.withOpacity(0.6),
-                                    size: 20,
-                                  ),
+                              suffixIcon: IconButton(
+                                onPressed: _isListening
+                                    ? _stopListening
+                                    : _startListening,
+                                icon: Icon(
+                                  Icons.mic,
+                                  color: _isListening
+                                      ? Colors.red
+                                      : textColor.withOpacity(0.6),
+                                  size: 20,
                                 ),
                               ),
                             ),
@@ -408,32 +406,31 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               fontSize: 14,
                               fontFamily: "Marcellus",
                             ),
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => _translate(),
                           ),
                         ),
 
                         // Swap button
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: GestureDetector(
-                            onTap: _swapLanguages,
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: primary,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.swap_vert,
-                                color: Colors.white,
-                                size: 22,
+                          child: Material(
+                            color: primary,
+                            shape: const CircleBorder(),
+                            clipBehavior: Clip.hardEdge,
+                            elevation: 4,
+                            shadowColor: Colors.black.withOpacity(0.1),
+                            child: InkWell(
+                              onTap: _swapLanguages,
+                              customBorder: const CircleBorder(),
+                              child: const SizedBox(
+                                width: 44,
+                                height: 44,
+                                child: Icon(
+                                  Icons.swap_vert,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
                               ),
                             ),
                           ),
@@ -479,16 +476,13 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               filled: true,
                               fillColor: surface,
                               contentPadding: const EdgeInsets.all(16),
-                              suffixIcon: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: GestureDetector(
-                                  onTap: () =>
-                                      _speak(_translatedText, _targetLanguage),
-                                  child: Icon(
-                                    Icons.volume_up,
-                                    color: textColor.withOpacity(0.9),
-                                    size: 20,
-                                  ),
+                              suffixIcon: IconButton(
+                                onPressed: () =>
+                                    _speak(_translatedText, _targetLanguage),
+                                icon: Icon(
+                                  Icons.volume_up,
+                                  color: textColor.withOpacity(0.9),
+                                  size: 20,
                                 ),
                               ),
                             ),

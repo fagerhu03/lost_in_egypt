@@ -534,47 +534,52 @@ class _MapScreenViewState extends State<MapScreenView> {
                 Positioned(
                   top: 110,
                   right: 20,
-                  child: GestureDetector(
-                    onTap: () async {
-                      final chosen = await showModalBottomSheet<String>(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: surface,
-                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                        builder: (_) => MapFilterSheet(
-                          selectedCategory: state.selectedUiCategoryId,
-                          allItems: state.allItemsCache,
-                          onCategorySelected: (category) => Navigator.pop(context, category),
-                        ),
-                      );
-                      if (chosen != null) {
-                        context.read<MapBloc>().add(MapCategoryChanged(chosen));
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: state.selectedUiCategoryId == 'all' ? chipBg() : primary.withOpacity(isDark ? 0.90 : 0.95),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
-                        border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.tune,
-                            color: state.selectedUiCategoryId == 'all' ? onSurface.withOpacity(0.9) : Colors.white,
-                            size: 20,
+                  child: Material(
+                    color: state.selectedUiCategoryId == 'all' ? chipBg() : primary.withOpacity(isDark ? 0.90 : 0.95),
+                    borderRadius: BorderRadius.circular(30),
+                    clipBehavior: Clip.hardEdge,
+                    child: InkWell(
+                      onTap: () async {
+                        final chosen = await showModalBottomSheet<String>(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: surface,
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                          builder: (_) => MapFilterSheet(
+                            selectedCategory: state.selectedUiCategoryId,
+                            allItems: state.allItemsCache,
+                            onCategorySelected: (category) => Navigator.pop(context, category),
                           ),
-                          if (state.selectedUiCategoryId != 'all') ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              MapConfig.categories.firstWhere((c) => c.id == state.selectedUiCategoryId, orElse: () => const UiCategory('', '', '')).icon,
-                              style: const TextStyle(fontSize: 16),
+                        );
+                        if (chosen != null) {
+                          context.read<MapBloc>().add(MapCategoryChanged(chosen));
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
+                          border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.tune,
+                              color: state.selectedUiCategoryId == 'all' ? onSurface.withOpacity(0.9) : Colors.white,
+                              size: 20,
                             ),
+                            if (state.selectedUiCategoryId != 'all') ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                MapConfig.categories.firstWhere((c) => c.id == state.selectedUiCategoryId, orElse: () => const UiCategory('', '', '')).icon,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -664,12 +669,18 @@ class _MapScreenViewState extends State<MapScreenView> {
                                   const SizedBox(width: 14),
                                   Text('Finding route...', style: TextStyle(color: onSurface.withOpacity(0.7), fontSize: 15, fontWeight: FontWeight.w500)),
                                   const Spacer(),
-                                  GestureDetector(
-                                    onTap: () => context.read<MapBloc>().add(MapNavigationCleared()),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(color: onSurface.withOpacity(0.08), shape: BoxShape.circle),
-                                      child: Icon(Icons.close_rounded, color: onSurface.withOpacity(0.6), size: 20),
+                                  Material(
+                                    color: onSurface.withOpacity(0.08),
+                                    shape: const CircleBorder(),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: InkWell(
+                                      onTap: () => context.read<MapBloc>().add(MapNavigationCleared()),
+                                      customBorder: const CircleBorder(),
+                                      child: SizedBox(
+                                        width: 36,
+                                        height: 36,
+                                        child: Icon(Icons.close_rounded, color: onSurface.withOpacity(0.6), size: 20),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -772,18 +783,21 @@ class _MapScreenViewState extends State<MapScreenView> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: () {
-                                    _stopLiveNavigation();
-                                    context.read<MapBloc>().add(MapNavigationCleared());
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withOpacity(0.1),
-                                      shape: BoxShape.circle,
+                                Material(
+                                  color: Colors.red.withOpacity(0.1),
+                                  shape: const CircleBorder(),
+                                  clipBehavior: Clip.hardEdge,
+                                  child: InkWell(
+                                    onTap: () {
+                                      _stopLiveNavigation();
+                                      context.read<MapBloc>().add(MapNavigationCleared());
+                                    },
+                                    customBorder: const CircleBorder(),
+                                    child: const SizedBox(
+                                      width: 30,
+                                      height: 30,
+                                      child: Icon(Icons.stop_rounded, color: Colors.red, size: 18),
                                     ),
-                                    child: const Icon(Icons.stop_rounded, color: Colors.red, size: 18),
                                   ),
                                 ),
                               ],

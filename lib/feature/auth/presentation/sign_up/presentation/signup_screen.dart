@@ -273,6 +273,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   AuthTextField(
                     hintText: "First Name", 
                     controller: _firstNameController,
+                    textInputAction: TextInputAction.next,
                   ),
 
                   const SizedBox(height: 10),
@@ -281,6 +282,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   AuthTextField(
                     hintText: "Last Name", 
                     controller: _lastNameController,
+                    textInputAction: TextInputAction.next,
                   ),
 
                   const SizedBox(height: 10),
@@ -316,6 +318,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "Email", 
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                   ),
 
                   const SizedBox(height: 15),
@@ -325,6 +328,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "Enter your password",
                     obscureText: obscure1,
                     controller: _passwordController,
+                    textInputAction: TextInputAction.next,
                     onVisibilityToggle: () => setState(() => obscure1 = !obscure1),
                   ),
 
@@ -335,6 +339,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "Confirm your password",
                     obscureText: obscure2,
                     controller: _confirmPassController,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                     onVisibilityToggle: () => setState(() => obscure2 = !obscure2),
                   ),
 

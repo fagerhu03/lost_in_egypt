@@ -105,18 +105,21 @@ class NavigationInfoBar extends StatelessWidget {
                 ),
                 const Spacer(),
                 // Close button
-                GestureDetector(
-                  onTap: onClose,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: onSurface.withOpacity(0.08),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      color: onSurface.withOpacity(0.6),
-                      size: 20,
+                Material(
+                  color: onSurface.withOpacity(0.08),
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.hardEdge,
+                  child: InkWell(
+                    onTap: onClose,
+                    customBorder: const CircleBorder(),
+                    child: SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: onSurface.withOpacity(0.6),
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -183,38 +186,43 @@ class NavigationInfoBar extends StatelessWidget {
                   const Spacer(),
                   // Steps button
                   if (routeInfo.steps.isNotEmpty)
-                    GestureDetector(
-                      onTap: onShowSteps,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: onSurface.withOpacity(0.06),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: onSurface.withOpacity(0.1),
+                    Material(
+                      color: onSurface.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(10),
+                      clipBehavior: Clip.hardEdge,
+                      child: InkWell(
+                        onTap: onShowSteps,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.list_alt_rounded,
-                              color: onSurface.withOpacity(0.7),
-                              size: 18,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: onSurface.withOpacity(0.1),
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${routeInfo.steps.length} steps',
-                              style: TextStyle(
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.list_alt_rounded,
                                 color: onSurface.withOpacity(0.7),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                                size: 18,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              Text(
+                                '${routeInfo.steps.length} steps',
+                                style: TextStyle(
+                                  color: onSurface.withOpacity(0.7),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -266,40 +274,45 @@ class NavigationInfoBar extends StatelessWidget {
     required Color onSurface,
     required bool isDark,
   }) {
-    return GestureDetector(
-      onTap: () => onModeChanged(mode),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? primary.withOpacity(isDark ? 0.25 : 0.12)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected
-                ? primary.withOpacity(0.5)
-                : onSurface.withOpacity(0.12),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? primary : onSurface.withOpacity(0.5),
+    return Material(
+      color: isSelected
+          ? primary.withOpacity(isDark ? 0.25 : 0.12)
+          : Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () => onModeChanged(mode),
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected
+                  ? primary.withOpacity(0.5)
+                  : onSurface.withOpacity(0.12),
             ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
                 color: isSelected ? primary : onSurface.withOpacity(0.5),
               ),
-            ),
-          ],
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? primary : onSurface.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

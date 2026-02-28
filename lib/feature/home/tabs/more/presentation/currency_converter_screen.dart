@@ -51,6 +51,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
     }
 
     setState(() => _isConverting = true);
+    FocusManager.instance.primaryFocus?.unfocus();
 
     try {
       final rates = await _repository.getRates(_fromCurrency);
@@ -183,26 +184,23 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
 
                   // Swap Button
                   Center(
-                    child: GestureDetector(
-                      onTap: _swapCurrencies,
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: primary,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.swap_vert,
-                          color: Colors.white,
-                          size: 24,
+                    child: Material(
+                      color: primary,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.hardEdge,
+                      elevation: 4,
+                      shadowColor: Colors.black.withOpacity(0.1),
+                      child: InkWell(
+                        onTap: _swapCurrencies,
+                        customBorder: const CircleBorder(),
+                        child: const SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: Icon(
+                            Icons.swap_vert,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),
@@ -263,14 +261,14 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         vertical: 16,
                       ),
                       suffixIcon: _amountController.text.isNotEmpty
-                          ? GestureDetector(
-                        onTap: () {
+                          ? IconButton(
+                        onPressed: () {
                           _amountController.clear();
                           setState(() {
                             _convertedAmount = null;
                           });
                         },
-                        child: Icon(
+                        icon: Icon(
                           Icons.close,
                           color: textColor.withOpacity(0.5),
                         ),
@@ -282,6 +280,8 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       fontSize: 16,
                       fontFamily: "Marcellus",
                     ),
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _convert(),
                     onChanged: (_) => setState(() {
                       _convertedAmount = null;
                     }),

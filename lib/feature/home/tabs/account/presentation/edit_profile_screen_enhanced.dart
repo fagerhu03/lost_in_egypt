@@ -506,34 +506,39 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           Positioned(
             bottom: 0,
             right: 0,
-            child: GestureDetector(
-              onTap: _isUploadingImage ? null : _pickImage,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(context).colorScheme.surface,
-                  boxShadow: [shadow],
-                  border: Border.all(
-                    color: (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black)
-                        .withOpacity(0.08),
+            child: Material(
+              color: Theme.of(context).colorScheme.surface,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.hardEdge,
+              elevation: 2,
+              child: InkWell(
+                onTap: _isUploadingImage ? null : _pickImage,
+                customBorder: const CircleBorder(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black)
+                          .withOpacity(0.08),
+                    ),
                   ),
-                ),
-                child: _isUploadingImage
-                    ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(primary),
+                  child: _isUploadingImage
+                      ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(primary),
+                    ),
+                  )
+                      : Icon(
+                    Icons.camera_alt_outlined,
+                    size: 20,
+                    color: primary,
                   ),
-                )
-                    : Icon(
-                  Icons.camera_alt_outlined,
-                  size: 20,
-                  color: primary,
                 ),
               ),
             ),
@@ -670,49 +675,55 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       Color borderColor,
       Color primary,
       ) {
-    return GestureDetector(
-      onTap: () {
-        showCountryPicker(
-          context: context,
-          showPhoneCode: false,
-          onSelect: (Country country) {
-            setState(() {
-              _nationalityController.text = "${country.flagEmoji} ${country.name}";
-            });
-          },
-          countryListTheme: CountryListThemeData(
-            backgroundColor: surface,
-            textStyle: TextStyle(
-              fontFamily: "Marcellus",
-              color: onSurface,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(25),
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () {
+          showCountryPicker(
+            context: context,
+            showPhoneCode: false,
+            onSelect: (Country country) {
+              setState(() {
+                _nationalityController.text = "${country.flagEmoji} ${country.name}";
+              });
+            },
+            countryListTheme: CountryListThemeData(
+              backgroundColor: surface,
+              textStyle: TextStyle(
+                fontFamily: "Marcellus",
+                color: onSurface,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              inputDecoration: InputDecoration(
+                hintText: 'Search nationality',
+                prefixIcon: Icon(Icons.search, color: onSurface.withOpacity(0.8)),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: borderColor),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: borderColor),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: primary, width: 1.4),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
             ),
-            borderRadius: BorderRadius.circular(20),
-            inputDecoration: InputDecoration(
-              hintText: 'Search nationality',
-              prefixIcon: Icon(Icons.search, color: onSurface.withOpacity(0.8)),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: borderColor),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: borderColor),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: primary, width: 1.4),
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(25),
+        child: AbsorbPointer(
+          child: _buildField(
+            controller: _nationalityController,
+            surface: surface,
+            onSurface: onSurface,
+            shadow: shadow,
+            borderColor: borderColor,
           ),
-        );
-      },
-      child: AbsorbPointer(
-        child: _buildField(
-          controller: _nationalityController,
-          surface: surface,
-          onSurface: onSurface,
-          shadow: shadow,
-          borderColor: borderColor,
         ),
       ),
     );
@@ -755,30 +766,35 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       runSpacing: 8,
       children: _availableInterests.map((interest) {
         final isSelected = _selectedInterests.contains(interest);
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              if (isSelected) {
-                _selectedInterests.remove(interest);
-              } else {
-                _selectedInterests.add(interest);
-              }
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? primary : surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isSelected ? primary.withOpacity(0.8) : borderColor,
+        return Material(
+          color: isSelected ? primary : surface,
+          borderRadius: BorderRadius.circular(20),
+          clipBehavior: Clip.hardEdge,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                if (isSelected) {
+                  _selectedInterests.remove(interest);
+                } else {
+                  _selectedInterests.add(interest);
+                }
+              });
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? primary.withOpacity(0.8) : borderColor,
+                ),
               ),
-            ),
-            child: Text(
-              interest,
-              style: TextStyle(
-                color: isSelected ? Colors.white : onSurface.withOpacity(0.9),
-                fontSize: 15,
+              child: Text(
+                interest,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : onSurface.withOpacity(0.9),
+                  fontSize: 15,
+                ),
               ),
             ),
           ),

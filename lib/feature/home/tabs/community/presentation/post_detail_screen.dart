@@ -286,36 +286,39 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               Row(
                                 children: [
                                   // LIKE
-                                  GestureDetector(
-                                    onTap: () => _repository.toggleCommentLike(
-                                        widget.post.id, commentId, true),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 4, horizontal: 4),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            isLiked
-                                                ? Icons.thumb_up
-                                                : Icons.thumb_up_outlined,
-                                            size: 16,
-                                            color: isLiked
-                                                ? primary
-                                                : onSurface.withOpacity(0.45),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            "${likes.length}",
-                                            style: TextStyle(
-                                              fontSize: 12,
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => _repository.toggleCommentLike(
+                                          widget.post.id, commentId, true),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 4, horizontal: 4),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              isLiked
+                                                  ? Icons.thumb_up
+                                                  : Icons.thumb_up_outlined,
+                                              size: 16,
                                               color: isLiked
                                                   ? primary
                                                   : onSurface.withOpacity(0.45),
-                                              fontWeight: FontWeight.bold,
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              "${likes.length}",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: isLiked
+                                                    ? primary
+                                                    : onSurface.withOpacity(0.45),
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -323,37 +326,40 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   const SizedBox(width: 16),
 
                                   // DISLIKE
-                                  GestureDetector(
-                                    onTap: () => _repository.toggleCommentLike(
-                                        widget.post.id, commentId, false),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 4, horizontal: 4),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            isDisliked
-                                                ? Icons.thumb_down
-                                                : Icons.thumb_down_outlined,
-                                            size: 16,
-                                            color: isDisliked
-                                                ? Colors.red.shade400
-                                                : onSurface.withOpacity(0.45),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          if (dislikes.isNotEmpty)
-                                            Text(
-                                              "${dislikes.length}",
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: isDisliked
-                                                    ? Colors.red.shade400
-                                                    : onSurface.withOpacity(0.45),
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => _repository.toggleCommentLike(
+                                          widget.post.id, commentId, false),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 4, horizontal: 4),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              isDisliked
+                                                  ? Icons.thumb_down
+                                                  : Icons.thumb_down_outlined,
+                                              size: 16,
+                                              color: isDisliked
+                                                  ? Colors.red.shade400
+                                                  : onSurface.withOpacity(0.45),
                                             ),
-                                        ],
+                                            const SizedBox(width: 4),
+                                            if (dislikes.isNotEmpty)
+                                              Text(
+                                                "${dislikes.length}",
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: isDisliked
+                                                      ? Colors.red.shade400
+                                                      : onSurface.withOpacity(0.45),
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -361,18 +367,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   const SizedBox(width: 16),
 
                                   // REPLY
-                                  GestureDetector(
-                                    onTap: () => _handleReply(
-                                        (data['userName'] ?? "User") as String),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Text(
-                                        "Reply",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: primary,
-                                          fontWeight: FontWeight.bold,
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => _handleReply(
+                                          (data['userName'] ?? "User") as String),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: Text(
+                                          "Reply",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -413,6 +422,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     controller: _commentController,
                     focusNode: _focusNode,
                     style: TextStyle(color: onSurface),
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _submitComment(),
                     decoration: InputDecoration(
                       hintText: "Write a comment...",
                       hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),

@@ -305,32 +305,39 @@ class _AccountTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: onTap,
+      decoration: BoxDecoration(
+        color: surface,
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: borderColor),
-            boxShadow: [shadow],
-          ),
-          child: Row(
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: onSurface.withOpacity(0.9),
-                  fontSize: 16,
-                  fontFamily: "Marcellus",
-                  fontWeight: FontWeight.w500,
-                ),
+        border: Border.all(color: borderColor),
+        boxShadow: [shadow],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.hardEdge,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: SizedBox(
+              height: 56,
+              child: Row(
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: onSurface.withOpacity(0.9),
+                      fontSize: 16,
+                      fontFamily: "Marcellus",
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(Icons.chevron_right, color: onSurface.withOpacity(0.8)),
+                ],
               ),
-              const Spacer(),
-              Icon(Icons.chevron_right, color: onSurface.withOpacity(0.8)),
-            ],
+            ),
           ),
         ),
       ),

@@ -17,10 +17,6 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   final FirebaseCommunityRepository _repo = FirebaseCommunityRepository();
 
-  static const Color _bg = Color(0xFFF6F2E6);
-  static const Color _text = Color(0xFF7C6A4D);
-  static const Color _chip = Color(0xFF4D5420);
-
   @override
   void initState() {
     super.initState();
@@ -29,23 +25,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
     });
   }
 
-  Future<void> _deleteNotification(String notificationId) async {
-    await FirebaseFirestore.instance
-        .collection('notifications')
-        .doc(notificationId)
-        .delete();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bg = theme.scaffoldBackgroundColor;
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+    final patternOpacity = isDark ? 0.1 : 0.35;
+
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: bg,
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Opacity(
-              opacity: 0.35,
+              opacity: patternOpacity,
               child: Image.asset(
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
@@ -64,13 +60,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_new, color: _text, size: 18),
+                        icon: Icon(Icons.arrow_back_ios_new,
+                            color: onSurface, size: 18),
                       ),
                       const Spacer(),
-                      const Text(
+                      Text(
                         "Notifications",
                         style: TextStyle(
-                          color: _text,
+                          color: onSurface,
                           fontFamily: "Marcellus",
                           fontWeight: FontWeight.w600,
                           fontSize: 18,
@@ -84,23 +81,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
                   Align(
                     alignment: Alignment.center,
-                    child: InkWell(
+                    child: Material(
+                      color: primary.withOpacity(0.18),
                       borderRadius: BorderRadius.circular(14),
-                      onTap: () => NotificationSettingsSheet.open(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: _chip.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: _chip.withOpacity(0.25)),
-                        ),
-                        child: const Text(
-                          "Customize your notifications!",
-                          style: TextStyle(
-                            color: _chip,
-                            fontFamily: "Marcellus",
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
+                      clipBehavior: Clip.hardEdge,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () => NotificationSettingsSheet.open(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            border:
+                                Border.all(color: primary.withOpacity(0.25)),
+                          ),
+                          child: Text(
+                            "Customize your notifications!",
+                            style: TextStyle(
+                              color: primary,
+                              fontFamily: "Marcellus",
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
@@ -113,15 +116,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     child: StreamBuilder<QuerySnapshot>(
                       stream: _repo.getNotificationsStream(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                              child:
+                                  CircularProgressIndicator(color: primary));
                         }
 
                         final docs = snapshot.data?.docs ?? [];
 
                         if (docs.isEmpty) {
                           return EmptyNotificationsView(
-                            onTapSettings: () => NotificationSettingsSheet.open(context),
+                            onTapSettings: () =>
+                                NotificationSettingsSheet.open(context),
                           );
                         }
 
@@ -129,12 +136,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           padding: EdgeInsets.zero,
                           children: [
                             const SizedBox(height: 4),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 6, bottom: 8),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 6, bottom: 8),
                               child: Text(
                                 "Previously",
                                 style: TextStyle(
-                                  color: _text,
+                                  color: onSurface,
                                   fontFamily: "Marcellus",
                                   fontWeight: FontWeight.w600,
                                   fontSize: 12,
@@ -143,19 +151,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             ),
 
                             ...docs.map((doc) {
-                              final data = doc.data() as Map<String, dynamic>;
+                              final data =
+                                  doc.data() as Map<String, dynamic>;
                               final String notifId = doc.id;
 
                               final bool isRead = data['isRead'] ?? false;
                               final Timestamp? ts = data['timestamp'];
-                              final date = ts?.toDate() ?? DateTime.now();
+                              final date =
+                                  ts?.toDate() ?? DateTime.now();
 
                               final String senderName =
-                              (data['senderName'] ?? "Someone").toString();
-                              final String message =
-                              (data['message'] ?? "interacted with your post").toString();
+                                  (data['senderName'] ?? "Someone")
+                                      .toString();
+                              final String message = (data['message'] ??
+                                      "interacted with your post")
+                                  .toString();
                               final String avatar =
-                              (data['senderAvatar'] ?? "").toString();
+                                  (data['senderAvatar'] ?? "").toString();
 
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
@@ -164,18 +176,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   direction: DismissDirection.endToStart,
                                   background: Container(
                                     alignment: Alignment.centerRight,
-                                    padding: const EdgeInsets.only(right: 18),
+                                    padding:
+                                        const EdgeInsets.only(right: 18),
                                     decoration: BoxDecoration(
-                                      color: Colors.red.withOpacity(0.85),
-                                      borderRadius: BorderRadius.circular(16),
+                                      color:
+                                          Colors.red.withOpacity(0.85),
+                                      borderRadius:
+                                          BorderRadius.circular(16),
                                     ),
-                                    child: const Icon(Icons.delete, color: Colors.white),
+                                    child: const Icon(Icons.delete,
+                                        color: Colors.white),
                                   ),
                                   onDismissed: (_) async {
-                                    await _deleteNotification(notifId);
+                                    await _repo
+                                        .deleteNotification(notifId);
                                     if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text("Notification deleted")),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                "Notification deleted")),
                                       );
                                     }
                                   },
@@ -184,19 +204,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     senderName: senderName,
                                     message: message,
                                     timeText: timeago.format(date),
-                                    avatarUrl: avatar.isEmpty ? null : avatar,
+                                    avatarUrl: avatar.isEmpty
+                                        ? null
+                                        : avatar,
                                     onTap: () {},
                                   ),
                                 ),
                               );
-                            }).toList(),
+                            }),
 
                             const SizedBox(height: 8),
                             Center(
                               child: Text(
                                 "Marking notifications?",
                                 style: TextStyle(
-                                  color: _text.withOpacity(0.75),
+                                  color: onSurface.withOpacity(0.75),
                                   fontFamily: "Marcellus",
                                   fontSize: 12,
                                 ),
@@ -205,11 +227,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             const SizedBox(height: 6),
                             Center(
                               child: InkWell(
-                                onTap: () => NotificationSettingsSheet.open(context),
+                                onTap: () =>
+                                    NotificationSettingsSheet.open(context),
                                 child: Text(
                                   "See how it works",
                                   style: TextStyle(
-                                    color: _chip.withOpacity(0.95),
+                                    color: primary,
                                     fontFamily: "Marcellus",
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,

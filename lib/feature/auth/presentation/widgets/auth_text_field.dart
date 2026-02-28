@@ -4,12 +4,18 @@ class AuthTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final TextInputType keyboardType;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final FocusNode? focusNode;
 
   const AuthTextField({
     super.key,
     required this.controller,
     required this.hintText,
     this.keyboardType = TextInputType.text,
+    this.textInputAction,
+    this.onSubmitted,
+    this.focusNode,
   });
 
   @override
@@ -26,6 +32,9 @@ class AuthTextField extends StatelessWidget {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        onSubmitted: onSubmitted,
+        focusNode: focusNode,
         style: const TextStyle(
           color: Colors.white,
           fontFamily: "Marcellus",

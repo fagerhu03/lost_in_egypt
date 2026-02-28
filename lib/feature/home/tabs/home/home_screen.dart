@@ -317,24 +317,33 @@ class _HomeScreenState extends State<HomeScreen> {
               .withOpacity(0.06),
         ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            icon,
-            width: 40,
-            color: Theme.of(context).colorScheme.primary,
-            colorBlendMode: BlendMode.srcIn,
-          ),          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              color: textColor.withOpacity(0.9),
-              fontWeight: FontWeight.w600,
-              fontFamily: "Marcellus",
-            ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.hardEdge,
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(14),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                icon,
+                width: 40,
+                color: Theme.of(context).colorScheme.primary,
+                colorBlendMode: BlendMode.srcIn,
+              ),          const SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.9),
+                  fontWeight: FontWeight.w600,
+                  fontFamily: "Marcellus",
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -358,81 +367,95 @@ class _HomeScreenState extends State<HomeScreen> {
               .withOpacity(0.06),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
-            child: Stack(
-              children: [
-                SizedBox(
-                  height: 110,
-                  width: double.infinity,
-                  child: imagePath.startsWith('http')
-                      ? CachedNetworkImage(
-                    imageUrl: imagePath,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey.shade300,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.hardEdge,
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      height: 110,
+                      width: double.infinity,
+                      child: imagePath.startsWith('http')
+                          ? CachedNetworkImage(
+                        imageUrl: imagePath,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey.shade300,
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey.shade300,
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                          : Image.asset(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey.shade300,
+                          child: const Icon(Icons.image_not_supported),
+                        ),
                       ),
                     ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey.shade300,
-                      child: const Icon(
-                        Icons.broken_image,
-                        color: Colors.grey,
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Material(
+                        color: Colors.white.withOpacity(0.85),
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.hardEdge,
+                        child: InkWell(
+                          onTap: () {},
+                          customBorder: const CircleBorder(),
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: Icon(
+                              Icons.favorite_border,
+                              size: 18,
+                              color: Colors.red.shade400,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  )
-                      : Image.asset(
-                    imagePath,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey.shade300,
-                      child: const Icon(Icons.image_not_supported),
-                    ),
-                  ),
+                  ],
                 ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.85),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.favorite_border,
-                      size: 18,
-                      color: Colors.red.shade400,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Text(
-              title,
-              style: TextStyle(
-                color: textColor.withOpacity(0.9),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                fontFamily: "Marcellus",
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: textColor.withOpacity(0.9),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: "Marcellus",
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -449,28 +472,37 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [shadow],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            title == "Guide"
-                ? "assets/icons/guide.png"
-                : "assets/icons/solo_trip.png",
-            width: 90,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
-            colorBlendMode: BlendMode.srcIn,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.hardEdge,
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                title == "Guide"
+                    ? "assets/icons/guide.png"
+                    : "assets/icons/solo_trip.png",
+                width: 90,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                colorBlendMode: BlendMode.srcIn,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.9),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: "Marcellus",
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            style: TextStyle(
-              color: textColor.withOpacity(0.9),
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              fontFamily: "Marcellus",
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

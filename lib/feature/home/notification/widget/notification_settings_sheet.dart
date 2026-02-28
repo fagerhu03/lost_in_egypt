@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 class NotificationSettingsSheet {
   static void open(BuildContext context) {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFFFBF7ED),
+      backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
@@ -16,10 +17,12 @@ class NotificationSettingsSheet {
 class _SheetBody extends StatelessWidget {
   const _SheetBody();
 
-  static const Color _text = Color(0xFF7C6A4D);
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
@@ -30,15 +33,15 @@ class _SheetBody extends StatelessWidget {
               width: 46,
               height: 5,
               decoration: BoxDecoration(
-                color: _text.withOpacity(0.25),
+                color: onSurface.withOpacity(0.25),
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
             const SizedBox(height: 14),
-            const Text(
+            Text(
               "Notification Settings",
               style: TextStyle(
-                color: _text,
+                color: onSurface,
                 fontFamily: "Marcellus",
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
@@ -48,7 +51,7 @@ class _SheetBody extends StatelessWidget {
             Text(
               "Customize what you want to receive.",
               style: TextStyle(
-                color: _text.withOpacity(0.7),
+                color: onSurface.withOpacity(0.7),
                 fontFamily: "Marcellus",
                 fontSize: 12,
               ),
@@ -60,13 +63,13 @@ class _SheetBody extends StatelessWidget {
               subtitle: "Get notified when someone comments.",
               initialValue: true,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             const _SettingToggleTile(
               title: "Likes",
               subtitle: "Get notified when someone likes your post.",
               initialValue: true,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             const _SettingToggleTile(
               title: "Mentions",
               subtitle: "Get notified when someone mentions you.",
@@ -80,8 +83,8 @@ class _SheetBody extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC79A00),
-                  foregroundColor: Colors.black,
+                  backgroundColor: primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -121,17 +124,19 @@ class _SettingToggleTile extends StatefulWidget {
 class _SettingToggleTileState extends State<_SettingToggleTile> {
   late bool _value = widget.initialValue;
 
-  static const Color _text = Color(0xFF7C6A4D);
-  static const Color _chip = Color(0xFF4D5420);
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+    final surface = theme.colorScheme.surface;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFDF9EE),
+        color: surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _chip.withOpacity(0.18)),
+        border: Border.all(color: primary.withOpacity(0.18)),
       ),
       child: Row(
         children: [
@@ -141,8 +146,8 @@ class _SettingToggleTileState extends State<_SettingToggleTile> {
               children: [
                 Text(
                   widget.title,
-                  style: const TextStyle(
-                    color: _text,
+                  style: TextStyle(
+                    color: onSurface,
                     fontFamily: "Marcellus",
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
@@ -152,7 +157,7 @@ class _SettingToggleTileState extends State<_SettingToggleTile> {
                 Text(
                   widget.subtitle,
                   style: TextStyle(
-                    color: _text.withOpacity(0.65),
+                    color: onSurface.withOpacity(0.65),
                     fontFamily: "Marcellus",
                     fontSize: 11,
                   ),
@@ -162,7 +167,7 @@ class _SettingToggleTileState extends State<_SettingToggleTile> {
           ),
           Switch(
             value: _value,
-            activeColor: _chip,
+            activeColor: primary,
             onChanged: (v) => setState(() => _value = v),
           ),
         ],
