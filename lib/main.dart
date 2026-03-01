@@ -31,10 +31,20 @@ void main() async {
     print("WARNING: .env file not found, Maps API might fail if not injected via CLI.");
   }
 
-  if (Firebase.apps.isEmpty) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  try {
+    // Check if empty, but catch duplicate-app just in case the native
+    // side already initialized it before Flutter's apps list updated.
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      debugPrint('Firebase already initialized implicitly.');
+    } else {
+      debugPrint('Firebase init error: $e');
+    }
   }
 
   await di.init();
