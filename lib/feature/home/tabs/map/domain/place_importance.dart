@@ -9,24 +9,24 @@ class ImportanceConfig {
       case 10:
         return 0;    // 🏛️ World landmark - Always visible
       case 9:
-        return 7;    // ⭐ National landmark - Country view
+        return 9;    // ⭐ National landmark
       case 8:
-        return 9;    // 🌟 Very famous - Region level
+        return 11;   // 🌟 Very famous 
       case 7:
-        return 11;   // 📍 Famous
+        return 13;   // 📍 Famous
       case 6:
-        return 12;   // 🔷 Well-known
+        return 14;   // 🔷 Well-known
       case 5:
-        return 13;   // 📌 Notable
+        return 15;   // 📌 Notable
       case 4:
-        return 14;   // 🔹 Average
+        return 16;   // 🔹 Average
       case 3:
-        return 15;   // 🔸 Below Average
+        return 16.5; // 🔸 Below Average
       case 2:
-        return 16;   // ◽ Minor
+        return 17;   // ◽ Minor
       case 1:
       default:
-        return 17;   // ◾ Minimal
+        return 18;   // ◾ Minimal
     }
   }
 

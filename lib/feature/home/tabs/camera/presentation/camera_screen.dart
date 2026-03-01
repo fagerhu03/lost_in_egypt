@@ -122,7 +122,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     OutlinedButton(
-                      onPressed: () => MapFocusService.instance.switchToTab(0),
+                      onPressed: () => _cameraCubit.resetToReady(),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Colors.white54),
@@ -134,6 +134,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       onPressed: () => _cameraCubit.initCamera(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE6A44A),
+                        foregroundColor: Colors.white,
                       ),
                       child: const Text('Retry'),
                     ),
