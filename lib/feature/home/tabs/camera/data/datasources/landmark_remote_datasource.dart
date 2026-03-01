@@ -51,6 +51,8 @@ class LandmarkRemoteDataSource {
     } on FirebaseFunctionsException catch (e) {
       if (e.code == 'unauthenticated') {
          throw LandmarkDetectionException('You must be logged in to identify landmarks.', isApiKeyError: false);
+      } else if (e.code == 'resource-exhausted') {
+         throw LandmarkDetectionException('API Usage Limit Reached. Please try again later.');
       }
       throw LandmarkDetectionException('Cloud Function Error: ${e.code} - ${e.message}');
     } catch (e) {

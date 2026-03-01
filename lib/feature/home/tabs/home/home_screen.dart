@@ -498,18 +498,25 @@ class _HomeScreenState extends State<HomeScreen> {
     required BoxShadow shadow,
     required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    return Container(
+      height: 140,
+      decoration: BoxDecoration(
+        color: surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [shadow],
+        border: Border.all(
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black)
+              .withOpacity(0.06),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         clipBehavior: Clip.hardEdge,
         child: InkWell(
-          onTap: () {},
+          onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

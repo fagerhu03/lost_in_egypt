@@ -9,7 +9,7 @@ class MarkerFilterService {
   };
 
   /// Minimum zoom to show commercial/detail categories (hotels, food, shopping)
-  static const double _commercialMinZoom = 13.0;
+  static const double _commercialMinZoom = 14.0;
 
   static List<MapItem> filterByZoom(List<MapItem> items, double currentZoom) {
     return items.where((item) {
