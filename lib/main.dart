@@ -31,9 +31,11 @@ void main() async {
     print("WARNING: .env file not found, Maps API might fail if not injected via CLI.");
   }
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
 
   await di.init();
 
