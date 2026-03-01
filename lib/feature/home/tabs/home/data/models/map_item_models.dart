@@ -13,6 +13,7 @@ abstract class MapItem {
   GeoPoint get coordinate;
   String get category;
   String get imagePath;
+  List<String> get imagePaths;
   String get locationAddress;
   double get rating;
   double get price;
@@ -66,6 +67,8 @@ class PlaceModel implements MapItem {
   @override
   final String imagePath;
   @override
+  final List<String> imagePaths;
+  @override
   final String locationAddress;
   @override
   final double rating;
@@ -90,6 +93,7 @@ class PlaceModel implements MapItem {
     required this.category,
     required this.coordinate,
     required this.imagePath,
+    this.imagePaths = const [],
     required this.locationAddress,
     required this.rating,
     required this.price,
@@ -107,6 +111,7 @@ class PlaceModel implements MapItem {
       'category': category,
       'coordinate': coordinate,
       'imagePath': imagePath,
+      'imagePaths': imagePaths,
       'locationAddress': locationAddress,
       'rating': rating,
       'price': price,
@@ -126,6 +131,10 @@ class PlaceModel implements MapItem {
       category: map['category'] ?? '',
       coordinate: map['coordinate'] ?? const GeoPoint(30.0444, 31.2357),
       imagePath: map['imagePath'] ?? '',
+      imagePaths: (map['imagePaths'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       locationAddress: map['locationAddress'] ?? '',
       rating: (map['rating'] ?? 0).toDouble(),
       price: (map['price'] ?? 0).toDouble(),
@@ -184,13 +193,20 @@ class PlaceModel implements MapItem {
     // Address
     final address = json['formattedAddress'] as String? ?? '';
 
-    // Photo URL
+    // Photo URLs (Parse up to 5 for the carousel, using maxWidth=500 for speed)
     String imagePath = '';
+    List<String> imagePaths = [];
     final photos = json['photos'] as List<dynamic>?;
     if (photos != null && photos.isNotEmpty) {
-      final photoName = photos[0]['name'] as String? ?? '';
-      if (photoName.isNotEmpty) {
-        imagePath = PlacesApiService.buildPhotoUrl(photoName, apiKey);
+      for (int i = 0; i < photos.length && i < 5; i++) {
+        final photoName = photos[i]['name'] as String? ?? '';
+        if (photoName.isNotEmpty) {
+          final url = PlacesApiService.buildPhotoUrl(photoName, apiKey, maxWidth: 500);
+          imagePaths.add(url);
+          if (i == 0) {
+            imagePath = url; // Set the first photo as the primary imagePath
+          }
+        }
       }
     }
 
@@ -215,6 +231,7 @@ class PlaceModel implements MapItem {
       category: category,
       coordinate: GeoPoint(lat, lng),
       imagePath: imagePath,
+      imagePaths: imagePaths,
       locationAddress: address,
       rating: rating,
       price: price,
@@ -266,6 +283,8 @@ class EventModel implements MapItem {
   @override
   final String imagePath;
   @override
+  final List<String> imagePaths;
+  @override
   final String locationAddress;
   @override
   final double rating;
@@ -292,6 +311,7 @@ class EventModel implements MapItem {
     required this.title,
     required this.coordinate,
     required this.imagePath,
+    this.imagePaths = const [],
     required this.locationAddress,
     required this.rating,
     required this.price,
@@ -308,6 +328,7 @@ class EventModel implements MapItem {
       'title': title,
       'coordinate': coordinate,
       'imagePath': imagePath,
+      'imagePaths': imagePaths,
       'locationAddress': locationAddress,
       'rating': rating,
       'price': price,
@@ -327,6 +348,10 @@ class EventModel implements MapItem {
       title: map['title'] ?? '',
       coordinate: map['coordinate'] ?? const GeoPoint(30.0444, 31.2357),
       imagePath: map['imagePath'] ?? '',
+      imagePaths: (map['imagePaths'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       locationAddress: map['locationAddress'] ?? '',
       rating: (map['rating'] ?? 0).toDouble(),
       price: (map['price'] ?? 0).toDouble(),

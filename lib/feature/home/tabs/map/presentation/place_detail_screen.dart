@@ -5,14 +5,16 @@ class PlaceDetailSheet extends StatefulWidget {
   final MapItem place;
   final VoidCallback onClose;
   final VoidCallback onShowOnMap;
-  final VoidCallback onDirections; // ← NEW
+  final VoidCallback onDirections;
+  final ValueChanged<double>? onScrollExtentChanged;
 
   const PlaceDetailSheet({
     super.key,
     required this.place,
     required this.onClose,
     required this.onShowOnMap,
-    required this.onDirections, // ← NEW
+    required this.onDirections,
+    this.onScrollExtentChanged,
   });
 
   @override
@@ -22,6 +24,7 @@ class PlaceDetailSheet extends StatefulWidget {
 class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
+  int _currentImageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -49,14 +52,19 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     final borderColor = (isDark ? Colors.white : Colors.black)
         .withOpacity(isDark ? 0.10 : 0.06);
 
-    return DraggableScrollableSheet(
-      controller: _sheetController,
-      initialChildSize: 0.55,
-      minChildSize: 0.2,
-      maxChildSize: 0.95,
-      snap: true,
-      snapSizes: const [0.2, 0.55, 0.95],
-      builder: (context, scrollController) {
+    return NotificationListener<DraggableScrollableNotification>(
+      onNotification: (notification) {
+        widget.onScrollExtentChanged?.call(notification.extent);
+        return false;
+      },
+      child: DraggableScrollableSheet(
+        controller: _sheetController,
+        initialChildSize: 0.55,
+        minChildSize: 0.2,
+        maxChildSize: 0.95,
+        snap: true,
+        snapSizes: const [0.2, 0.55, 0.95],
+        builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
             color: surface,
@@ -82,57 +90,85 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                 ),
               ),
 
-              // Image
+              // Image Carousel
               Stack(
                 children: [
                   SizedBox(
                     height: 220,
                     width: double.infinity,
-                    child: widget.place.imagePath.isNotEmpty
-                        ? Image.network(
-                            widget.place.imagePath,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                color: onSurface.withOpacity(0.06),
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: primary,
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
+                    child: widget.place.imagePaths.isNotEmpty
+                        ? PageView.builder(
+                            itemCount: widget.place.imagePaths.length,
+                            onPageChanged: (index) => setState(() => _currentImageIndex = index),
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                widget.place.imagePaths[index],
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: onSurface.withOpacity(0.06),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: primary,
+                                        value: loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress.cumulativeBytesLoaded /
+                                                loadingProgress.expectedTotalBytes!
+                                            : null,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (c, e, s) => Container(
+                                  color: onSurface.withOpacity(0.06),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.image_not_supported_outlined,
+                                            color: onSurface.withOpacity(0.35), size: 50),
+                                        const SizedBox(height: 8),
+                                        Text('Photo not available',
+                                            style: TextStyle(
+                                                color: onSurface.withOpacity(0.4),
+                                                fontSize: 12)),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
                             },
-                            errorBuilder: (c, e, s) => Container(
-                              color: onSurface.withOpacity(0.06),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.image_not_supported_outlined,
-                                        color: onSurface.withOpacity(0.35), size: 50),
-                                    const SizedBox(height: 8),
-                                    Text('Photo not available',
-                                        style: TextStyle(
-                                            color: onSurface.withOpacity(0.4),
-                                            fontSize: 12)),
-                                  ],
+                          )
+                        : widget.place.imagePath.isNotEmpty
+                            // Fallback to single imagePath if imagePaths is empty but imagePath exists
+                            ? Image.network(
+                                widget.place.imagePath,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: onSurface.withOpacity(0.06),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: primary,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (c, e, s) => Container(
+                                  color: onSurface.withOpacity(0.06),
+                                  child: const Center(child: Icon(Icons.broken_image)),
+                                ),
+                              )
+                            : Container(
+                                color: primary.withOpacity(isDark ? 0.15 : 0.08),
+                                child: Center(
+                                  child: Icon(Icons.place,
+                                      color: primary.withOpacity(0.4), size: 64),
                                 ),
                               ),
-                            ),
-                          )
-                        : Container(
-                            color: primary.withOpacity(isDark ? 0.15 : 0.08),
-                            child: Center(
-                              child: Icon(Icons.place,
-                                  color: primary.withOpacity(0.4), size: 64),
-                            ),
-                          ),
                   ),
                   Positioned.fill(
                     child: IgnorePointer(
@@ -164,6 +200,30 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       ),
                     ),
                   ),
+                  // Dots indicator for carousel
+                  if (widget.place.imagePaths.length > 1)
+                    Positioned(
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          widget.place.imagePaths.length,
+                          (index) => Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            width: _currentImageIndex == index ? 8 : 6,
+                            height: _currentImageIndex == index ? 8 : 6,
+                            decoration: BoxDecoration(
+                              color: _currentImageIndex == index
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.5),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
 
@@ -333,7 +393,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           ),
         );
       },
-    );
+    ));
   }
 
   Widget _buildInfoTile({
@@ -393,39 +453,35 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           ]
         : <BoxShadow>[];
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Column(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: bg,
-                shape: BoxShape.circle,
-                border: isPrimary ? null : border,
-                boxShadow: buttonShadow,
-              ),
-              child: Icon(
-                icon,
-                color: isPrimary ? Colors.white : primary,
-                size: 24,
-              ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: bg,
+              shape: BoxShape.circle,
+              border: isPrimary ? null : border,
+              boxShadow: buttonShadow,
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isPrimary ? primary : onSurface.withOpacity(0.70),
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
+            child: Icon(
+              icon,
+              color: isPrimary ? Colors.white : primary,
+              size: 24,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: isPrimary ? primary : onSurface.withOpacity(0.70),
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }

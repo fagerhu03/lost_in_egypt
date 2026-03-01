@@ -61,6 +61,8 @@ class _MapScreenViewState extends State<MapScreenView> {
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  
+  double _sheetExtent = 0.55;
 
   String? _lightMapStyle;
   String? _darkMapStyle;
@@ -616,7 +618,10 @@ class _MapScreenViewState extends State<MapScreenView> {
               if (state.selectedPlace != null && !state.isNavigationMode)
                 PlaceDetailSheet(
                   place: state.selectedPlace!,
-                  onClose: () => context.read<MapBloc>().add(const MapPlaceSelected(null)),
+                  onClose: () {
+                    context.read<MapBloc>().add(const MapPlaceSelected(null));
+                    setState(() => _sheetExtent = 0.55); // Reset
+                  },
                   onShowOnMap: () => _focusOnPlace(state.selectedPlace!),
                   onDirections: () => context.read<MapBloc>().add(
                     MapDirectionsRequested(
@@ -625,6 +630,9 @@ class _MapScreenViewState extends State<MapScreenView> {
                       mode: state.selectedTravelMode,
                     ),
                   ),
+                  onScrollExtentChanged: (extent) {
+                    if (mounted) setState(() => _sheetExtent = extent);
+                  },
                 ),
 
               if (state.isNavigationMode && !state.isLiveNavigating)
@@ -879,30 +887,37 @@ class _MapScreenViewState extends State<MapScreenView> {
               if (!state.isLiveNavigating)
               Positioned(
                 top: 50, left: 0, right: 0,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MapSearchBar(
-                      searchController: _searchController,
-                      searchFocusNode: _searchFocusNode,
-                      onClearSearch: () {
-                        _searchController.clear();
-                        _searchFocusNode.unfocus();
-                      }
+                child: IgnorePointer(
+                  ignoring: _sheetExtent > 0.6,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 250),
+                    opacity: _sheetExtent > 0.6 ? 0.0 : 1.0,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        MapSearchBar(
+                          searchController: _searchController,
+                          searchFocusNode: _searchFocusNode,
+                          onClearSearch: () {
+                            _searchController.clear();
+                            _searchFocusNode.unfocus();
+                          }
+                        ),
+                        const SizedBox(height: 8),
+                        if (state.isSearchActive || _searchController.text.trim().isNotEmpty)
+                          MapSearchResults(
+                            searchResults: state.searchResults,
+                            hasSearchText: _searchController.text.trim().isNotEmpty,
+                            onSearchResultTapped: (item) {
+                              _searchController.clear();
+                              _searchFocusNode.unfocus();
+                              context.read<MapBloc>().add(MapPlaceSelected(item));
+                              _focusOnPlace(item);
+                            },
+                          ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    if (state.isSearchActive || _searchController.text.trim().isNotEmpty)
-                      MapSearchResults(
-                        searchResults: state.searchResults,
-                        hasSearchText: _searchController.text.trim().isNotEmpty,
-                        onSearchResultTapped: (item) {
-                          _searchController.clear();
-                          _searchFocusNode.unfocus();
-                          context.read<MapBloc>().add(MapPlaceSelected(item));
-                          _focusOnPlace(item);
-                        },
-                      ),
-                  ],
+                  ),
                 ),
               ),
             ],
