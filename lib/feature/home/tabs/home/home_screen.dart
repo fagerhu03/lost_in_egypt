@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/guides_body.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/solo_trip_screen.dart';
 import '../navigator/widget/account_menu_button.dart';
+import '../navigator/widget/search_header.dart';
 import './data/datasources/local_mock_data.dart';
 import './data/models/map_item_models.dart';
-import '../navigator/widget/search_header.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,8 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        final doc =
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
         if (doc.exists && mounted) {
           setState(() {
@@ -52,7 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     final isDark = theme.brightness == Brightness.dark;
 
     final bg = theme.scaffoldBackgroundColor;
@@ -61,7 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // shadows: dark in light mode, light in dark mode
     final cardShadow = BoxShadow(
-      color: isDark ? Colors.white.withOpacity(0.10) : Colors.black.withOpacity(0.10),
+      color: isDark
+          ? Colors.white.withOpacity(0.02)
+          : Colors.black.withOpacity(0.10),
       blurRadius: 14,
       spreadRadius: 1,
       offset: const Offset(0, 8),
@@ -199,7 +203,10 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(
               height: 170,
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('events').limit(5).snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('events')
+                    .limit(5)
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -264,6 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 12),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -274,6 +282,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       surface: surface,
                       textColor: onSurface,
                       shadow: cardShadow,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const GuideBodyScreen(),
+                          )
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -283,6 +299,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       surface: surface,
                       textColor: onSurface,
                       shadow: cardShadow,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SoloTripScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -313,8 +337,11 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [shadow],
         border: Border.all(
-          color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
-              .withOpacity(0.06),
+          color:
+              (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withOpacity(0.06),
         ),
       ),
       child: Material(
@@ -363,8 +390,11 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [shadow],
         border: Border.all(
-          color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black)
-              .withOpacity(0.06),
+          color:
+              (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withOpacity(0.06),
         ),
       ),
       child: Material(
@@ -459,16 +489,18 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  // ✅ UPDATED: now it navigates using onTap
   Widget _tripCard({
     required String title,
     required Color surface,
     required Color textColor,
     required BoxShadow shadow,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      height: 150,
-      decoration: BoxDecoration(
-        color: surface,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [shadow],
       ),

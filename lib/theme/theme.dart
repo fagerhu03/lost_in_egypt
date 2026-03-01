@@ -7,6 +7,7 @@ class AppColors {
   static const Color lightText = Color(0xFF3D3A2F);
   static const Color lightPrimaryButton = Color(0xFFD6A00F);
   static const Color lightField = Color(0xFF7A8450);
+  static const Color lightBox = Color(0xFF714611);
   static const Color lightFieldText = Colors.white;
 
   // DARK MODE
@@ -15,5 +16,6 @@ class AppColors {
   static const Color darkText = Color(0xFFE8E2C8);
   static const Color darkPrimaryButton = Color(0xFFD6A00F);
   static const Color darkField = Color(0xFF1F3A3D);
+  static const Color darkBox= Color(0xFF224E50);
   static const Color darkFieldText = Color(0xFFE8E2C8);
 }
