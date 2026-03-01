@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../account/account_screen.dart';
+import '../../account/presentation/account_screen.dart';
 import '../../community/data/repositories/firebase_community_repository.dart';
 import '../../../notification/notification_screen.dart';
 

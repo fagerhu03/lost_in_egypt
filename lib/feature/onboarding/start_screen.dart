@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../auth/login/presentation/login_screen.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/login/presentation/login_screen.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -38,22 +38,22 @@ class StartScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  );
-                },
-                child: Container(
-                  width: 260,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD6A00F),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Center(
-                    child: Text(
+              child: Material(
+                color: const Color(0xFFD6A00F),
+                borderRadius: BorderRadius.circular(10),
+                clipBehavior: Clip.hardEdge,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  },
+                  child: Container(
+                    width: 260,
+                    height: 55,
+                    alignment: Alignment.center,
+                    child: const Text(
                       "START EXPLORING",
                       style: TextStyle(
                         color: Colors.black87,

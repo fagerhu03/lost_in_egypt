@@ -84,3 +84,24 @@ class MapLocationPermissionUpdated extends MapEvent {
   @override
   List<Object> get props => [isGranted];
 }
+
+class MapErrorCleared extends MapEvent {
+  const MapErrorCleared();
+}
+
+class MapLiveNavigationStarted extends MapEvent {
+  const MapLiveNavigationStarted();
+}
+
+class MapLiveNavigationStopped extends MapEvent {
+  const MapLiveNavigationStopped();
+}
+
+class MapUserLocationUpdated extends MapEvent {
+  final double latitude;
+  final double longitude;
+  const MapUserLocationUpdated(this.latitude, this.longitude);
+
+  @override
+  List<Object> get props => [latitude, longitude];
+}

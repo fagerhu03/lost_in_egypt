@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
-import '../camera/camera_screen.dart';
+import '../camera/presentation/camera_screen.dart';
 import '../community/presentation/community_screen.dart';
 import '../home/home_screen.dart';
-import '../map/map_screen.dart';
-import '../more/more_screen.dart';
+import '../map/presentation/map_screen.dart';
+import '../more/presentation/more_screen.dart';
 
-import 'package:lost_in_egypt/feature/home/tabs/map/services/map_focus_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class HomeWrapper extends StatefulWidget {
   const HomeWrapper({super.key});

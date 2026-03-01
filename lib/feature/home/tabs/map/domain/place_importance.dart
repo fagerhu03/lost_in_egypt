@@ -7,17 +7,17 @@ class ImportanceConfig {
   static double getMinZoomForImportance(int importance) {
     switch (importance) {
       case 10:
-        return 0;    // 🏛️ Landmark - Always visible
+        return 0;    // 🏛️ World landmark - Always visible
       case 9:
-        return 8;    // ⭐ Very Major - Visible at country level
+        return 7;    // ⭐ National landmark - Country view
       case 8:
-        return 10;   // 🌟 Major - Visible when map opens
+        return 9;    // 🌟 Very famous - Region level
       case 7:
-        return 11;   // 📍 Very Notable
+        return 11;   // 📍 Famous
       case 6:
-        return 12;   // 🔷 Notable
+        return 12;   // 🔷 Well-known
       case 5:
-        return 13;   // 📌 Above Average
+        return 13;   // 📌 Notable
       case 4:
         return 14;   // 🔹 Average
       case 3:
@@ -26,7 +26,7 @@ class ImportanceConfig {
         return 16;   // ◽ Minor
       case 1:
       default:
-        return 17;   // ◾ Minimal - Very close zoom only
+        return 17;   // ◾ Minimal
     }
   }
 
@@ -60,6 +60,25 @@ class ImportanceConfig {
   /// Check if item should be visible at current zoom
   static bool isVisibleAtZoom(int importance, double currentZoom) {
     return currentZoom >= getMinZoomForImportance(importance);
+  }
+
+  /// Compute importance from Google Places API data.
+  /// Strict thresholds to spread places across levels for effective zoom filtering.
+  /// Only world-famous landmarks get top importance.
+  static int computeFromApi({
+    required double rating,
+    required int userRatingCount,
+  }) {
+    if (rating >= 4.7 && userRatingCount >= 10000) return 10; // World-famous landmark
+    if (rating >= 4.5 && userRatingCount >= 5000)  return 9;  // National landmark
+    if (rating >= 4.5 && userRatingCount >= 2000)  return 8;  // Very famous
+    if (rating >= 4.5 && userRatingCount >= 500)   return 7;  // Famous
+    if (rating >= 4.0 && userRatingCount >= 200)   return 6;  // Well-known
+    if (rating >= 4.0 && userRatingCount >= 50)    return 5;  // Notable
+    if (rating >= 3.5 && userRatingCount >= 20)    return 4;  // Average
+    if (rating >= 3.0 && userRatingCount >= 5)     return 3;  // Below Average
+    if (userRatingCount >= 1)                      return 2;  // Minor
+    return 1;                                                 // Minimal
   }
 }
 

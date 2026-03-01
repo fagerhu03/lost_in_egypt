@@ -1,18 +1,24 @@
 import 'package:get_it/get_it.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../feature/auth/data/datasources/auth_remote_datasource.dart';
 import '../../feature/auth/data/repository_impl/auth_repository_impl.dart';
 import '../../feature/auth/domain/repositories/auth_repository.dart';
-import '../../feature/auth/login/bloc/login_bloc.dart';
+import '../../feature/auth/presentation/login/bloc/login_bloc.dart';
+import '../../feature/home/tabs/map/data/places_api_service.dart';
 import '../../feature/home/tabs/map/data/map_repository.dart';
-import '../../feature/home/tabs/map/services/navigation_service.dart';
+import '../../feature/home/tabs/map/data/datasources/navigation_service.dart';
 import '../../feature/home/tabs/map/bloc/map_bloc.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  // Maps APIs require client-side keys.
+  // Reverted to .env temporarily for development speed.
+  final apiKey = dotenv.env['MAPS_API_KEY'] ?? '';
+
   // --- External ---
   sl.registerLazySingleton(() => FirebaseAuth.instance);
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
@@ -25,6 +31,11 @@ Future<void> init() async {
     ),
   );
 
+  // --- Places API ---
+  sl.registerLazySingleton<PlacesApiService>(
+    () => PlacesApiService(apiKey: apiKey),
+  );
+
   // --- Repositories ---
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
@@ -32,7 +43,12 @@ Future<void> init() async {
     ),
   );
 
-  sl.registerLazySingleton<MapRepository>(() => MapRepository());
+  sl.registerLazySingleton<MapRepository>(
+    () => MapRepository(
+      placesApiService: sl(),
+      apiKey: apiKey,
+    ),
+  );
   sl.registerLazySingleton<NavigationService>(() => NavigationService());
 
   // --- BLoCs ---
@@ -47,3 +63,4 @@ Future<void> init() async {
     ),
   );
 }
+

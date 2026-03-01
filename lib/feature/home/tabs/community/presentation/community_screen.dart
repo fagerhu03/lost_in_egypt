@@ -10,7 +10,7 @@ import '../data/repositories/firebase_community_repository.dart';
 import '../domain/entities/community_post.dart';
 import './community_post_card.dart';
 import 'post_detail_screen.dart';
-import '../../../../auth/phone_verif/phone_verification_screen.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -502,6 +502,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               ),
               child: TextField(
                 onChanged: (val) => setState(() => _searchQuery = val),
+                textInputAction: TextInputAction.search,
                 style: TextStyle(
                   color: isDark ? onSurface : Colors.white,
                   fontFamily: "Marcellus",
@@ -562,21 +563,26 @@ class _CommunityScreenState extends State<CommunityScreen>
       ) {
     final isSelected = _sortBy == value;
 
-    return GestureDetector(
-      onTap: () => setState(() => _sortBy = value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? primary : surface.withOpacity(0.0),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: primary),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : primary,
-            fontWeight: FontWeight.bold,
-            fontFamily: "Marcellus",
+    return Material(
+      color: isSelected ? primary : Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () => setState(() => _sortBy = value),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: primary),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : primary,
+              fontWeight: FontWeight.bold,
+              fontFamily: "Marcellus",
+            ),
           ),
         ),
       ),
@@ -683,12 +689,18 @@ class _CommunityScreenState extends State<CommunityScreen>
                         Positioned(
                           top: 0,
                           right: 8,
-                          child: GestureDetector(
-                            onTap: () => setState(() => _selectedImages.removeAt(index)),
-                            child: const CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Colors.black54,
-                              child: Icon(Icons.close, size: 12, color: Colors.white),
+                          child: Material(
+                            color: Colors.black54,
+                            shape: const CircleBorder(),
+                            clipBehavior: Clip.hardEdge,
+                            child: InkWell(
+                              onTap: () => setState(() => _selectedImages.removeAt(index)),
+                              customBorder: const CircleBorder(),
+                              child: const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: Icon(Icons.close, size: 12, color: Colors.white),
+                              ),
                             ),
                           ),
                         ),

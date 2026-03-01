@@ -122,7 +122,7 @@ class CameraCubit extends ChangeNotifier {
       debugPrint("Error initializing camera: $e");
       _emit(CameraError('Failed to initialize camera: $e'));
     }
-  }
+  } 
 
   Future<void> _initTranslator() async {
     try {

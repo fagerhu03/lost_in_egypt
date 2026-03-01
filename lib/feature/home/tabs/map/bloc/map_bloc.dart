@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../data/map_repository.dart';
-import '../services/navigation_service.dart';
-import '../map_config.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/navigation_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 import '../../home/data/models/map_item_models.dart';
 
 import 'map_event.dart';
@@ -30,6 +31,10 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<MapNavigationModeChanged>(_onMapNavigationModeChanged);
     on<MapNavigationCleared>(_onMapNavigationCleared);
     on<MapLocationPermissionUpdated>(_onMapLocationPermissionUpdated);
+    on<MapErrorCleared>(_onMapErrorCleared);
+    on<MapLiveNavigationStarted>(_onLiveNavigationStarted);
+    on<MapLiveNavigationStopped>(_onMapLiveNavigationStopped);
+    on<MapUserLocationUpdated>(_onMapUserLocationUpdated);
   }
 
   bool _shouldShowItem(MapItem item) {
@@ -43,16 +48,18 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final items = await _mapRepository.fetchByUiCategory('all', limit: 3000);
+      final items = await _mapRepository.fetchAllMapItemsLimited();
       final filteredItems = items.where(_shouldShowItem).toList();
+      debugPrint('🗺️ Loaded ${filteredItems.length} items for map');
       
       emit(state.copyWith(
-        allItemsCache: items,
-        allItems: filteredItems,
         isLoading: false,
+        allItems: filteredItems,
+        allItemsCache: filteredItems,
       ));
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
+      debugPrint('❌ Error loading map items: $e');
+      emit(state.copyWith(isLoading: false, error: 'Error loading places: $e'));
     }
   }
 
@@ -228,5 +235,79 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     Emitter<MapState> emit,
   ) {
     emit(state.copyWith(isLocationPermissionGranted: event.isGranted));
+  }
+
+  void _onMapErrorCleared(
+    MapErrorCleared event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(error: null));
+  }
+
+  void _onLiveNavigationStarted(
+    MapLiveNavigationStarted event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(
+      isLiveNavigating: true,
+      currentStepIndex: 0,
+    ));
+  }
+
+  void _onMapLiveNavigationStopped(
+    MapLiveNavigationStopped event,
+    Emitter<MapState> emit,
+  ) {
+    emit(state.copyWith(
+      isLiveNavigating: false,
+      currentStepIndex: 0,
+      userLocation: null,
+    ));
+  }
+
+  void _onMapUserLocationUpdated(
+    MapUserLocationUpdated event,
+    Emitter<MapState> emit,
+  ) {
+    final userPos = LatLng(event.latitude, event.longitude);
+    
+    // Check if arrived at destination
+    if (state.navigationDestination != null) {
+      final destLat = state.navigationDestination!.coordinate.latitude;
+      final destLng = state.navigationDestination!.coordinate.longitude;
+      final distToDest = Geolocator.distanceBetween(
+        event.latitude, event.longitude, destLat, destLng,
+      );
+      if (distToDest < 50) {
+        emit(state.copyWith(
+          userLocation: userPos,
+          hasArrived: true,
+          isLiveNavigating: false,
+        ));
+        return;
+      }
+    }
+
+    // Advance step if user is close to the current step's end location
+    int stepIndex = state.currentStepIndex;
+    if (state.currentRoute != null && state.currentRoute!.steps.isNotEmpty) {
+      final steps = state.currentRoute!.steps;
+      if (stepIndex < steps.length) {
+        final stepEnd = steps[stepIndex].endLocation;
+        final dist = Geolocator.distanceBetween(
+          event.latitude, event.longitude,
+          stepEnd.latitude, stepEnd.longitude,
+        );
+        // Advance to next step when within 50 meters
+        if (dist < 50 && stepIndex < steps.length - 1) {
+          stepIndex++;
+        }
+      }
+    }
+
+    emit(state.copyWith(
+      userLocation: userPos,
+      currentStepIndex: stepIndex,
+    ));
   }
 }

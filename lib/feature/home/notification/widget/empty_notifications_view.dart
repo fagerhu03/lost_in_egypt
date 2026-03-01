@@ -5,10 +5,12 @@ class EmptyNotificationsView extends StatelessWidget {
 
   const EmptyNotificationsView({super.key, required this.onTapSettings});
 
-  static const Color _chip = Color(0xFF4D5420);
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -17,20 +19,20 @@ class EmptyNotificationsView extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: _chip.withOpacity(0.10),
+              color: primary.withOpacity(0.10),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(
               Icons.mail_outline,
-              color: _chip.withOpacity(0.85),
+              color: primary.withOpacity(0.85),
               size: 34,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             "No notifications yet",
             style: TextStyle(
-              color: Colors.black87,
+              color: onSurface.withOpacity(0.87),
               fontFamily: "Marcellus",
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -41,7 +43,7 @@ class EmptyNotificationsView extends StatelessWidget {
             "Your notifications will appear here once\nyou start getting them.",
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.55),
+              color: onSurface.withOpacity(0.55),
               fontFamily: "Marcellus",
               fontSize: 12,
               height: 1.3,
@@ -54,7 +56,7 @@ class EmptyNotificationsView extends StatelessWidget {
             child: Text(
               "Notification Settings",
               style: TextStyle(
-                color: _chip.withOpacity(0.95),
+                color: primary,
                 fontFamily: "Marcellus",
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

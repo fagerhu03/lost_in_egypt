@@ -484,4 +484,9 @@ class FirebaseCommunityRepository {
 
     await batch.commit();
   }
+
+  // DELETE A SINGLE NOTIFICATION
+  Future<void> deleteNotification(String notificationId) async {
+    await _notificationsRef.doc(notificationId).delete();
+  }
 }

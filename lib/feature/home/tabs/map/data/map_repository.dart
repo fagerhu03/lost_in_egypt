@@ -1,159 +1,198 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
+import 'places_api_service.dart';
 
 class MapRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final PlacesApiService _placesApiService;
+  final String _apiKey;
 
-  Future<List<MapItem>> fetchFeaturedMapItems({int limit = 80}) async {
-    debugPrint('📦 fetchFeaturedMapItems called (limit: $limit)');
-    const featuredTags = ['recommended', 'featured', 'top_pick', 'must_see'];
-    return _fetchByTags(featuredTags, limit: limit);
+  /// In-memory cache: categoryId → list of places.
+  final Map<String, List<MapItem>> _cache = {};
+
+  /// Disk cache file name.
+  static const String _cacheFileName = 'places_cache.json';
+  static const String _cacheTimestampFileName = 'places_cache_timestamp.txt';
+  static const int _cacheTtlDays = 7;
+
+  MapRepository({
+    required PlacesApiService placesApiService,
+    required String apiKey,
+  })  : _placesApiService = placesApiService,
+        _apiKey = apiKey;
+
+  // ── Disk cache helpers ───────────────────────────────────────────
+
+  Future<File> get _cacheFile async {
+    final dir = await getApplicationDocumentsDirectory();
+    return File('${dir.path}/$_cacheFileName');
   }
 
-  Future<List<MapItem>> fetchAllMapItemsLimited({int limit = 2000}) async {
-    debugPrint('📦 fetchAllMapItemsLimited called (limit: $limit)');
-    
+  Future<File> get _timestampFile async {
+    final dir = await getApplicationDocumentsDirectory();
+    return File('${dir.path}/$_cacheTimestampFileName');
+  }
+
+  /// Save raw API JSON to disk so we never have to call the API again.
+  Future<void> _saveToDisk(List<Map<String, dynamic>> rawJson) async {
     try {
-      final results = await Future.wait([
-        _firestore.collection('places').limit(limit).get(),
-        _firestore.collection('events').limit(limit).get(),
-      ]);
+      final file = await _cacheFile;
+      final jsonString = jsonEncode(rawJson);
+      await file.writeAsString(jsonString);
+      // Save timestamp
+      final tsFile = await _timestampFile;
+      await tsFile.writeAsString(DateTime.now().toIso8601String());
+      debugPrint('💾 Saved ${rawJson.length} places to disk cache');
+    } catch (e) {
+      debugPrint('⚠️ Failed to save disk cache: $e');
+    }
+  }
 
-      final placesSnapshot = results[0];
-      final eventsSnapshot = results[1];
-
-      debugPrint('✅ Firestore returned:');
-      debugPrint('   📁 places: ${placesSnapshot.docs.length} documents');
-      debugPrint('   📁 events: ${eventsSnapshot.docs.length} documents');
-
-      final List<MapItem> allItems = [];
-
-      for (final doc in placesSnapshot.docs) {
-        try {
-          allItems.add(PlaceModel.fromMap(doc.data(), doc.id));
-        } catch (e) {
-          debugPrint('   ❌ Error parsing place ${doc.id}: $e');
-        }
+  /// Check if disk cache is expired (older than _cacheTtlDays days).
+  Future<bool> _isCacheExpired() async {
+    try {
+      final tsFile = await _timestampFile;
+      if (!await tsFile.exists()) return true;
+      final tsString = await tsFile.readAsString();
+      final savedAt = DateTime.parse(tsString);
+      final age = DateTime.now().difference(savedAt);
+      if (age.inDays >= _cacheTtlDays) {
+        debugPrint('⏰ Cache expired (${age.inDays} days old)');
+        return true;
       }
-      
-      for (final doc in eventsSnapshot.docs) {
-        try {
-          allItems.add(EventModel.fromMap(doc.data(), doc.id));
-        } catch (e) {
-          debugPrint('   ❌ Error parsing event ${doc.id}: $e');
-        }
-      }
+      return false;
+    } catch (e) {
+      return true;
+    }
+  }
 
-      debugPrint('📦 Returning ${allItems.length} total items');
-      return allItems;
-      
+  /// Load raw API JSON from disk cache.
+  /// Returns null if no cache exists or expired.
+  Future<List<Map<String, dynamic>>?> _loadFromDisk() async {
+    try {
+      if (await _isCacheExpired()) {
+        await clearDiskCache();
+        return null;
+      }
+      final file = await _cacheFile;
+      if (!await file.exists()) {
+        debugPrint('📂 No disk cache found');
+        return null;
+      }
+      final jsonString = await file.readAsString();
+      final List<dynamic> decoded = jsonDecode(jsonString);
+      debugPrint('💾 Loaded ${decoded.length} places from disk cache');
+      return decoded.cast<Map<String, dynamic>>();
+    } catch (e) {
+      debugPrint('⚠️ Failed to read disk cache: $e');
+      return null;
+    }
+  }
+
+  /// Delete the disk cache (call this to force a fresh API fetch).
+  Future<void> clearDiskCache() async {
+    try {
+      final file = await _cacheFile;
+      if (await file.exists()) await file.delete();
+      final tsFile = await _timestampFile;
+      if (await tsFile.exists()) await tsFile.delete();
+      debugPrint('🗑️ Disk cache deleted');
+    } catch (e) {
+      debugPrint('⚠️ Failed to delete disk cache: $e');
+    }
+  }
+
+  // ── Public API ───────────────────────────────────────────────────
+
+  /// Fetch all traveler-relevant places across Egypt.
+  /// Priority: memory cache → disk cache → API (then save to disk).
+  Future<List<MapItem>> fetchAllMapItemsLimited({int limit = 2000}) async {
+    debugPrint('📦 fetchAllMapItemsLimited called');
+
+    // 1. Memory cache
+    if (_cache.containsKey('all') && _cache['all']!.isNotEmpty) {
+      debugPrint('📦 Returning memory-cached items: ${_cache['all']!.length}');
+      return _cache['all']!;
+    }
+
+    // 2. Disk cache
+    final diskData = await _loadFromDisk();
+    if (diskData != null && diskData.isNotEmpty) {
+      final items = _parseJsonToItems(diskData);
+      if (items.isNotEmpty) {
+        _cache['all'] = items;
+        debugPrint('📦 Returning ${items.length} items from disk cache (0 API calls!)');
+        return items;
+      }
+    }
+
+    // 3. API fetch (only if no cache exists)
+    debugPrint('🌐 No cache found — fetching from Places API...');
+    try {
+      final queries = MapConfig.getAllTravelerQueries();
+      final allPlacesJson = await _placesApiService.searchMultipleQueries(queries);
+
+      // Save raw JSON to disk for future launches
+      await _saveToDisk(allPlacesJson);
+
+      final items = _parseJsonToItems(allPlacesJson);
+      debugPrint('📦 Fetched ${items.length} items from API (saved to disk)');
+      _cache['all'] = items;
+      return items;
     } catch (e) {
       debugPrint('❌ MapRepo Error (all): $e');
       return [];
     }
   }
 
+  /// Fetch featured items (same as all for API-based approach).
+  Future<List<MapItem>> fetchFeaturedMapItems({int limit = 80}) async {
+    return fetchAllMapItemsLimited(limit: limit);
+  }
+
+  /// Fetch places for a specific UI category.
   Future<List<MapItem>> fetchByUiCategory(String uiCategoryId, {int limit = 500}) async {
-    debugPrint('📦 fetchByUiCategory("$uiCategoryId", limit: $limit)');
-    
+    debugPrint('📦 fetchByUiCategory("$uiCategoryId")');
+
     if (uiCategoryId == 'all') {
       return fetchAllMapItemsLimited(limit: limit);
     }
 
-    final tags = _tagsForUiCategory(uiCategoryId);
-    debugPrint('   → Tags for "$uiCategoryId": $tags');
-    
-    if (tags.isEmpty) {
-      return fetchFeaturedMapItems(limit: limit);
+    // If we have "all" cached, filter from it
+    if (_cache.containsKey('all') && _cache['all']!.isNotEmpty) {
+      final filtered = _cache['all']!.where((item) {
+        return item.category.toLowerCase() == uiCategoryId.toLowerCase();
+      }).toList();
+      debugPrint('📦 Filtered from cache: ${filtered.length} items for "$uiCategoryId"');
+      return filtered;
     }
 
-    return _fetchByTags(tags, limit: limit);
+    // Otherwise fetch all first (which will populate cache)
+    await fetchAllMapItemsLimited();
+    return fetchByUiCategory(uiCategoryId, limit: limit);
   }
 
-  List<String> _tagsForUiCategory(String id) {
-    switch (id) {
-      case 'recommended':
-        return const ['recommended', 'featured', 'top_pick', 'must_see'];
-      case 'landmark':
-        return const ['landmark', 'historic', 'pyramid', 'temple', 'unesco'];
-      case 'historic':
-        return const ['historic', 'pyramid', 'temple', 'unesco', 'old_kingdom', 'middle_kingdom'];
-      case 'museum':
-        return const ['museum'];
-      case 'religious':
-        return const ['religious', 'mosque', 'church', 'coptic', 'islamic'];
-      case 'nature':
-        return const ['nature', 'park', 'garden', 'beach', 'desert', 'oasis'];
-      case 'shopping':
-        return const ['market', 'shopping', 'bazaar', 'souq', 'mall'];
-      case 'market':
-        return const ['market', 'shopping', 'bazaar', 'souq'];
-      case 'restaurant':
-      case 'restaurants':
-        return const ['restaurant', 'food', 'dining'];
-      case 'nightlife':
-        return const ['nightlife', 'bar', 'club', 'music', 'jazz', 'opera'];
-      case 'event':
-        return const ['event'];
-      case 'tourism':
-        return const ['tourism', 'attraction', 'sightseeing'];
-      case 'hotel':
-        return const ['hotel', 'accommodation', 'resort', 'hostel'];
-      default:
-        debugPrint('   ⚠️ Unknown category: $id');
-        return const [];
-    }
+  /// Clear both in-memory and disk caches.
+  void clearCache() {
+    _cache.clear();
+    clearDiskCache();
+    debugPrint('🗑️ All caches cleared');
   }
 
-  Future<List<MapItem>> _fetchByTags(List<String> tags, {required int limit}) async {
-    debugPrint('📦 _fetchByTags($tags, limit: $limit)');
-    
-    try {
-      final results = await Future.wait([
-        _firestore
-            .collection('places')
-            .where('tags', arrayContainsAny: tags)
-            .limit(limit)
-            .get(),
-        _firestore
-            .collection('events')
-            .where('tags', arrayContainsAny: tags)
-            .limit(limit)
-            .get(),
-      ]);
+  // ── Private helpers ──────────────────────────────────────────────
 
-      final placesSnapshot = results[0];
-      final eventsSnapshot = results[1];
-
-      debugPrint('✅ _fetchByTags returned:');
-      debugPrint('   📁 places with tags: ${placesSnapshot.docs.length}');
-      debugPrint('   📁 events with tags: ${eventsSnapshot.docs.length}');
-
-      final List<MapItem> allItems = [];
-
-      for (final doc in placesSnapshot.docs) {
-        try {
-          allItems.add(PlaceModel.fromMap(doc.data(), doc.id));
-        } catch (e) {
-          debugPrint('   ❌ Error parsing place ${doc.id}: $e');
-        }
+  List<MapItem> _parseJsonToItems(List<Map<String, dynamic>> jsonList) {
+    final List<MapItem> items = [];
+    for (final placeJson in jsonList) {
+      try {
+        items.add(PlaceModel.fromPlacesApi(placeJson, _apiKey));
+      } catch (e) {
+        debugPrint('   ❌ Error parsing place: $e');
       }
-      
-      for (final doc in eventsSnapshot.docs) {
-        try {
-          allItems.add(EventModel.fromMap(doc.data(), doc.id));
-        } catch (e) {
-          debugPrint('   ❌ Error parsing event ${doc.id}: $e');
-        }
-      }
-
-      debugPrint('📦 _fetchByTags returning ${allItems.length} items');
-      return allItems;
-      
-    } catch (e) {
-      debugPrint('❌ MapRepo Error (tags): $e');
-      return [];
     }
+    return items;
   }
 }
