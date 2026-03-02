@@ -17,6 +17,10 @@ import './widgets/navigation_info_bar.dart';
 import './widgets/route_steps_sheet.dart';
 import './widgets/map_search_bar.dart';
 import './widgets/map_search_results.dart';
+import './widgets/map_top_overlays.dart';
+import './widgets/map_action_buttons.dart';
+import './widgets/live_navigation_overlay.dart';
+import './widgets/map_loading_overlay.dart';
 
 import 'bloc/map_bloc.dart';
 import 'bloc/map_event.dart';
@@ -497,113 +501,15 @@ class _MapScreenViewState extends State<MapScreenView> {
                 },
               ),
 
-              if (!state.isSearchActive && !state.isNavigationMode)
-                Positioned(
-                  top: 110,
-                  left: 20,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: chipBg(),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
-                      border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${_markers.length}/${state.allItems.length} places',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: onSurface.withOpacity(0.9)),
-                        ),
-                        if (state.selectedUiCategoryId != 'all')
-                          Text(
-                            MapConfig.categories.firstWhere((c) => c.id == state.selectedUiCategoryId, orElse: () => const UiCategory('', 'Unknown', '')).label,
-                            style: TextStyle(fontSize: 10, color: primary, fontWeight: FontWeight.w600),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
+              MapTopOverlays(
+                state: state,
+                visibleMarkersCount: _markers.length,
+              ),
 
-              if (!state.isSearchActive && !state.isNavigationMode)
-                Positioned(
-                  top: 110,
-                  right: 20,
-                  child: GestureDetector(
-                    onTap: () async {
-                      final chosen = await showModalBottomSheet<String>(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: surface,
-                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                        builder: (_) => MapFilterSheet(
-                          selectedCategory: state.selectedUiCategoryId,
-                          allItems: state.allItemsCache,
-                          onCategorySelected: (category) => Navigator.pop(context, category),
-                        ),
-                      );
-                      if (chosen != null) {
-                        context.read<MapBloc>().add(MapCategoryChanged(chosen));
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: state.selectedUiCategoryId == 'all' ? chipBg() : primary.withOpacity(isDark ? 0.90 : 0.95),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
-                        border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.tune,
-                            color: state.selectedUiCategoryId == 'all' ? onSurface.withOpacity(0.9) : Colors.white,
-                            size: 20,
-                          ),
-                          if (state.selectedUiCategoryId != 'all') ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              MapConfig.categories.firstWhere((c) => c.id == state.selectedUiCategoryId, orElse: () => const UiCategory('', '', '')).icon,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-              if (!state.isSearchActive)
-                Positioned(
-                  bottom: state.selectedPlace != null ? 350 : state.isNavigationMode ? 280 : 110,
-                  right: 20,
-                  child: FloatingActionButton(
-                    heroTag: "location_btn",
-                    backgroundColor: chipBg(),
-                    onPressed: () => _goToUserLocation(state.isLocationPermissionGranted),
-                    child: Icon(
-                      Icons.my_location,
-                      color: state.isLocationPermissionGranted ? primary : onSurface.withOpacity(0.9),
-                    ),
-                  ),
-                ),
-
-              if (state.selectedUiCategoryId != 'all' && !state.isSearchActive && !state.isNavigationMode)
-                Positioned(
-                  bottom: state.selectedPlace != null ? 350 : 110,
-                  left: 20,
-                  child: FloatingActionButton.extended(
-                    heroTag: "reset_filter_btn",
-                    backgroundColor: chipBg(),
-                    onPressed: () => context.read<MapBloc>().add(const MapCategoryChanged('all')),
-                    icon: Icon(Icons.close, color: onSurface.withOpacity(0.9), size: 18),
-                    label: Text('Reset', style: TextStyle(color: onSurface.withOpacity(0.9))),
-                  ),
-                ),
+              MapActionButtons(
+                state: state,
+                onGoToUserLocation: () => _goToUserLocation(state.isLocationPermissionGranted),
+              ),
 
               if (state.selectedPlace != null && !state.isNavigationMode)
                 PlaceDetailSheet(
@@ -675,177 +581,31 @@ class _MapScreenViewState extends State<MapScreenView> {
                           : const SizedBox.shrink(),
                 ),
 
-              // ─── LIVE NAVIGATION INSTRUCTION BAR ───
-              if (state.isLiveNavigating && state.currentRoute != null)
-                Positioned(
-                  top: 0, left: 0, right: 0,
-                  child: SafeArea(
-                    child: Container(
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: surface,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: shadowColor, blurRadius: 16, spreadRadius: 1)],
-                        border: Border.all(color: primary.withOpacity(0.3)),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Current step instruction
-                          if (state.currentStepIndex < state.currentRoute!.steps.length) ...[
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: primary.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(Icons.navigation_rounded, color: primary, size: 22),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        state.currentRoute!.steps[state.currentStepIndex].instruction,
-                                        style: TextStyle(
-                                          color: onSurface,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                       const SizedBox(height: 4),
-                                      Text(
-                                        '${state.currentRoute!.steps[state.currentStepIndex].distance} · ${state.currentRoute!.steps[state.currentStepIndex].duration}',
-                                        style: TextStyle(
-                                          color: onSurface.withOpacity(0.5),
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            // Overall ETA
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.flag_rounded, color: primary, size: 16),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '${state.currentRoute!.distance} · ${state.currentRoute!.duration} total',
-                                    style: TextStyle(
-                                      color: onSurface.withOpacity(0.6),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            // Step progress bar
-                            Row(
-                              children: [
-                                Text(
-                                  'Step ${state.currentStepIndex + 1}/${state.currentRoute!.steps.length}',
-                                  style: TextStyle(color: onSurface.withOpacity(0.5), fontSize: 12),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: LinearProgressIndicator(
-                                    value: (state.currentStepIndex + 1) / state.currentRoute!.steps.length,
-                                    backgroundColor: onSurface.withOpacity(0.1),
-                                    valueColor: AlwaysStoppedAnimation(primary),
-                                    minHeight: 4,
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: () {
-                                    _stopLiveNavigation();
-                                    context.read<MapBloc>().add(MapNavigationCleared());
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withOpacity(0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.stop_rounded, color: Colors.red, size: 18),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-              // ─── RE-CENTER BUTTON (when user pans away during live nav) ───
-              if (state.isLiveNavigating && !_isFollowingUser)
-                Positioned(
-                  bottom: 30, right: 16,
-                  child: FloatingActionButton.small(
-                    heroTag: 'recenter',
-                    backgroundColor: primary,
-                    onPressed: () async {
-                      setState(() => _isFollowingUser = true);
-                      try {
-                        final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-                        _mapController?.animateCamera(
-                          CameraUpdate.newCameraPosition(
-                            CameraPosition(
-                              target: LatLng(pos.latitude, pos.longitude),
-                              zoom: 17,
-                              tilt: 45,
-                            ),
-                          ),
-                        );
-                      } catch (_) {}
-                    },
-                    child: const Icon(Icons.my_location_rounded, color: Colors.white, size: 20),
-                  ),
-                ),
-
-              if (state.isLoading)
-                Positioned(
-                  left: 0, right: 0, top: 0,
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: chipBg(strong: true),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [BoxShadow(color: shadowColor, blurRadius: 16, offset: const Offset(0, 6))],
-                            border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: primary)),
-                              const SizedBox(width: 10),
-                              Text("Loading...", style: TextStyle(color: onSurface.withOpacity(0.9))),
-                            ],
-                          ),
+              LiveNavigationOverlay(
+                state: state,
+                isFollowingUser: _isFollowingUser,
+                onStopNavigation: () {
+                  _stopLiveNavigation();
+                  context.read<MapBloc>().add(MapNavigationCleared());
+                },
+                onRecenter: () async {
+                  setState(() => _isFollowingUser = true);
+                  try {
+                    final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+                    _mapController?.animateCamera(
+                      CameraUpdate.newCameraPosition(
+                        CameraPosition(
+                          target: LatLng(pos.latitude, pos.longitude),
+                          zoom: 17,
+                          tilt: 45,
                         ),
                       ),
-                    ),
-                  ),
-                ),
+                    );
+                  } catch (_) {}
+                },
+              ),
+
+              MapLoadingOverlay(isLoading: state.isLoading),
 
               if (state.isSearchActive)
                 Positioned.fill(
