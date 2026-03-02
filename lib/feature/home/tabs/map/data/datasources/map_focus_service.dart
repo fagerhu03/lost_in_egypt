@@ -12,7 +12,7 @@ class MapFocusService {
     debugPrint("🚀 MapFocusService.triggerFocus: ${item.title}");
     debugPrint("   📍 Coordinates: ${item.coordinate.latitude}, ${item.coordinate.longitude}");
     focusedItemNotifier.value = item;
-    tabSwitchNotifier.value = 3;
+    tabSwitchNotifier.value = 2; // Map tab is index 2
   }
 
   void clearFocus() {

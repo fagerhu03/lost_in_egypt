@@ -51,10 +51,10 @@ class CameraCubit extends ChangeNotifier {
 
   CameraCubit({
     LandmarkRepositoryImpl? landmarkRepository,
-    PlaceRepositoryImpl? placeRepository,
+    required PlaceRepositoryImpl placeRepository,
     ImagePicker? imagePicker,
   })  : _landmarkRepository = landmarkRepository ?? LandmarkRepositoryImpl(),
-        _placeRepository = placeRepository ?? PlaceRepositoryImpl(),
+        _placeRepository = placeRepository,
         _imagePicker = imagePicker ?? ImagePicker();
 
   /// Current state
@@ -339,16 +339,15 @@ class CameraCubit extends ChangeNotifier {
         return;
       }
 
-      // Fetch place from Firestore
-      final placeDoc = await _placeRepository.getPlaceByTitle(landmark.name);
+      // Fetch place from Google Places API
+      final place = await _placeRepository.getPlaceByTitle(landmark.name);
 
-      if (placeDoc == null) {
+      if (place == null) {
         // Found landmark but not in database - DON'T auto-return
         _emit(CameraNoLandmarkFound(identifiedLabel: landmark.name));
         return;
       }
 
-      final place = PlaceModel.fromMap(placeDoc.data(), placeDoc.id);
       _emit(CameraLandmarkIdentified(place));
       
     } on LandmarkDetectionException catch (e) {
@@ -450,15 +449,14 @@ class CameraCubit extends ChangeNotifier {
         return;
       }
 
-      final placeDoc = await _placeRepository.getPlaceByTitle(landmark.name);
+      final place = await _placeRepository.getPlaceByTitle(landmark.name);
 
-      if (placeDoc == null) {
+      if (place == null) {
         // Found landmark but not in database - DON'T auto-return
         _emit(CameraNoLandmarkFound(identifiedLabel: landmark.name));
         return;
       }
 
-      final place = PlaceModel.fromMap(placeDoc.data(), placeDoc.id);
       _emit(CameraLandmarkIdentified(place));
       
     } on LandmarkDetectionException catch (e) {

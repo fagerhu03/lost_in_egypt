@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 /// Abstract repository for place/landmark data operations
 abstract class PlaceRepository {
-  /// Fetches place details by name from Firestore
+  /// Fetches place details by name from Google Places API
   /// Returns null if not found
-  Future<QueryDocumentSnapshot<Map<String, dynamic>>?> getPlaceByTitle(String title);
+  Future<PlaceModel?> getPlaceByTitle(String title);
 }
