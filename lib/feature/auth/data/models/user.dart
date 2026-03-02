@@ -21,6 +21,7 @@ class UserModel extends UserEntity {
     super.twitterHandle,
     super.phoneVerified,
     super.emailVerified,
+    super.visitedLandmarks,
     required super.createdAt,
   });
 
@@ -41,6 +42,7 @@ class UserModel extends UserEntity {
       // New Profile Fields
       bio: data['bio'] ?? '',
       interests: List<String>.from(data['interests'] ?? []),
+      visitedLandmarks: List<String>.from(data['visitedLandmarks'] ?? []),
       instagramHandle: data['instagramHandle'] ?? '',
       twitterHandle: data['twitterHandle'] ?? '',
 
@@ -68,6 +70,7 @@ class UserModel extends UserEntity {
       'nationality': nationality,
       'bio': bio,
       'interests': interests,
+      'visitedLandmarks': visitedLandmarks,
       'instagramHandle': instagramHandle,
       'twitterHandle': twitterHandle,
       'phoneVerified': phoneVerified,
@@ -93,6 +96,7 @@ class UserModel extends UserEntity {
     String? nationality,
     String? bio,
     List<String>? interests,
+    List<String>? visitedLandmarks,
     String? instagramHandle,
     String? twitterHandle,
     bool? isNotificationsEnabled,
@@ -114,6 +118,7 @@ class UserModel extends UserEntity {
       nationality: nationality ?? this.nationality,
       bio: bio ?? this.bio,
       interests: interests ?? this.interests,
+      visitedLandmarks: visitedLandmarks ?? this.visitedLandmarks,
       instagramHandle: instagramHandle ?? this.instagramHandle,
       twitterHandle: twitterHandle ?? this.twitterHandle,
       isNotificationsEnabled:

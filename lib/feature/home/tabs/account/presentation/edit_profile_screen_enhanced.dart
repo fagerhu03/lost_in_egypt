@@ -251,6 +251,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty),
         emailVerified: _currentUser!.emailVerified,
         createdAt: _currentUser!.createdAt,
+        visitedLandmarks: _currentUser!.visitedLandmarks,
       );
 
       await FirebaseFirestore.instance

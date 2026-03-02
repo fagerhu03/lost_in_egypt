@@ -16,6 +16,7 @@ import '../widgets/camera_analyzing_view.dart';
 import '../widgets/camera_no_landmark_view.dart';
 import '../widgets/camera_result_sheet.dart';
 import '../widgets/camera_overlay_controls.dart';
+import '../widgets/badge_unlock_dialog.dart';
 import '../widgets/translation_draggable_panel.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -81,7 +82,15 @@ class _CameraScreenState extends State<CameraScreen> {
 
     if (state is CameraLandmarkIdentified) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
         CameraResultSheet.show(context, state.place);
+        if (state.newlyUnlockedBadge != null) {
+          Future.delayed(const Duration(milliseconds: 600), () {
+            if (context.mounted) {
+              BadgeUnlockDialog.show(context, state.newlyUnlockedBadge!);
+            }
+          });
+        }
         _cameraCubit.resetToReady();
       });
       return const Center(

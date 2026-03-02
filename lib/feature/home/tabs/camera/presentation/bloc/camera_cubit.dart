@@ -5,11 +5,15 @@ import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../home/data/models/map_item_models.dart';
+
 import '../../data/datasources/landmark_remote_datasource.dart';
 import '../../data/repositories/landmark_repository_impl.dart';
 import '../../data/repositories/place_repository_impl.dart';
+import '../../../account/domain/badge_constants.dart';
+import '../../../account/domain/badge_model.dart';
 import 'camera_state.dart';
 
 /// Camera Cubit using ChangeNotifier for state management
@@ -348,7 +352,8 @@ class CameraCubit extends ChangeNotifier {
         return;
       }
 
-      _emit(CameraLandmarkIdentified(place));
+      final unlockedBadge = await _recordLandmarkVisit(place.id);
+      _emit(CameraLandmarkIdentified(place, newlyUnlockedBadge: unlockedBadge));
       
     } on LandmarkDetectionException catch (e) {
       debugPrint("Landmark detection error: $e");
@@ -457,7 +462,8 @@ class CameraCubit extends ChangeNotifier {
         return;
       }
 
-      _emit(CameraLandmarkIdentified(place));
+      final unlockedBadge = await _recordLandmarkVisit(place.id);
+      _emit(CameraLandmarkIdentified(place, newlyUnlockedBadge: unlockedBadge));
       
     } on LandmarkDetectionException catch (e) {
       debugPrint("Landmark detection error: $e");
@@ -575,6 +581,40 @@ class CameraCubit extends ChangeNotifier {
         clearRecognizedText: true,
         translations: {},
       ));
+    }
+  }
+
+  /// Gamification: Record visited landmark
+  Future<BadgeModel?> _recordLandmarkVisit(String placeId) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      
+      return await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final doc = await transaction.get(userRef);
+        if (!doc.exists) return null;
+        
+        final data = doc.data()!;
+        List<String> visited = List<String>.from(data['visitedLandmarks'] ?? []);
+        
+        if (!visited.contains(placeId)) {
+          visited.add(placeId);
+          transaction.update(userRef, {'visitedLandmarks': visited});
+          
+          final newCount = visited.length;
+          try {
+            return BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
+          } catch (_) {
+            return null;
+          }
+        }
+        return null;
+      });
+    } catch (e) {
+      debugPrint("Error recording landmark visit: $e");
+      return null;
     }
   }
 

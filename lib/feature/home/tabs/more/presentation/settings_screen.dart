@@ -82,6 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       twitterHandle: _currentUser!.twitterHandle,
       bio: _currentUser!.bio,
       interests: _currentUser!.interests,
+      visitedLandmarks: key == 'visitedLandmarks' ? value : _currentUser!.visitedLandmarks,
     );
 
     if (mounted) {
@@ -350,7 +351,40 @@ class _SettingsScreenState extends State<SettingsScreen>
                                   ),
                                 ],
                               ),
+                              ),
+                            const SizedBox(height: 32),
+                              
+                            // Debug Reset Button
+                            _buildTile(
+                              surfaceColor: Colors.red.withValues(alpha: 0.1),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: Colors.red),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    "Reset Badges (Debug)",
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 16,
+                                      fontFamily: "Marcellus",
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              onTap: _currentUser == null
+                                  ? null
+                                  : () {
+                                      _updateSetting('visitedLandmarks', <String>[]);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Badges successfully reset!"),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    },
                             ),
+                            const SizedBox(height: 32),
                           ],
                         ),
                 ),

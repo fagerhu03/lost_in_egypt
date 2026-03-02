@@ -42,6 +42,7 @@ class SettingsRepository {
       twitterHandle: user.twitterHandle,
       bio: user.bio,
       interests: user.interests,
+      visitedLandmarks: key == 'visitedLandmarks' ? value : user.visitedLandmarks,
     );
 
     await _firestore
