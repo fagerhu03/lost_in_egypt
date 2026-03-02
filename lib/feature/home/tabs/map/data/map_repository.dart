@@ -14,8 +14,8 @@ class MapRepository {
   final Map<String, List<MapItem>> _cache = {};
 
   /// Disk cache file name.
-  static const String _cacheFileName = 'places_cache.json';
-  static const String _cacheTimestampFileName = 'places_cache_timestamp.txt';
+  static const String _cacheFileName = 'places_cache_v2.json';
+  static const String _cacheTimestampFileName = 'places_cache_v2_timestamp.txt';
   static const int _cacheTtlDays = 7;
 
   MapRepository({
