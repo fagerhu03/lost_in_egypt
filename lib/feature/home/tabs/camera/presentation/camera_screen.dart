@@ -11,6 +11,10 @@ import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_s
 import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_cubit.dart';
 import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_state.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/camera/data/repositories/place_repository_impl.dart';
+
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
 
@@ -24,7 +28,14 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   void initState() {
     super.initState();
-    _cameraCubit = CameraCubit();
+    final apiKey = dotenv.env['MAPS_API_KEY'] ?? '';
+    final placesApiService = PlacesApiService(apiKey: apiKey);
+    final placeRepository = PlaceRepositoryImpl(
+      placesApiService: placesApiService,
+      apiKey: apiKey,
+    );
+    
+    _cameraCubit = CameraCubit(placeRepository: placeRepository);
     _cameraCubit.initCamera();
   }
 
@@ -860,6 +871,9 @@ class _CameraScreenState extends State<CameraScreen> {
                                 child: OutlinedButton.icon(
                                   onPressed: () {
                                     Navigator.pop(ctx);
+                                    // Trigger tab switch to Map (index 2)
+                                    MapFocusService.instance.tabSwitchNotifier.value = 2;
+                                    // Focus on the place
                                     MapFocusService.instance.triggerFocus(
                                       place,
                                     );

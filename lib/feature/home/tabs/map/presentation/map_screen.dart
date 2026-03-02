@@ -98,8 +98,13 @@ class _MapScreenViewState extends State<MapScreenView> {
       _updateVisibleMarkers(state, forceInclude: state.selectedPlace);
     }
 
-    // Zoom to user's location when map opens
-    await _zoomToUserLocation();
+    // Check if there's an item already focused before we even loaded
+    if (MapFocusService.instance.focusedItemNotifier.value != null) {
+      _onFocusRequested();
+    } else {
+      // Zoom to user's location only if no place is focused
+      await _zoomToUserLocation();
+    }
   }
 
   Future<void> _zoomToUserLocation() async {
