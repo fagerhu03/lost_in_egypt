@@ -64,6 +64,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         .createUserWithEmailAndPassword(email: email, password: password);
     final User user = result.user!;
 
+    // ✅ Send email verification
+    if (!user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+
     int monthIndex = _getMonthIndex(birthMonth);
     int day = int.parse(birthDay);
     int year = int.parse(birthYear);

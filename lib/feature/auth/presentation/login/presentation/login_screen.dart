@@ -13,6 +13,7 @@ import 'package:lost_in_egypt/core/constants/strings.dart';
 import '../bloc/login_bloc.dart';
 import '../bloc/login_event.dart';
 import '../bloc/login_state.dart';
+import 'package:lost_in_egypt/main.dart'; // Import AuthGate
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -52,7 +53,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
 
   void _navigateToHome() {
     Navigator.of(context).pushAndRemoveUntil(
-      FadePageRoute(page: const HomeWrapper()),
+      FadePageRoute(page: const AuthGate()), // Use AuthGate instead of HomeWrapper
       (route) => false,
     );
   }

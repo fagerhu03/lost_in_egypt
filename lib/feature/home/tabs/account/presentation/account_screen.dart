@@ -5,6 +5,13 @@ import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profil
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_model.dart';
+import 'package:lost_in_egypt/feature/admin/presentation/pages/admin_dashboard_screen.dart' as lost_in_egypt_admin;
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:lost_in_egypt/feature/tours/presentation/bloc/guide_tours_cubit.dart' as lost_in_egypt_tours;
+import 'package:lost_in_egypt/feature/tours/presentation/pages/guide_dashboard_screen.dart' as lost_in_egypt_tours;
+import 'package:lost_in_egypt/feature/guide_application/presentation/bloc/apply_guide_cubit.dart' as lost_in_egypt_guide_cubit;
+import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply_guide_screen.dart' as lost_in_egypt_guide_screen;
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -315,6 +322,67 @@ class _AccountScreenState extends State<AccountScreen> {
                           borderColor: borderColor,
                           shadow: tileShadow,
                         ),
+                        if (_user?.role == 'admin') ...[
+                          _AccountTile(
+                            title: "Admin Dashboard",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const lost_in_egypt_admin.AdminDashboardScreen(),
+                                ),
+                              );
+                            },
+                            surface: Colors.red.withValues(alpha: 0.1),
+                            onSurface: Colors.red,
+                            borderColor: Colors.red.withValues(alpha: 0.3),
+                            shadow: tileShadow,
+                          ),
+                        ],
+                        if (_user?.isVerifiedGuide == true) ...[
+                          _AccountTile(
+                            title: "Guide Dashboard",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BlocProvider(
+                                    create: (context) => lost_in_egypt_tours.GuideToursCubit(
+                                      getGuideToursUseCase: GetIt.I(),
+                                    ),
+                                    child: const lost_in_egypt_tours.GuideDashboardScreen(),
+                                  ),
+                                ),
+                              );
+                            },
+                            surface: Colors.amber.withValues(alpha: 0.1),
+                            onSurface: const Color(0xFFC79A00),
+                            borderColor: Colors.amber.withValues(alpha: 0.3),
+                            shadow: tileShadow,
+                          ),
+                        ],
+                        if (_user?.role == 'tourist' && _user?.applicationStatus != 'pending') ...[
+                          _AccountTile(
+                            title: "Apply to be a Guide",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BlocProvider(
+                                    create: (context) => lost_in_egypt_guide_cubit.ApplyGuideCubit(
+                                      applyGuideUseCase: GetIt.I(),
+                                    ),
+                                    child: const lost_in_egypt_guide_screen.ApplyGuideScreen(),
+                                  ),
+                                ),
+                              );
+                            },
+                            surface: surface,
+                            onSurface: onSurface,
+                            borderColor: borderColor,
+                            shadow: tileShadow,
+                          ),
+                        ],
                         _AccountTile(
                           title: "Places",
                           onTap: () {},

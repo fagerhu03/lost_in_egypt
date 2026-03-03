@@ -8,6 +8,13 @@ import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_field.dart';
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply_guide_screen.dart' as lost_in_egypt_guide_screen;
+import 'package:lost_in_egypt/feature/guide_application/presentation/bloc/apply_guide_cubit.dart' as lost_in_egypt_guide_cubit;
+import 'package:lost_in_egypt/feature/guide_application/domain/usecases/apply_guide_usecase.dart' as lost_in_egypt_guide_usecase;
+import 'package:get_it/get_it.dart';
+
+
+import 'package:lost_in_egypt/main.dart'; // Import AuthGate
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -181,6 +188,8 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  bool _applyAsGuide = false;
+
   // 4. Signup Action
   Future<void> _handleSignup() async {
     if (!_validateForm()) return;
@@ -205,15 +214,34 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Account Created Successfully!"),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pushReplacement(
-          FadePageRoute(page: const LoginScreen()),
-        );
+        if (_applyAsGuide) {
+          // If applying as guide, redirect directly to ApplyGuideScreen 
+          // They are now authenticated but require extra steps
+          Navigator.of(context).pushAndRemoveUntil(
+             FadePageRoute(
+               page: BlocProvider(
+                 create: (context) => lost_in_egypt_guide_cubit.ApplyGuideCubit(
+                   applyGuideUseCase: GetIt.I<lost_in_egypt_guide_usecase.ApplyGuideUseCase>(),
+                 ),
+                 child: lost_in_egypt_guide_screen.ApplyGuideScreen(
+                   isFromSignup: true,
+                 ),
+               ),
+             ),
+             (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Account Created Successfully!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.of(context).pushAndRemoveUntil(
+            FadePageRoute(page: const AuthGate()),
+            (route) => false,
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
       String msg = "Signup Failed";
@@ -346,9 +374,38 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   const SizedBox(height: 25),
 
+                  // APPLY AS GUIDE CHECKBOX
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _applyAsGuide,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _applyAsGuide = value ?? false;
+                          });
+                        },
+                        activeColor: const Color(0xFFD6A00F),
+                        checkColor: Colors.black87,
+                      ),
+                      const Expanded(
+                        child: Text(
+                          "I want to apply to be a Guide",
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontFamily: "Marcellus",
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
                   // SIGN UP BUTTON
                   GestureDetector(
                     onTap: _isLoading ? null : _handleSignup,
+
                     child: Container(
                       width: double.infinity,
                       height: 55,

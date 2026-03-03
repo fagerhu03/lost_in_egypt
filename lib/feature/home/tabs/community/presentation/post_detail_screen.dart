@@ -21,11 +21,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final String _currentUid = FirebaseAuth.instance.currentUser?.uid ?? "";
   final FocusNode _focusNode = FocusNode();
 
-  void _submitComment() {
-    if (_commentController.text.trim().isEmpty) return;
-    _repository.addComment(widget.post.id, _commentController.text.trim());
+  void _submitComment() async {
+    final text = _commentController.text.trim();
+    if (text.isEmpty) return;
+    
     _commentController.clear();
     _focusNode.unfocus();
+    
+    try {
+      print('🚀 Submitting comment: $text');
+      await _repository.addComment(widget.post.id, text);
+      print('✅ Comment added successfully!');
+    } catch (e, stacktrace) {
+      print('❌ ERROR adding comment: $e');
+      print(stacktrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to post comment: $e')),
+        );
+      }
+    }
   }
 
   void _handleReply(String userName) {

@@ -27,6 +27,25 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   /// Send verification code via Firebase Phone Auth
   Future<void> _sendCode() async {
     if (_completePhoneNumber.isEmpty) return;
+    
+    // DEVELOPER BYPASS
+    if (_completePhoneNumber == "+201111111111") {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'phoneNumber': _completePhoneNumber,
+          'phoneVerified': true,
+        }, SetOptions(merge: true));
+        if (mounted) {
+          Navigator.pop(context, true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Developer Phone Verified! ✅"), backgroundColor: Colors.green),
+          );
+        }
+      }
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {

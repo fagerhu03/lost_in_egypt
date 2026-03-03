@@ -30,6 +30,15 @@ class UserEntity extends Equatable {
   // Timestamps
   final DateTime createdAt;
 
+  // Guide Fields
+  final String applicationStatus; // 'none', 'pending', 'rejected', 'approved'
+  final String motaLicenseNumber;
+  final String syndicateNumber;
+  final List<String> certifiedLanguages;
+  final Map<String, String> guideDocuments;
+  final bool isVerifiedGuide;
+  final String? rejectionReason;
+
   const UserEntity({
     required this.id,
     required this.email,
@@ -51,6 +60,13 @@ class UserEntity extends Equatable {
     this.phoneVerified = false,
     this.emailVerified = false,
     required this.createdAt,
+    this.applicationStatus = 'none',
+    this.motaLicenseNumber = '',
+    this.syndicateNumber = '',
+    this.certifiedLanguages = const [],
+    this.guideDocuments = const {},
+    this.isVerifiedGuide = false,
+    this.rejectionReason,
   });
 
   @override
@@ -75,5 +91,12 @@ class UserEntity extends Equatable {
     phoneVerified,
     emailVerified,
     createdAt,
+    applicationStatus,
+    motaLicenseNumber,
+    syndicateNumber,
+    certifiedLanguages,
+    guideDocuments,
+    isVerifiedGuide,
+    rejectionReason,
   ];
 }

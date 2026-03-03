@@ -12,6 +12,27 @@ import '../../feature/home/tabs/map/data/map_repository.dart';
 import '../../feature/home/tabs/map/data/datasources/navigation_service.dart';
 import '../../feature/home/tabs/map/bloc/map_bloc.dart';
 
+// --- Admin ---
+import '../../feature/admin/data/datasources/admin_data_source.dart';
+import '../../feature/admin/data/repository_impl/admin_repository_impl.dart';
+import '../../feature/admin/domain/repositories/admin_repository.dart';
+import '../../feature/admin/domain/usecases/admin_usecases.dart';
+
+// --- Guide Application ---
+import '../../feature/guide_application/data/datasources/guide_application_data_source.dart';
+import '../../feature/guide_application/domain/repositories/guide_application_repository.dart';
+import '../../feature/guide_application/data/repository_impl/guide_application_repository_impl.dart';
+import '../../feature/guide_application/domain/usecases/apply_guide_usecase.dart';
+
+// --- Tours ---
+import '../../feature/tours/data/datasources/tours_data_source.dart';
+import '../../feature/tours/data/datasources/tours_data_source_impl.dart';
+import '../../feature/tours/domain/repositories/tours_repository.dart';
+import '../../feature/tours/data/repositories/tours_repository_impl.dart';
+import '../../feature/tours/domain/usecases/create_tour_usecase.dart';
+import '../../feature/tours/domain/usecases/get_all_tours_usecase.dart';
+import '../../feature/tours/domain/usecases/get_guide_tours_usecase.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -50,6 +71,25 @@ Future<void> init() async {
     ),
   );
   sl.registerLazySingleton<NavigationService>(() => NavigationService());
+
+  // --- Guide Application Deps ---
+  sl.registerLazySingleton<GuideApplicationDataSource>(() => GuideApplicationDataSourceImpl());
+  sl.registerLazySingleton<GuideApplicationRepository>(() => GuideApplicationRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton(() => ApplyGuideUseCase(sl()));
+
+  // --- Admin Deps ---
+  sl.registerLazySingleton<AdminDataSource>(() => AdminDataSourceImpl());
+  sl.registerLazySingleton<AdminRepository>(() => AdminRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton(() => GetPendingGuidesUseCase(sl()));
+  sl.registerLazySingleton(() => ApproveGuideUseCase(sl()));
+  sl.registerLazySingleton(() => RejectGuideUseCase(sl()));
+
+  // --- Tours Deps ---
+  sl.registerLazySingleton<ToursDataSource>(() => ToursDataSourceImpl());
+  sl.registerLazySingleton<ToursRepository>(() => ToursRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton(() => CreateTourUseCase(repository: sl()));
+  sl.registerLazySingleton(() => GetAllToursUseCase(repository: sl()));
+  sl.registerLazySingleton(() => GetGuideToursUseCase(repository: sl()));
 
   // --- BLoCs ---
   sl.registerFactory<LoginBloc>(

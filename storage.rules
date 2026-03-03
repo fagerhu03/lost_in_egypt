@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// Craft rules based on standard secure defaults but allowing guide applications
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Allow user to upload and read their own profile images
+    match /profile_images/{imageId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && imageId.matches('profile_' + request.auth.uid + '.*');
+    }
+
+    // Allow user to upload their own guide documents
+    match /guide_applications/{userId}/{document=**} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow reading public assets (e.g. landmarks/tours might be public to logged in users)
+    match /tours/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // Typically restricted to guides only
+    }
+    
+    // Community avatars/posts
+    match /community/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}

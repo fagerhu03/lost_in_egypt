@@ -1,0 +1,71 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import '../../data/models/tour_model.dart';
+import 'tours_data_source.dart';
+import 'package:path/path.dart' as path;
+
+class ToursDataSourceImpl implements ToursDataSource {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  @override
+  Future<void> createTour(TourModel tour, List<File> imageFiles) async {
+    List<String> imageUrls = [];
+
+    // Upload images
+    for (int i = 0; i < imageFiles.length; i++) {
+      final file = imageFiles[i];
+      final extension = path.extension(file.path);
+      final fileName = '${tour.id}_$i$extension';
+      final ref = _storage.ref().child('tours/${tour.guideId}/${tour.id}/$fileName');
+      
+      await ref.putFile(file);
+      final url = await ref.getDownloadURL();
+      imageUrls.add(url);
+    }
+
+    // Update tour with image URLs
+    final updatedTour = TourModel(
+      id: tour.id,
+      guideId: tour.guideId,
+      title: tour.title,
+      description: tour.description,
+      destinations: tour.destinations,
+      price: tour.price,
+      meetingLatitude: tour.meetingLatitude,
+      meetingLongitude: tour.meetingLongitude,
+      meetingTime: tour.meetingTime,
+      frequency: tour.frequency,
+      images: imageUrls,
+      maxAttendees: tour.maxAttendees,
+      rating: tour.rating,
+      reviewCount: tour.reviewCount,
+      createdAt: tour.createdAt,
+    );
+
+    // Save to Firestore
+    await _firestore.collection('tours').doc(tour.id).set(updatedTour.toMap());
+  }
+
+  @override
+  Future<List<TourModel>> getToursForGuide(String guideId) async {
+    final snapshot = await _firestore
+        .collection('tours')
+        .where('guideId', isEqualTo: guideId)
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => TourModel.fromMap(doc.data(), doc.id)).toList();
+  }
+
+  @override
+  Future<List<TourModel>> getAllTours() async {
+    final snapshot = await _firestore
+        .collection('tours')
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => TourModel.fromMap(doc.data(), doc.id)).toList();
+  }
+}

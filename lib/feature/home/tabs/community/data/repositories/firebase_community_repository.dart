@@ -117,6 +117,7 @@ class FirebaseCommunityRepository {
       'userName': userDetails['name'],
       'userFlag': userDetails['flag'] ?? '🇪🇬',
       'userAvatar': userDetails['avatar'],
+      'isVerifiedGuide': userDetails['isVerifiedGuide'] ?? false,
       'content': content,
       'images': imageUrls,
       'locationName': locationName,
@@ -169,11 +170,12 @@ class FirebaseCommunityRepository {
 
   // --- Keep Existing Helper Methods (getUserDetails, deletePost, comments, uploadImages) ---
   // Just ensuring they exist in your file as before.
-  Future<Map<String, String>> _getUserDetails() async {
+  Future<Map<String, dynamic>> _getUserDetails() async {
     final user = FirebaseAuth.instance.currentUser;
     String name = "Traveler";
     String avatar = "";
     String flag = '🇪🇬';
+    bool isGuide = false;
     if (user != null) {
       final userDoc = await _usersRef.doc(user.uid).get();
       if (userDoc.exists) {
@@ -182,6 +184,7 @@ class FirebaseCommunityRepository {
         String last = data['lastName'] ?? "";
         if (first.isNotEmpty || last.isNotEmpty) name = "$first $last".trim();
         avatar = data['profileImageUrl'] ?? "";
+        isGuide = data['isVerifiedGuide'] ?? false;
         // Attempt to derive flag from stored nationality (ISO code preferred)
         final nat = (data['nationality'] ?? '').toString();
         if (nat.length == 2) {
@@ -221,7 +224,7 @@ class FirebaseCommunityRepository {
         }
       }
     }
-    return {'name': name, 'avatar': avatar, 'flag': flag};
+    return {'name': name, 'avatar': avatar, 'flag': flag, 'isVerifiedGuide': isGuide};
   }
 
   // Convert ISO country code (2 letters) to regional indicator emoji flag

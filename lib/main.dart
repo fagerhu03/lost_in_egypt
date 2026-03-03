@@ -21,6 +21,7 @@ import 'feature/onboarding/onboarding_screen.dart';
 // ✅ add these imports for saved theme
 import 'feature/home/tabs/more/data/settings_repository.dart';
 import 'feature/auth/data/models/user.dart';
+import 'feature/auth/presentation/email_verification_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -152,6 +153,9 @@ class _AuthGateState extends State<AuthGate> {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
               );
+            }
+            if (!firebaseUser.emailVerified) {
+              return const EmailVerificationScreen();
             }
             return const HomeWrapper();
           },

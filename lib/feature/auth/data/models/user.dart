@@ -23,6 +23,13 @@ class UserModel extends UserEntity {
     super.emailVerified,
     super.visitedLandmarks,
     required super.createdAt,
+    super.applicationStatus,
+    super.motaLicenseNumber,
+    super.syndicateNumber,
+    super.certifiedLanguages,
+    super.guideDocuments,
+    super.isVerifiedGuide,
+    super.rejectionReason,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, String documentId) {
@@ -53,6 +60,15 @@ class UserModel extends UserEntity {
       isDarkMode: data['preferences']?['darkMode'] ?? false,
       language: data['preferences']?['language'] ?? 'English',
 
+      // Guide Fields
+      applicationStatus: data['applicationStatus'] ?? 'none',
+      motaLicenseNumber: data['motaLicenseNumber'] ?? '',
+      syndicateNumber: data['syndicateNumber'] ?? '',
+      certifiedLanguages: List<String>.from(data['certifiedLanguages'] ?? []),
+      guideDocuments: Map<String, String>.from(data['guideDocuments'] ?? {}),
+      isVerifiedGuide: data['isVerifiedGuide'] ?? false,
+      rejectionReason: data['rejectionReason'],
+
       // Timestamps
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -80,6 +96,13 @@ class UserModel extends UserEntity {
         'darkMode': isDarkMode,
         'language': language,
       },
+      'applicationStatus': applicationStatus,
+      'motaLicenseNumber': motaLicenseNumber,
+      'syndicateNumber': syndicateNumber,
+      'certifiedLanguages': certifiedLanguages,
+      'guideDocuments': guideDocuments,
+      'isVerifiedGuide': isVerifiedGuide,
+      'rejectionReason': rejectionReason,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -105,6 +128,13 @@ class UserModel extends UserEntity {
     bool? phoneVerified,
     bool? emailVerified,
     DateTime? createdAt,
+    String? applicationStatus,
+    String? motaLicenseNumber,
+    String? syndicateNumber,
+    List<String>? certifiedLanguages,
+    Map<String, String>? guideDocuments,
+    bool? isVerifiedGuide,
+    String? rejectionReason,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -128,6 +158,13 @@ class UserModel extends UserEntity {
       phoneVerified: phoneVerified ?? this.phoneVerified,
       emailVerified: emailVerified ?? this.emailVerified,
       createdAt: createdAt ?? this.createdAt,
+      applicationStatus: applicationStatus ?? this.applicationStatus,
+      motaLicenseNumber: motaLicenseNumber ?? this.motaLicenseNumber,
+      syndicateNumber: syndicateNumber ?? this.syndicateNumber,
+      certifiedLanguages: certifiedLanguages ?? this.certifiedLanguages,
+      guideDocuments: guideDocuments ?? this.guideDocuments,
+      isVerifiedGuide: isVerifiedGuide ?? this.isVerifiedGuide,
+      rejectionReason: rejectionReason ?? this.rejectionReason,
     );
   }
 }

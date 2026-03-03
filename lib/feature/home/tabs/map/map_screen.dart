@@ -11,7 +11,7 @@ import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart
 
 import '../../../../core/di/service_locator.dart';
 import '../home/data/models/map_item_models.dart';
-import './place_detail_screen.dart';
+import './presentation/place_detail_screen.dart';
 import './widgets/map_filter_sheet.dart';
 import './widgets/navigation_info_bar.dart';
 import './widgets/route_steps_sheet.dart';

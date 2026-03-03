@@ -762,7 +762,11 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Text(
-        '🧳 Traveler',
+        _currentUser?.role == 'admin'
+            ? '👑 Admin'
+            : _currentUser?.isVerifiedGuide == true
+                ? '🧭 Verified Guide'
+                : '🧳 Tourist',
         style: TextStyle(
           color: onSurface,
           fontSize: 16,
@@ -869,7 +873,34 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             ),
           ),
           const SizedBox(height: 12),
-          _buildVerificationItem("Email", _currentUser?.emailVerified ?? false),
+          _buildVerificationItem(
+            "Email", 
+            _currentUser?.emailVerified ?? false,
+            onResend: () async {
+              try {
+                if (_firebaseUser != null && !_firebaseUser!.emailVerified) {
+                  await _firebaseUser!.sendEmailVerification();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Verification email sent! Check your inbox."),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Could not send email: $e"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+          ),
           const SizedBox(height: 8),
           _buildVerificationItem("Phone", _currentUser?.phoneVerified ?? false),
         ],
@@ -877,7 +908,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildVerificationItem(String label, bool isVerified) {
+  Widget _buildVerificationItem(String label, bool isVerified, {VoidCallback? onResend}) {
     return Row(
       children: [
         Icon(
@@ -893,10 +924,28 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             fontSize: 14,
           ),
         ),
+        if (!isVerified && onResend != null) ...[
+          const Spacer(),
+          TextButton(
+            onPressed: onResend,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              "Resend",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
-
   Widget _buildSubmitButton(Color primary, Color onSurface) {
     return SizedBox(
       width: double.infinity,

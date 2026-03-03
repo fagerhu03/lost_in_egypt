@@ -20,6 +20,7 @@ class CommunityPostModel extends CommunityPost {
     required super.isLikedByMe,
     required super.isDislikedByMe,
     required super.isSavedByMe,
+    required super.isVerifiedGuide,
     required this.timestamp,
   });
 
@@ -65,6 +66,7 @@ class CommunityPostModel extends CommunityPost {
       isLikedByMe: likesList.contains(currentUid),
       isDislikedByMe: dislikesList.contains(currentUid),
       isSavedByMe: savedList.contains(currentUid),
+      isVerifiedGuide: data['isVerifiedGuide'] ?? false,
 
       comments: data['commentsCount'] ?? 0,
       images: List<String>.from(data['images'] ?? []), 
