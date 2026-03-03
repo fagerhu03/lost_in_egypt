@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'hieroglyphics_overlay.dart';
+import 'ufo_overlay.dart';
+import 'sandstorm_overlay.dart';
 
 class MapSearchBar extends StatelessWidget {
   final TextEditingController searchController;
@@ -57,6 +60,22 @@ class MapSearchBar extends StatelessWidget {
                 fontSize: 15,
               ),
               textInputAction: TextInputAction.search,
+              onSubmitted: (value) {
+                final lower = value.trim().toLowerCase();
+                if (lower == "1922") {
+                  searchController.clear();
+                  searchFocusNode.unfocus();
+                  HieroglyphicsOverlay.show(context);
+                } else if (lower == "alien" || lower == "ufo" || lower == "area 51") {
+                  searchController.clear();
+                  searchFocusNode.unfocus();
+                  UfoOverlay.show(context);
+                } else if (lower == "sandstorm") {
+                  searchController.clear();
+                  searchFocusNode.unfocus();
+                  SandstormOverlay.show(context);
+                }
+              },
               decoration: InputDecoration(
                 hintText: 'Search places...',
                 hintStyle: TextStyle(

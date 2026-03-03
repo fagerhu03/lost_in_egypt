@@ -151,7 +151,8 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                               ),
                             ),
                           ),
-                          Icon(Icons.star, color: goldButtonColor, size: 55),
+                          // The Badge Icon itself
+                          Icon(widget.badge.iconData, color: goldButtonColor, size: 55),
                         ],
                       ),
                     ),

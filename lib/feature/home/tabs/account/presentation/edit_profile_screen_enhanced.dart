@@ -10,6 +10,8 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
+import '../../camera/widgets/badge_unlock_dialog.dart';
+import '../domain/badge_constants.dart';
 
 class EditProfileScreenEnhanced extends StatefulWidget {
   const EditProfileScreenEnhanced({super.key});
@@ -254,6 +256,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         visitedLandmarks: _currentUser!.visitedLandmarks,
       );
 
+      // Easter Egg: The Hidden Vault (Imhotep)
+      bool justUnlockedImhotep = false;
+      if (fName.trim().toLowerCase() == 'imhotep') {
+        if (!updatedUser.visitedLandmarks.contains('imhotep_secret')) {
+          updatedUser.visitedLandmarks.add('imhotep_secret');
+          justUnlockedImhotep = true;
+        }
+      }
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(updatedUser.id)
@@ -270,13 +281,18 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       await _firebaseUser?.updateDisplayName("$fName $lName");
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text("Profile Updated ✅"),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
-        );
-        Navigator.pop(context);
+        if (justUnlockedImhotep) {
+           final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == 'imhotep_secret');
+           BadgeUnlockDialog.show(context, badge);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("Profile Updated ✅"),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          );
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       _showError("Error: $e");

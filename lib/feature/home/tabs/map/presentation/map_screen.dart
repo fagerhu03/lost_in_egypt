@@ -22,10 +22,12 @@ import 'package:lost_in_egypt/feature/home/tabs/map/widgets/navigation_info_bar.
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/route_steps_sheet.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_bar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_results.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/widgets/sandstorm_overlay.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_bloc.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_event.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_state.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -58,6 +60,7 @@ class _MapScreenViewState extends State<MapScreenView> {
   bool _routeBoundsApplied = false;
   bool _isFollowingUser = true;
   bool _isProgrammaticMove = false;
+  final FlutterTts _flutterTts = FlutterTts();
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -332,6 +335,24 @@ class _MapScreenViewState extends State<MapScreenView> {
   }
 
   void _startLiveNavigation() async {
+    final state = context.read<MapBloc>().state;
+    final dest = state.navigationDestination;
+    
+    // Easter Egg: Mummy's Curse
+    if (dest != null && (dest.title.toLowerCase().contains('valley of the kings') || dest.title.toLowerCase().contains('tomb'))) {
+      await _flutterTts.setPitch(0.4);
+      await _flutterTts.setSpeechRate(0.3);
+      await _flutterTts.speak("You dare awaken the Pharaoh... The curse is upon you.");
+    }
+    
+    // Easter Egg: Sandstorm Mode
+    if (dest != null && dest.title.toLowerCase().contains('sahara desert')) {
+      SandstormOverlay.show(context);
+      await _flutterTts.setPitch(0.6);
+      await _flutterTts.setSpeechRate(0.4);
+      await _flutterTts.speak("The desert consumes all.");
+    }
+
     context.read<MapBloc>().add(const MapLiveNavigationStarted());
     _isFollowingUser = true;
     

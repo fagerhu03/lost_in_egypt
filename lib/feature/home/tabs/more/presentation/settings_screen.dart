@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
+import '../../account/domain/badge_constants.dart';
+import '../../camera/widgets/badge_unlock_dialog.dart';
+import '../../account/widgets/scarab_overlay.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,6 +18,9 @@ class _SettingsScreenState extends State<SettingsScreen>
   final SettingsRepository _repository = SettingsRepository();
   UserModel? _currentUser;
   bool _isLoading = true;
+  int _versionTapCount = 0;
+  int _themeTapCount = 0;
+  DateTime _lastThemeTap = DateTime.now();
 
   @override
   void initState() {
@@ -55,6 +61,20 @@ class _SettingsScreenState extends State<SettingsScreen>
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+    }
+  }
+
+  void _onVersionTapped() {
+    _versionTapCount++;
+    if (_versionTapCount == 5) {
+      if (_currentUser != null && !_currentUser!.visitedLandmarks.contains('easter_egg_pharaoh')) {
+        final newLandmarks = List<String>.from(_currentUser!.visitedLandmarks)..add('easter_egg_pharaoh');
+        _updateSetting('visitedLandmarks', newLandmarks);
+        
+        final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == 'easter_egg_pharaoh');
+        BadgeUnlockDialog.show(context, badge);
+      }
+      _versionTapCount = 0;
     }
   }
 
@@ -280,6 +300,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                                         onTap: () async {
                                           final newValue = !isDarkNow;
 
+                                          // Easter Egg check: Scarab Swarm
+                                          final now = DateTime.now();
+                                          if (now.difference(_lastThemeTap).inMilliseconds < 800) {
+                                            _themeTapCount++;
+                                            if (_themeTapCount >= 4) {
+                                              _themeTapCount = 0;
+                                              ScarabOverlay.show(context);
+                                            }
+                                          } else {
+                                            _themeTapCount = 1; // reset if too slow
+                                          }
+                                          _lastThemeTap = now;
+
                                           // 1) change theme instantly
                                           ThemeController.setDark(newValue);
 
@@ -383,6 +416,25 @@ class _SettingsScreenState extends State<SettingsScreen>
                                         ),
                                       );
                                     },
+                            ),
+                            const SizedBox(height: 32),
+                            
+                            // Version / Easter Egg Trigger
+                            Center(
+                              child: GestureDetector(
+                                onTap: _onVersionTapped,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    "Version 1.0.0",
+                                    style: TextStyle(
+                                      color: textColor.withValues(alpha: 0.5),
+                                      fontFamily: "Marcellus",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 32),
                           ],

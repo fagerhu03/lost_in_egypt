@@ -96,3 +96,8 @@ class CameraError extends CameraState {
 
   const CameraError(this.message, {this.isApiKeyError = false});
 }
+
+/// Easter Egg state for Sphinx Riddle
+class CameraSphinxSecret extends CameraState {
+  const CameraSphinxSecret();
+}

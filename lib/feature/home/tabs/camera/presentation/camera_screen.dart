@@ -18,6 +18,7 @@ import '../widgets/camera_result_sheet.dart';
 import '../widgets/camera_overlay_controls.dart';
 import '../widgets/badge_unlock_dialog.dart';
 import '../widgets/translation_draggable_panel.dart';
+import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -96,6 +97,18 @@ class _CameraScreenState extends State<CameraScreen> {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFFE6A44A)),
       );
+    }
+
+    if (state is CameraSphinxSecret) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => _buildSphinxDialog(dialogContext),
+        );
+      });
+      return const Center(child: CircularProgressIndicator(color: Color(0xFFE6A44A)));
     }
 
     if (state is CameraReady) {
@@ -198,6 +211,158 @@ class _CameraScreenState extends State<CameraScreen> {
             ),
         ],
       ),
+    );
+  }
+  Widget _buildSphinxDialog(BuildContext dialogContext) {
+    bool isAnswered = false;
+    bool isCorrect = false;
+    dynamic unlockedBadge;
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+
+        final Color cardColor = isDark ? theme.colorScheme.surface.withValues(alpha: 0.95) : const Color(0xFFF3F2E4);
+        final Color goldColor = const Color(0xFFC79A00);
+        final Color textColor = isDark ? Colors.white : const Color(0xFFC79A00);
+        final Color bodyTextColor = isDark ? Colors.white70 : Colors.black87;
+        
+        final Color primaryBtnBg = goldColor;
+        final Color primaryBtnText = const Color(0xFF1A1A1A);
+        final Color secondaryBtnBg = isDark ? Colors.black26 : const Color(0xFF1E1E1E);
+        final Color secondaryBtnText = goldColor;
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: goldColor, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: goldColor.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header Icon
+                Icon(
+                  isAnswered ? (isCorrect ? Icons.auto_awesome : Icons.warning_amber_rounded) : Icons.help_outline_rounded,
+                  color: isAnswered ? (isCorrect ? goldColor : Colors.red) : goldColor,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                
+                // Title
+                Text(
+                  isAnswered 
+                      ? (isCorrect ? "You May Pass 🦁" : "Incorrect, Mortal 🌪️")
+                      : "The Sphinx's Riddle 🦁",
+                  style: TextStyle(
+                    fontFamily: "Marcellus",
+                    color: isAnswered ? (isCorrect ? textColor : Colors.red) : textColor,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                
+                // Content
+                Text(
+                  isAnswered
+                      ? (isCorrect 
+                          ? "Your wisdom equals the ancients. The Sphinx permits your journey to continue." 
+                          : "The sands of time will swallow your ignorance. Return when you have learned.")
+                      : "\"What walks on four legs in the morning, two at noon, and three in the evening?\"",
+                  style: TextStyle(
+                    color: bodyTextColor,
+                    fontSize: 18,
+                    fontFamily: isAnswered ? null : "Marcellus",
+                    fontStyle: isAnswered ? FontStyle.normal : FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                
+                // Actions
+                if (isAnswered)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryBtnBg,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        // Capture a valid top-level context BEFORE we pop the dialog
+                        final validContext = Navigator.of(context, rootNavigator: true).context;
+                        
+                        Navigator.pop(dialogContext);
+                        _cameraCubit.resetToReady();
+                        
+                        if (isCorrect && unlockedBadge != null) {
+                          // Wait for the popup collapse animation to finish
+                          Future.delayed(const Duration(milliseconds: 400), () {
+                            if (validContext.mounted) {
+                              BadgeUnlockDialog.show(validContext, unlockedBadge);
+                            }
+                          });
+                        }
+                      },
+                      child: Text(
+                        "Continue",
+                        style: TextStyle(color: primaryBtnText, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: secondaryBtnBg,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            side: BorderSide(color: secondaryBtnText.withValues(alpha: 0.3), width: 1),
+                          ),
+                          onPressed: () => setState(() { isAnswered = true; isCorrect = false; }),
+                          child: Text("An Animal", style: TextStyle(color: secondaryBtnText)),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: secondaryBtnBg,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            side: BorderSide(color: secondaryBtnText.withValues(alpha: 0.3), width: 1),
+                          ),
+                          onPressed: () async {
+                            setState(() { isAnswered = true; isCorrect = true; });
+                            // Fire and wait for unlock check to see if we actually unlocked it
+                            unlockedBadge = await _cameraCubit.unlockSecretBadge('sphinx_solver');
+                          },
+                          child: Text("A Human", style: TextStyle(color: secondaryBtnText)),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

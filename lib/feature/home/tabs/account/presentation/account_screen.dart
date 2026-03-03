@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
+import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_model.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -96,6 +97,12 @@ class _AccountScreenState extends State<AccountScreen> {
     final Color cardColor = isDark ? surface.withValues(alpha: 0.5) : const Color(0xFFF3F2E4);
     // Gold button color from prototype
     final Color goldButtonColor = const Color(0xFFC79A00);
+
+    int trueVisitedCount = 0;
+    if (_user != null) {
+      final secretBadgeIds = BadgeConstants.allBadges.where((b) => b.isSecret).map((b) => b.id).toList();
+      trueVisitedCount = _user!.visitedLandmarks.where((id) => !secretBadgeIds.contains(id)).length;
+    }
 
     return Scaffold(
       backgroundColor: bg,
@@ -212,7 +219,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                           const Icon(Icons.place, color: Colors.amber, size: 18),
                                           const SizedBox(width: 8),
                                           Text(
-                                            "${_user!.visitedLandmarks.length} Places Visited",
+                                            "$trueVisitedCount Places Visited",
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.bold,
@@ -228,18 +235,27 @@ class _AccountScreenState extends State<AccountScreen> {
                                     Container(
                                       width: double.infinity,
                                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                                      child: Wrap(
-                                        alignment: WrapAlignment.center,
-                                        spacing: 12,
-                                        runSpacing: 16,
-                                        children: List.generate(
-                                          BadgeConstants.allBadges.length,
-                                          (index) {
-                                            final badge = BadgeConstants.allBadges[index];
-                                            final isUnlocked = _user!.visitedLandmarks.length >= badge.requiredVisits;
-                                            return _buildBadgeIcon(badge, isUnlocked, onSurface);
-                                          },
-                                        ),
+                                      child: Builder(
+                                        builder: (context) {
+                                          final displayBadges = BadgeConstants.allBadges.where((b) {
+                                            return !b.isSecret || _user!.visitedLandmarks.contains(b.id);
+                                          }).toList();
+                                          
+                                          return Wrap(
+                                            alignment: WrapAlignment.center,
+                                            spacing: 6,
+                                            runSpacing: 10,
+                                            children: List.generate(
+                                              displayBadges.length,
+                                              (index) {
+                                                final badge = displayBadges[index];
+                                                final isUnlocked = _user!.visitedLandmarks.contains(badge.id) || 
+                                                    (trueVisitedCount >= badge.requiredVisits && !badge.isSecret);
+                                                return _buildBadgeIcon(badge, isUnlocked, onSurface);
+                                              },
+                                            ),
+                                          );
+                                        }
                                       ),
                                     ),
                                     const SizedBox(height: 20),
@@ -369,13 +385,13 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  Widget _buildBadgeIcon(dynamic badge, bool isUnlocked, Color onSurface) {
+  Widget _buildBadgeIcon(BadgeModel badge, bool isUnlocked, Color onSurface) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 50,
-          height: 50,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isUnlocked
@@ -387,16 +403,20 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           child: isUnlocked
-              ? const Icon(Icons.star, color: Colors.amber, size: 24)
-              : const Icon(Icons.lock, color: Colors.grey, size: 20),
+              ? Icon(badge.iconData, color: Colors.amber, size: 22)
+              : const Icon(Icons.lock, color: Colors.grey, size: 18),
         ),
-        const SizedBox(height: 8),
-        Text(
-          badge.name,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
-            color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
+        const SizedBox(height: 6),
+        SizedBox(
+          width: 64, // Keep names from spreading too wide and forcing wraps
+          child: Text(
+            badge.name,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
+              color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
+            ),
           ),
         ),
       ],

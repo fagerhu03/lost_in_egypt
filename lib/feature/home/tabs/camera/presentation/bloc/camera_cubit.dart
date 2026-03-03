@@ -23,7 +23,7 @@ class CameraCubit extends ChangeNotifier {
   List<CameraDescription> _cameras = [];
   int _selectedCameraIndex = 0;
   
-  // Translation
+  // Translation & AR
   final TextRecognizer _textRecognizer = TextRecognizer();
   OnDeviceTranslator? _translator;
   bool _isProcessingFrame = false;
@@ -283,11 +283,19 @@ class CameraCubit extends ChangeNotifier {
       if (_state is CameraReady) {
         final currentState = _state as CameraReady;
         if (!currentState.isTranslateMode) return;
-        
+
         // Perform translation
         Map<String, String> currentTranslations = {};
         for (final TextBlock block in recognizedText.blocks) {
           final originalText = block.text.trim();
+          final lowerText = originalText.toLowerCase();
+
+          // Easter Egg: The Sphinx's Riddle
+          if (lowerText.contains("riddle") || lowerText.contains("sphinx")) {
+            _emit(const CameraSphinxSecret());
+            return;
+          }
+
           if (originalText.isNotEmpty && _translator != null) {
             try {
               final translated = await _translator!.translateText(originalText);
@@ -334,6 +342,17 @@ class CameraCubit extends ChangeNotifier {
 
       _emit(const CameraAnalyzing());
 
+      // Easter Egg: The Sphinx's Riddle
+      final inputImage = InputImage.fromFilePath(image.path);
+      final recognizedText = await _textRecognizer.processImage(inputImage);
+      for (final TextBlock block in recognizedText.blocks) {
+        final lowerText = block.text.trim().toLowerCase();
+        if (lowerText.contains("riddle") || lowerText.contains("sphinx")) {
+          _emit(const CameraSphinxSecret());
+          return;
+        }
+      }
+
       // Identify landmark using repository
       final landmark = await _landmarkRepository.identifyLandmark(File(image.path));
 
@@ -372,17 +391,35 @@ class CameraCubit extends ChangeNotifier {
         return;
       }
 
+      await _processImageForTranslation(image.path);
+    } catch (e) {
+      debugPrint("Gallery translation error: $e");
+      _emit(CameraError('Failed to translate gallery image: $e'));
+    }
+  }
+
+  Future<void> _processImageForTranslation(String imagePath) async {
+    try {
       _emit(const CameraAnalyzing(isGalleryImage: true));
 
-      final inputImage = InputImage.fromFilePath(image.path);
+      final inputImage = InputImage.fromFilePath(imagePath);
       
       // Get image size for overlay
-      final file = File(image.path);
+      final file = File(imagePath);
       final bytes = await file.readAsBytes();
       final decodedImage = await decodeImageFromList(bytes);
       final imageSize = Size(decodedImage.width.toDouble(), decodedImage.height.toDouble());
       
       final recognizedText = await _textRecognizer.processImage(inputImage);
+
+      // Easter Egg: The Sphinx's Riddle
+      for (final TextBlock block in recognizedText.blocks) {
+        final lowerText = block.text.trim().toLowerCase();
+        if (lowerText.contains("riddle") || lowerText.contains("sphinx")) {
+          _emit(const CameraSphinxSecret());
+          return;
+        }
+      }
 
       // Try to download translation models if not already done
       if (!_translatorInitialized || _translator == null) {
@@ -426,7 +463,7 @@ class CameraCubit extends ChangeNotifier {
           translations: currentTranslations,
           sourceLang: _sourceLang,
           targetLang: _targetLang,
-          galleryImagePath: image.path,
+          galleryImagePath: imagePath,
         ));
       } else {
         _emit(const CameraError('No text found in the selected image.'));
@@ -442,10 +479,31 @@ class CameraCubit extends ChangeNotifier {
     if (_controller == null || !_controller!.value.isInitialized) return;
     if (_state is CameraAnalyzing) return;
 
+    final wasTranslateMode = _state is CameraReady && (_state as CameraReady).isTranslateMode;
+
     try {
-      _emit(const CameraAnalyzing());
+      _emit(wasTranslateMode ? const CameraAnalyzing(isGalleryImage: true) : const CameraAnalyzing());
 
       final XFile imageFile = await _controller!.takePicture();
+      
+      // If we are translating, just freeze and show translation immediately
+      // without triggering Gamification gamification or API calls.
+      if (wasTranslateMode) {
+        await _processImageForTranslation(imageFile.path);
+        return;
+      }
+
+      // Easter Egg: The Sphinx's Riddle
+      final inputImage = InputImage.fromFilePath(imageFile.path);
+      final recognizedText = await _textRecognizer.processImage(inputImage);
+      for (final TextBlock block in recognizedText.blocks) {
+        final lowerText = block.text.trim().toLowerCase();
+        if (lowerText.contains("riddle") || lowerText.contains("sphinx")) {
+          _emit(const CameraSphinxSecret());
+          return;
+        }
+      }
+
       final landmark = await _landmarkRepository.identifyLandmark(File(imageFile.path));
 
       if (landmark == null) {
@@ -614,6 +672,38 @@ class CameraCubit extends ChangeNotifier {
       });
     } catch (e) {
       debugPrint("Error recording landmark visit: $e");
+      return null;
+    }
+  }
+
+  /// Gamification: Unlock Secret Badge
+  Future<BadgeModel?> unlockSecretBadge(String badgeId) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      
+      // Get current data first (reads from cache if offline)
+      final doc = await userRef.get(const GetOptions(source: Source.serverAndCache));
+      if (!doc.exists) return null;
+      
+      final data = doc.data()!;
+      List<String> visited = List<String>.from(data['visitedLandmarks'] ?? []);
+      
+      if (!visited.contains(badgeId)) {
+        // Fire and forget update to support offline unlocks
+        userRef.update({'visitedLandmarks': FieldValue.arrayUnion([badgeId])});
+        
+        try {
+          return BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint("Error unlocking secret badge: $e");
       return null;
     }
   }
