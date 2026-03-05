@@ -123,7 +123,9 @@ class MapFilterSheet extends StatelessWidget {
                         ? allItems.where(_shouldShowItem).length
                         : category.id == 'favorites'
                             ? savedPlaceIds.length
-                            : allItems
+                            : category.id == 'open_now'
+                                ? allItems.where((item) => item.isCurrentlyOpen).length
+                                : allItems
                             .where((item) =>
                     item.category.toLowerCase() ==
                         category.id.toLowerCase())

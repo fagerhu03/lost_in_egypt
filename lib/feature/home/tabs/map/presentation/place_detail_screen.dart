@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 
 class PlaceDetailSheet extends StatefulWidget {
   final MapItem place;
@@ -215,39 +216,53 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             itemCount: widget.place.imagePaths.length,
                             onPageChanged: (index) => setState(() => _currentImageIndex = index),
                             itemBuilder: (context, index) {
-                              return Image.network(
-                                widget.place.imagePaths[index],
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    color: onSurface.withOpacity(0.06),
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: primary,
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                loadingProgress.expectedTotalBytes!
-                                            : null,
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => FullScreenGallery(
+                                        imageUrls: widget.place.imagePaths,
+                                        initialIndex: index,
+                                        title: widget.place.title,
                                       ),
                                     ),
                                   );
                                 },
-                                errorBuilder: (c, e, s) => Container(
-                                  color: onSurface.withOpacity(0.06),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.image_not_supported_outlined,
-                                            color: onSurface.withOpacity(0.35), size: 50),
-                                        const SizedBox(height: 8),
-                                        Text('Photo not available',
-                                            style: TextStyle(
-                                                color: onSurface.withOpacity(0.4),
-                                                fontSize: 12)),
-                                      ],
+                                child: Image.network(
+                                  widget.place.imagePaths[index],
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      color: onSurface.withOpacity(0.06),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: primary,
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (c, e, s) => Container(
+                                    color: onSurface.withOpacity(0.06),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.image_not_supported_outlined,
+                                              color: onSurface.withOpacity(0.35), size: 50),
+                                          const SizedBox(height: 8),
+                                          Text('Photo not available',
+                                              style: TextStyle(
+                                                  color: onSurface.withOpacity(0.4),
+                                                  fontSize: 12)),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
