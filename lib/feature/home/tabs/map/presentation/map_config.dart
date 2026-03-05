@@ -274,6 +274,7 @@ class MapConfig {
 
   static const List<UiCategory> categories = [
     UiCategory('all', 'All', '🗺️'),
+    UiCategory('favorites', 'Favorites', '❤️'),
     UiCategory('tourism', 'Tourism', '🏛️'),
     UiCategory('historical', 'Historical', '🏺'),
     UiCategory('museum', 'Museums', '🖼️'),

@@ -270,7 +270,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     );
 
     // ✅ FIX: toMap
-    await firestore.collection('users').doc(user.uid).set(newUser.toMap());
+    await firestore.collection('users').doc(user.uid).set(newUser.toMap(), SetOptions(merge: true));
   }
 
   // ✅ NEW: Correct Get Profile Implementation

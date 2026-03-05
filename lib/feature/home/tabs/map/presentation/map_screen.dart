@@ -7,6 +7,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 import 'package:lost_in_egypt/core/di/service_locator.dart';
@@ -16,6 +18,9 @@ import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_s
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_marker_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 import './place_detail_screen.dart';
+import './saved_places_screen.dart';
+import './near_me_sheet.dart';
+import './trip_planner_sheet.dart';
 import './map_config.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_filter_sheet.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/navigation_info_bar.dart';
@@ -72,11 +77,20 @@ class _MapScreenViewState extends State<MapScreenView> {
   Brightness? _lastBrightness;
 
   StreamSubscription<Position>? _positionStream;
+  Set<String> _savedPlaceIds = {};
+  Set<String> _visitedLandmarkIds = {};
+
+  // Multi-stop trip state
+  List<MapItem> _tripItinerary = [];
+  int _tripCurrentIndex = -1;
+  bool get _isTripActive => _tripItinerary.isNotEmpty && _tripCurrentIndex >= 0;
 
   @override
   void initState() {
     super.initState();
     _initializeMapServices();
+    _fetchSavedPlaceIds();
+    _fetchVisitedLandmarks();
 
     _searchController.addListener(() {
       context.read<MapBloc>().add(MapSearchQueryChanged(_searchController.text));
@@ -107,6 +121,36 @@ class _MapScreenViewState extends State<MapScreenView> {
     } else {
       // Zoom to user's location only if no place is focused
       await _zoomToUserLocation();
+    }
+  }
+
+  Future<void> _fetchSavedPlaceIds() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists && mounted) {
+        setState(() {
+          _savedPlaceIds = Set<String>.from(doc.data()?['savedPlaces'] ?? []);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching saved places: $e');
+    }
+  }
+
+  Future<void> _fetchVisitedLandmarks() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists && mounted) {
+        setState(() {
+          _visitedLandmarkIds = Set<String>.from(doc.data()?['visitedLandmarks'] ?? []);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching visited landmarks: $e');
     }
   }
 
@@ -215,11 +259,11 @@ class _MapScreenViewState extends State<MapScreenView> {
     }
 
     List<MapItem> filteredItems;
-    if (state.selectedUiCategoryId != 'all') {
-      // Category filter active → show ALL places in that category, no zoom filter
+    if (state.selectedUiCategoryId == 'favorites') {
+      filteredItems = state.allItems.where((item) => _savedPlaceIds.contains(item.id)).toList();
+    } else if (state.selectedUiCategoryId != 'all') {
       filteredItems = state.allItems;
     } else {
-      // 'All' mode → use zoom + category-aware filtering
       filteredItems = MarkerFilterService.filterByZoom(state.allItems, state.currentZoom);
     }
 
@@ -229,12 +273,14 @@ class _MapScreenViewState extends State<MapScreenView> {
 
     final markers = filteredItems.map((item) {
       final isSelected = state.selectedPlace?.id == item.id;
+      final isVisited = _visitedLandmarkIds.contains(item.id) ||
+          _visitedLandmarkIds.contains(item.title);
       return Marker(
         markerId: MarkerId(item.id),
         position: LatLng(item.coordinate.latitude, item.coordinate.longitude),
-        // No InfoWindow — detail sheet handles place info
         icon: _markerService.getMarkerIconByCategory(item, isSelected),
         anchor: const Offset(0.5, 1.0),
+        alpha: isVisited ? 0.7 : 1.0,
         onTap: () {
           debugPrint('📍 Marker tapped: ${item.title} (id: ${item.id})');
           _searchController.clear();
@@ -576,6 +622,7 @@ class _MapScreenViewState extends State<MapScreenView> {
                           builder: (_) => MapFilterSheet(
                             selectedCategory: state.selectedUiCategoryId,
                             allItems: state.allItemsCache,
+                            savedPlaceIds: _savedPlaceIds,
                             onCategorySelected: (category) => Navigator.pop(context, category),
                           ),
                         );
@@ -613,6 +660,89 @@ class _MapScreenViewState extends State<MapScreenView> {
                   ),
                 ),
 
+              if (!state.isSearchActive && !state.isNavigationMode)
+                Positioned(
+                  bottom: state.selectedPlace != null ? 420 : 180,
+                  right: 20,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Trip Planner
+                      FloatingActionButton.small(
+                        heroTag: "trip_planner_btn",
+                        backgroundColor: chipBg(),
+                        onPressed: () async {
+                          final itinerary = await Navigator.push<List<MapItem>>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TripPlannerSheet(allItems: state.allItemsCache),
+                            ),
+                          );
+                          if (itinerary != null && itinerary.isNotEmpty && mounted) {
+                            setState(() {
+                              _tripItinerary = itinerary;
+                              _tripCurrentIndex = 0;
+                            });
+                            final firstStop = itinerary.first;
+                            context.read<MapBloc>().add(MapPlaceSelected(firstStop));
+                            _focusOnPlace(firstStop);
+                            // Start directions to first stop
+                            context.read<MapBloc>().add(
+                              MapDirectionsRequested(
+                                destination: firstStop,
+                                apiKey: _directionsApiKey,
+                                mode: state.selectedTravelMode,
+                              ),
+                            );
+                          }
+                        },
+                        child: Icon(Icons.route_rounded, color: primary, size: 20),
+                      ),
+                      const SizedBox(height: 10),
+                      // Near Me
+                      FloatingActionButton.small(
+                        heroTag: "near_me_btn",
+                        backgroundColor: chipBg(),
+                        onPressed: () async {
+                          final selectedPlace = await showModalBottomSheet<MapItem>(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => NearMeSheet(allItems: state.allItemsCache),
+                          );
+                          if (selectedPlace != null && mounted) {
+                            context.read<MapBloc>().add(MapPlaceSelected(selectedPlace));
+                            _focusOnPlace(selectedPlace);
+                          }
+                        },
+                        child: Icon(Icons.near_me, color: primary, size: 20),
+                      ),
+                      const SizedBox(height: 10),
+                      // Saved Places
+                      FloatingActionButton(
+                        heroTag: "saved_places_btn",
+                        backgroundColor: chipBg(),
+                        onPressed: () async {
+                          final selectedPlace = await Navigator.push<MapItem>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SavedPlacesScreen(allItems: state.allItemsCache),
+                            ),
+                          );
+                          if (selectedPlace != null && mounted) {
+                            context.read<MapBloc>().add(MapPlaceSelected(selectedPlace));
+                            _focusOnPlace(selectedPlace);
+                          }
+                        },
+                        child: Icon(
+                          Icons.bookmarks_rounded,
+                          color: primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               if (!state.isSearchActive)
                 Positioned(
                   bottom: state.selectedPlace != null ? 350 : state.isNavigationMode ? 280 : 110,
@@ -640,6 +770,145 @@ class _MapScreenViewState extends State<MapScreenView> {
                     label: Text('Reset', style: TextStyle(color: onSurface.withOpacity(0.9))),
                   ),
                 ),
+              // Trip progress bar
+              if (_isTripActive)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 75,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: chipBg(),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32, height: 32,
+                          decoration: BoxDecoration(
+                            color: primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${_tripCurrentIndex + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Stop ${_tripCurrentIndex + 1} of ${_tripItinerary.length}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: onSurface.withOpacity(0.5),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                _tripItinerary[_tripCurrentIndex].title,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: onSurface,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_tripCurrentIndex < _tripItinerary.length - 1)
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _tripCurrentIndex++;
+                              });
+                              final nextStop = _tripItinerary[_tripCurrentIndex];
+                              context.read<MapBloc>().add(MapPlaceSelected(nextStop));
+                              _focusOnPlace(nextStop);
+                              context.read<MapBloc>().add(
+                                MapDirectionsRequested(
+                                  destination: nextStop,
+                                  apiKey: _directionsApiKey,
+                                  mode: state.selectedTravelMode,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: primary,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Next Stop',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (_tripCurrentIndex >= _tripItinerary.length - 1)
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _tripItinerary = [];
+                                _tripCurrentIndex = -1;
+                              });
+                              context.read<MapBloc>().add(MapNavigationCleared());
+                              context.read<MapBloc>().add(const MapPlaceSelected(null));
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Done! 🎉',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _tripItinerary = [];
+                              _tripCurrentIndex = -1;
+                            });
+                            context.read<MapBloc>().add(MapNavigationCleared());
+                            context.read<MapBloc>().add(const MapPlaceSelected(null));
+                          },
+                          child: Icon(Icons.close, size: 20, color: onSurface.withOpacity(0.5)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
               if (state.selectedPlace != null && !state.isNavigationMode)
                 PlaceDetailSheet(
@@ -659,6 +928,7 @@ class _MapScreenViewState extends State<MapScreenView> {
                   onScrollExtentChanged: (extent) {
                     if (mounted) setState(() => _sheetExtent = extent);
                   },
+                  onSavedToggled: () => _fetchSavedPlaceIds(),
                 ),
 
               if (state.isNavigationMode && !state.isLiveNavigating)

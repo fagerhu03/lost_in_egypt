@@ -1,4 +1,9 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class PlaceDetailSheet extends StatefulWidget {
@@ -7,6 +12,7 @@ class PlaceDetailSheet extends StatefulWidget {
   final VoidCallback onShowOnMap;
   final VoidCallback onDirections;
   final ValueChanged<double>? onScrollExtentChanged;
+  final VoidCallback? onSavedToggled;
 
   const PlaceDetailSheet({
     super.key,
@@ -15,6 +21,7 @@ class PlaceDetailSheet extends StatefulWidget {
     required this.onShowOnMap,
     required this.onDirections,
     this.onScrollExtentChanged,
+    this.onSavedToggled,
   });
 
   @override
@@ -25,6 +32,113 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
   int _currentImageIndex = 0;
+  bool _isSaved = false;
+  String? _userId;
+  double? _distanceKm;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfSaved();
+    _calculateDistance();
+  }
+
+  Future<void> _checkIfSaved() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _userId = user.uid;
+      final doc = await FirebaseFirestore.instance.collection('users').doc(_userId).get();
+      if (doc.exists && mounted) {
+        final savedPlaces = List<String>.from(doc.data()?['savedPlaces'] ?? []);
+        setState(() {
+          _isSaved = savedPlaces.contains(widget.place.id);
+        });
+      }
+    }
+  }
+
+  Future<void> _calculateDistance() async {
+    try {
+      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      final distMeters = Geolocator.distanceBetween(
+        pos.latitude, pos.longitude,
+        widget.place.coordinate.latitude, widget.place.coordinate.longitude,
+      );
+      if (mounted) {
+        setState(() {
+          _distanceKm = distMeters / 1000;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _toggleSave() async {
+    if (_userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must be logged in to save places.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaved = !_isSaved;
+    });
+
+    try {
+      if (_isSaved) {
+        await FirebaseFirestore.instance.collection('users').doc(_userId).update({
+          'savedPlaces': FieldValue.arrayUnion([widget.place.id])
+        });
+      } else {
+        await FirebaseFirestore.instance.collection('users').doc(_userId).update({
+          'savedPlaces': FieldValue.arrayRemove([widget.place.id])
+        });
+      }
+      widget.onSavedToggled?.call();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaved = !_isSaved;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update favorite: $e')),
+        );
+      }
+    }
+  }
+
+  String _formatDistance(double km) {
+    if (km < 1) return '${(km * 1000).round()} m away';
+    if (km < 10) return '${km.toStringAsFixed(1)} km away';
+    return '${km.round()} km away';
+  }
+
+  String _estimateFare(double km) {
+    // Egyptian taxi fare: ~10 EGP base + ~5 EGP/km
+    final fare = (10 + km * 5).round();
+    final fareHigh = (fare * 1.5).round();
+    return '~$fare–$fareHigh EGP by taxi';
+  }
+
+  String _getOpeningStatus() {
+    if (widget.place.openingHoursText.isNotEmpty) {
+      return widget.place.isCurrentlyOpen ? 'Open Now' : 'Closed';
+    }
+    return '';
+  }
+
+  String _getTodayHours() {
+    if (widget.place.openingHoursText.isEmpty) return '';
+    final lines = widget.place.openingHoursText.split('\n');
+    final weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final today = weekdays[DateTime.now().weekday - 1];
+    for (final line in lines) {
+      if (line.contains(today)) {
+        return line.replaceFirst('$today: ', '').trim();
+      }
+    }
+    return lines.first;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +255,6 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             },
                           )
                         : widget.place.imagePath.isNotEmpty
-                            // Fallback to single imagePath if imagePaths is empty but imagePath exists
                             ? Image.network(
                                 widget.place.imagePath,
                                 fit: BoxFit.cover,
@@ -200,7 +313,6 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       ),
                     ),
                   ),
-                  // Dots indicator for carousel
                   if (widget.place.imagePaths.length > 1)
                     Positioned(
                       bottom: 12,
@@ -310,7 +422,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           primary: primary,
                           onSurface: onSurface,
                           isDark: isDark,
-                          onTap: widget.onDirections, // ← UPDATED
+                          onTap: widget.onDirections,
                         ),
                         _buildActionButton(
                           icon: Icons.share,
@@ -322,13 +434,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           onTap: () {},
                         ),
                         _buildActionButton(
-                          icon: Icons.bookmark_border,
-                          label: "Save",
+                          icon: _isSaved ? Icons.favorite : Icons.favorite_border,
+                          label: _isSaved ? "Saved" : "Save",
                           isPrimary: false,
                           primary: primary,
                           onSurface: onSurface,
                           isDark: isDark,
-                          onTap: () {},
+                          onTap: _toggleSave,
+                          iconColor: _isSaved ? Colors.red : primary,
                         ),
                       ],
                     ),
@@ -371,12 +484,25 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         iconColor: primary,
                         onSurface: onSurface,
                       ),
-                    _buildInfoTile(
-                      icon: Icons.access_time,
-                      text: "Open • Closes 10:00 PM",
-                      iconColor: Colors.orange,
-                      onSurface: onSurface,
-                    ),
+
+                    // Distance from user
+                    if (_distanceKm != null)
+                      _buildInfoTile(
+                        icon: Icons.near_me_outlined,
+                        text: _formatDistance(_distanceKm!),
+                        iconColor: Colors.blue,
+                        onSurface: onSurface,
+                      ),
+
+                    // Real opening hours
+                    if (_getOpeningStatus().isNotEmpty)
+                      _buildInfoTile(
+                        icon: Icons.access_time,
+                        text: '${_getOpeningStatus()} • ${_getTodayHours()}',
+                        iconColor: widget.place.isCurrentlyOpen ? Colors.green : Colors.red,
+                        onSurface: onSurface,
+                      ),
+
                     if (widget.place.price > 0)
                       _buildInfoTile(
                         icon: Icons.confirmation_number_outlined,
@@ -385,6 +511,38 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         iconColor: Colors.green,
                         onSurface: onSurface,
                       ),
+
+                    // Estimated taxi fare
+                    if (_distanceKm != null && _distanceKm! > 1)
+                      _buildInfoTile(
+                        icon: Icons.local_taxi_outlined,
+                        text: _estimateFare(_distanceKm!),
+                        iconColor: Colors.amber.shade700,
+                        onSurface: onSurface,
+                      ),
+
+                    // Reviews section
+                    if (widget.place.reviews.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Divider(
+                        thickness: 1,
+                        color: onSurface.withOpacity(0.10),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "What Travelers Say",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...widget.place.reviews.take(3).map((review) =>
+                        _buildReviewCard(review, onSurface, primary, isDark),
+                      ),
+                    ],
+
                     const SizedBox(height: 100),
                   ],
                 ),
@@ -394,6 +552,85 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
         );
       },
     ));
+  }
+
+  Widget _buildReviewCard(PlaceReview review, Color onSurface, Color primary, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: onSurface.withOpacity(isDark ? 0.06 : 0.03),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: onSurface.withOpacity(isDark ? 0.10 : 0.06),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: primary.withOpacity(0.15),
+                child: Text(
+                  review.authorName.isNotEmpty ? review.authorName[0].toUpperCase() : '?',
+                  style: TextStyle(
+                    color: primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      review.authorName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: onSurface,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        ...List.generate(5, (i) => Icon(
+                          i < review.rating.round() ? Icons.star : Icons.star_border,
+                          size: 12,
+                          color: Colors.amber,
+                        )),
+                        const SizedBox(width: 6),
+                        Text(
+                          review.relativeTime,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: onSurface.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (review.text.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              review.text.length > 200 ? '${review.text.substring(0, 200)}...' : review.text,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: onSurface.withOpacity(0.8),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _buildInfoTile({
@@ -432,6 +669,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     required Color primary,
     required Color onSurface,
     required bool isDark,
+    Color? iconColor,
   }) {
     final bg = isPrimary ? primary : Colors.transparent;
 
@@ -468,7 +706,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             ),
             child: Icon(
               icon,
-              color: isPrimary ? Colors.white : primary,
+              color: iconColor ?? (isPrimary ? Colors.white : primary),
               size: 24,
             ),
           ),

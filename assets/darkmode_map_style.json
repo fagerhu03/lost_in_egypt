@@ -3,7 +3,7 @@
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#1d2c4d"
+        "color": "#0B1D26"
       }
     ]
   },
@@ -11,7 +11,7 @@
     "elementType": "labels.text.fill",
     "stylers": [
       {
-        "color": "#8ec3b9"
+        "color": "#8BA8A0"
       }
     ]
   },
@@ -19,7 +19,7 @@
     "elementType": "labels.text.stroke",
     "stylers": [
       {
-        "color": "#1a3646"
+        "color": "#0B1D26"
       }
     ]
   },
@@ -28,7 +28,7 @@
     "elementType": "geometry.stroke",
     "stylers": [
       {
-        "color": "#4b6878"
+        "color": "#1F3A3D"
       }
     ]
   },
@@ -37,9 +37,6 @@
     "elementType": "labels",
     "stylers": [
       {
-        "color": "#1d2c4d"
-      },
-      {
         "visibility": "off"
       }
     ]
@@ -49,7 +46,7 @@
     "elementType": "labels.text.fill",
     "stylers": [
       {
-        "color": "#64779e"
+        "color": "#3A6060"
       }
     ]
   },
@@ -58,7 +55,7 @@
     "elementType": "geometry.stroke",
     "stylers": [
       {
-        "color": "#4b6878"
+        "color": "#1F3A3D"
       }
     ]
   },
@@ -67,7 +64,7 @@
     "elementType": "geometry.stroke",
     "stylers": [
       {
-        "color": "#334e87"
+        "color": "#1F3A3D"
       }
     ]
   },
@@ -76,7 +73,7 @@
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#023e58"
+        "color": "#112B36"
       }
     ]
   },
@@ -84,7 +81,7 @@
     "featureType": "landscape.natural.landcover",
     "stylers": [
       {
-        "color": "#1d2c4d"
+        "color": "#0B1D26"
       }
     ]
   },
@@ -93,34 +90,16 @@
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#283d6a"
+        "color": "#112B36"
       }
     ]
   },
   {
     "featureType": "poi",
-    "elementType": "labels.text",
+    "elementType": "labels",
     "stylers": [
       {
         "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "poi",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#6f9ba5"
-      }
-    ]
-  },
-  {
-    "featureType": "poi",
-    "elementType": "labels.text.stroke",
-    "stylers": [
-      {
-        "color": "#1d2c4d"
       }
     ]
   },
@@ -137,7 +116,7 @@
     "elementType": "geometry.fill",
     "stylers": [
       {
-        "color": "#023e58"
+        "color": "#0E2A2E"
       }
     ]
   },
@@ -146,7 +125,7 @@
     "elementType": "labels.text.fill",
     "stylers": [
       {
-        "color": "#3C7680"
+        "color": "#3A6060"
       }
     ]
   },
@@ -155,7 +134,7 @@
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#304a7d"
+        "color": "#1F3A3D"
       }
     ]
   },
@@ -173,7 +152,7 @@
     "elementType": "labels.text.fill",
     "stylers": [
       {
-        "color": "#98a5be"
+        "color": "#6A8A84"
       }
     ]
   },
@@ -182,7 +161,7 @@
     "elementType": "labels.text.stroke",
     "stylers": [
       {
-        "color": "#1d2c4d"
+        "color": "#0B1D26"
       }
     ]
   },
@@ -191,7 +170,7 @@
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#2c6675"
+        "color": "#224E50"
       }
     ]
   },
@@ -200,7 +179,7 @@
     "elementType": "geometry.stroke",
     "stylers": [
       {
-        "color": "#255763"
+        "color": "#1F3A3D"
       }
     ]
   },
@@ -209,7 +188,7 @@
     "elementType": "labels.text.fill",
     "stylers": [
       {
-        "color": "#b0d5ce"
+        "color": "#8BA8A0"
       }
     ]
   },
@@ -218,7 +197,7 @@
     "elementType": "labels.text.stroke",
     "stylers": [
       {
-        "color": "#023e58"
+        "color": "#0B1D26"
       }
     ]
   },
@@ -240,47 +219,11 @@
     ]
   },
   {
-    "featureType": "transit",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#98a5be"
-      }
-    ]
-  },
-  {
-    "featureType": "transit",
-    "elementType": "labels.text.stroke",
-    "stylers": [
-      {
-        "color": "#1d2c4d"
-      }
-    ]
-  },
-  {
-    "featureType": "transit.line",
-    "elementType": "geometry.fill",
-    "stylers": [
-      {
-        "color": "#283d6a"
-      }
-    ]
-  },
-  {
-    "featureType": "transit.station",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#3a4762"
-      }
-    ]
-  },
-  {
     "featureType": "water",
     "elementType": "geometry",
     "stylers": [
       {
-        "color": "#0e1626"
+        "color": "#081418"
       }
     ]
   },
@@ -289,7 +232,7 @@
     "elementType": "labels.text.fill",
     "stylers": [
       {
-        "color": "#4e6d70"
+        "color": "#1F3A3D"
       }
     ]
   }

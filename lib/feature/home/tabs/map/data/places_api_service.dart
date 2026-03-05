@@ -34,6 +34,8 @@ class PlacesApiService {
       'places.photos',
       'places.editorialSummary',
       'places.priceLevel',
+      'places.currentOpeningHours',
+      'places.reviews',
     ].join(',');
 
     final bodyMap = <String, dynamic>{
