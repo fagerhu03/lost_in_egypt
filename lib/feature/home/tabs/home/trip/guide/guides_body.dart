@@ -6,8 +6,12 @@ import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/widget/guide_tri
 import 'package:lost_in_egypt/theme/theme.dart';
 import '../../../navigator/widget/account_menu_button.dart';
 import '../../../navigator/widget/search_header.dart';
-import 'data/guide_model.dart';
 import 'guide_details_screen.dart';
+import '../../../../../tours/presentation/widgets/tour_card.dart';
+import '../../../../../tours/domain/repositories/tours_repository.dart';
+import '../../../../../tours/domain/entities/tour_entity.dart';
+import '../../../../../../../core/di/service_locator.dart';
+import '../../../../../auth/data/models/user.dart';
 
 class GuideBodyScreen extends StatefulWidget {
   const GuideBodyScreen({super.key});
@@ -18,54 +22,20 @@ class GuideBodyScreen extends StatefulWidget {
 
 class _GuideBodyScreenState extends State<GuideBodyScreen> {
   String? _profileImageUrl;
+  int _tabIndex = 0; // 0 for Tours, 1 for Guides
 
-  final List<GuideModel> _guides = const [
-    GuideModel(
-      name: 'Mohamed Ahmed',
-      location: 'Giza',
-      price: 'USS84',
-      languages: 'English/Arabic',
-      availability: 'Monday/Tuesday',
-      rating: 4,
-    ),
-    GuideModel(
-      name: 'Mohamed Ahmed',
-      location: 'Giza',
-      price: 'USS84',
-      languages: 'English/Arabic',
-      availability: 'Monday/Tuesday',
-      rating: 4,
-    ),
-    GuideModel(
-      name: 'Mohamed Ahmed',
-      location: 'Giza',
-      price: 'USS84',
-      languages: 'English/Arabic',
-      availability: 'Monday/Tuesday',
-      rating: 4,
-    ),
-    GuideModel(
-      name: 'Mohamed Ahmed',
-      location: 'Giza',
-      price: 'USS84',
-      languages: 'English/Arabic',
-      availability: 'Monday/Tuesday',
-      rating: 4,
-    ),
-    GuideModel(
-      name: 'Mohamed Ahmed',
-      location: 'Giza',
-      price: 'USS84',
-      languages: 'English/Arabic',
-      availability: 'Monday/Tuesday',
-      rating: 4,
-    ),
-  ];
+  late Stream<List<TourEntity>> _toursStream;
+  late Stream<QuerySnapshot> _guidesStream;
 
   @override
   void initState() {
     super.initState();
     _fetchUserProfile();
+    _toursStream = sl<ToursRepository>().getToursStream();
+    _guidesStream = FirebaseFirestore.instance
+        .collection('users')
+        .where('isVerifiedGuide', isEqualTo: true)
+        .snapshots();
   }
 
   Future<void> _fetchUserProfile() async {
@@ -187,41 +157,100 @@ class _GuideBodyScreenState extends State<GuideBodyScreen> {
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        GuideTripTypeTab(title: 'Guide', selected: true),
-                        GuideTripTypeTab(title: 'Solo trip', selected: false),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _tabIndex = 0),
+                            child: GuideTripTypeTab(title: 'Tours', selected: _tabIndex == 0),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _tabIndex = 1),
+                            child: GuideTripTypeTab(title: 'Guides', selected: _tabIndex == 1),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
 
                 Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
-                    itemBuilder: (context, index) {
-                      final guide = _guides[index];
-                      return InkWell(
-                        borderRadius: BorderRadius.circular(14),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => GuideDetailsScreen(guide: guide),
-                            ),
-                          );
-                        },
-                        child: GuideCard(guide: guide),
-                      );
-                    },
-                    separatorBuilder: (_, __) => const SizedBox(height: 14),
-                    itemCount: _guides.length,
-                  ),
+                  child: _tabIndex == 0 ? _buildToursList() : _buildGuidesList(),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildToursList() {
+    return StreamBuilder<List<TourEntity>>(
+      stream: _toursStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text('Error loading tours.'));
+        }
+        final tours = snapshot.data ?? [];
+        if (tours.isEmpty) {
+          return const Center(child: Text('No tours available.'));
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+          itemBuilder: (context, index) {
+            final tour = tours[index];
+            return TourCard(tour: tour);
+          },
+          separatorBuilder: (_, __) => const SizedBox(height: 14),
+          itemCount: tours.length,
+        );
+      },
+    );
+  }
+
+  Widget _buildGuidesList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _guidesStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text('Error loading guides.'));
+        }
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) {
+          return const Center(child: Text('No guides available.'));
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+          itemBuilder: (context, index) {
+            final data = docs[index].data() as Map<String, dynamic>;
+            final user = UserModel.fromMap(data, docs[index].id);
+            return InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => GuideDetailsScreen(guide: user),
+                  ),
+                );
+              },
+              child: GuideCard(guide: user),
+            );
+          },
+          separatorBuilder: (_, __) => const SizedBox(height: 14),
+          itemCount: docs.length,
+        );
+      },
     );
   }
 }

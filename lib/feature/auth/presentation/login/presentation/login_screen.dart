@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/forget_password/presentation/forget_password_screen.dart';
-import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/signup_screen.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/role_selection_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/complete_profile_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_field.dart';
@@ -323,7 +323,7 @@ class _LoginScreenViewState extends State<LoginScreenView> {
                            GestureDetector(
                              onTap: () {
                                Navigator.of(context).push(
-                                 FadePageRoute(page: const SignupScreen()),
+                                 FadePageRoute(page: const RoleSelectionScreen()),
                                );
                              },
                              child: const Text(

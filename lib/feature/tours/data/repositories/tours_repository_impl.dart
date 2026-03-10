@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../domain/entities/tour_entity.dart';
 import '../../domain/repositories/tours_repository.dart';
 import '../datasources/tours_data_source.dart';
 import '../models/tour_model.dart';
+import '../models/booking_model.dart';
+import '../../domain/entities/booking_entity.dart';
+import '../../domain/entities/tour_entity.dart';
 
 class ToursRepositoryImpl implements ToursRepository {
   final ToursDataSource remoteDataSource;
@@ -54,6 +56,33 @@ class ToursRepositoryImpl implements ToursRepository {
     try {
       final tours = await remoteDataSource.getAllTours();
       return Right(tours);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Stream<List<TourEntity>> getToursStream() {
+    return remoteDataSource.getToursStream();
+  }
+
+  @override
+  Future<Either<Failure, void>> bookTour(BookingEntity booking) async {
+    try {
+      final bookingModel = BookingModel(
+        id: booking.id,
+        tourId: booking.tourId,
+        userId: booking.userId,
+        guideId: booking.guideId,
+        status: booking.status,
+        paymentReference: booking.paymentReference,
+        paymentStatus: booking.paymentStatus,
+        date: booking.date,
+        createdAt: booking.createdAt,
+      );
+
+      await remoteDataSource.bookTour(bookingModel);
+      return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

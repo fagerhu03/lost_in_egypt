@@ -39,6 +39,9 @@ class UserEntity extends Equatable {
   final bool isVerifiedGuide;
   final String? rejectionReason;
 
+  final double rating;
+  final int reviewCount;
+
   const UserEntity({
     required this.id,
     required this.email,
@@ -67,6 +70,8 @@ class UserEntity extends Equatable {
     this.guideDocuments = const {},
     this.isVerifiedGuide = false,
     this.rejectionReason,
+    this.rating = 0.0,
+    this.reviewCount = 0,
   });
 
   @override
@@ -98,5 +103,7 @@ class UserEntity extends Equatable {
     guideDocuments,
     isVerifiedGuide,
     rejectionReason,
+    rating,
+    reviewCount,
   ];
 }

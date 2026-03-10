@@ -301,6 +301,76 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     }
   }
 
+  Future<void> _requestLanguageAddition() async {
+    final TextEditingController newLangController = TextEditingController();
+    final bool? shouldSubmit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Request Language Addition', style: TextStyle(fontFamily: 'Marcellus')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "By Egyptian law, guides require official certification to guide in specific languages. "
+              "Please enter the language you wish to add. An admin will verify your syndicate/MOTA records.",
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: newLangController,
+              decoration: const InputDecoration(
+                hintText: "e.g., Spanish, German, Italian",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (newLangController.text.trim().isNotEmpty) {
+                 Navigator.pop(ctx, true);
+              }
+            },
+            child: const Text('Submit Request'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSubmit == true && _firebaseUser != null) {
+      setState(() => _isLoading = true);
+      try {
+        await FirebaseFirestore.instance.collection('admin_requests').add({
+          'type': 'language_addition',
+          'userId': _firebaseUser!.uid,
+          'requestedLanguage': newLangController.text.trim(),
+          'status': 'pending',
+          'createdAt': FieldValue.serverTimestamp(),
+          'userEmail': _currentUser?.email,
+          'userName': "${_currentUser?.firstName} ${_currentUser?.lastName}",
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Request submitted! An admin will review it shortly."),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        _showError("Failed to submit request: $e");
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), backgroundColor: Colors.red),
@@ -436,6 +506,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         borderColor: borderColor,
                       ),
                       const SizedBox(height: 30),
+                      
+                      if (_currentUser?.isVerifiedGuide == true) ...[
+                        _buildSectionTitle("Guide Credentials", onSurface),
+                        _buildLabel("Certified Languages (Locked)", onSurface),
+                        _buildLanguagesField(surface, onSurface, fieldShadow, borderColor),
+                        const SizedBox(height: 30),
+                      ],
 
                       _buildVerificationStatus(surface, onSurface, borderColor),
                       const SizedBox(height: 40),
@@ -821,6 +898,48 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildLanguagesField(
+      Color surface,
+      Color onSurface,
+      BoxShadow shadow,
+      Color borderColor,
+      ) {
+    final TextEditingController langsController = TextEditingController(
+      text: _currentUser?.certifiedLanguages.isNotEmpty == true 
+        ? _currentUser!.certifiedLanguages.join(', ') 
+        : "None certified yet.",
+    );
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildField(
+          controller: langsController,
+          surface: surface,
+          onSurface: onSurface,
+          shadow: shadow,
+          borderColor: borderColor,
+          readOnly: true,
+        ),
+        const SizedBox(height: 6),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _requestLanguageAddition,
+            icon: Icon(Icons.add_circle_outline, size: 18, color: Theme.of(context).colorScheme.primary),
+            label: Text(
+              "Request New Language",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

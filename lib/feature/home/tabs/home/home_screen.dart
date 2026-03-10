@@ -18,10 +18,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _profileImageUrl;
+  late Stream<QuerySnapshot> _eventsStream;
 
   @override
   void initState() {
     super.initState();
+    _eventsStream = FirebaseFirestore.instance
+        .collection('events')
+        .limit(5)
+        .snapshots();
     _fetchUserProfile();
   }
 
@@ -203,10 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(
               height: 170,
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('events')
-                    .limit(5)
-                    .snapshots(),
+                stream: _eventsStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -278,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Expanded(
                     child: _tripCard(
-                      title: "Guide",
+                      title: "Tours & guides",
                       surface: surface,
                       textColor: onSurface,
                       shadow: cardShadow,
@@ -522,7 +524,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                title == "Guide"
+                title == "Tours & guides"
                     ? "assets/icons/guide.png"
                     : "assets/icons/solo_trip.png",
                 width: 90,

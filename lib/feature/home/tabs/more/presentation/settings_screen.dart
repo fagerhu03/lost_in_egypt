@@ -81,28 +81,11 @@ class _SettingsScreenState extends State<SettingsScreen>
   Future<void> _updateSetting(String key, dynamic value) async {
     if (_currentUser == null) return;
 
-    final updatedUser = UserModel(
-      id: _currentUser!.id,
-      email: _currentUser!.email,
-      firstName: _currentUser!.firstName,
-      lastName: _currentUser!.lastName,
-      birthDate: _currentUser!.birthDate,
-      role: _currentUser!.role,
-      profileImageUrl: _currentUser!.profileImageUrl,
-      phoneNumber: _currentUser!.phoneNumber,
-      nationality: _currentUser!.nationality,
-      isNotificationsEnabled:
-          key == 'notif' ? value : _currentUser!.isNotificationsEnabled,
-      isDarkMode: key == 'theme' ? value : _currentUser!.isDarkMode,
-      language: key == 'lang' ? value : _currentUser!.language,
-      createdAt: _currentUser!.createdAt,
-      phoneVerified: _currentUser!.phoneVerified,
-      emailVerified: _currentUser!.emailVerified,
-      instagramHandle: _currentUser!.instagramHandle,
-      twitterHandle: _currentUser!.twitterHandle,
-      bio: _currentUser!.bio,
-      interests: _currentUser!.interests,
-      visitedLandmarks: key == 'visitedLandmarks' ? value : _currentUser!.visitedLandmarks,
+    final updatedUser = _currentUser!.copyWith(
+      isNotificationsEnabled: key == 'notif' ? value : null,
+      isDarkMode: key == 'theme' ? value : null,
+      language: key == 'lang' ? value : null,
+      visitedLandmarks: key == 'visitedLandmarks' ? value : null,
     );
 
     if (mounted) {

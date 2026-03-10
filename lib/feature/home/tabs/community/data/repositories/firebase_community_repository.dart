@@ -349,14 +349,19 @@ class FirebaseCommunityRepository {
 
     // ⭐ TRIGGER NOTIFICATION (If not commenting on own post)
     if (postOwnerId != user.uid) {
-      await _notificationsRef.add({
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(postOwnerId)
+          .collection('notifications')
+          .add({
         'recipientId': postOwnerId,
         'senderId': user.uid,
         'senderName': userDetails['name'],
         'senderAvatar': userDetails['avatar'],
-        'postId': postId,
+        'title': 'New Comment',
+        'deepLinkTargetId': postId,
         'type': 'comment', // could be 'like' later
-        'message': 'commented on your post: "$text"',
+        'message': 'commented on your post: "\$text"',
         'isRead': false,
         'timestamp': FieldValue.serverTimestamp(),
       });

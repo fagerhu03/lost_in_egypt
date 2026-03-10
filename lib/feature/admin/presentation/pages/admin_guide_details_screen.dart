@@ -41,13 +41,15 @@ class AdminGuideDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final docs = applicant.guideDocuments;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F2E6),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Applicant Details'),
-        backgroundColor: const Color(0xFF714611),
-        foregroundColor: Colors.white,
+        backgroundColor: isDark ? theme.scaffoldBackgroundColor : const Color(0xFF714611),
+        foregroundColor: isDark ? Colors.white : Colors.white,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -55,7 +57,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
           children: [
             // Header Info
             Container(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
@@ -86,6 +88,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Card(
+                color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: Padding(
@@ -138,7 +141,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                       onTap: () => _showImageDialog(context, docUrl),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.grey.shade300),
                         ),
@@ -158,7 +161,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                             ),
                             Container(
                               padding: const EdgeInsets.all(8),
-                              color: Colors.grey.shade100,
+                              color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
                               child: Text(
                                 label,
                                 textAlign: TextAlign.center,
@@ -182,7 +185,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
           ),
           child: Row(
@@ -190,8 +193,8 @@ class AdminGuideDetailsScreen extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    onReject(applicant);
                     Navigator.pop(context);
+                    onReject(applicant);
                   },
                   icon: const Icon(Icons.close, color: Colors.red),
                   label: const Text('Reject', style: TextStyle(color: Colors.red)),
@@ -205,8 +208,8 @@ class AdminGuideDetailsScreen extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    onApprove(applicant);
                     Navigator.pop(context);
+                    onApprove(applicant);
                   },
                   icon: const Icon(Icons.check, color: Colors.white),
                   label: const Text('Approve', style: TextStyle(color: Colors.white)),

@@ -9,6 +9,7 @@ import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platf
 
 import 'package:lost_in_egypt/theme/app_theme.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
 
 import 'core/di/service_locator.dart' as di;
 
@@ -17,11 +18,13 @@ import 'firebase_options.dart';
 import 'feature/auth/presentation/login/presentation/login_screen.dart';
 import 'feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 import 'feature/onboarding/onboarding_screen.dart';
+import 'feature/home/notification/domain/services/local_notification_service.dart';
 
 // ✅ add these imports for saved theme
 import 'feature/home/tabs/more/data/settings_repository.dart';
 import 'feature/auth/data/models/user.dart';
 import 'feature/auth/presentation/email_verification_screen.dart';
+import 'feature/tours/presentation/pages/map_picker_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +60,13 @@ void main() async {
     mapsImplementation.useAndroidViewSurface = true;
     mapsImplementation.initializeWithRenderer(AndroidMapRenderer.latest);
   }
+  
+  try {
+    tz.initializeTimeZones();
+    await LocalNotificationService().init();
+  } catch (e) {
+    debugPrint("LocalNotifications Initialization Error: $e");
+  }
 
   runApp(const MyApp());
 }
@@ -90,6 +100,7 @@ class MyApp extends StatelessWidget {
             '/login': (context) => const LoginScreen(),
             '/signup': (context) => const SignupScreen(),
             '/home': (context) => const HomeWrapper(),
+            '/map_picker': (context) => const MapPickerScreen(),
           },
         );
       },
@@ -109,10 +120,9 @@ class _AuthGateState extends State<AuthGate> {
   final SettingsRepository _settingsRepo = SettingsRepository();
 
   String? _appliedForUid; // prevents re-applying every rebuild
+  Future<void>? _initFuture;
 
-  Future<void> _applySavedThemeIfNeeded(User firebaseUser) async {
-    if (_appliedForUid == firebaseUser.uid) return;
-
+  Future<void> _applySavedTheme(User firebaseUser) async {
     try {
       final UserModel? userModel = await _settingsRepo.fetchCurrentUser();
       ThemeController.setDark(userModel?.isDarkMode ?? false);
@@ -120,8 +130,6 @@ class _AuthGateState extends State<AuthGate> {
       // fallback if fetch fails
       ThemeController.setDark(false);
     }
-
-    _appliedForUid = firebaseUser.uid;
   }
 
   @override
@@ -140,21 +148,32 @@ class _AuthGateState extends State<AuthGate> {
         if (firebaseUser == null) {
           // Optional: reset to light on logout
           _appliedForUid = null;
+          _initFuture = null;
           // ThemeController.setDark(false);
 
           return const OnboardingScreen();
         }
 
+        if (_appliedForUid != firebaseUser.uid) {
+          _appliedForUid = firebaseUser.uid;
+          _initFuture = Future.wait([
+            firebaseUser.reload().catchError((_) {}), 
+            _applySavedTheme(firebaseUser)
+          ]);
+        }
+
         // Apply saved theme BEFORE showing HomeWrapper
         return FutureBuilder<void>(
-          future: _applySavedThemeIfNeeded(firebaseUser),
+          future: _initFuture,
           builder: (context, themeSnap) {
             if (themeSnap.connectionState == ConnectionState.waiting) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
               );
             }
-            if (!firebaseUser.emailVerified) {
+            // Always get the freshly reloaded user to ensure emailVerified is accurate
+            final freshUser = FirebaseAuth.instance.currentUser;
+            if (freshUser != null && !freshUser.emailVerified) {
               return const EmailVerificationScreen();
             }
             return const HomeWrapper();

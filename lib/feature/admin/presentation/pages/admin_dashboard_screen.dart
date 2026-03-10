@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import '../bloc/admin_guide_cubit.dart';
 import 'admin_guide_approval_screen.dart';
+import 'admin_language_requests_screen.dart';
 import '../../domain/usecases/admin_usecases.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
@@ -30,6 +31,18 @@ class AdminDashboardScreen extends StatelessWidget {
                   ),
                   child: const AdminGuideApprovalScreen(),
                 ),
+              ));
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.language, size: 32),
+            title: const Text('Language Requests', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            subtitle: const Text('Review language verification requests from guides.'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const AdminLanguageRequestsScreen(),
               ));
             },
           ),

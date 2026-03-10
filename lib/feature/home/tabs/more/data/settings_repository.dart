@@ -22,33 +22,10 @@ class SettingsRepository {
   }
 
   Future<void> updateSetting(UserModel user, String key, dynamic value) async {
-    final updatedUser = UserModel(
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      birthDate: user.birthDate,
-      role: user.role,
-      profileImageUrl: user.profileImageUrl,
-      phoneNumber: user.phoneNumber,
-      nationality: user.nationality,
-      isNotificationsEnabled: key == 'notif' ? value : user.isNotificationsEnabled,
-      isDarkMode: key == 'theme' ? value : user.isDarkMode,
-      language: key == 'lang' ? value : user.language,
-      createdAt: user.createdAt,
-      phoneVerified: user.phoneVerified,
-      emailVerified: user.emailVerified,
-      instagramHandle: user.instagramHandle,
-      twitterHandle: user.twitterHandle,
-      bio: user.bio,
-      interests: user.interests,
-      visitedLandmarks: key == 'visitedLandmarks' ? value : user.visitedLandmarks,
-    );
-
     await _firestore
         .collection('users')
         .doc(user.id)
-        .set(updatedUser.toMap(), SetOptions(merge: true));
+        .set(user.toMap(), SetOptions(merge: true));
   }
 
   Future<void> signOut() async {

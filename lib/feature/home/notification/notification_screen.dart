@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/empty_notifications_view.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/notif_card.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/notification_settings_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../tabs/community/data/repositories/firebase_community_repository.dart';
+import '../../../core/di/service_locator.dart';
+import 'domain/repositories/notifications_repository.dart';
+import 'domain/entities/notification_entity.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -15,13 +18,19 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  final FirebaseCommunityRepository _repo = FirebaseCommunityRepository();
+  final NotificationsRepository _repo = sl<NotificationsRepository>();
+  late Stream<List<NotificationEntity>> _notificationsStream;
 
   @override
   void initState() {
     super.initState();
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    _notificationsStream = _repo.getNotifications(userId);
+
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) _repo.markAllNotificationsAsRead();
+      if (mounted && userId.isNotEmpty) {
+        _repo.markAllAsRead(userId);
+      }
     });
   }
 
@@ -113,8 +122,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   const SizedBox(height: 12),
 
                   Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: _repo.getNotificationsStream(),
+                    child: StreamBuilder<List<NotificationEntity>>(
+                      stream: _notificationsStream,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -123,9 +132,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   CircularProgressIndicator(color: primary));
                         }
 
-                        final docs = snapshot.data?.docs ?? [];
+                        final notifications = snapshot.data ?? [];
 
-                        if (docs.isEmpty) {
+                        if (notifications.isEmpty) {
                           return EmptyNotificationsView(
                             onTapSettings: () =>
                                 NotificationSettingsSheet.open(context),
@@ -150,29 +159,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               ),
                             ),
 
-                            ...docs.map((doc) {
-                              final data =
-                                  doc.data() as Map<String, dynamic>;
-                              final String notifId = doc.id;
-
-                              final bool isRead = data['isRead'] ?? false;
-                              final Timestamp? ts = data['timestamp'];
-                              final date =
-                                  ts?.toDate() ?? DateTime.now();
-
-                              final String senderName =
-                                  (data['senderName'] ?? "Someone")
-                                      .toString();
-                              final String message = (data['message'] ??
-                                      "interacted with your post")
-                                  .toString();
-                              final String avatar =
-                                  (data['senderAvatar'] ?? "").toString();
-
+                            ...notifications.map((notif) {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: Dismissible(
-                                  key: ValueKey(notifId),
+                                  key: ValueKey(notif.id),
                                   direction: DismissDirection.endToStart,
                                   background: Container(
                                     alignment: Alignment.centerRight,
@@ -188,8 +179,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                         color: Colors.white),
                                   ),
                                   onDismissed: (_) async {
-                                    await _repo
-                                        .deleteNotification(notifId);
+                                    await _repo.deleteNotification(notif.id);
                                     if (mounted) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -200,13 +190,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     }
                                   },
                                   child: NotifCard(
-                                    isRead: isRead,
-                                    senderName: senderName,
-                                    message: message,
-                                    timeText: timeago.format(date),
-                                    avatarUrl: avatar.isEmpty
+                                    isRead: notif.isRead,
+                                    senderName: notif.senderName,
+                                    message: notif.message,
+                                    timeText: timeago.format(notif.timestamp),
+                                    avatarUrl: notif.senderAvatar.isEmpty
                                         ? null
-                                        : avatar,
+                                        : notif.senderAvatar,
                                     onTap: () {},
                                   ),
                                 ),

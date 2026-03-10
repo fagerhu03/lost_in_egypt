@@ -30,6 +30,8 @@ class UserModel extends UserEntity {
     super.guideDocuments,
     super.isVerifiedGuide,
     super.rejectionReason,
+    super.rating,
+    super.reviewCount,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, String documentId) {
@@ -68,6 +70,8 @@ class UserModel extends UserEntity {
       guideDocuments: Map<String, String>.from(data['guideDocuments'] ?? {}),
       isVerifiedGuide: data['isVerifiedGuide'] ?? false,
       rejectionReason: data['rejectionReason'],
+      rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: data['reviewCount'] ?? 0,
 
       // Timestamps
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -103,6 +107,8 @@ class UserModel extends UserEntity {
       'guideDocuments': guideDocuments,
       'isVerifiedGuide': isVerifiedGuide,
       'rejectionReason': rejectionReason,
+      'rating': rating,
+      'reviewCount': reviewCount,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -135,6 +141,8 @@ class UserModel extends UserEntity {
     Map<String, String>? guideDocuments,
     bool? isVerifiedGuide,
     String? rejectionReason,
+    double? rating,
+    int? reviewCount,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -165,6 +173,8 @@ class UserModel extends UserEntity {
       guideDocuments: guideDocuments ?? this.guideDocuments,
       isVerifiedGuide: isVerifiedGuide ?? this.isVerifiedGuide,
       rejectionReason: rejectionReason ?? this.rejectionReason,
+      rating: rating ?? this.rating,
+      reviewCount: reviewCount ?? this.reviewCount,
     );
   }
 }

@@ -17,7 +17,8 @@ import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/main.dart'; // Import AuthGate
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  final bool isGuidePreselected;
+  const SignupScreen({super.key, this.isGuidePreselected = false});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -62,6 +63,12 @@ class _SignupScreenState extends State<SignupScreen> {
   List<String> get _years {
     final int currentYear = DateTime.now().year;
     return List<String>.generate(100, (i) => (currentYear - i).toString());
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _applyAsGuide = widget.isGuidePreselected;
   }
 
   @override

@@ -32,6 +32,18 @@ import '../../feature/tours/data/repositories/tours_repository_impl.dart';
 import '../../feature/tours/domain/usecases/create_tour_usecase.dart';
 import '../../feature/tours/domain/usecases/get_all_tours_usecase.dart';
 import '../../feature/tours/domain/usecases/get_guide_tours_usecase.dart';
+import '../../feature/tours/domain/usecases/book_tour_usecase.dart';
+import '../../feature/tours/presentation/bloc/explorer_tours_cubit.dart';
+
+// --- Notifications ---
+import '../../feature/home/notification/data/datasources/notifications_data_source.dart';
+import '../../feature/home/notification/domain/repositories/notifications_repository.dart';
+import '../../feature/home/notification/data/repositories/notifications_repository_impl.dart';
+
+// --- Reviews ---
+import '../../feature/reviews/data/datasources/reviews_data_source.dart';
+import '../../feature/reviews/domain/repositories/reviews_repository.dart';
+import '../../feature/reviews/data/repositories/reviews_repository_impl.dart';
 
 final sl = GetIt.instance;
 
@@ -90,6 +102,15 @@ Future<void> init() async {
   sl.registerLazySingleton(() => CreateTourUseCase(repository: sl()));
   sl.registerLazySingleton(() => GetAllToursUseCase(repository: sl()));
   sl.registerLazySingleton(() => GetGuideToursUseCase(repository: sl()));
+  sl.registerLazySingleton(() => BookTourUseCase(repository: sl()));
+
+  // --- Notifications Deps ---
+  sl.registerLazySingleton<NotificationsDataSource>(() => NotificationsDataSourceImpl());
+  sl.registerLazySingleton<NotificationsRepository>(() => NotificationsRepositoryImpl(dataSource: sl()));
+
+  // --- Reviews Deps ---
+  sl.registerLazySingleton<ReviewsDataSource>(() => ReviewsDataSourceImpl());
+  sl.registerLazySingleton<ReviewsRepository>(() => ReviewsRepositoryImpl(dataSource: sl()));
 
   // --- BLoCs ---
   sl.registerFactory<LoginBloc>(
@@ -101,6 +122,10 @@ Future<void> init() async {
       mapRepository: sl(),
       navigationService: sl(),
     ),
+  );
+
+  sl.registerFactory<ExplorerToursCubit>(
+    () => ExplorerToursCubit(getAllToursUseCase: sl()),
   );
 }
 

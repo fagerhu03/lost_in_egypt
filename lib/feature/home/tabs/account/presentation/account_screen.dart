@@ -322,45 +322,8 @@ class _AccountScreenState extends State<AccountScreen> {
                           borderColor: borderColor,
                           shadow: tileShadow,
                         ),
-                        if (_user?.role == 'admin') ...[
-                          _AccountTile(
-                            title: "Admin Dashboard",
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const lost_in_egypt_admin.AdminDashboardScreen(),
-                                ),
-                              );
-                            },
-                            surface: Colors.red.withValues(alpha: 0.1),
-                            onSurface: Colors.red,
-                            borderColor: Colors.red.withValues(alpha: 0.3),
-                            shadow: tileShadow,
-                          ),
-                        ],
-                        if (_user?.isVerifiedGuide == true) ...[
-                          _AccountTile(
-                            title: "Guide Dashboard",
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => BlocProvider(
-                                    create: (context) => lost_in_egypt_tours.GuideToursCubit(
-                                      getGuideToursUseCase: GetIt.I(),
-                                    ),
-                                    child: const lost_in_egypt_tours.GuideDashboardScreen(),
-                                  ),
-                                ),
-                              );
-                            },
-                            surface: Colors.amber.withValues(alpha: 0.1),
-                            onSurface: const Color(0xFFC79A00),
-                            borderColor: Colors.amber.withValues(alpha: 0.3),
-                            shadow: tileShadow,
-                          ),
-                        ],
+
+
                         if (_user?.role == 'tourist' && _user?.applicationStatus != 'pending') ...[
                           _AccountTile(
                             title: "Apply to be a Guide",

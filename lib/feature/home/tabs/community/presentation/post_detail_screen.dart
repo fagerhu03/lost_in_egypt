@@ -21,6 +21,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final String _currentUid = FirebaseAuth.instance.currentUser?.uid ?? "";
   final FocusNode _focusNode = FocusNode();
 
+  late Stream<DocumentSnapshot> _postStream;
+  late Stream<QuerySnapshot> _commentsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _postStream = FirebaseFirestore.instance
+        .collection('community_posts')
+        .doc(widget.post.id)
+        .snapshots();
+    _commentsStream = FirebaseFirestore.instance
+        .collection('community_posts')
+        .doc(widget.post.id)
+        .collection('comments')
+        .orderBy('timestamp', descending: false)
+        .snapshots();
+  }
+
   void _submitComment() async {
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
@@ -137,10 +155,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               children: [
                 // MAIN POST (live updates)
                 StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('community_posts')
-                      .doc(widget.post.id)
-                      .snapshots(),
+                  stream: _postStream,
                   builder: (context, snapshot) {
                     if (!snapshot.hasData || !snapshot.data!.exists) {
                       return CommunityPostCard(post: widget.post, isDetail: true);
@@ -165,12 +180,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
                 // COMMENTS LIST
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('community_posts')
-                      .doc(widget.post.id)
-                      .collection('comments')
-                      .orderBy('timestamp', descending: false)
-                      .snapshots(),
+                  stream: _commentsStream,
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return Center(
@@ -178,9 +188,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       );
                     }
 
-                    final comments = snapshot.data!.docs;
+                    final rawComments = snapshot.data!.docs;
 
-                    if (comments.isEmpty) {
+                    if (rawComments.isEmpty) {
                       return Padding(
                         padding: const EdgeInsets.all(20.0),
                         child: Text(
@@ -191,8 +201,43 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       );
                     }
 
+                    final List<QueryDocumentSnapshot> regularComments = [];
+                    final List<QueryDocumentSnapshot> replies = [];
+
+                    for (var doc in rawComments) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final text = (data['text'] ?? "") as String;
+                      if (text.startsWith("@")) {
+                        replies.add(doc);
+                      } else {
+                        regularComments.add(doc);
+                      }
+                    }
+
+                    final List<QueryDocumentSnapshot> orderedComments = [];
+                    for (var parent in regularComments) {
+                      orderedComments.add(parent);
+                      final parentData = parent.data() as Map<String, dynamic>;
+                      final parentName = parentData['userName'] as String?;
+                      if (parentName != null) {
+                        final String replyPrefix = "@\$parentName ";
+                        final repliesToThis = replies.where((r) {
+                          final rData = r.data() as Map<String, dynamic>;
+                          final rText = (rData['text'] ?? "") as String;
+                          return rText.startsWith(replyPrefix);
+                        }).toList();
+                        orderedComments.addAll(repliesToThis);
+                      }
+                    }
+
+                    // Add any orphaned replies
+                    final handledReplies = orderedComments.where((c) => replies.contains(c)).toList();
+                    for (var r in replies) {
+                      if (!handledReplies.contains(r)) orderedComments.add(r);
+                    }
+
                     return Column(
-                      children: comments.map((doc) {
+                      children: orderedComments.map((doc) {
                         final data = doc.data() as Map<String, dynamic>;
                         final commentId = doc.id;
                         final ownerId = (data['userId'] ?? "") as String;

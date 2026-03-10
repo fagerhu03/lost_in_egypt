@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+
 import '../camera/presentation/camera_screen.dart';
 import '../community/presentation/community_screen.dart';
 import '../home/home_screen.dart';
-import '../map/presentation/map_screen.dart';
+import '../map/map_screen.dart';
 import '../more/presentation/more_screen.dart';
+import '../../../admin/presentation/pages/upcoming_bookings_screen.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
@@ -23,22 +29,36 @@ class _HomeWrapperState extends State<HomeWrapper>
 
   int index = 0;
   bool _isNavBarVisible = true;
+  bool _isGuide = false;
 
-  static const List<Widget> _pages = [
-    HomeScreen(),
-    CommunityScreen(),
-    MapScreen(),
-    CameraScreen(),
-    MoreScreen(),
-  ];
+  late List<Widget> _pages;
+  late List<TabItem> _navItems;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
 
+    _pages = [
+      const HomeScreen(),
+      const CommunityScreen(),
+      const MapScreen(),
+      const CameraScreen(),
+      MoreScreen(),
+    ];
+
+    _navItems = const [
+      TabItem(icon: Icons.home_filled, title: "Home"),
+      TabItem(icon: Icons.people_rounded, title: "Community"),
+      TabItem(icon: Icons.location_pin, title: "Map"),
+      TabItem(icon: Icons.camera_alt_rounded, title: "Camera"),
+      TabItem(icon: Icons.more_horiz, title: "More"),
+    ];
+
     MapFocusService.instance.tabSwitchNotifier.addListener(_handleTabSwitch);
   }
+
+
 
   void _handleTabSwitch() {
     final int i = MapFocusService.instance.tabSwitchNotifier.value;
@@ -128,13 +148,7 @@ class _HomeWrapperState extends State<HomeWrapper>
             activeColor: primary,
             color: inactive,
             elevation: 0, // keep 0, we use BoxShadow instead
-            items: const [
-              TabItem(icon: Icons.home_filled, title: "Home"),
-              TabItem(icon: Icons.people_rounded, title: "Community"),
-              TabItem(icon: Icons.location_pin, title: "Map"),
-              TabItem(icon: Icons.camera_alt_rounded, title: "Camera"),
-              TabItem(icon: Icons.more_horiz, title: "More"),
-            ],
+            items: _navItems,
             onTap: (i) {
               setState(() {
                 index = i;
