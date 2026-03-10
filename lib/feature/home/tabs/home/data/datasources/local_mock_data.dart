@@ -111,7 +111,7 @@ class LocalMockData {
       duration: "3 Hours",
       weather: "32° C",
       description: "The oldest of the Seven Wonders...",
-      isOpenNow: true,
+      isCurrentlyOpen: true,
       importance: 10, // 🆕 Added - LANDMARK (Always visible)
     ),
   ];

@@ -162,15 +162,17 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: LocalMockData.categories.map((category) {
-                  return _categoryCard(
-                    icon: category.iconPath,
-                    title: category.title,
-                    surface: surface,
-                    textColor: onSurface,
-                    shadow: cardShadow,
-                  );
-                }).toList(),
+                children: [
+                  ...LocalMockData.categories.map((category) {
+                    return _categoryCard(
+                      icon: category.iconPath,
+                      title: category.title,
+                      surface: surface,
+                      textColor: onSurface,
+                      shadow: cardShadow,
+                    );
+                  }),
+                ],
               ),
             ),
 
@@ -339,11 +341,10 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [shadow],
         border: Border.all(
-          color:
-              (Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black)
-                  .withOpacity(0.06),
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black)
+              .withOpacity(0.06),
         ),
       ),
       child: Material(
@@ -361,7 +362,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 40,
                 color: Theme.of(context).colorScheme.primary,
                 colorBlendMode: BlendMode.srcIn,
-              ),          const SizedBox(height: 8),
+              ),
+              const SizedBox(height: 8),
               Text(
                 title,
                 style: TextStyle(

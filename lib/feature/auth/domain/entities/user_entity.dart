@@ -15,6 +15,7 @@ class UserEntity extends Equatable {
   final String bio;
   final List<String> interests;
   final List<String> visitedLandmarks;
+  final List<String> savedPlaces;
 
   // Social Links
   final String instagramHandle;
@@ -55,6 +56,7 @@ class UserEntity extends Equatable {
     this.bio = '',
     this.interests = const [],
     this.visitedLandmarks = const [],
+    this.savedPlaces = const [],
     this.instagramHandle = '',
     this.twitterHandle = '',
     this.isNotificationsEnabled = true,
@@ -88,6 +90,7 @@ class UserEntity extends Equatable {
     bio,
     interests,
     visitedLandmarks,
+    savedPlaces,
     instagramHandle,
     twitterHandle,
     isNotificationsEnabled,

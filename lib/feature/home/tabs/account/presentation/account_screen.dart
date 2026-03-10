@@ -347,14 +347,6 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ],
                         _AccountTile(
-                          title: "Places",
-                          onTap: () {},
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
-                        ),
-                        _AccountTile(
                           title: "Cards Detail",
                           onTap: () {},
                           surface: surface,

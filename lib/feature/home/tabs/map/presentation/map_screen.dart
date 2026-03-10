@@ -7,6 +7,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 import 'package:lost_in_egypt/core/di/service_locator.dart';
@@ -16,7 +18,11 @@ import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_s
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_marker_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 import './place_detail_screen.dart';
+import './saved_places_screen.dart';
+import './near_me_sheet.dart';
+import './trip_planner_sheet.dart';
 import './map_config.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_filter_sheet.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/navigation_info_bar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/route_steps_sheet.dart';
@@ -48,7 +54,8 @@ class MapScreenView extends StatefulWidget {
   State<MapScreenView> createState() => _MapScreenViewState();
 }
 
-class _MapScreenViewState extends State<MapScreenView> {
+class _MapScreenViewState extends State<MapScreenView>
+    with AutomaticKeepAliveClientMixin {
   static String get _directionsApiKey =>
       dotenv.env['MAPS_API_KEY'] ?? '';
 
@@ -72,11 +79,30 @@ class _MapScreenViewState extends State<MapScreenView> {
   Brightness? _lastBrightness;
 
   StreamSubscription<Position>? _positionStream;
+  Set<String> _savedPlaceIds = {};
+  Set<String> _visitedLandmarkIds = {};
+
+  // Multi-stop trip state
+  List<MapItem> _tripItinerary = [];
+  int _tripCurrentIndex = -1;
+  bool get _isTripActive => _tripItinerary.isNotEmpty && _tripCurrentIndex >= 0;
+
+  // Expandable FAB menu state
+  bool _isFabExpanded = false;
+
+  // Cached popular nearby (shuffled once, not on every rebuild)
+  List<MapItem> _cachedPopularPlaces = [];
+  int _cachedPopularSourceHash = 0;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
     _initializeMapServices();
+    _fetchSavedPlaceIds();
+    _fetchVisitedLandmarks();
 
     _searchController.addListener(() {
       context.read<MapBloc>().add(MapSearchQueryChanged(_searchController.text));
@@ -107,6 +133,36 @@ class _MapScreenViewState extends State<MapScreenView> {
     } else {
       // Zoom to user's location only if no place is focused
       await _zoomToUserLocation();
+    }
+  }
+
+  Future<void> _fetchSavedPlaceIds() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists && mounted) {
+        setState(() {
+          _savedPlaceIds = Set<String>.from(doc.data()?['savedPlaces'] ?? []);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching saved places: $e');
+    }
+  }
+
+  Future<void> _fetchVisitedLandmarks() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists && mounted) {
+        setState(() {
+          _visitedLandmarkIds = Set<String>.from(doc.data()?['visitedLandmarks'] ?? []);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching visited landmarks: $e');
     }
   }
 
@@ -215,11 +271,13 @@ class _MapScreenViewState extends State<MapScreenView> {
     }
 
     List<MapItem> filteredItems;
-    if (state.selectedUiCategoryId != 'all') {
-      // Category filter active → show ALL places in that category, no zoom filter
+    if (state.selectedUiCategoryId == 'favorites') {
+      filteredItems = state.allItems.where((item) => _savedPlaceIds.contains(item.id)).toList();
+    } else if (state.selectedUiCategoryId == 'open_now') {
+      filteredItems = state.allItems.where((item) => item.isCurrentlyOpen).toList();
+    } else if (state.selectedUiCategoryId != 'all') {
       filteredItems = state.allItems;
     } else {
-      // 'All' mode → use zoom + category-aware filtering
       filteredItems = MarkerFilterService.filterByZoom(state.allItems, state.currentZoom);
     }
 
@@ -229,12 +287,14 @@ class _MapScreenViewState extends State<MapScreenView> {
 
     final markers = filteredItems.map((item) {
       final isSelected = state.selectedPlace?.id == item.id;
+      final isVisited = _visitedLandmarkIds.contains(item.id) ||
+          _visitedLandmarkIds.contains(item.title);
       return Marker(
         markerId: MarkerId(item.id),
         position: LatLng(item.coordinate.latitude, item.coordinate.longitude),
-        // No InfoWindow — detail sheet handles place info
         icon: _markerService.getMarkerIconByCategory(item, isSelected),
         anchor: const Offset(0.5, 1.0),
+        alpha: isVisited ? 0.7 : 1.0,
         onTap: () {
           debugPrint('📍 Marker tapped: ${item.title} (id: ${item.id})');
           _searchController.clear();
@@ -422,6 +482,7 @@ class _MapScreenViewState extends State<MapScreenView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
@@ -518,45 +579,227 @@ class _MapScreenViewState extends State<MapScreenView> {
                   }
                 },
                 onTap: (_) {
+                  // Only unfocus keyboard, don't clear search text so results persist
                   if (state.isSearchActive) {
-                    _searchController.clear();
                     _searchFocusNode.unfocus();
                   }
                   if (state.selectedPlace != null) {
                     context.read<MapBloc>().add(const MapPlaceSelected(null));
                   }
+                  if (_isFabExpanded) {
+                    setState(() => _isFabExpanded = false);
+                  }
                 },
               ),
 
-              if (!state.isSearchActive && !state.isNavigationMode)
-                Positioned(
-                  top: 110,
-                  left: 20,
+              // ── Loading overlay ──
+              if (state.isLoading && state.allItems.isEmpty)
+                Positioned.fill(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: chipBg(),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
-                      border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${_markers.length}/${state.allItems.length} places',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: onSurface.withOpacity(0.9)),
-                        ),
-                        if (state.selectedUiCategoryId != 'all')
-                          Text(
-                            MapConfig.categories.firstWhere((c) => c.id == state.selectedUiCategoryId, orElse: () => const UiCategory('', 'Unknown', '')).label,
-                            style: TextStyle(fontSize: 10, color: primary, fontWeight: FontWeight.w600),
+                    color: surface.withOpacity(0.85),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 48, height: 48,
+                            child: CircularProgressIndicator(strokeWidth: 3, color: primary),
                           ),
-                      ],
+                          const SizedBox(height: 16),
+                          Text(
+                            'Discovering Egypt...',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: onSurface.withOpacity(0.7),
+                              fontFamily: 'Marcellus',
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Loading places near you',
+                            style: TextStyle(fontSize: 13, color: onSurface.withOpacity(0.4)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
+
+              // ── Popular nearby suggestions ──
+              if (state.selectedPlace == null &&
+                  !state.isNavigationMode &&
+                  !state.isSearchActive &&
+                  !_isTripActive &&
+                  state.allItems.isNotEmpty)
+                Builder(
+                  builder: (context) {
+                    // Recompute only when source data changes
+                    final sourceHash = state.allItemsCache.length;
+                    if (_cachedPopularPlaces.isEmpty || _cachedPopularSourceHash != sourceHash) {
+                      _cachedPopularSourceHash = sourceHash;
+                      _cachedPopularPlaces = state.allItemsCache
+                          .where((p) =>
+                              p.rating >= 4.0 &&
+                              p.importance >= 7 &&
+                              p.imagePaths.isNotEmpty &&
+                              p.category.toLowerCase() != 'hotel' &&
+                              p.category.toLowerCase() != 'food' &&
+                              p.category.toLowerCase() != 'shopping')
+                          .toList()
+                        ..shuffle();
+                      _cachedPopularPlaces = _cachedPopularPlaces.take(10).toList();
+                    }
+                    final displayPlaces = _cachedPopularPlaces;
+                    if (displayPlaces.isEmpty) return const SizedBox.shrink();
+
+                    return Positioned(
+                      bottom: 105,
+                      left: 0,
+                      right: 0,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20, bottom: 8),
+                            child: Text(
+                              '🔥 Top Rated',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: onSurface.withOpacity(0.6),
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 110,
+                            child: ListView.separated(
+                              clipBehavior: Clip.none,
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              separatorBuilder: (_, __) => const SizedBox(width: 12),
+                              itemCount: displayPlaces.length,
+                              itemBuilder: (context, index) {
+                                final item = displayPlaces[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    context.read<MapBloc>().add(MapPlaceSelected(item));
+                                    _focusOnPlace(item);
+                                  },
+                                  child: Container(
+                                    width: 200,
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.15),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 5),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        // Background image
+                                        Image.network(
+                                          item.imagePaths.first,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => Container(
+                                            color: onSurface.withOpacity(0.1),
+                                            child: Icon(Icons.place, color: primary, size: 28),
+                                          ),
+                                        ),
+                                        // Gradient overlay
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                Colors.transparent,
+                                                Colors.black.withOpacity(0.75),
+                                              ],
+                                              stops: const [0.3, 1.0],
+                                            ),
+                                          ),
+                                        ),
+                                        // Category badge
+                                        Positioned(
+                                          top: 8,
+                                          left: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withOpacity(0.45),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              item.category.toUpperCase(),
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.6,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        // Bottom text
+                                        Positioned(
+                                          bottom: 10,
+                                          left: 10,
+                                          right: 10,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item.title,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w700,
+                                                  height: 1.2,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  ...List.generate(
+                                                    item.rating.round().clamp(0, 5),
+                                                    (_) => const Icon(Icons.star_rounded, size: 13, color: Color(0xFFFFD700)),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    item.rating.toStringAsFixed(1),
+                                                    style: const TextStyle(
+                                                      color: Colors.white70,
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
 
               if (!state.isSearchActive && !state.isNavigationMode)
                 Positioned(
@@ -576,6 +819,7 @@ class _MapScreenViewState extends State<MapScreenView> {
                           builder: (_) => MapFilterSheet(
                             selectedCategory: state.selectedUiCategoryId,
                             allItems: state.allItemsCache,
+                            savedPlaceIds: _savedPlaceIds,
                             onCategorySelected: (category) => Navigator.pop(context, category),
                           ),
                         );
@@ -615,16 +859,131 @@ class _MapScreenViewState extends State<MapScreenView> {
 
               if (!state.isSearchActive)
                 Positioned(
-                  bottom: state.selectedPlace != null ? 350 : state.isNavigationMode ? 280 : 110,
-                  right: 20,
-                  child: FloatingActionButton(
-                    heroTag: "location_btn",
-                    backgroundColor: chipBg(),
-                    onPressed: () => _goToUserLocation(state.isLocationPermissionGranted),
-                    child: Icon(
-                      Icons.my_location,
-                      color: state.isLocationPermissionGranted ? primary : onSurface.withOpacity(0.9),
-                    ),
+                  top: 110,
+                  left: 20,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FloatingActionButton.small(
+                        heroTag: "location_btn",
+                        backgroundColor: chipBg(),
+                        onPressed: () => _goToUserLocation(state.isLocationPermissionGranted),
+                        child: Icon(
+                          Icons.my_location,
+                          color: state.isLocationPermissionGranted ? primary : onSurface.withOpacity(0.9),
+                          size: 20,
+                        ),
+                      ),
+                      if (!state.isNavigationMode) ...[
+                        const SizedBox(height: 16),
+                        // Main toggle FAB for Explore
+                        FloatingActionButton(
+                          heroTag: 'explore_toggle_btn',
+                          backgroundColor: _isFabExpanded ? primary : chipBg(),
+                          onPressed: () => setState(() => _isFabExpanded = !_isFabExpanded),
+                          child: AnimatedRotation(
+                            turns: _isFabExpanded ? 0.125 : 0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(
+                              Icons.explore,
+                              color: _isFabExpanded ? Colors.white : primary,
+                            ),
+                          ),
+                        ),
+                        // Expandable options underneath
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOut,
+                          alignment: Alignment.topCenter,
+                          child: _isFabExpanded
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildMiniFab(
+                                        heroTag: 'trip_planner_btn',
+                                        icon: Icons.route_rounded,
+                                        label: 'Trip',
+                                        primary: primary,
+                                        chipBg: chipBg(),
+                                        onTap: () async {
+                                          setState(() => _isFabExpanded = false);
+                                          final itinerary = await Navigator.push<List<MapItem>>(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => TripPlannerSheet(allItems: state.allItemsCache),
+                                            ),
+                                          );
+                                          if (itinerary != null && itinerary.isNotEmpty && mounted) {
+                                            setState(() {
+                                              _tripItinerary = itinerary;
+                                              _tripCurrentIndex = 0;
+                                            });
+                                            final firstStop = itinerary.first;
+                                            context.read<MapBloc>().add(MapPlaceSelected(firstStop));
+                                            _focusOnPlace(firstStop);
+                                            context.read<MapBloc>().add(
+                                              MapDirectionsRequested(
+                                                destination: firstStop,
+                                                apiKey: _directionsApiKey,
+                                                mode: state.selectedTravelMode,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _buildMiniFab(
+                                        heroTag: 'near_me_btn',
+                                        icon: Icons.near_me,
+                                        label: 'Near Me',
+                                        primary: primary,
+                                        chipBg: chipBg(),
+                                        onTap: () async {
+                                          setState(() => _isFabExpanded = false);
+                                          final selectedPlace = await showModalBottomSheet<MapItem>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (_) => NearMeSheet(allItems: state.allItemsCache),
+                                          );
+                                          if (selectedPlace != null && mounted) {
+                                            context.read<MapBloc>().add(MapPlaceSelected(selectedPlace));
+                                            _focusOnPlace(selectedPlace);
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _buildMiniFab(
+                                        heroTag: 'saved_places_btn',
+                                        icon: Icons.bookmarks_rounded,
+                                        label: 'Saved',
+                                        primary: primary,
+                                        chipBg: chipBg(),
+                                        onTap: () async {
+                                          setState(() => _isFabExpanded = false);
+                                          final selectedPlace = await Navigator.push<MapItem>(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => SavedPlacesScreen(allItems: state.allItemsCache),
+                                            ),
+                                          );
+                                          if (selectedPlace != null && mounted) {
+                                            context.read<MapBloc>().add(MapPlaceSelected(selectedPlace));
+                                            _focusOnPlace(selectedPlace);
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
 
@@ -638,6 +997,145 @@ class _MapScreenViewState extends State<MapScreenView> {
                     onPressed: () => context.read<MapBloc>().add(const MapCategoryChanged('all')),
                     icon: Icon(Icons.close, color: onSurface.withOpacity(0.9), size: 18),
                     label: Text('Reset', style: TextStyle(color: onSurface.withOpacity(0.9))),
+                  ),
+                ),
+              // Trip progress bar
+              if (_isTripActive)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 75,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: chipBg(),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32, height: 32,
+                          decoration: BoxDecoration(
+                            color: primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${_tripCurrentIndex + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Stop ${_tripCurrentIndex + 1} of ${_tripItinerary.length}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: onSurface.withOpacity(0.5),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                _tripItinerary[_tripCurrentIndex].title,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: onSurface,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_tripCurrentIndex < _tripItinerary.length - 1)
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _tripCurrentIndex++;
+                              });
+                              final nextStop = _tripItinerary[_tripCurrentIndex];
+                              context.read<MapBloc>().add(MapPlaceSelected(nextStop));
+                              _focusOnPlace(nextStop);
+                              context.read<MapBloc>().add(
+                                MapDirectionsRequested(
+                                  destination: nextStop,
+                                  apiKey: _directionsApiKey,
+                                  mode: state.selectedTravelMode,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: primary,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Next Stop',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (_tripCurrentIndex >= _tripItinerary.length - 1)
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _tripItinerary = [];
+                                _tripCurrentIndex = -1;
+                              });
+                              context.read<MapBloc>().add(MapNavigationCleared());
+                              context.read<MapBloc>().add(const MapPlaceSelected(null));
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Done! 🎉',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _tripItinerary = [];
+                              _tripCurrentIndex = -1;
+                            });
+                            context.read<MapBloc>().add(MapNavigationCleared());
+                            context.read<MapBloc>().add(const MapPlaceSelected(null));
+                          },
+                          child: Icon(Icons.close, size: 20, color: onSurface.withOpacity(0.5)),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -659,6 +1157,7 @@ class _MapScreenViewState extends State<MapScreenView> {
                   onScrollExtentChanged: (extent) {
                     if (mounted) setState(() => _sheetExtent = extent);
                   },
+                  onSavedToggled: () => _fetchSavedPlaceIds(),
                 ),
 
               if (state.isNavigationMode && !state.isLiveNavigating)
@@ -950,6 +1449,50 @@ class _MapScreenViewState extends State<MapScreenView> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildMiniFab({
+    required String heroTag,
+    required IconData icon,
+    required String label,
+    required Color primary,
+    required Color chipBg,
+    required VoidCallback onTap,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FloatingActionButton.small(
+          heroTag: heroTag,
+          backgroundColor: chipBg,
+          onPressed: onTap,
+          child: Icon(icon, color: primary, size: 20),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: chipBg,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 6,
+                offset: const Offset(2, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: primary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
