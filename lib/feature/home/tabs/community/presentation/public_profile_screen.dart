@@ -74,7 +74,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 ),
                 if (widget.user.isVerifiedGuide) ...[
                   const SizedBox(width: 8),
-                  const Icon(Icons.verified, color: Colors.blue, size: 24),
+                  Icon(Icons.verified, color: Theme.of(context).colorScheme.primary, size: 24),
                 ],
               ],
             ),

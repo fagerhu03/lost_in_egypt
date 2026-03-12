@@ -302,6 +302,29 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   }
 
   Future<void> _requestLanguageAddition() async {
+    if (_firebaseUser == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final existingQuery = await FirebaseFirestore.instance
+          .collection('admin_requests')
+          .where('userId', isEqualTo: _firebaseUser!.uid)
+          .where('type', isEqualTo: 'language_addition')
+          .where('status', isEqualTo: 'pending')
+          .get();
+
+      if (existingQuery.docs.isNotEmpty) {
+        _showError("You already have a pending language request.");
+        setState(() => _isLoading = false);
+        return;
+      }
+    } catch (e) {
+      _showError("Failed to check existing requests: $e");
+      setState(() => _isLoading = false);
+      return;
+    }
+    setState(() => _isLoading = false);
+
     final TextEditingController newLangController = TextEditingController();
     final bool? shouldSubmit = await showDialog<bool>(
       context: context,

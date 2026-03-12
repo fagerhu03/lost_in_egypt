@@ -32,6 +32,12 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPassController = TextEditingController();
 
+  final FocusNode _firstNameFocus = FocusNode();
+  final FocusNode _lastNameFocus = FocusNode();
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
+  final FocusNode _confirmPassFocus = FocusNode();
+
   // 2. State Variables
   bool obscure1 = true;
   bool obscure2 = true;
@@ -78,6 +84,13 @@ class _SignupScreenState extends State<SignupScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPassController.dispose();
+
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _confirmPassFocus.dispose();
+
     super.dispose();
   }
 
@@ -284,9 +297,17 @@ class _SignupScreenState extends State<SignupScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
 
-                  // LOGO
+                  // BACK BUTTON & LOGO
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Color(0xff634700)),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+
                   Image.asset(
                     "assets/logo/logo_colorful_comp.png",
                     height: 140,
@@ -309,6 +330,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "First Name", 
                     controller: _firstNameController,
                     textInputAction: TextInputAction.next,
+                    focusNode: _firstNameFocus,
+                    onSubmitted: (_) => _lastNameFocus.requestFocus(),
                   ),
 
                   const SizedBox(height: 10),
@@ -318,6 +341,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "Last Name", 
                     controller: _lastNameController,
                     textInputAction: TextInputAction.next,
+                    focusNode: _lastNameFocus,
+                    onSubmitted: (_) => _emailFocus.requestFocus(), // Skips DOB because it's a dropdown
                   ),
 
                   const SizedBox(height: 10),
@@ -354,6 +379,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
+                    focusNode: _emailFocus,
+                    onSubmitted: (_) => _passwordFocus.requestFocus(),
                   ),
 
                   const SizedBox(height: 15),
@@ -364,6 +391,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     obscureText: obscure1,
                     controller: _passwordController,
                     textInputAction: TextInputAction.next,
+                    focusNode: _passwordFocus,
+                    onSubmitted: (_) => _confirmPassFocus.requestFocus(),
                     onVisibilityToggle: () => setState(() => obscure1 = !obscure1),
                   ),
 
@@ -375,39 +404,15 @@ class _SignupScreenState extends State<SignupScreen> {
                     obscureText: obscure2,
                     controller: _confirmPassController,
                     textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                    focusNode: _confirmPassFocus,
+                    onSubmitted: (_) {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      _handleSignup();
+                    },
                     onVisibilityToggle: () => setState(() => obscure2 = !obscure2),
                   ),
 
                   const SizedBox(height: 25),
-
-                  // APPLY AS GUIDE CHECKBOX
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _applyAsGuide,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _applyAsGuide = value ?? false;
-                          });
-                        },
-                        activeColor: const Color(0xFFD6A00F),
-                        checkColor: Colors.black87,
-                      ),
-                      const Expanded(
-                        child: Text(
-                          "I want to apply to be a Guide",
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontFamily: "Marcellus",
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 15),
 
                   // SIGN UP BUTTON
                   GestureDetector(

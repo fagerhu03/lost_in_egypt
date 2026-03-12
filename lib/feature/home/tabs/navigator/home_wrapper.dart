@@ -9,7 +9,7 @@ import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import '../camera/presentation/camera_screen.dart';
 import '../community/presentation/community_screen.dart';
 import '../home/home_screen.dart';
-import '../map/map_screen.dart';
+import '../map/presentation/map_screen.dart';
 import '../more/presentation/more_screen.dart';
 import '../../../admin/presentation/pages/upcoming_bookings_screen.dart';
 

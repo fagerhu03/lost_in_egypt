@@ -314,9 +314,9 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                           ),
                           if (widget.post.isVerifiedGuide) ...[
                             const SizedBox(width: 4),
-                            const Icon(
+                            Icon(
                               Icons.verified,
-                              color: Colors.blue,
+                              color: Theme.of(context).colorScheme.primary,
                               size: 14,
                             ),
                           ],

@@ -6,6 +6,11 @@ import 'package:lost_in_egypt/feature/home/notification/widget/notif_card.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/notification_settings_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/post_detail_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_post_model.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/public_profile_screen.dart';
+import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+
 import '../../../core/di/service_locator.dart';
 import 'domain/repositories/notifications_repository.dart';
 import 'domain/entities/notification_entity.dart';
@@ -32,6 +37,43 @@ class _NotificationScreenState extends State<NotificationScreen> {
         _repo.markAllAsRead(userId);
       }
     });
+  }
+
+  Future<void> _handleNotifTap(NotificationEntity notif) async {
+    if (!notif.isRead) {
+      await _repo.markAsRead(notif.id);
+    }
+    if (notif.deepLinkTargetId != null && notif.deepLinkTargetId!.isNotEmpty) {
+      if (notif.type == 'comment' || notif.type.startsWith('like')) {
+        try {
+          final parts = notif.deepLinkTargetId!.split('_');
+          final postId = parts[0];
+          final commentId = parts.length > 1 ? parts[1] : null;
+
+          final doc = await FirebaseFirestore.instance.collection('community_posts').doc(postId).get();
+          if (doc.exists && mounted) {
+            final post = CommunityPostModel.fromSnapshot(doc);
+            Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailScreen(
+              post: post,
+              highlightCommentId: commentId,
+            )));
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post not found')));
+          }
+        } catch(e) { /* ignore */ }
+      }
+    }
+  }
+
+  Future<void> _handleAvatarTap(String senderId) async {
+    if (senderId.isEmpty) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(senderId).get();
+      if (doc.exists && mounted) {
+        final user = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+        Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(user: user)));
+      }
+    } catch(e) { /* ignore */ }
   }
 
   @override
@@ -197,7 +239,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     avatarUrl: notif.senderAvatar.isEmpty
                                         ? null
                                         : notif.senderAvatar,
-                                    onTap: () {},
+                                    onTap: () => _handleNotifTap(notif),
+                                    onAvatarTap: () => _handleAvatarTap(notif.senderId),
                                   ),
                                 ),
                               );

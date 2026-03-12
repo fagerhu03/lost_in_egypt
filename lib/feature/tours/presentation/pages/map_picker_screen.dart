@@ -105,9 +105,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
         final address = [
-          if (place.street?.isNotEmpty == true && place.street != "Unnamed Road") place.street,
-          if (place.subLocality?.isNotEmpty == true) place.subLocality,
-          if (place.locality?.isNotEmpty == true) place.locality,
+          if (place.street?.isNotEmpty == true && place.street != "Unnamed Road" && !place.street!.contains('+')) place.street,
+          if (place.subLocality?.isNotEmpty == true && !place.subLocality!.contains('+')) place.subLocality,
+          if (place.locality?.isNotEmpty == true && !place.locality!.contains('+')) place.locality,
         ].where((e) => e != null).join(', ');
 
         setState(() {
@@ -160,6 +160,39 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                     child: Center(child: CircularProgressIndicator()),
                   )
                 : Autocomplete<MapItem>(
+                    optionsViewBuilder: (context, onSelected, options) {
+                      final isDark = Theme.of(context).brightness == Brightness.dark;
+                      final textColor = isDark ? Colors.white : Colors.black;
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4,
+                          color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
+                          ),
+                          child: SizedBox(
+                            height: 200,
+                            width: MediaQuery.of(context).size.width - 32,
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: options.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final MapItem option = options.elementAt(index);
+                                return InkWell(
+                                  onTap: () => onSelected(option),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Text(option.title, style: TextStyle(color: textColor)),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       if (textEditingValue.text.isEmpty) {
                         return const Iterable<MapItem>.empty();
@@ -277,7 +310,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                   elevation: 6,
                 ),
                 child: const Text(
-                  'Confirm Meeting Point',
+                  'Confirm Location',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),

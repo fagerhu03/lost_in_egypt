@@ -22,7 +22,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const bool isDark = false; // Forced to light mode as requested
     final bgColor = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFCFBE8);
     final textColor = isDark ? Colors.white70 : const Color(0xff634700);
 
@@ -145,7 +145,7 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const bool isDark = false; // Forced to light mode as requested
     final cardColor = isDark ? const Color(0xFF2C2C2C) : const Color(0xFFFCFBE8);
     final shadowColor = isDark ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(isSelected ? 0.15 : 0.05);
     final textColor = isDark ? Colors.white : const Color(0xff634700);

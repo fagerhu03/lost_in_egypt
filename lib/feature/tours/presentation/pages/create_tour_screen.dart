@@ -208,16 +208,20 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       itemBuilder: (context, index) {
                         return Card(
                           key: ValueKey(_destinations[index]),
-                          color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
+                          elevation: 0,
                           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: borderColor),
+                          ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                             title: Text(_destinations[index], style: TextStyle(fontWeight: FontWeight.w500, color: textColor)),
                             leading: CircleAvatar(
                               radius: 12,
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                              backgroundColor: const Color(0xFFC79A00),
+                              child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                             ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
@@ -238,6 +242,39 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                             children: [
                               Expanded(
                                 child: Autocomplete<MapItem>(
+                                  optionsViewBuilder: (context, onSelected, options) {
+                                    final isDark = Theme.of(context).brightness == Brightness.dark;
+                                    final textColor = isDark ? Colors.white : Colors.black;
+                                    return Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Material(
+                                        elevation: 4,
+                                        color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          side: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
+                                        ),
+                                        child: SizedBox(
+                                          height: 200,
+                                          width: MediaQuery.of(context).size.width - 80,
+                                          child: ListView.builder(
+                                            padding: EdgeInsets.zero,
+                                            itemCount: options.length,
+                                            itemBuilder: (BuildContext context, int index) {
+                                              final MapItem option = options.elementAt(index);
+                                              return InkWell(
+                                                onTap: () => onSelected(option),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(16.0),
+                                                  child: Text(option.title, style: TextStyle(color: textColor)),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                   optionsBuilder: (TextEditingValue textEditingValue) {
                                     if (textEditingValue.text.isEmpty) {
                                       return const Iterable<MapItem>.empty();

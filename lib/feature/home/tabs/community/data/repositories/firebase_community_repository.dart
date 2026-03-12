@@ -305,6 +305,28 @@ class FirebaseCommunityRepository {
           'dislikes': FieldValue.arrayRemove([uid]),
           'likesCount': FieldValue.increment(1),
         });
+        
+        // Notify post owner of the like
+        final postOwnerId = data['userId'];
+        if (postOwnerId != null && postOwnerId != uid) {
+          final userDetails = await _getUserDetails();
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(postOwnerId)
+              .collection('notifications')
+              .add({
+            'recipientId': postOwnerId,
+            'senderId': uid,
+            'senderName': userDetails['name'],
+            'senderAvatar': userDetails['avatar'],
+            'title': 'New Like',
+            'deepLinkTargetId': postId,
+            'type': 'like_post', 
+            'message': 'liked your post.',
+            'isRead': false,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
       }
     } else {
       if (dislikes.contains(uid)) {
@@ -321,7 +343,7 @@ class FirebaseCommunityRepository {
     }
   }
 
-  Future<void> addComment(String postId, String text) async {
+  Future<void> addComment(String postId, String text, {String? replyToId}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -333,10 +355,11 @@ class FirebaseCommunityRepository {
     final userDetails = await _getUserDetails();
 
     // Add Comment
-    await _postsRef.doc(postId).collection('comments').add({
+    final newDoc = await _postsRef.doc(postId).collection('comments').add({
       'userId': user.uid,
       'userName': userDetails['name'],
       'userAvatar': userDetails['avatar'],
+      'replyToId': replyToId,
       'text': text,
       'likes': [],
       'dislikes': [],
@@ -349,6 +372,11 @@ class FirebaseCommunityRepository {
 
     // ⭐ TRIGGER NOTIFICATION (If not commenting on own post)
     if (postOwnerId != user.uid) {
+      final isReply = replyToId != null;
+      final msg = isReply 
+          ? 'replied in your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"'
+          : 'commented on your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"';
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(postOwnerId)
@@ -358,10 +386,10 @@ class FirebaseCommunityRepository {
         'senderId': user.uid,
         'senderName': userDetails['name'],
         'senderAvatar': userDetails['avatar'],
-        'title': 'New Comment',
-        'deepLinkTargetId': postId,
-        'type': 'comment', // could be 'like' later
-        'message': 'commented on your post: "\$text"',
+        'title': isReply ? 'New Reply' : 'New Comment',
+        'deepLinkTargetId': '${postId}_${newDoc.id}',
+        'type': 'comment', 
+        'message': msg,
         'isRead': false,
         'timestamp': FieldValue.serverTimestamp(),
       });
@@ -409,6 +437,29 @@ class FirebaseCommunityRepository {
             'likes': FieldValue.arrayUnion([uid]),
             'dislikes': FieldValue.arrayRemove([uid]),
           });
+          
+          // Notify comment owner
+          final commentOwnerId = data['userId'];
+          if (commentOwnerId != null && commentOwnerId != uid) {
+            _getUserDetails().then((userDetails) {
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(commentOwnerId)
+                  .collection('notifications')
+                  .add({
+                'recipientId': commentOwnerId,
+                'senderId': uid,
+                'senderName': userDetails['name'],
+                'senderAvatar': userDetails['avatar'],
+                'title': 'New Like',
+                'deepLinkTargetId': '${postId}_${commentId}',
+                'type': 'like_comment', 
+                'message': 'liked your comment.',
+                'isRead': false,
+                'timestamp': FieldValue.serverTimestamp(),
+              });
+            });
+          }
         }
       } else {
         // TOGGLE DISLIKE
