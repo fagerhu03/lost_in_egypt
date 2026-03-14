@@ -8,7 +8,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/post_detail_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_post_model.dart';
-import 'package:lost_in_egypt/feature/home/tabs/community/presentation/public_profile_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 
 import '../../../core/di/service_locator.dart';
@@ -71,7 +71,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       final doc = await FirebaseFirestore.instance.collection('users').doc(senderId).get();
       if (doc.exists && mounted) {
         final user = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-        Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(user: user)));
+        Navigator.push(context, MaterialPageRoute(builder: (_) => UniversalProfileScreen(user: user)));
       }
     } catch(e) { /* ignore */ }
   }

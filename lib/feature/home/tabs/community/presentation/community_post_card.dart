@@ -3,12 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../domain/entities/community_post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../auth/data/models/user.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import '../../../../tours/presentation/bloc/guide_tours_cubit.dart';
-import 'public_profile_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../account/presentation/account_screen.dart';
+import '../../../../../core/widgets/universal_report_dialog.dart';
+import '../../../../admin/data/models/report_model.dart';
+import '../../../../admin/domain/repositories/reports_repository.dart';
 
 class CommunityPostCard extends StatefulWidget {
   final CommunityPost post;
@@ -93,16 +95,22 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
           doc.data() as Map<String, dynamic>,
           doc.id,
         );
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BlocProvider(
-              create: (context) =>
-                  GuideToursCubit(getGuideToursUseCase: GetIt.I()),
-              child: PublicProfileScreen(user: profileUser),
+        // If viewing own profile, redirect to Account screen
+        if (profileUser.id == FirebaseAuth.instance.currentUser?.uid) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const AccountScreen(),
             ),
-          ),
-        );
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UniversalProfileScreen(user: profileUser),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) Navigator.pop(context); // close dialog
@@ -170,42 +178,12 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
   }
 
   void _reportPost() {
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        final theme = Theme.of(ctx);
-        final onSurface = theme.colorScheme.onSurface;
-        final surface = theme.colorScheme.surface;
-
-        return AlertDialog(
-          backgroundColor: surface,
-          surfaceTintColor: Colors.transparent,
-          title: Text("Report Post", style: TextStyle(color: onSurface)),
-          content: Text(
-            "Is this content offensive or spam?",
-            style: TextStyle(color: onSurface.withOpacity(0.8)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(
-                "Cancel",
-                style: TextStyle(color: onSurface.withOpacity(0.7)),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                _repo.reportPost(widget.post.id, "User Report");
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Report sent. Thank you.")),
-                );
-              },
-              child: const Text("Report", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
+    UniversalReportDialog.show(
+      context,
+      reportType: ReportType.post,
+      reportedItemId: widget.post.id,
+      reportedItemOwnerId: widget.post.userId, // Can be empty if not passed
+      repository: GetIt.I<ReportsRepository>(),
     );
   }
 

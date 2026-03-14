@@ -140,6 +140,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
           meetingLongitude: _selectedLng!,
           meetingTime: _selectedMeetingTime!,
           frequency: freqString,
+          meetingLocationName: _selectedLocationName ?? _selectedAddress ?? "Custom Location",
           imageFiles: _selectedImages,
           maxAttendees: attendees,
         );

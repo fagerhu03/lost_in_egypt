@@ -34,6 +34,7 @@ class ToursDataSourceImpl implements ToursDataSource {
       description: tour.description,
       destinations: tour.destinations,
       price: tour.price,
+      meetingLocationName: tour.meetingLocationName,
       meetingLatitude: tour.meetingLatitude,
       meetingLongitude: tour.meetingLongitude,
       meetingTime: tour.meetingTime,

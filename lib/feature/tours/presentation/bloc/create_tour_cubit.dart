@@ -21,6 +21,7 @@ class CreateTourCubit extends Cubit<CreateTourState> {
     required double meetingLongitude,
     required DateTime meetingTime,
     required String frequency,
+    required String meetingLocationName,
     required List<File> imageFiles,
     required int maxAttendees,
   }) async {
@@ -45,6 +46,7 @@ class CreateTourCubit extends Cubit<CreateTourState> {
       meetingLongitude: meetingLongitude,
       meetingTime: meetingTime,
       frequency: frequency,
+      meetingLocationName: meetingLocationName,
       images: const [], // will be populated by DataSource
       maxAttendees: maxAttendees,
       createdAt: DateTime.now(),

@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import '../bloc/admin_guide_cubit.dart';
 import 'admin_guide_approval_screen.dart';
 import 'admin_language_requests_screen.dart';
+import 'admin_reports_screen.dart';
 import '../../domain/usecases/admin_usecases.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
@@ -54,7 +55,9 @@ class AdminDashboardScreen extends StatelessWidget {
             subtitle: const Text('Manage reported users and community posts.'),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming soon')));
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const AdminReportsScreen(),
+              ));
             },
           ),
         ],

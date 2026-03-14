@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/widget/guide_card.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/widget/guide_trip_type_tab.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
 import '../../../navigator/widget/account_menu_button.dart';
@@ -238,11 +239,12 @@ class _GuideBodyScreenState extends State<GuideBodyScreen> {
             return InkWell(
               borderRadius: BorderRadius.circular(14),
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => GuideDetailsScreen(guide: user),
-                  ),
-                );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => UniversalProfileScreen(user: user),
+                    ),
+                  );
               },
               child: GuideCard(guide: user),
             );

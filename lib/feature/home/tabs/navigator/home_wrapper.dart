@@ -62,7 +62,7 @@ class _HomeWrapperState extends State<HomeWrapper>
 
   void _handleTabSwitch() {
     final int i = MapFocusService.instance.tabSwitchNotifier.value;
-    if (!mounted) return;
+    if (!mounted || i < 0 || i >= _pages.length) return;
 
     setState(() {
       index = i;

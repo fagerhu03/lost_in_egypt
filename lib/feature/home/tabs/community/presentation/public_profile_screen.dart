@@ -1,150 +1,266 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import '../../../../auth/data/models/user.dart';
-import '../../../../tours/presentation/bloc/guide_tours_cubit.dart';
-import '../../../../tours/presentation/bloc/guide_tours_state.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
+import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_model.dart';
+import '../../../../../core/widgets/universal_report_dialog.dart';
+import '../../../../admin/data/models/report_model.dart';
+import '../../../../admin/domain/repositories/reports_repository.dart';
+import 'package:get_it/get_it.dart';
 
-class PublicProfileScreen extends StatefulWidget {
+class PublicProfileScreen extends StatelessWidget {
   final UserModel user;
 
   const PublicProfileScreen({super.key, required this.user});
 
   @override
-  State<PublicProfileScreen> createState() => _PublicProfileScreenState();
-}
-
-class _PublicProfileScreenState extends State<PublicProfileScreen> {
-  @override
-  void initState() {
-    super.initState();
-    if (widget.user.isVerifiedGuide) {
-      context.read<GuideToursCubit>().fetchTours(widget.user.id);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final bg = theme.scaffoldBackgroundColor;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+
+    final patternOpacity = isDark ? 0.20 : 0.40;
+    final borderColor =
+    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+
+    final String displayName = "${user.firstName} ${user.lastName}".trim();
+    final String profileUrl = user.profileImageUrl;
+
+    final Color cardColor = isDark ? surface.withOpacity(0.5) : const Color(0xFFF3F2E4);
+
+    final secretBadgeIds = BadgeConstants.allBadges.where((b) => b.isSecret).map((b) => b.id).toList();
+    final int trueVisitedCount = user.visitedLandmarks.where((id) => !secretBadgeIds.contains(id)).length;
+
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.user.firstName} ${widget.user.lastName}')),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 24),
-            ClipOval(
-              child: widget.user.profileImageUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: widget.user.profileImageUrl,
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.cover,
-                      memCacheHeight: 250, // Resizes the image in memory heavily improving performance
-                      memCacheWidth: 250,
-                      placeholder: (context, url) => Container(
-                        width: 120,
-                        height: 120,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        width: 120,
-                        height: 120,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
-                        child: const Icon(Icons.person, size: 60),
-                      ),
-                    )
-                  : Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.person, size: 60),
-                    ),
+      backgroundColor: bg,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: patternOpacity,
+              child: Image.asset(
+                "assets/pattern_comp.png",
+                fit: BoxFit.cover,
+                repeat: ImageRepeat.repeat,
+                errorBuilder: (c, o, s) => const SizedBox.shrink(),
+              ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          ),
+          SafeArea(
+            child: Column(
               children: [
-                Text(
-                  '${widget.user.firstName} ${widget.user.lastName}',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Icon(Icons.arrow_back_ios_new, color: onSurface, size: 20),
+                      ),
+                      const Spacer(),
+                      PopupMenuButton<String>(
+                        icon: Icon(Icons.more_vert, color: onSurface),
+                        onSelected: (value) {
+                          if (value == 'report') {
+                            UniversalReportDialog.show(
+                              context,
+                              reportType: ReportType.user,
+                              reportedItemId: user.id,
+                              repository: GetIt.I<ReportsRepository>(),
+                            );
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'report',
+                            child: Row(
+                              children: [
+                                Icon(Icons.flag, color: Colors.orange, size: 20),
+                                SizedBox(width: 8),
+                                Text('Report Profile'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                if (widget.user.isVerifiedGuide) ...[
-                  const SizedBox(width: 8),
-                  Icon(Icons.verified, color: Theme.of(context).colorScheme.primary, size: 24),
-                ],
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Stack(
+                          alignment: Alignment.topCenter,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 50),
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: cardColor,
+                                borderRadius: BorderRadius.circular(24),
+                                border: isDark ? Border.all(color: borderColor) : null,
+                                boxShadow: isDark ? [] : [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  )
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 60),
+                                  Text(
+                                    displayName,
+                                    style: TextStyle(
+                                      color: isDark ? onSurface : const Color(0xFF6B3A28),
+                                      fontSize: 22,
+                                      fontFamily: "Marcellus",
+                                    ),
+                                  ),
+                                  if (user.bio.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text(
+                                        user.bio,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: onSurface.withOpacity(0.7),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 16),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? Colors.black26 : Colors.white.withOpacity(0.6),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.place, color: Colors.amber, size: 18),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "$trueVisitedCount Places Visited",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: onSurface.withOpacity(0.8),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    child: Builder(
+                                      builder: (context) {
+                                        final displayBadges = BadgeConstants.allBadges.where((b) {
+                                          return !b.isSecret || user.visitedLandmarks.contains(b.id);
+                                        }).toList();
+                                        
+                                        return Wrap(
+                                          alignment: WrapAlignment.center,
+                                          spacing: 6,
+                                          runSpacing: 10,
+                                          children: List.generate(
+                                            displayBadges.length,
+                                            (index) {
+                                              final badge = displayBadges[index];
+                                              final isUnlocked = user.visitedLandmarks.contains(badge.id) || 
+                                                  (trueVisitedCount >= badge.requiredVisits && !badge.isSecret);
+                                              return _buildBadgeIcon(badge, isUnlocked, onSurface);
+                                            },
+                                          ),
+                                        );
+                                      }
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: surface,
+                                border: Border.all(color: cardColor, width: 4),
+                                image: profileUrl.isNotEmpty 
+                                  ? DecorationImage(
+                                      image: NetworkImage(profileUrl),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                              ),
+                              child: profileUrl.isEmpty
+                                  ? Icon(Icons.person, size: 60, color: onSurface.withOpacity(0.5))
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-            if (widget.user.bio.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  widget.user.bio,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              ),
-            ],
-            if (widget.user.isVerifiedGuide) ...[
-              const SizedBox(height: 24),
-              const Divider(),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Active Tours', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ),
-              ),
-              BlocBuilder<GuideToursCubit, GuideToursState>(
-                builder: (context, state) {
-                  if (state is GuideToursLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is GuideToursError) {
-                    return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
-                  } else if (state is GuideToursLoaded) {
-                    final tours = state.tours;
-                    if (tours.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: Center(child: Text('This guide has no active tours.')),
-                      );
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: tours.length,
-                      itemBuilder: (context, index) {
-                        final tour = tours[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(12),
-                            leading: tour.images.isNotEmpty
-                                ? Image.network(tour.images.first, width: 80, height: 80, fit: BoxFit.cover)
-                                : const Icon(Icons.tour, size: 40),
-                            title: Text(tour.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text('\$${tour.price.toStringAsFixed(2)} - ${tour.frequency}'),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              // Can navigate to a Public Tour Detail page later
-                            },
-                          ),
-                        );
-                      },
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ],
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildBadgeIcon(BadgeModel badge, bool isUnlocked, Color onSurface) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isUnlocked
+                ? Colors.amber.withOpacity(0.15)
+                : Colors.grey.withOpacity(0.1),
+            border: Border.all(
+              color: isUnlocked ? Colors.amber : Colors.grey.withOpacity(0.3),
+              width: 2,
+            ),
+          ),
+          child: isUnlocked
+              ? Icon(badge.iconData, color: Colors.amber, size: 22)
+              : const Icon(Icons.lock, color: Colors.grey, size: 18),
+        ),
+        const SizedBox(height: 6),
+        SizedBox(
+          width: 64,
+          child: Text(
+            badge.name,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
+              color: isUnlocked ? onSurface : onSurface.withOpacity(0.5),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

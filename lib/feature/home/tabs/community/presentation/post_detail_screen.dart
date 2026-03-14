@@ -6,6 +6,13 @@ import '../domain/entities/community_post.dart';
 import '../data/model/community_post_model.dart';
 import './community_post_card.dart';
 import '../data/repositories/firebase_community_repository.dart';
+import '../../../../../core/widgets/universal_report_dialog.dart';
+import '../../../../admin/data/models/report_model.dart';
+import '../../../../admin/domain/repositories/reports_repository.dart';
+import 'package:get_it/get_it.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
+import '../../../../auth/data/models/user.dart';
+import '../../account/presentation/account_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final CommunityPost post;
@@ -20,6 +27,42 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final TextEditingController _commentController = TextEditingController();
   final FirebaseCommunityRepository _repository = FirebaseCommunityRepository();
   final String _currentUid = FirebaseAuth.instance.currentUser?.uid ?? "";
+
+  Future<void> _navigateToProfile(String userId) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      if (mounted) Navigator.pop(context); // close dialog
+
+      if (doc.exists && mounted) {
+        final profileUser = UserModel.fromMap(
+          doc.data() as Map<String, dynamic>,
+          doc.id,
+        );
+        // If viewing own profile, redirect to Account screen
+        if (profileUser.id == FirebaseAuth.instance.currentUser?.uid) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AccountScreen()),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UniversalProfileScreen(user: profileUser),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // close dialog
+      debugPrint("Error navigating to profile: $e");
+    }
+  }
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _commentKeys = {};
@@ -344,23 +387,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           children: [
                             Row(
                               children: [
-                                CircleAvatar(
-                                  radius: isReply ? 10 : 12,
-                                  backgroundColor: onSurface.withOpacity(0.08),
-                                  backgroundImage: (data['userAvatar'] != null && data['userAvatar'] != "")
-                                      ? NetworkImage(data['userAvatar'])
-                                      : null,
-                                  child: (data['userAvatar'] == null || data['userAvatar'] == "")
-                                      ? Icon(Icons.person, size: isReply ? 12 : 14, color: primary)
-                                      : null,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  (data['userName'] ?? 'User') as String,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: isReply ? 12 : 13,
-                                    color: onSurface,
+                                GestureDetector(
+                                  onTap: () => _navigateToProfile(ownerId),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: isReply ? 10 : 12,
+                                        backgroundColor: onSurface.withOpacity(0.08),
+                                        backgroundImage: (data['userAvatar'] != null && data['userAvatar'] != "")
+                                            ? NetworkImage(data['userAvatar'])
+                                            : null,
+                                        child: (data['userAvatar'] == null || data['userAvatar'] == "")
+                                            ? Icon(Icons.person, size: isReply ? 12 : 14, color: primary)
+                                            : null,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        (data['userName'] ?? 'User') as String,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: isReply ? 12 : 13,
+                                          color: onSurface,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -370,33 +420,52 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 ),
                                 const Spacer(),
 
-                                if (ownerId == _currentUid)
-                                  PopupMenuButton<String>(
-                                    icon: Icon(
-                                      Icons.more_vert,
-                                      size: 16,
-                                      color: onSurface.withOpacity(0.55),
-                                    ),
-                                    color: surface,
-                                    surfaceTintColor: Colors.transparent,
-                                    onSelected: (value) {
-                                      if (value == 'delete') {
-                                        _deleteComment(commentId);
-                                      }
-                                    },
-                                    itemBuilder: (context) => const [
-                                      PopupMenuItem(
-                                        value: 'delete',
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.delete, color: Colors.red, size: 16),
-                                            SizedBox(width: 8),
-                                            Text("Delete", style: TextStyle(color: Colors.red)),
-                                          ],
-                                        ),
+                                    PopupMenuButton<String>(
+                                      icon: Icon(
+                                        Icons.more_vert,
+                                        size: 16,
+                                        color: onSurface.withOpacity(0.55),
                                       ),
-                                    ],
-                                  ),
+                                      color: surface,
+                                      surfaceTintColor: Colors.transparent,
+                                      onSelected: (value) {
+                                        if (value == 'delete') {
+                                          _deleteComment(commentId);
+                                        } else if (value == 'report') {
+                                          UniversalReportDialog.show(
+                                            context,
+                                            reportType: ReportType.comment,
+                                            reportedItemId: '${widget.post.id}_$commentId',
+                                            reportedItemOwnerId: ownerId,
+                                            repository: GetIt.I<ReportsRepository>(),
+                                          );
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        if (ownerId == _currentUid)
+                                          const PopupMenuItem(
+                                            value: 'delete',
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.delete, color: Colors.red, size: 16),
+                                                SizedBox(width: 8),
+                                                Text("Delete", style: TextStyle(color: Colors.red)),
+                                              ],
+                                            ),
+                                          ),
+                                        if (ownerId != _currentUid)
+                                          const PopupMenuItem(
+                                            value: 'report',
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.flag, color: Colors.orange, size: 16),
+                                                SizedBox(width: 8),
+                                                Text("Report Comment", style: TextStyle(color: Colors.orange)),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                               ],
                             ),
                             const SizedBox(height: 6),

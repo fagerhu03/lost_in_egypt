@@ -1,0 +1,224 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../feature/admin/data/models/report_model.dart';
+import '../../feature/admin/domain/repositories/reports_repository.dart';
+
+class UniversalReportDialog extends StatefulWidget {
+  final ReportType reportType;
+  final String reportedItemId;
+  final String? reportedItemOwnerId;
+  final ReportsRepository repository; // Pass the repository or use GetIt
+  
+  const UniversalReportDialog({
+    Key? key,
+    required this.reportType,
+    required this.reportedItemId,
+    this.reportedItemOwnerId,
+    required this.repository,
+  }) : super(key: key);
+
+  static Future<void> show(
+    BuildContext context, {
+    required ReportType reportType,
+    required String reportedItemId,
+    String? reportedItemOwnerId,
+    required ReportsRepository repository,
+  }) {
+    return showDialog(
+      context: context,
+      builder: (_) => UniversalReportDialog(
+        reportType: reportType,
+        reportedItemId: reportedItemId,
+        reportedItemOwnerId: reportedItemOwnerId,
+        repository: repository,
+      ),
+    );
+  }
+
+  @override
+  State<UniversalReportDialog> createState() => _UniversalReportDialogState();
+}
+
+class _UniversalReportDialogState extends State<UniversalReportDialog> {
+  String? _selectedReason;
+  late final List<String> _reasons;
+  final TextEditingController _descriptionController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _reasons = ReportModel.getReasonsForType(widget.reportType);
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitReport() async {
+    if (_selectedReason == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a reason for reporting.')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final reporterId = user?.uid ?? 'anonymous';
+
+      final report = ReportModel(
+        id: '', // Firestore will generate this
+        reporterId: reporterId,
+        reportedItemType: widget.reportType,
+        reportedItemId: widget.reportedItemId,
+        reportedItemOwnerId: widget.reportedItemOwnerId,
+        reason: _selectedReason!,
+        description: _descriptionController.text.trim(),
+        timestamp: DateTime.now(),
+      );
+
+      await widget.repository.submitReport(report);
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Report submitted successfully. Thank you.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to submit report: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  String _getDialogTitle() {
+    switch (widget.reportType) {
+      case ReportType.user:
+      case ReportType.guide:
+        return 'Report User';
+      case ReportType.tour:
+        return 'Report Tour';
+      case ReportType.post:
+        return 'Report Post';
+      case ReportType.comment:
+        return 'Report Comment';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _getDialogTitle(),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Why are you reporting this?',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+
+            // Use Flexible and SingleChildScrollView so it doesn't overflow
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ..._reasons.map((reason) {
+                      return RadioListTile<String>(
+                        title: Text(reason, style: const TextStyle(fontSize: 14)),
+                        value: reason,
+                        groupValue: _selectedReason,
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedReason = val;
+                          });
+                        },
+                        contentPadding: EdgeInsets.zero,
+                        visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                        activeColor: const Color(0xFFC79A00), // App primary color roughly
+                      );
+                    }).toList(),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _descriptionController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'Additional details (optional)',
+                        hintStyle: const TextStyle(fontSize: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.grey),
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Submit Button
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _submitReport,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC79A00),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        'Submit Report',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

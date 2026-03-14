@@ -188,7 +188,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                             ),
                             const SizedBox(height: 10),
                             SizedBox(
-                              height: 250,
+                              height: 320,
                               child: _GuideToursList(guideId: widget.guide.id ?? ''),
                             ),
                             const Spacer(),

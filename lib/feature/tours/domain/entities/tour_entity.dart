@@ -11,6 +11,7 @@ class TourEntity extends Equatable {
   final double meetingLongitude;
   final DateTime meetingTime;
   final String frequency; // 'Daily', 'Weekly', 'Weekends', 'One-Time'
+  final String meetingLocationName;
   final List<String> images;
   final int maxAttendees;
   final double rating;
@@ -28,6 +29,7 @@ class TourEntity extends Equatable {
     required this.meetingLongitude,
     required this.meetingTime,
     required this.frequency,
+    required this.meetingLocationName,
     required this.images,
     required this.maxAttendees,
     required this.createdAt,
@@ -47,6 +49,7 @@ class TourEntity extends Equatable {
         meetingLongitude,
         meetingTime,
         frequency,
+        meetingLocationName,
         images,
         maxAttendees,
         rating,

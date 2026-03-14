@@ -18,6 +18,10 @@ import '../../feature/admin/data/repository_impl/admin_repository_impl.dart';
 import '../../feature/admin/domain/repositories/admin_repository.dart';
 import '../../feature/admin/domain/usecases/admin_usecases.dart';
 
+// --- Reports ---
+import '../../feature/admin/domain/repositories/reports_repository.dart';
+import '../../feature/admin/data/repository_impl/reports_repository_impl.dart';
+
 // --- Guide Application ---
 import '../../feature/guide_application/data/datasources/guide_application_data_source.dart';
 import '../../feature/guide_application/domain/repositories/guide_application_repository.dart';
@@ -95,6 +99,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetPendingGuidesUseCase(sl()));
   sl.registerLazySingleton(() => ApproveGuideUseCase(sl()));
   sl.registerLazySingleton(() => RejectGuideUseCase(sl()));
+
+  // --- Reports Deps ---
+  sl.registerLazySingleton<ReportsRepository>(() => ReportsRepositoryImpl());
 
   // --- Tours Deps ---
   sl.registerLazySingleton<ToursDataSource>(() => ToursDataSourceImpl());
