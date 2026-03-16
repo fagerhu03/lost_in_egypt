@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/tour_entity.dart';
 import '../../../home/tabs/map/data/datasources/map_focus_service.dart';
 import '../../../home/tabs/home/data/models/map_item_models.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../home/tabs/map/data/places_api_service.dart';
 
 class FullScreenTourMapScreen extends StatefulWidget {
   final TourEntity tour;
@@ -211,6 +213,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                     )).toList(),
                   ),
                   const SizedBox(height: 20),
+                  // Two action buttons: Explore + Navigate Route
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -225,6 +228,21 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                       label: const Text('Explore in Main Map', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.colorScheme.primary,
+                        side: BorderSide(color: theme.colorScheme.primary, width: 2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: _navigateAsTripRoute,
+                      icon: const Icon(Icons.route_rounded),
+                      label: const Text('Navigate Tour Route', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -232,5 +250,71 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _navigateAsTripRoute() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final stops = <MapItem>[];
+
+      stops.add(PlaceModel(
+        id: 'tour_meetup_${widget.tour.id}',
+        title: '📍 Meetup: ${widget.tour.meetingLocationName}',
+        category: 'meetup',
+        coordinate: GeoPoint(widget.tour.meetingLatitude, widget.tour.meetingLongitude),
+        imagePath: widget.tour.images.isNotEmpty ? widget.tour.images.first : '',
+        locationAddress: widget.tour.meetingLocationName,
+        rating: 0,
+        price: 0,
+        duration: '',
+        weather: '',
+        description: 'Tour meetup point',
+      ));
+
+      final placesApi = sl<PlacesApiService>();
+
+      for (int i = 0; i < widget.tour.destinations.length; i++) {
+        final destName = widget.tour.destinations[i];
+        
+        final results = await placesApi.textSearch(query: "$destName Egypt", maxResultCount: 1);
+        
+        GeoPoint coord = GeoPoint(
+          widget.tour.meetingLatitude + (i + 1) * 0.001,
+          widget.tour.meetingLongitude + (i + 1) * 0.001,
+        );
+
+        if (results.isNotEmpty) {
+           final loc = results.first['location'];
+           if (loc != null) {
+             coord = GeoPoint(loc['latitude'] as double, loc['longitude'] as double);
+           }
+        }
+
+        stops.add(PlaceModel(
+          id: 'tour_dest_${widget.tour.id}_$i',
+          title: destName,
+          category: 'tourism',
+          coordinate: coord,
+          imagePath: '',
+          locationAddress: destName,
+          rating: 0,
+          price: 0,
+          duration: '',
+          weather: '',
+          description: 'Tour destination ${i + 1}',
+        ));
+      }
+
+      if (mounted) Navigator.pop(context);
+      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+      MapFocusService.instance.triggerTrip(stops);
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+    }
   }
 }

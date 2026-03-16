@@ -120,6 +120,7 @@ class _MapScreenViewState extends State<MapScreenView>
     await _checkLocationPermission();
 
     MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequested);
+    MapFocusService.instance.pendingTripNotifier.addListener(_onPendingTrip);
 
     // Rebuild markers now that custom icons are loaded
     if (mounted) {
@@ -130,6 +131,8 @@ class _MapScreenViewState extends State<MapScreenView>
     // Check if there's an item already focused before we even loaded
     if (MapFocusService.instance.focusedItemNotifier.value != null) {
       _onFocusRequested();
+    } else if (MapFocusService.instance.pendingTripNotifier.value != null) {
+      _onPendingTrip();
     } else {
       // Zoom to user's location only if no place is focused
       await _zoomToUserLocation();
@@ -192,6 +195,7 @@ class _MapScreenViewState extends State<MapScreenView>
   void dispose() {
     _positionStream?.cancel();
     MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
+    MapFocusService.instance.pendingTripNotifier.removeListener(_onPendingTrip);
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -220,6 +224,30 @@ class _MapScreenViewState extends State<MapScreenView>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<MapBloc>().add(MapPlaceSelected(item));
         _focusOnPlace(item);
+      });
+    }
+  }
+
+  void _onPendingTrip() {
+    final stops = MapFocusService.instance.pendingTripNotifier.value;
+    if (stops != null && stops.isNotEmpty && mounted) {
+      MapFocusService.instance.clearPendingTrip();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _tripItinerary = stops;
+          _tripCurrentIndex = 0;
+        });
+        final firstStop = stops.first;
+        context.read<MapBloc>().add(MapPlaceSelected(firstStop));
+        _focusOnPlace(firstStop);
+        context.read<MapBloc>().add(
+          MapDirectionsRequested(
+            destination: firstStop,
+            apiKey: _directionsApiKey,
+            mode: context.read<MapBloc>().state.selectedTravelMode,
+          ),
+        );
       });
     }
   }

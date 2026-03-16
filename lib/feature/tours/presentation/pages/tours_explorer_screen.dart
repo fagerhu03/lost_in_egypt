@@ -9,6 +9,7 @@ import '../../domain/entities/tour_entity.dart';
 import '../bloc/explorer_tours_cubit.dart';
 import '../bloc/explorer_tours_state.dart';
 import 'tour_detail_screen.dart';
+import '../widgets/tour_card.dart';
 
 class ToursExplorerScreen extends StatelessWidget {
   const ToursExplorerScreen({Key? key}) : super(key: key);
@@ -29,16 +30,214 @@ class ToursExplorerView extends StatefulWidget {
   State<ToursExplorerView> createState() => _ToursExplorerViewState();
 }
 
+enum _SortOption { newest, cheapest, priciest, highestRated, mostPopular }
+
 class _ToursExplorerViewState extends State<ToursExplorerView> {
   String _searchQuery = '';
+  _SortOption _sortOption = _SortOption.newest;
+
+  // Filters
+  RangeValues _priceRange = const RangeValues(0, 10000);
+  double _minRating = 0;
+  String? _selectedFrequency;
+  final Set<String> _activeFilters = {};
+
+  List<TourEntity> _applyFiltersAndSort(List<TourEntity> tours) {
+    var filtered = tours.where((t) {
+      // Text search
+      if (_searchQuery.isNotEmpty) {
+        final q = _searchQuery;
+        if (!t.title.toLowerCase().contains(q) &&
+            !t.destinations.any((d) => d.toLowerCase().contains(q)) &&
+            !t.meetingLocationName.toLowerCase().contains(q)) {
+          return false;
+        }
+      }
+      // Price filter
+      if (_activeFilters.contains('price')) {
+        if (t.price < _priceRange.start || t.price > _priceRange.end) return false;
+      }
+      // Rating filter
+      if (_activeFilters.contains('rating')) {
+        if (t.rating < _minRating) return false;
+      }
+      // Frequency filter
+      if (_selectedFrequency != null && _activeFilters.contains('frequency')) {
+        if (t.frequency != _selectedFrequency) return false;
+      }
+      return true;
+    }).toList();
+
+    // Sort
+    switch (_sortOption) {
+      case _SortOption.newest:
+        filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+      case _SortOption.cheapest:
+        filtered.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case _SortOption.priciest:
+        filtered.sort((a, b) => b.price.compareTo(a.price));
+        break;
+      case _SortOption.highestRated:
+        filtered.sort((a, b) => b.rating.compareTo(a.rating));
+        break;
+      case _SortOption.mostPopular:
+        filtered.sort((a, b) => b.reviewCount.compareTo(a.reviewCount));
+        break;
+    }
+    return filtered;
+  }
+
+  void _showFilterSheet(BuildContext context, List<TourEntity> allTours) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    // Calculate actual max price from tours
+    final maxPrice = allTours.isNotEmpty
+        ? allTours.map((t) => t.price).reduce((a, b) => a > b ? a : b).ceilToDouble() + 10
+        : 10000.0;
+
+    // Local state for the sheet
+    RangeValues tempPrice = _priceRange;
+    double tempRating = _minRating;
+    String? tempFrequency = _selectedFrequency;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2))),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Filters', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                      TextButton(
+                        onPressed: () {
+                          setSheetState(() {
+                            tempPrice = RangeValues(0, maxPrice);
+                            tempRating = 0;
+                            tempFrequency = null;
+                          });
+                        },
+                        child: const Text('Reset'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Price Range
+                  Text('Price Range', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('EGP ${tempPrice.start.round()}', style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+                      Text('EGP ${tempPrice.end.round()}', style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  RangeSlider(
+                    values: RangeValues(tempPrice.start.clamp(0, maxPrice), tempPrice.end.clamp(0, maxPrice)),
+                    min: 0,
+                    max: maxPrice,
+                    divisions: (maxPrice / 5).round().clamp(1, 200),
+                    activeColor: primary,
+                    labels: RangeLabels('${tempPrice.start.round()}', '${tempPrice.end.round()}'),
+                    onChanged: (v) => setSheetState(() => tempPrice = v),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Minimum Rating
+                  Text('Minimum Rating', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      for (int i = 1; i <= 5; i++)
+                        GestureDetector(
+                          onTap: () => setSheetState(() => tempRating = tempRating == i.toDouble() ? 0 : i.toDouble()),
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: Icon(
+                              i <= tempRating ? Icons.star : Icons.star_border,
+                              color: Colors.amber,
+                              size: 32,
+                            ),
+                          ),
+                        ),
+                      if (tempRating > 0)
+                        Text(' ${tempRating.toInt()}+ stars', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Frequency
+                  Text('Frequency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: ['Daily', 'Weekly', 'Weekends', 'One-Time'].map((f) {
+                      final isSelected = tempFrequency == f;
+                      return ChoiceChip(
+                        label: Text(f),
+                        selected: isSelected,
+                        selectedColor: primary.withOpacity(0.2),
+                        onSelected: (v) => setSheetState(() => tempFrequency = v ? f : null),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Apply
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _priceRange = tempPrice;
+                          _minRating = tempRating;
+                          _selectedFrequency = tempFrequency;
+                          _activeFilters.clear();
+                          if (tempPrice.start > 0 || tempPrice.end < maxPrice) _activeFilters.add('price');
+                          if (tempRating > 0) _activeFilters.add('rating');
+                          if (tempFrequency != null) _activeFilters.add('frequency');
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Apply Filters', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
-    final shadow = (isDark ? Colors.white : Colors.black).withOpacity(0.08);
+    final primary = theme.colorScheme.primary;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -55,214 +254,159 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
           ),
         ),
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.tune, color: onSurface),
-            onPressed: () {
-              // TODO: Implement advanced filter bottom sheet
-            },
-          )
-        ],
       ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: TextField(
-              onChanged: (val) {
-                setState(() {
-                  _searchQuery = val.toLowerCase();
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search destinations, guides...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: surface,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-          
-          Expanded(
-            child: BlocBuilder<ExplorerToursCubit, ExplorerToursState>(
-              builder: (context, state) {
-                if (state is ExplorerToursLoading) {
-                  return _buildShimmerLoading();
-                } else if (state is ExplorerToursError) {
-                  return Center(
-                    child: Text(
-                      'Failed to load tours.\n${state.message}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red),
+      body: BlocBuilder<ExplorerToursCubit, ExplorerToursState>(
+        builder: (context, state) {
+          List<TourEntity> allTours = [];
+          if (state is ExplorerToursLoaded) allTours = state.tours;
+
+          return Column(
+            children: [
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: TextField(
+                  onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: 'Search destinations, guides...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      icon: Badge(
+                        isLabelVisible: _activeFilters.isNotEmpty,
+                        label: Text('${_activeFilters.length}'),
+                        child: Icon(Icons.tune, color: onSurface),
+                      ),
+                      onPressed: () => _showFilterSheet(context, allTours),
                     ),
-                  );
-                } else if (state is ExplorerToursLoaded) {
-                  final filteredTours = state.tours.where((t) {
-                    return t.title.toLowerCase().contains(_searchQuery) ||
-                           t.destinations.any((d) => d.toLowerCase().contains(_searchQuery));
-                  }).toList();
-
-                  if (filteredTours.isEmpty) {
-                    return _buildEmptyState(theme);
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredTours.length,
-                    itemBuilder: (context, index) {
-                      return _buildTourCard(filteredTours[index], theme);
-                    },
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTourCard(TourEntity tour, ThemeData theme) {
-    final isDark = theme.brightness == Brightness.dark;
-    
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Image Banner
-            Hero(
-              tag: 'tour_image_${tour.id}',
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                child: SizedBox(
-                  height: 180,
-                  width: double.infinity,
-                  child: tour.images.isNotEmpty
-                      ? Image.network(
-                          tour.images.first,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildPlaceholderImage(),
-                        )
-                      : _buildPlaceholderImage(),
+                    filled: true,
+                    fillColor: theme.colorScheme.surface,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          tour.title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+
+              // Sort + Active Filter Chips row
+              SizedBox(
+                height: 44,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    // Sort chip
+                    PopupMenuButton<_SortOption>(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      onSelected: (v) => setState(() => _sortOption = v),
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(value: _SortOption.newest, child: Text('Newest First')),
+                        const PopupMenuItem(value: _SortOption.cheapest, child: Text('Cheapest First')),
+                        const PopupMenuItem(value: _SortOption.priciest, child: Text('Priciest First')),
+                        const PopupMenuItem(value: _SortOption.highestRated, child: Text('Highest Rated')),
+                        const PopupMenuItem(value: _SortOption.mostPopular, child: Text('Most Popular')),
+                      ],
+                      child: Chip(
+                        avatar: Icon(Icons.sort, size: 16, color: primary),
+                        label: Text(_sortLabel(), style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w600)),
+                        backgroundColor: primary.withOpacity(0.08),
+                        side: BorderSide(color: primary.withOpacity(0.2)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Active filter chips
+                    if (_activeFilters.contains('price'))
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: InputChip(
+                          label: Text('EGP ${_priceRange.start.round()}-${_priceRange.end.round()}', style: const TextStyle(fontSize: 12)),
+                          onDeleted: () => setState(() => _activeFilters.remove('price')),
+                          backgroundColor: primary.withOpacity(0.08),
+                          side: BorderSide(color: primary.withOpacity(0.2)),
                         ),
                       ),
-                      Text(
-                        '\$${tour.price}',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: theme.colorScheme.primary,
+                    if (_activeFilters.contains('rating'))
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: InputChip(
+                          avatar: const Icon(Icons.star, color: Colors.amber, size: 16),
+                          label: Text('${_minRating.toInt()}+', style: const TextStyle(fontSize: 12)),
+                          onDeleted: () => setState(() { _activeFilters.remove('rating'); _minRating = 0; }),
+                          backgroundColor: primary.withOpacity(0.08),
+                          side: BorderSide(color: primary.withOpacity(0.2)),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  // Metadata row
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_month, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                      const SizedBox(width: 4),
-                      Text(
-                        DateFormat('MMM d, yyyy').format(tour.meetingTime),
-                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                      ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.people, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Up to ${tour.maxAttendees}',
-                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  // Destinations chips
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: tour.destinations.take(3).map((dest) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
-                      ),
-                      child: Text(
-                        dest,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.bold,
+                    if (_activeFilters.contains('frequency') && _selectedFrequency != null)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: InputChip(
+                          label: Text(_selectedFrequency!, style: const TextStyle(fontSize: 12)),
+                          onDeleted: () => setState(() { _activeFilters.remove('frequency'); _selectedFrequency = null; }),
+                          backgroundColor: primary.withOpacity(0.08),
+                          side: BorderSide(color: primary.withOpacity(0.2)),
                         ),
                       ),
-                    )).toList(),
-                  )
-                ],
+                  ],
+                ),
               ),
-            )
-          ],
-        ),
+              const SizedBox(height: 4),
+
+              // Results count
+              if (state is ExplorerToursLoaded)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${_applyFiltersAndSort(allTours).length} tours found',
+                        style: TextStyle(fontSize: 13, color: onSurface.withOpacity(0.5)),
+                      ),
+                    ],
+                  ),
+                ),
+
+              Expanded(
+                child: _buildBody(state, allTours, theme),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildPlaceholderImage() {
-    return Container(
-      color: Colors.grey.withOpacity(0.2),
-      child: const Center(
-        child: Icon(Icons.landscape, size: 48, color: Colors.grey),
-      ),
-    );
+  Widget _buildBody(ExplorerToursState state, List<TourEntity> allTours, ThemeData theme) {
+    if (state is ExplorerToursLoading) return _buildShimmerLoading();
+    if (state is ExplorerToursError) {
+      return Center(
+        child: Text('Failed to load tours.\n${state.message}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+      );
+    }
+    if (state is ExplorerToursLoaded) {
+      final filtered = _applyFiltersAndSort(allTours);
+      if (filtered.isEmpty) return _buildEmptyState(theme);
+      return ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+        itemCount: filtered.length,
+        itemBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: TourCard(tour: filtered[index]),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  String _sortLabel() {
+    switch (_sortOption) {
+      case _SortOption.newest: return 'Newest';
+      case _SortOption.cheapest: return 'Cheapest';
+      case _SortOption.priciest: return 'Priciest';
+      case _SortOption.highestRated: return 'Top Rated';
+      case _SortOption.mostPopular: return 'Popular';
+    }
   }
 
   Widget _buildEmptyState(ThemeData theme) {
@@ -272,23 +416,28 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
         children: [
           Icon(Icons.travel_explore, size: 80, color: theme.colorScheme.primary.withOpacity(0.5)),
           const SizedBox(height: 20),
-          const Text(
-            'No tours found',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
+          const Text('No tours found', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your filters or search query.',
+            _activeFilters.isNotEmpty
+                ? 'Try adjusting your filters.'
+                : 'Try adjusting your search query.',
             style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
           ),
+          if (_activeFilters.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () => setState(() { _activeFilters.clear(); _minRating = 0; _selectedFrequency = null; }),
+              icon: const Icon(Icons.clear_all),
+              label: const Text('Clear All Filters'),
+            ),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildShimmerLoading() {
-    // Requires shimmer package. 
-    // Creating a pseudo-shimmer effect since shimmer might not be in pubspec yet.
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: 4,

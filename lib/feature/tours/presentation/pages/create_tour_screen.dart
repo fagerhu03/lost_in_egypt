@@ -9,9 +9,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import '../../domain/entities/tour_entity.dart';
 
 class CreateTourScreen extends StatefulWidget {
-  const CreateTourScreen({super.key});
+  final TourEntity? tourToEdit;
+  
+  const CreateTourScreen({super.key, this.tourToEdit});
 
   @override
   State<CreateTourScreen> createState() => _CreateTourScreenState();
@@ -38,6 +41,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
   final List<String> _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   final List<File> _selectedImages = [];
+  List<String> _existingImages = [];
   final ImagePicker _picker = ImagePicker();
 
   List<MapItem> _availablePlaces = [];
@@ -47,6 +51,23 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
   void initState() {
     super.initState();
     _loadPlaces();
+    if (widget.tourToEdit != null) {
+      final t = widget.tourToEdit!;
+      _titleController.text = t.title;
+      _descController.text = t.description;
+      _priceController.text = t.price.toString();
+      _maxAttendeesController.text = t.maxAttendees.toString();
+      _destinations = List.from(t.destinations);
+      _selectedLocationName = t.meetingLocationName;
+      _selectedLat = t.meetingLatitude;
+      _selectedLng = t.meetingLongitude;
+      _existingImages = List.from(t.images);
+      _selectedMeetingTime = t.meetingTime;
+      
+      if (t.frequency != 'One-Time') {
+        _selectedWeekdays.addAll(t.frequency.split(', '));
+      }
+    }
   }
 
   Future<void> _loadPlaces() async {
@@ -106,7 +127,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       );
       return;
     }
-    if (_selectedImages.isEmpty) {
+    if (_selectedImages.isEmpty && _existingImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select at least one image.')),
       );
@@ -131,19 +152,37 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final attendees = int.tryParse(_maxAttendeesController.text) ?? 10;
     final freqString = _selectedWeekdays.isEmpty ? 'One-Time' : _selectedWeekdays.join(', ');
 
-    context.read<CreateTourCubit>().submitTour(
-          title: _titleController.text.trim(),
-          description: _descController.text.trim(),
-          destinations: _destinations,
-          price: price,
-          meetingLatitude: _selectedLat!,
-          meetingLongitude: _selectedLng!,
-          meetingTime: _selectedMeetingTime!,
-          frequency: freqString,
-          meetingLocationName: _selectedLocationName ?? _selectedAddress ?? "Custom Location",
-          imageFiles: _selectedImages,
-          maxAttendees: attendees,
-        );
+    if (widget.tourToEdit != null) {
+      context.read<CreateTourCubit>().updateTour(
+        tourId: widget.tourToEdit!.id,
+        title: _titleController.text.trim(),
+        description: _descController.text.trim(),
+        destinations: _destinations,
+        price: price,
+        meetingLatitude: _selectedLat!,
+        meetingLongitude: _selectedLng!,
+        meetingTime: _selectedMeetingTime!,
+        frequency: freqString,
+        meetingLocationName: _selectedLocationName ?? "Meeting Location",
+        imageFiles: _selectedImages,
+        oldImages: _existingImages,
+        maxAttendees: attendees,
+      );
+    } else {
+      context.read<CreateTourCubit>().submitTour(
+        title: _titleController.text.trim(),
+        description: _descController.text.trim(),
+        destinations: _destinations,
+        price: price,
+        meetingLatitude: _selectedLat!,
+        meetingLongitude: _selectedLng!,
+        meetingTime: _selectedMeetingTime!,
+        frequency: freqString,
+        meetingLocationName: _selectedLocationName ?? "Meeting Location",
+        imageFiles: _selectedImages,
+        maxAttendees: attendees,
+      );
+    }
   }
 
   @override
@@ -153,7 +192,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create New Tour')),
+      appBar: AppBar(title: Text(widget.tourToEdit != null ? 'Edit Tour' : 'Create New Tour')),
       body: BlocConsumer<CreateTourCubit, CreateTourState>(
         listener: (context, state) {
           if (state is CreateTourError) {
@@ -497,12 +536,32 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     }).toList(),
                   ),
                   const SizedBox(height: 24),
-                  const Text('Tour Images', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(widget.tourToEdit != null ? 'Edit Tour Images' : 'Tour Images', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus")),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
+                      ..._existingImages.map((url) => Stack(
+                            children: [
+                              Image.network(url, width: 80, height: 80, fit: BoxFit.cover),
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _existingImages.remove(url);
+                                    });
+                                  },
+                                  child: Container(
+                                    color: Colors.black54,
+                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )),
                       ..._selectedImages.map((file) => Stack(
                             children: [
                               Image.file(file, width: 80, height: 80, fit: BoxFit.cover),
@@ -541,7 +600,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: const Color(0xFFC79A00),
                     ),
-                    child: const Text('Create Tour', style: TextStyle(fontSize: 18, color: Colors.white)),
+                    child: Text(widget.tourToEdit != null ? 'Save Changes' : 'Create Tour', style: const TextStyle(fontSize: 18, color: Colors.white)),
                   ),
                   const SizedBox(height: 20),
                 ],

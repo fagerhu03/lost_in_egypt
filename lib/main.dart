@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_paymob/flutter_paymob.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -68,6 +69,18 @@ void main() async {
     debugPrint("LocalNotifications Initialization Error: $e");
   }
 
+  // Initialize Paymob SDK
+  try {
+    await FlutterPaymob.instance.initialize(
+      apiKey: dotenv.env['PAYMOB_API_KEY'] ?? '',
+      integrationID: int.tryParse(dotenv.env['PAYMOB_INTEGRATION_ID_CARD'] ?? '') ?? 0,
+      walletIntegrationId: int.tryParse(dotenv.env['PAYMOB_INTEGRATION_ID_WALLET'] ?? '') ?? 0,
+      iFrameID: int.tryParse(dotenv.env['PAYMOB_IFRAME_ID'] ?? '') ?? 0,
+    );
+  } catch (e) {
+    debugPrint('Paymob initialization error: $e');
+  }
+
   runApp(const MyApp());
 }
 
@@ -121,10 +134,14 @@ class _AuthGateState extends State<AuthGate> {
 
   String? _appliedForUid; // prevents re-applying every rebuild
   Future<void>? _initFuture;
+  bool _isFirestoreEmailVerified = false;
 
   Future<void> _applySavedTheme(User firebaseUser) async {
     try {
       final UserModel? userModel = await _settingsRepo.fetchCurrentUser();
+      if (userModel != null) {
+        _isFirestoreEmailVerified = userModel.emailVerified;
+      }
       ThemeController.setDark(userModel?.isDarkMode ?? false);
     } catch (_) {
       // fallback if fetch fails
@@ -173,7 +190,7 @@ class _AuthGateState extends State<AuthGate> {
             }
             // Always get the freshly reloaded user to ensure emailVerified is accurate
             final freshUser = FirebaseAuth.instance.currentUser;
-            if (freshUser != null && !freshUser.emailVerified) {
+            if (freshUser != null && !freshUser.emailVerified && !_isFirestoreEmailVerified) {
               return const EmailVerificationScreen();
             }
             return const HomeWrapper();

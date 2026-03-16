@@ -74,6 +74,10 @@ class TourCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      // Rating badge
+                      _buildRatingBadge(theme),
+                      const SizedBox(width: 12),
                       Text(
                         '\$${tour.price}',
                         style: TextStyle(
@@ -131,6 +135,49 @@ class TourCard extends StatelessWidget {
               ),
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRatingBadge(ThemeData theme) {
+    final hasRating = tour.rating > 0 && !tour.rating.isNaN && !tour.rating.isInfinite && tour.reviewCount > 0;
+    if (hasRating) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.star, color: Colors.amber, size: 16),
+          const SizedBox(width: 2),
+          Text(
+            '${tour.rating.toStringAsFixed(1)}',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          Text(
+            ' (${tour.reviewCount})',
+            style: TextStyle(
+              fontSize: 11,
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
+            ),
+          ),
+        ],
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.tertiary.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        'NEW',
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: theme.colorScheme.tertiary,
         ),
       ),
     );

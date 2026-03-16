@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
 import '../bloc/guide_tours_cubit.dart';
 import '../bloc/guide_tours_state.dart';
 import '../bloc/create_tour_cubit.dart';
+import '../../domain/entities/tour_entity.dart';
 import 'create_tour_screen.dart';
+import 'tour_detail_screen.dart';
+import 'tour_attendees_screen.dart';
+import '../../../../core/di/service_locator.dart';
 
 class GuideDashboardScreen extends StatefulWidget {
   const GuideDashboardScreen({super.key});
@@ -26,8 +32,16 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+    final onSurface = theme.colorScheme.onSurface;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Guide Dashboard')),
+      appBar: AppBar(
+        title: const Text('Guide Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+      ),
       body: BlocBuilder<GuideToursCubit, GuideToursState>(
         builder: (context, state) {
           if (state is GuideToursLoading) {
@@ -37,29 +51,39 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
           } else if (state is GuideToursLoaded) {
             final tours = state.tours;
             if (tours.isEmpty) {
-              return const Center(child: Text('You have not created any tours yet.'));
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.tour, size: 80, color: onSurface.withOpacity(0.2)),
+                    const SizedBox(height: 16),
+                    Text('No tours yet', style: TextStyle(fontSize: 20, color: onSurface.withOpacity(0.5))),
+                    const SizedBox(height: 8),
+                    Text('Create your first tour!', style: TextStyle(fontSize: 14, color: onSurface.withOpacity(0.35))),
+                  ],
+                ),
+              );
             }
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: tours.length,
-              itemBuilder: (context, index) {
-                final tour = tours[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12),
-                    leading: tour.images.isNotEmpty
-                        ? Image.network(tour.images.first, width: 60, height: 60, fit: BoxFit.cover)
-                        : const Icon(Icons.tour, size: 40),
-                    title: Text(tour.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('\$${tour.price.toStringAsFixed(2)} - ${tour.frequency}'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      // Navigate to tour details or editing
-                    },
-                  ),
-                );
-              },
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+              children: [
+                // ── Earnings Summary ──
+                _EarningsSummary(tours: tours),
+                const SizedBox(height: 20),
+
+                Text('Your Tours (${tours.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: onSurface)),
+                const SizedBox(height: 12),
+
+                ...tours.map((tour) => _GuideTourCard(
+                  tour: tour,
+                  onRefresh: () {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user != null && mounted) {
+                      context.read<GuideToursCubit>().fetchTours(user.uid);
+                    }
+                  },
+                )),
+              ],
             );
           }
           return const SizedBox.shrink();
@@ -70,21 +94,357 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
           await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => BlocProvider(
-                create: (context) => CreateTourCubit(createTourUseCase: GetIt.I()),
+                create: (context) => CreateTourCubit(
+                  createTourUseCase: sl(),
+                  updateTourUseCase: sl(),
+                ),
                 child: const CreateTourScreen(),
               ),
             ),
           );
-          // Refresh tours after returning
           final user = FirebaseAuth.instance.currentUser;
           if (user != null && mounted) {
             context.read<GuideToursCubit>().fetchTours(user.uid);
           }
         },
-        label: const Text('Create Tour'),
+        label: const Text('Create Tour', style: TextStyle(fontWeight: FontWeight.bold)),
         icon: const Icon(Icons.add),
         backgroundColor: const Color(0xFFC79A00),
       ),
     );
+  }
+}
+
+/// ─── Earnings Summary Header ────────────────────────────────────────────
+class _EarningsSummary extends StatelessWidget {
+  final List<TourEntity> tours;
+  const _EarningsSummary({required this.tours});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final guideId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('bookings')
+          .where('guideId', isEqualTo: guideId)
+          .where('status', isEqualTo: 'confirmed')
+          .get(),
+      builder: (context, snapshot) {
+        int totalBookings = 0;
+        double totalRevenue = 0;
+
+        if (snapshot.hasData) {
+          totalBookings = snapshot.data!.docs.length;
+          for (final doc in snapshot.data!.docs) {
+            final data = doc.data() as Map<String, dynamic>;
+            final tourId = data['tourId'] ?? '';
+            final tour = tours.where((t) => t.id == tourId).firstOrNull;
+            if (tour != null) {
+              totalRevenue += tour.price;
+            }
+          }
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primary.withOpacity(0.15), primary.withOpacity(0.05)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: primary.withOpacity(0.1)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _statItem('${tours.length}', 'Tours', Icons.tour, primary),
+              Container(width: 1, height: 50, color: primary.withOpacity(0.15)),
+              _statItem('$totalBookings', 'Bookings', Icons.confirmation_number, Colors.green),
+              Container(width: 1, height: 50, color: primary.withOpacity(0.15)),
+              _statItem('EGP ${totalRevenue.toStringAsFixed(0)}', 'Revenue', Icons.monetization_on, Colors.amber[700]!),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _statItem(String value, String label, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 6),
+        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        Text(label, style: TextStyle(fontSize: 12, color: color.withOpacity(0.7))),
+      ],
+    );
+  }
+}
+
+/// ─── Guide Tour Card with Actions ───────────────────────────────────────
+class _GuideTourCard extends StatelessWidget {
+  final TourEntity tour;
+  final VoidCallback onRefresh;
+
+  const _GuideTourCard({required this.tour, required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.white : Colors.black).withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Image + overlay info
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: SizedBox(
+              height: 140,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  tour.images.isNotEmpty
+                      ? Image.network(tour.images.first, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey[300]))
+                      : Container(color: Colors.grey[300], child: const Center(child: Icon(Icons.landscape, size: 48, color: Colors.grey))),
+                  // Gradient overlay
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Price tag
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: primary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'EGP ${tour.price.toStringAsFixed(0)}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                  // Title overlay
+                  Positioned(
+                    bottom: 8,
+                    left: 12,
+                    right: 12,
+                    child: Text(
+                      tour.title,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Info row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+            child: Row(
+              children: [
+                _infoChip(Icons.calendar_today, DateFormat('MMM d').format(tour.meetingTime), theme),
+                const SizedBox(width: 12),
+                _infoChip(Icons.people, '${tour.maxAttendees} max', theme),
+                const SizedBox(width: 12),
+                _infoChip(Icons.repeat, tour.frequency, theme),
+                const Spacer(),
+                if (tour.reviewCount > 0)
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 16),
+                      Text(' ${tour.rating.toStringAsFixed(1)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: theme.colorScheme.onSurface)),
+                    ],
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.tertiary.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text('NEW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: theme.colorScheme.tertiary)),
+                  ),
+              ],
+            ),
+          ),
+
+          // Booking count
+          FutureBuilder<QuerySnapshot>(
+            future: FirebaseFirestore.instance
+                .collection('bookings')
+                .where('tourId', isEqualTo: tour.id)
+                .where('status', isEqualTo: 'confirmed')
+                .get(),
+            builder: (context, snap) {
+              final count = snap.data?.docs.length ?? 0;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: (count > 0 ? Colors.green : Colors.grey).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    count > 0 ? '📌 $count confirmed booking${count == 1 ? '' : 's'}' : 'No bookings yet',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: count > 0 ? Colors.green : theme.colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(height: 8),
+
+          // Action buttons
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+            child: Row(
+              children: [
+                _actionButton(context, Icons.visibility, 'View', () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)));
+                }),
+              _actionButton(context, Icons.edit, 'Edit', () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => CreateTourCubit(
+                        createTourUseCase: sl(),
+                        updateTourUseCase: sl(),
+                      ),
+                      child: CreateTourScreen(tourToEdit: tour),
+                    ),
+                  ),
+                );
+                  onRefresh();
+                }),
+                _actionButton(context, Icons.people, 'Attendees', () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => TourAttendeesScreen(tourId: tour.id, tourTitle: tour.title)),
+                  );
+                }),
+                _actionButton(context, Icons.delete, 'Delete', () => _confirmDelete(context), color: Colors.red),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoChip(IconData icon, String label, ThemeData theme) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+        const SizedBox(width: 3),
+        Text(label, style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+      ],
+    );
+  }
+
+  Widget _actionButton(BuildContext context, IconData icon, String label, VoidCallback onTap, {Color? color}) {
+    final c = color ?? Theme.of(context).colorScheme.primary;
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            children: [
+              Icon(icon, size: 20, color: c),
+              const SizedBox(height: 2),
+              Text(label, style: TextStyle(fontSize: 10, color: c, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete Tour'),
+        content: Text('Are you sure you want to delete "${tour.title}"? This cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await FirebaseFirestore.instance.collection('tours').doc(tour.id).delete();
+      // Also cancel all pending bookings
+      final bookings = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('tourId', isEqualTo: tour.id)
+          .where('status', isEqualTo: 'confirmed')
+          .get();
+      for (final doc in bookings.docs) {
+        await doc.reference.update({'status': 'cancelled'});
+        await FirebaseFirestore.instance.collection('notifications').add({
+          'recipientId': (doc.data())['userId'],
+          'title': '⚠️ Tour Cancelled',
+          'body': 'The tour "${tour.title}" has been cancelled by the guide.',
+          'type': 'tour_cancelled',
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+      onRefresh();
+    }
   }
 }

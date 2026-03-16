@@ -59,7 +59,7 @@ class UserModel extends UserEntity {
 
       // Verification & Settings
       phoneVerified: data['phoneVerified'] ?? false,
-      emailVerified: data['emailVerified'] ?? false,
+      emailVerified: data['emailVerified'] ?? data['verifiedEmail'] ?? false,
       isNotificationsEnabled: data['preferences']?['notifications'] ?? true,
       isDarkMode: data['preferences']?['darkMode'] ?? false,
       language: data['preferences']?['language'] ?? 'English',

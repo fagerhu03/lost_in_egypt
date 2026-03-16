@@ -5,6 +5,7 @@ import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.da
 import '../../account/domain/badge_constants.dart';
 import '../../camera/widgets/badge_unlock_dialog.dart';
 import '../../account/widgets/scarab_overlay.dart';
+import 'saved_cards_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -247,14 +248,23 @@ class _SettingsScreenState extends State<SettingsScreen>
                             // Saved Card
                             _buildTile(
                               surfaceColor: surface,
-                              child: Text(
-                                "Saved Card",
-                                style: TextStyle(
-                                  color: textColor.withOpacity(0.85),
-                                  fontSize: 16,
-                                  fontFamily: "Marcellus",
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Saved Cards",
+                                    style: TextStyle(
+                                      color: textColor.withOpacity(0.85),
+                                      fontSize: 16,
+                                      fontFamily: "Marcellus",
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right, color: textColor.withOpacity(0.4)),
+                                ],
                               ),
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedCardsScreen()));
+                              },
                             ),
                             const SizedBox(height: 16),
 

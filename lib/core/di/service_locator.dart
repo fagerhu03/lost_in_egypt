@@ -34,6 +34,7 @@ import '../../feature/tours/data/datasources/tours_data_source_impl.dart';
 import '../../feature/tours/domain/repositories/tours_repository.dart';
 import '../../feature/tours/data/repositories/tours_repository_impl.dart';
 import '../../feature/tours/domain/usecases/create_tour_usecase.dart';
+import '../../feature/tours/domain/usecases/update_tour_usecase.dart';
 import '../../feature/tours/domain/usecases/get_all_tours_usecase.dart';
 import '../../feature/tours/domain/usecases/get_guide_tours_usecase.dart';
 import '../../feature/tours/domain/usecases/book_tour_usecase.dart';
@@ -107,6 +108,7 @@ Future<void> init() async {
   sl.registerLazySingleton<ToursDataSource>(() => ToursDataSourceImpl());
   sl.registerLazySingleton<ToursRepository>(() => ToursRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton(() => CreateTourUseCase(repository: sl()));
+  sl.registerLazySingleton(() => UpdateTourUseCase(repository: sl()));
   sl.registerLazySingleton(() => GetAllToursUseCase(repository: sl()));
   sl.registerLazySingleton(() => GetGuideToursUseCase(repository: sl()));
   sl.registerLazySingleton(() => BookTourUseCase(repository: sl()));

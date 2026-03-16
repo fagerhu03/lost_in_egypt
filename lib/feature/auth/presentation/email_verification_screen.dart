@@ -17,8 +17,26 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   Future<void> _checkVerification() async {
     setState(() => _isChecking = true);
     try {
-      await _auth.currentUser?.reload();
-      if (_auth.currentUser != null && _auth.currentUser!.emailVerified) {
+      bool isEmailVerified = false;
+      if (_auth.currentUser != null) {
+        if (_auth.currentUser!.emailVerified) {
+          isEmailVerified = true;
+        } else {
+          try {
+            final doc = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(_auth.currentUser!.uid)
+                .get();
+            if (doc.exists && doc.data()?['emailVerified'] == true) {
+              isEmailVerified = true;
+            }
+          } catch (e) {
+            debugPrint("Error fetching user doc: $e");
+          }
+        }
+      }
+
+      if (isEmailVerified) {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(_auth.currentUser!.uid)

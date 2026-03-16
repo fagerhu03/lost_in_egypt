@@ -294,7 +294,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 320,
+          height: 400,
           child: _UniversalGuideToursList(guideId: widget.user.id),
         ),
         if (FirebaseAuth.instance.currentUser?.uid == widget.user.id) ...[

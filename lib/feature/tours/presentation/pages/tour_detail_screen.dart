@@ -121,7 +121,9 @@ class TourDetailScreen extends StatelessWidget {
                           const Icon(Icons.star, color: Colors.amber, size: 24),
                           const SizedBox(width: 4),
                           Text(
-                            tour.rating > 0 ? '${tour.rating.toStringAsFixed(1)} (${tour.reviewCount})' : 'New',
+                            tour.rating > 0 && !tour.rating.isNaN && !tour.rating.isInfinite
+                              ? '${tour.rating.toStringAsFixed(1)} (${tour.reviewCount})'
+                              : 'New',
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -801,10 +803,12 @@ class _ReviewsSection extends StatelessWidget {
 
                         final tData = tourDoc.data()!;
                         final int count = (tData['reviewCount'] ?? 0) as int;
-                        final double currentAvg = (tData['rating'] ?? 0.0).toDouble();
+                        double currentAvg = (tData['rating'] ?? 0.0).toDouble();
+                        if (currentAvg.isNaN || currentAvg.isInfinite) currentAvg = 0.0;
 
                         // Recalculate: remove old rating contribution, add new
-                        final newAvg = count > 0 ? ((currentAvg * count) - oldRating + selectedRating) / count : selectedRating;
+                        double newAvg = count > 0 ? ((currentAvg * count) - oldRating + selectedRating) / count : selectedRating;
+                        if (newAvg.isNaN || newAvg.isInfinite) newAvg = selectedRating;
 
                         transaction.update(tourRef.collection('reviews').doc(reviewDocId), {
                           'rating': selectedRating,
@@ -853,10 +857,12 @@ class _ReviewsSection extends StatelessWidget {
 
                     final tData = tourDoc.data()!;
                     final int count = (tData['reviewCount'] ?? 0) as int;
-                    final double currentAvg = (tData['rating'] ?? 0.0).toDouble();
+                    double currentAvg = (tData['rating'] ?? 0.0).toDouble();
+                    if (currentAvg.isNaN || currentAvg.isInfinite) currentAvg = 0.0;
 
                     final newCount = count - 1;
-                    final newAvg = newCount > 0 ? ((currentAvg * count) - oldRating) / newCount : 0.0;
+                    double newAvg = newCount > 0 ? ((currentAvg * count) - oldRating) / newCount : 0.0;
+                    if (newAvg.isNaN || newAvg.isInfinite) newAvg = 0.0;
 
                     transaction.delete(tourRef.collection('reviews').doc(reviewDocId));
                     transaction.update(tourRef, {
@@ -942,10 +948,12 @@ class _ReviewsSection extends StatelessWidget {
 
                         final data = tourDoc.data()!;
                         final int currentCount = (data['reviewCount'] ?? 0) as int;
-                        final double currentRating = (data['rating'] ?? 0.0).toDouble();
+                        double currentRating = (data['rating'] ?? 0.0).toDouble();
+                        if (currentRating.isNaN || currentRating.isInfinite) currentRating = 0.0;
 
                         final newCount = currentCount + 1;
-                        final newRating = ((currentRating * currentCount) + selectedRating) / newCount;
+                        double newRating = ((currentRating * currentCount) + selectedRating) / newCount;
+                        if (newRating.isNaN || newRating.isInfinite) newRating = selectedRating;
 
                         transaction.set(docRef, {
                           'userId': user.uid,

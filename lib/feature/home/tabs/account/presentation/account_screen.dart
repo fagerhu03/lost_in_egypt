@@ -12,6 +12,8 @@ import 'package:lost_in_egypt/feature/tours/presentation/bloc/guide_tours_cubit.
 import 'package:lost_in_egypt/feature/tours/presentation/pages/guide_dashboard_screen.dart' as lost_in_egypt_tours;
 import 'package:lost_in_egypt/feature/guide_application/presentation/bloc/apply_guide_cubit.dart' as lost_in_egypt_guide_cubit;
 import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply_guide_screen.dart' as lost_in_egypt_guide_screen;
+import 'package:lost_in_egypt/feature/home/tabs/more/presentation/saved_cards_screen.dart';
+import 'package:lost_in_egypt/feature/tours/presentation/pages/booking_history_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -348,15 +350,19 @@ class _AccountScreenState extends State<AccountScreen> {
                         ],
                         _AccountTile(
                           title: "Cards Detail",
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedCardsScreen()));
+                          },
                           surface: surface,
                           onSurface: onSurface,
                           borderColor: borderColor,
                           shadow: tileShadow,
                         ),
                         _AccountTile(
-                          title: "Registered tours",
-                          onTap: () {},
+                          title: "My Bookings",
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
+                          },
                           surface: surface,
                           onSurface: onSurface,
                           borderColor: borderColor,

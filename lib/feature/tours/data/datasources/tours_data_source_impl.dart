@@ -51,6 +51,47 @@ class ToursDataSourceImpl implements ToursDataSource {
   }
 
   @override
+  Future<void> updateTour(TourModel tour, List<File> newImageFiles) async {
+    List<String> imageUrls = List.from(tour.images);
+
+    // If new images are provided, upload them and append/replace. 
+    // Here we append, or if we want to replace we can clear first. Let's append for now, or just let the user send the new ones.
+    // For simplicity, if new images are selected, we just add them to the list.
+    for (int i = 0; i < newImageFiles.length; i++) {
+      final file = newImageFiles[i];
+      final extension = path.extension(file.path);
+      // use a timestamp to avoid overwrite issues with old images
+      final fileName = '${tour.id}_${DateTime.now().millisecondsSinceEpoch}_$i$extension';
+      final ref = _storage.ref().child('tours/${tour.guideId}/${tour.id}/$fileName');
+      
+      await ref.putFile(file);
+      final url = await ref.getDownloadURL();
+      imageUrls.add(url);
+    }
+
+    final updatedTour = TourModel(
+      id: tour.id,
+      guideId: tour.guideId,
+      title: tour.title,
+      description: tour.description,
+      destinations: tour.destinations,
+      price: tour.price,
+      meetingLocationName: tour.meetingLocationName,
+      meetingLatitude: tour.meetingLatitude,
+      meetingLongitude: tour.meetingLongitude,
+      meetingTime: tour.meetingTime,
+      frequency: tour.frequency,
+      images: imageUrls,
+      maxAttendees: tour.maxAttendees,
+      rating: tour.rating,
+      reviewCount: tour.reviewCount,
+      createdAt: tour.createdAt,
+    );
+
+    await _firestore.collection('tours').doc(tour.id).update(updatedTour.toMap());
+  }
+
+  @override
   Future<List<TourModel>> getToursForGuide(String guideId) async {
     final snapshot = await _firestore
         .collection('tours')

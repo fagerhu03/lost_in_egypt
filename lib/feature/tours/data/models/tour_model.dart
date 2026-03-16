@@ -36,7 +36,7 @@ class TourModel extends TourEntity {
       meetingLocationName: data['meetingLocationName'] ?? 'Unknown Location',
       images: List<String>.from(data['images'] ?? []),
       maxAttendees: data['maxAttendees'] ?? 10,
-      rating: (data['rating'] ?? 0.0).toDouble(),
+      rating: _sanitizeRating((data['rating'] ?? 0.0).toDouble()),
       reviewCount: data['reviewCount'] ?? 0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -56,9 +56,14 @@ class TourModel extends TourEntity {
       'meetingLocationName': meetingLocationName,
       'images': images,
       'maxAttendees': maxAttendees,
-      'rating': rating,
+      'rating': _sanitizeRating(rating),
       'reviewCount': reviewCount,
       'createdAt': Timestamp.fromDate(createdAt),
     };
+  }
+
+  static double _sanitizeRating(double val) {
+    if (val.isNaN || val.isInfinite) return 0.0;
+    return val;
   }
 }
