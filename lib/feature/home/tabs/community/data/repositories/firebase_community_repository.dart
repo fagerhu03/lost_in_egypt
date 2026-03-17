@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../../domain/entities/community_post.dart';
 import '../model/community_post_model.dart';
+import '../../../../../../core/utils/image_utils.dart';
 
 class FirebaseCommunityRepository {
   final CollectionReference _postsRef = FirebaseFirestore.instance.collection(
@@ -482,11 +483,12 @@ class FirebaseCommunityRepository {
   Future<List<String>> _uploadImages(List<File> images) async {
     List<String> urls = [];
     for (var image in images) {
+      final file = await ImageUtils.compressImage(image) ?? image;
       String fileName = DateTime.now().millisecondsSinceEpoch.toString();
       Reference ref = FirebaseStorage.instance.ref().child(
         'post_images/$fileName',
       );
-      UploadTask uploadTask = ref.putFile(image);
+      UploadTask uploadTask = ref.putFile(file);
       TaskSnapshot snapshot = await uploadTask;
       String url = await snapshot.ref.getDownloadURL();
       urls.add(url);

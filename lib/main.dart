@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_paymob/flutter_paymob.dart';
 
@@ -17,6 +18,7 @@ import 'core/di/service_locator.dart' as di;
 import 'feature/home/tabs/navigator/home_wrapper.dart';
 import 'firebase_options.dart';
 import 'feature/auth/presentation/login/presentation/login_screen.dart';
+import 'feature/auth/presentation/login/bloc/login_bloc.dart';
 import 'feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 import 'feature/onboarding/onboarding_screen.dart';
 import 'feature/home/notification/domain/services/local_notification_service.dart';
@@ -26,6 +28,7 @@ import 'feature/home/tabs/more/data/settings_repository.dart';
 import 'feature/auth/data/models/user.dart';
 import 'feature/auth/presentation/email_verification_screen.dart';
 import 'feature/tours/presentation/pages/map_picker_screen.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -106,11 +109,14 @@ class MyApp extends StatelessWidget {
 
           themeMode: mode,
 
-          home: const AuthGate(),
+          home: AuthGate(),
 
           routes: {
             '/onboarding': (context) => const OnboardingScreen(),
-            '/login': (context) => const LoginScreen(),
+            '/login': (context) => BlocProvider<LoginBloc>(
+                  create: (_) => di.sl<LoginBloc>(),
+                  child: const LoginScreen(),
+                ),
             '/signup': (context) => const SignupScreen(),
             '/home': (context) => const HomeWrapper(),
             '/map_picker': (context) => const MapPickerScreen(),
@@ -120,83 +126,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-// ⭐ THE AUTH GATE (UPDATED: applies saved theme once)
-class AuthGate extends StatefulWidget {
-  const AuthGate({super.key});
-
-  @override
-  State<AuthGate> createState() => _AuthGateState();
-}
-
-class _AuthGateState extends State<AuthGate> {
-  final SettingsRepository _settingsRepo = SettingsRepository();
-
-  String? _appliedForUid; // prevents re-applying every rebuild
-  Future<void>? _initFuture;
-  bool _isFirestoreEmailVerified = false;
-
-  Future<void> _applySavedTheme(User firebaseUser) async {
-    try {
-      final UserModel? userModel = await _settingsRepo.fetchCurrentUser();
-      if (userModel != null) {
-        _isFirestoreEmailVerified = userModel.emailVerified;
-      }
-      ThemeController.setDark(userModel?.isDarkMode ?? false);
-    } catch (_) {
-      // fallback if fetch fails
-      ThemeController.setDark(false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.userChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final firebaseUser = snapshot.data;
-
-        if (firebaseUser == null) {
-          // Optional: reset to light on logout
-          _appliedForUid = null;
-          _initFuture = null;
-          // ThemeController.setDark(false);
-
-          return const OnboardingScreen();
-        }
-
-        if (_appliedForUid != firebaseUser.uid) {
-          _appliedForUid = firebaseUser.uid;
-          _initFuture = Future.wait([
-            firebaseUser.reload().catchError((_) {}), 
-            _applySavedTheme(firebaseUser)
-          ]);
-        }
-
-        // Apply saved theme BEFORE showing HomeWrapper
-        return FutureBuilder<void>(
-          future: _initFuture,
-          builder: (context, themeSnap) {
-            if (themeSnap.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            }
-            // Always get the freshly reloaded user to ensure emailVerified is accurate
-            final freshUser = FirebaseAuth.instance.currentUser;
-            if (freshUser != null && !freshUser.emailVerified && !_isFirestoreEmailVerified) {
-              return const EmailVerificationScreen();
-            }
-            return const HomeWrapper();
-          },
-        );
-      },
-    );
-  }
-}
+

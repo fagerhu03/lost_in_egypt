@@ -447,6 +447,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                   child: Container(
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
@@ -463,6 +464,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                             child: GuideTripTypeTab(title: 'Tours', selected: _tabIndex == 0),
                           ),
                         ),
+                        const SizedBox(width: 4),
                         Expanded(
                           child: GestureDetector(
                             onTap: () => setState(() {

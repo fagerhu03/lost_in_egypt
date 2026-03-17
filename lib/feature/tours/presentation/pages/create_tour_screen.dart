@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../bloc/create_tour_cubit.dart';
 import '../bloc/create_tour_state.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
@@ -149,7 +150,21 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     }
 
     final price = double.tryParse(_priceController.text) ?? 0.0;
+    if (price < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Price cannot be negative.')),
+      );
+      return;
+    }
+
     final attendees = int.tryParse(_maxAttendeesController.text) ?? 10;
+    if (attendees <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Max attendees must be greater than zero.')),
+      );
+      return;
+    }
+
     final freqString = _selectedWeekdays.isEmpty ? 'One-Time' : _selectedWeekdays.join(', ');
 
     if (widget.tourToEdit != null) {
@@ -544,7 +559,22 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     children: [
                       ..._existingImages.map((url) => Stack(
                             children: [
-                              Image.network(url, width: 80, height: 80, fit: BoxFit.cover),
+                              CachedNetworkImage(
+                                imageUrl: url,
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  width: 80, height: 80,
+                                  color: Colors.grey.withOpacity(0.2),
+                                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  width: 80, height: 80,
+                                  color: Colors.grey.withOpacity(0.2),
+                                  child: const Icon(Icons.error, size: 20),
+                                ),
+                              ),
                               Positioned(
                                 right: 0,
                                 top: 0,

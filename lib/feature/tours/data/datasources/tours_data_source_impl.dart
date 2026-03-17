@@ -5,6 +5,7 @@ import '../../data/models/tour_model.dart';
 import '../../data/models/booking_model.dart';
 import 'tours_data_source.dart';
 import 'package:path/path.dart' as path;
+import '../../../../core/utils/image_utils.dart';
 
 class ToursDataSourceImpl implements ToursDataSource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -16,7 +17,7 @@ class ToursDataSourceImpl implements ToursDataSource {
 
     // Upload images
     for (int i = 0; i < imageFiles.length; i++) {
-      final file = imageFiles[i];
+      final file = await ImageUtils.compressImage(imageFiles[i]) ?? imageFiles[i];
       final extension = path.extension(file.path);
       final fileName = '${tour.id}_$i$extension';
       final ref = _storage.ref().child('tours/${tour.guideId}/${tour.id}/$fileName');
@@ -58,7 +59,7 @@ class ToursDataSourceImpl implements ToursDataSource {
     // Here we append, or if we want to replace we can clear first. Let's append for now, or just let the user send the new ones.
     // For simplicity, if new images are selected, we just add them to the list.
     for (int i = 0; i < newImageFiles.length; i++) {
-      final file = newImageFiles[i];
+      final file = await ImageUtils.compressImage(newImageFiles[i]) ?? newImageFiles[i];
       final extension = path.extension(file.path);
       // use a timestamp to avoid overwrite issues with old images
       final fileName = '${tour.id}_${DateTime.now().millisecondsSinceEpoch}_$i$extension';

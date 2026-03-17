@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dartz/dartz.dart' as dartz;
 
@@ -33,12 +34,11 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final bg = theme.scaffoldBackgroundColor;
+    final bg = isDark ? theme.scaffoldBackgroundColor : (widget.user.isVerifiedGuide ? const Color(0xFFFFFEF0) : theme.scaffoldBackgroundColor);
+    final titleColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
     final surface = theme.colorScheme.surface;
-    final onSurface = theme.colorScheme.onSurface;
-    final titleColor = isDark ? AppColors.darkText : const Color(0xFF7A4B1D);
     final isCurrentUser = FirebaseAuth.instance.currentUser?.uid == widget.user.id;
-
+    
     return Scaffold(
       backgroundColor: bg,
       body: Stack(
@@ -119,7 +119,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: isDark ? surface.withOpacity(0.85) : Colors.white.withOpacity(0.9),
+                        color: isDark ? surface.withOpacity(0.85) : bg.withOpacity(0.9),
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                         border: Border.all(color: titleColor.withOpacity(0.2), width: 1),
                       ),
@@ -163,7 +163,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             border: Border.all(color: titleColor.withOpacity(0.5), width: 3),
             image: widget.user.profileImageUrl.isNotEmpty 
               ? DecorationImage(
-                  image: NetworkImage(widget.user.profileImageUrl),
+                  image: CachedNetworkImageProvider(widget.user.profileImageUrl),
                   fit: BoxFit.cover,
                 )
               : null,

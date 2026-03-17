@@ -77,7 +77,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
     return Scaffold(
       backgroundColor: isDark
           ? AppColors.darkBackground
-          : AppColors.lightBackground,
+          : const Color(0xFFFFFEF0),
       body: Stack(
         children: [
           Container(

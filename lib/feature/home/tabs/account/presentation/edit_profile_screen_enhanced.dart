@@ -12,6 +12,7 @@ import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import '../../camera/widgets/badge_unlock_dialog.dart';
 import '../domain/badge_constants.dart';
+import 'package:lost_in_egypt/core/utils/image_utils.dart';
 
 class EditProfileScreenEnhanced extends StatefulWidget {
   const EditProfileScreenEnhanced({super.key});
@@ -90,7 +91,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           .child('profile_images')
           .child(filename);
 
-      final uploadTask = ref.putFile(_selectedImage!);
+      final fileToUpload = await ImageUtils.compressImage(_selectedImage!) ?? _selectedImage!;
+      final uploadTask = ref.putFile(fileToUpload);
 
       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
         final progress =
@@ -425,23 +427,23 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     final borderColor =
     (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
 
-    return Scaffold(
-      backgroundColor: bg,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: Opacity(
-              opacity: patternOpacity,
-              child: Image.asset(
-                "assets/pattern_comp.png",
-                fit: BoxFit.cover,
-                repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => const SizedBox.shrink(),
-              ),
-            ),
-          ),
-          SafeArea(
+    return Container(
+      decoration: BoxDecoration(
+        color: bg,
+        image: DecorationImage(
+          image: const AssetImage("assets/pattern_comp.png"),
+          fit: BoxFit.cover,
+          repeat: ImageRepeat.repeat,
+          opacity: patternOpacity,
+        ),
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            SafeArea(
             child: Column(
               children: [
                 _buildHeader(context, onSurface),
@@ -550,7 +552,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildHeader(BuildContext context, Color onSurface) {

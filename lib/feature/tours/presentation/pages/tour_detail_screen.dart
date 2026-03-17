@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -33,31 +34,33 @@ class TourDetailScreen extends StatelessWidget {
             expandedHeight: 300,
             pinned: true,
             actions: [
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'report') {
-                    UniversalReportDialog.show(
-                      context,
-                      reportType: ReportType.tour,
-                      reportedItemId: tour.id,
-                      reportedItemOwnerId: tour.guideId,
-                      repository: GetIt.I<ReportsRepository>(),
-                    );
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'report',
-                    child: Row(
-                      children: [
-                        Icon(Icons.flag, color: Colors.orange, size: 20),
-                        SizedBox(width: 8),
-                        Text('Report Tour'),
-                      ],
+              // Hide report button if the user is the guide who created the tour
+              if (FirebaseAuth.instance.currentUser?.uid != tour.guideId)
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'report') {
+                      UniversalReportDialog.show(
+                        context,
+                        reportType: ReportType.tour,
+                        reportedItemId: tour.id,
+                        reportedItemOwnerId: tour.guideId,
+                        repository: GetIt.I<ReportsRepository>(),
+                      );
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          Icon(Icons.flag, color: Colors.orange, size: 20),
+                          SizedBox(width: 8),
+                          Text('Report Tour'),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
@@ -75,7 +78,12 @@ class TourDetailScreen extends StatelessWidget {
                     ? Stack(
                         fit: StackFit.expand,
                         children: [
-                          Image.network(tour.images.first, fit: BoxFit.cover),
+                          CachedNetworkImage(
+                            imageUrl: tour.images.first,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(color: Colors.grey.shade300),
+                            errorWidget: (context, url, error) => Container(color: Colors.grey.shade300, child: const Icon(Icons.image_not_supported)),
+                          ),
                           // Dark gradient overlay to ensure text visibility
                           DecoratedBox(
                             decoration: BoxDecoration(
@@ -262,7 +270,7 @@ class TourDetailScreen extends StatelessWidget {
                               child: InkWell(
                                 onTap: () => _showGalleryViewer(context, tour.images, index),
                                 child: Ink.image(
-                                  image: NetworkImage(tour.images[index]),
+                                  image: CachedNetworkImageProvider(tour.images[index]),
                                   width: 160,
                                   height: 140,
                                   fit: BoxFit.cover,
@@ -283,7 +291,7 @@ class TourDetailScreen extends StatelessWidget {
                   const SizedBox(height: 32),
                   const Divider(),
                   const SizedBox(height: 16),
-                  _ReviewsSection(tourId: tour.id),
+                  _ReviewsSection(tour: tour),
 
                   const SizedBox(height: 100), // padding for bottom bar
                 ],
@@ -298,22 +306,34 @@ class TourDetailScreen extends StatelessWidget {
           color: theme.scaffoldBackgroundColor,
           boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -4))],
         ),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size.fromHeight(50),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            backgroundColor: theme.colorScheme.primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-          onPressed: () {
-             Navigator.push(
-               context,
-               MaterialPageRoute(builder: (_) => BookingConfirmationScreen(tour: tour)),
-             );
-          },
-          child: const Text('Book Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        ),
+        child: FirebaseAuth.instance.currentUser?.uid == tour.guideId
+            ? ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: theme.colorScheme.surfaceVariant,
+                  foregroundColor: theme.colorScheme.onSurfaceVariant,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: null,
+                child: const Text('This is your tour', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              )
+            : ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: () {
+                   Navigator.push(
+                     context,
+                     MaterialPageRoute(builder: (_) => BookingConfirmationScreen(tour: tour)),
+                   );
+                },
+                child: const Text('Book Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
       ),
     );
   }
@@ -425,11 +445,13 @@ class _GalleryViewerDialogState extends State<_GalleryViewerDialog> {
                   panEnabled: true,
                   minScale: 1.0,
                   maxScale: 4.0,
-                  child: Image.network(
-                    widget.images[index],
+                  child: CachedNetworkImage(
+                    imageUrl: widget.images[index],
                     fit: BoxFit.contain,
                     width: double.infinity,
                     height: double.infinity,
+                    placeholder: (context, url) => const Center(child: CircularProgressIndicator(color: Colors.white)),
+                    errorWidget: (context, url, error) => const Center(child: Icon(Icons.error, color: Colors.white)),
                   ),
                 ),
               );
@@ -529,7 +551,7 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
       leading: CircleAvatar(
         radius: 24,
         backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
-        backgroundImage: guide.profileImageUrl.isNotEmpty ? NetworkImage(guide.profileImageUrl) : null,
+        backgroundImage: guide.profileImageUrl.isNotEmpty ? CachedNetworkImageProvider(guide.profileImageUrl) : null,
         child: guide.profileImageUrl.isEmpty ? const Icon(Icons.person) : null,
       ),
       title: Text(displayName.isNotEmpty ? displayName : 'Your Guide', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -554,9 +576,9 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
 }
 
 class _ReviewsSection extends StatelessWidget {
-  final String tourId;
+  final TourEntity tour;
 
-  const _ReviewsSection({required this.tourId});
+  const _ReviewsSection({required this.tour});
 
   @override
   Widget build(BuildContext context) {
@@ -568,18 +590,31 @@ class _ReviewsSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('Reviews', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            TextButton.icon(
-              onPressed: () => _showAddReviewDialog(context, tourId),
-              icon: const Icon(Icons.rate_review, size: 18),
-              label: const Text('Write a Review'),
-            ),
+            if (currentUid != null && currentUid != tour.guideId)
+              FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('bookings')
+                    .where('tourId', isEqualTo: tour.id)
+                    .where('userId', isEqualTo: currentUid)
+                    .where('status', isEqualTo: 'confirmed')
+                    .get(),
+                builder: (context, snapshot) {
+                  final hasBooked = snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+                  if (!hasBooked) return const SizedBox.shrink();
+                  return TextButton.icon(
+                    onPressed: () => _showAddReviewDialog(context, tour.id),
+                    icon: const Icon(Icons.rate_review, size: 18),
+                    label: const Text('Write a Review'),
+                  );
+                },
+              ),
           ],
         ),
         const SizedBox(height: 12),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('tours')
-              .doc(tourId)
+              .doc(tour.id)
               .collection('reviews')
               .orderBy('createdAt', descending: true)
               .snapshots(),
@@ -627,7 +662,7 @@ class _ReviewsSection extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 20,
                           backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                          backgroundImage: userImage != null && userImage.isNotEmpty ? NetworkImage(userImage) : null,
+                          backgroundImage: userImage != null && userImage.isNotEmpty ? CachedNetworkImageProvider(userImage) : null,
                           child: userImage == null || userImage.isEmpty ? const Icon(Icons.person, size: 20) : null,
                         ),
                       ),
@@ -686,16 +721,16 @@ class _ReviewsSection extends StatelessWidget {
       onSelected: (value) {
         switch (value) {
           case 'edit':
-            _showEditReviewDialog(context, tourId, reviewDocId, data);
+            _showEditReviewDialog(context, tour.id, reviewDocId, data);
             break;
           case 'delete':
-            _showDeleteReviewConfirmation(context, tourId, reviewDocId, data);
+            _showDeleteReviewConfirmation(context, tour.id, reviewDocId, data);
             break;
           case 'report':
             UniversalReportDialog.show(
               context,
               reportType: ReportType.comment,
-              reportedItemId: '${tourId}_$reviewDocId',
+              reportedItemId: '${tour.id}_$reviewDocId',
               repository: GetIt.I<ReportsRepository>(),
             );
             break;

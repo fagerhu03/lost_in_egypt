@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../bloc/apply_guide_cubit.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
-import 'package:lost_in_egypt/main.dart'; // Import AuthGate
+import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 import '../bloc/apply_guide_state.dart';
 
 class ApplyGuideScreen extends StatefulWidget {
@@ -119,7 +119,7 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
       onWillPop: () async {
         if (widget.isFromSignup) {
            Navigator.of(context).pushAndRemoveUntil(
-             FadePageRoute(page: const AuthGate()),
+             FadePageRoute(page: AuthGate()),
              (route) => false,
            );
            return false;
@@ -141,7 +141,7 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
               
               if (widget.isFromSignup) {
                  Navigator.of(context).pushAndRemoveUntil(
-                   FadePageRoute(page: const AuthGate()),
+                   FadePageRoute(page: AuthGate()),
                    (route) => false,
                  );
               } else {

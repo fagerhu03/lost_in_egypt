@@ -14,7 +14,7 @@ import 'package:lost_in_egypt/feature/guide_application/domain/usecases/apply_gu
 import 'package:get_it/get_it.dart';
 
 
-import 'package:lost_in_egypt/main.dart'; // Import AuthGate
+import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 
 class SignupScreen extends StatefulWidget {
   final bool isGuidePreselected;
@@ -258,7 +258,7 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
           );
           Navigator.of(context).pushAndRemoveUntil(
-            FadePageRoute(page: const AuthGate()),
+            FadePageRoute(page: AuthGate()),
             (route) => false,
           );
         }
@@ -280,18 +280,20 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFFCFBE8),
-          image: DecorationImage(
-            image: AssetImage("assets/pattern_comp.png"),
-            fit: BoxFit.cover,
-            opacity: 0.4,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFFCFBE8),
+        image: DecorationImage(
+          image: AssetImage("assets/pattern_comp.png"),
+          fit: BoxFit.cover,
+          opacity: 0.4,
         ),
-        child: Center(
-          child: SingleChildScrollView(
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        body: Center(
+            child: SingleChildScrollView(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -457,9 +459,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       const SizedBox(width: 5),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(
-                            FadePageRoute(page: const LoginScreen()),
-                          );
+                            Navigator.of(context).pushNamed('/login');
                         },
                         child: const Text(
                           "Login",

@@ -4,6 +4,7 @@ import '../../domain/entities/booking_entity.dart';
 import '../../domain/usecases/book_tour_usecase.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../data/datasources/paymob_api_service.dart';
@@ -238,7 +239,14 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: widget.tour.images.isNotEmpty
-                              ? Image.network(widget.tour.images.first, width: 60, height: 60, fit: BoxFit.cover)
+                              ? CachedNetworkImage(
+                                  imageUrl: widget.tour.images.first, 
+                                  width: 60, 
+                                  height: 60, 
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(width: 60, height: 60, color: Colors.grey[300]),
+                                  errorWidget: (context, url, err) => Container(width: 60, height: 60, color: Colors.grey[300], child: const Icon(Icons.landscape)),
+                                )
                               : Container(width: 60, height: 60, color: Colors.grey[300], child: const Icon(Icons.landscape)),
                         ),
                         const SizedBox(width: 12),
