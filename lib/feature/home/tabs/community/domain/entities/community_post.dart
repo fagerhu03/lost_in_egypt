@@ -15,6 +15,7 @@ class CommunityPost {
   final bool isLikedByMe;
   final bool isDislikedByMe;
   final bool isSavedByMe;     // For bookmarks
+  final bool isVerifiedGuide;
 
   const CommunityPost({
     required this.id,
@@ -33,5 +34,6 @@ class CommunityPost {
     this.isLikedByMe = false,
     this.isDislikedByMe = false,
     this.isSavedByMe = false,
+    this.isVerifiedGuide = false,
   });
 }

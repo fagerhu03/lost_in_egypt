@@ -1,0 +1,122 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/admin_guide_cubit.dart';
+import '../bloc/admin_guide_state.dart';
+import 'admin_guide_details_screen.dart';
+
+class AdminGuideApprovalScreen extends StatefulWidget {
+  const AdminGuideApprovalScreen({Key? key}) : super(key: key);
+
+  @override
+  State<AdminGuideApprovalScreen> createState() => _AdminGuideApprovalScreenState();
+}
+
+class _AdminGuideApprovalScreenState extends State<AdminGuideApprovalScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<AdminGuideCubit>().fetchPendingGuides();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Pending Guide Applications')),
+      body: BlocConsumer<AdminGuideCubit, AdminGuideState>(
+        listener: (context, state) {
+          if (state is AdminGuideError) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
+          } else if (state is AdminGuideActionSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.actionMessage)));
+          }
+        },
+        builder: (context, state) {
+          if (state is AdminGuideLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is AdminGuideLoaded) {
+            final guides = state.pendingGuides;
+            if (guides.isEmpty) {
+              return const Center(child: Text('No pending applications.'));
+            }
+            return ListView.builder(
+              itemCount: guides.length,
+              itemBuilder: (context, index) {
+                final guide = guides[index];
+                return Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: const CircleAvatar(
+                      backgroundColor: Color(0xFF714611),
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
+                    title: Text('${guide.firstName} ${guide.lastName}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('${guide.email}\nMOTA: ${guide.motaLicenseNumber ?? 'N/A'}'),
+                    isThreeLine: true,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AdminGuideDetailsScreen(
+                            applicant: guide,
+                            onApprove: (acceptedGuide) {
+                              if (acceptedGuide.emailVerified) {
+                                context.read<AdminGuideCubit>().approveGuide(acceptedGuide.id);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Cannot approve: Guide has not verified their email.')),
+                                );
+                              }
+                            },
+                            onReject: (rejectedGuide) {
+                              final reasonController = TextEditingController();
+                              showDialog(
+                                context: context,
+                                builder: (dialogContext) {
+                                  return AlertDialog(
+                                    title: const Text('Reject Application'),
+                                    content: TextField(
+                                      controller: reasonController,
+                                      autofocus: true,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Enter reason for rejection...',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      maxLines: 3,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(dialogContext),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                        onPressed: () {
+                                          if (reasonController.text.trim().isNotEmpty) {
+                                            Navigator.pop(dialogContext);
+                                            context.read<AdminGuideCubit>().rejectGuide(rejectedGuide.id, reasonController.text.trim());
+                                          }
+                                        },
+                                        child: const Text('Confirm Reject', style: TextStyle(color: Colors.white)),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+}

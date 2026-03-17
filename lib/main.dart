@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_paymob/flutter_paymob.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,18 +11,24 @@ import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platf
 
 import 'package:lost_in_egypt/theme/app_theme.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
 
 import 'core/di/service_locator.dart' as di;
 
 import 'feature/home/tabs/navigator/home_wrapper.dart';
 import 'firebase_options.dart';
 import 'feature/auth/presentation/login/presentation/login_screen.dart';
+import 'feature/auth/presentation/login/bloc/login_bloc.dart';
 import 'feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 import 'feature/onboarding/onboarding_screen.dart';
+import 'feature/home/notification/domain/services/local_notification_service.dart';
 
 // ✅ add these imports for saved theme
 import 'feature/home/tabs/more/data/settings_repository.dart';
 import 'feature/auth/data/models/user.dart';
+import 'feature/auth/presentation/email_verification_screen.dart';
+import 'feature/tours/presentation/pages/map_picker_screen.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +64,25 @@ void main() async {
     mapsImplementation.useAndroidViewSurface = true;
     mapsImplementation.initializeWithRenderer(AndroidMapRenderer.latest);
   }
+  
+  try {
+    tz.initializeTimeZones();
+    await LocalNotificationService().init();
+  } catch (e) {
+    debugPrint("LocalNotifications Initialization Error: $e");
+  }
+
+  // Initialize Paymob SDK
+  try {
+    await FlutterPaymob.instance.initialize(
+      apiKey: dotenv.env['PAYMOB_API_KEY'] ?? '',
+      integrationID: int.tryParse(dotenv.env['PAYMOB_INTEGRATION_ID_CARD'] ?? '') ?? 0,
+      walletIntegrationId: int.tryParse(dotenv.env['PAYMOB_INTEGRATION_ID_WALLET'] ?? '') ?? 0,
+      iFrameID: int.tryParse(dotenv.env['PAYMOB_IFRAME_ID'] ?? '') ?? 0,
+    );
+  } catch (e) {
+    debugPrint('Paymob initialization error: $e');
+  }
 
   runApp(const MyApp());
 }
@@ -82,81 +109,21 @@ class MyApp extends StatelessWidget {
 
           themeMode: mode,
 
-          home: const AuthGate(),
+          home: AuthGate(),
 
           routes: {
             '/onboarding': (context) => const OnboardingScreen(),
-            '/login': (context) => const LoginScreen(),
+            '/login': (context) => BlocProvider<LoginBloc>(
+                  create: (_) => di.sl<LoginBloc>(),
+                  child: const LoginScreen(),
+                ),
             '/signup': (context) => const SignupScreen(),
             '/home': (context) => const HomeWrapper(),
+            '/map_picker': (context) => const MapPickerScreen(),
           },
         );
       },
     );
   }
 }
-
-// ⭐ THE AUTH GATE (UPDATED: applies saved theme once)
-class AuthGate extends StatefulWidget {
-  const AuthGate({super.key});
-
-  @override
-  State<AuthGate> createState() => _AuthGateState();
-}
-
-class _AuthGateState extends State<AuthGate> {
-  final SettingsRepository _settingsRepo = SettingsRepository();
-
-  String? _appliedForUid; // prevents re-applying every rebuild
-
-  Future<void> _applySavedThemeIfNeeded(User firebaseUser) async {
-    if (_appliedForUid == firebaseUser.uid) return;
-
-    try {
-      final UserModel? userModel = await _settingsRepo.fetchCurrentUser();
-      ThemeController.setDark(userModel?.isDarkMode ?? false);
-    } catch (_) {
-      // fallback if fetch fails
-      ThemeController.setDark(false);
-    }
-
-    _appliedForUid = firebaseUser.uid;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.userChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final firebaseUser = snapshot.data;
-
-        if (firebaseUser == null) {
-          // Optional: reset to light on logout
-          _appliedForUid = null;
-          // ThemeController.setDark(false);
-
-          return const OnboardingScreen();
-        }
-
-        // Apply saved theme BEFORE showing HomeWrapper
-        return FutureBuilder<void>(
-          future: _applySavedThemeIfNeeded(firebaseUser),
-          builder: (context, themeSnap) {
-            if (themeSnap.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            }
-            return const HomeWrapper();
-          },
-        );
-      },
-    );
-  }
-}
+

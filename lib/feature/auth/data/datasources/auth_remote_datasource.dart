@@ -64,6 +64,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         .createUserWithEmailAndPassword(email: email, password: password);
     final User user = result.user!;
 
+    // ✅ Send email verification
+    if (!user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+
     int monthIndex = _getMonthIndex(birthMonth);
     int day = int.parse(birthDay);
     int year = int.parse(birthYear);
@@ -111,8 +116,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         message: 'User authenticated but profile data is missing.',
       );
     }
+    
+    final data = doc.data() as Map<String, dynamic>;
+    if (data['role'] == 'banned' || data['isDisabled'] == true) {
+      await firebaseAuth.signOut();
+      throw FirebaseAuthException(
+        code: 'user-disabled',
+        message: 'This account has been disabled by administrators.',
+      );
+    }
+
     // ✅ FIX: Use fromMap()
-    return UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+    return UserModel.fromMap(data, doc.id);
   }
 
   @override
@@ -196,6 +211,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final DocumentSnapshot doc = await docRef.get();
 
     if (doc.exists) {
+      final currentData = doc.data() as Map<String, dynamic>;
+      if (currentData['role'] == 'banned' || currentData['isDisabled'] == true) {
+        await firebaseAuth.signOut();
+        throw FirebaseAuthException(
+          code: 'user-disabled',
+          message: 'This account has been disabled by administrators.',
+        );
+      }
+      
       Map<String, dynamic> updateData = {'emailVerified': true};
 
       if (newPhotoUrl != null && newPhotoUrl.isNotEmpty) {
@@ -265,7 +289,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     );
 
     // ✅ FIX: toMap
-    await firestore.collection('users').doc(user.uid).set(newUser.toMap());
+    await firestore.collection('users').doc(user.uid).set(newUser.toMap(), SetOptions(merge: true));
   }
 
   // ✅ NEW: Correct Get Profile Implementation
@@ -274,7 +298,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final doc = await firestore.collection('users').doc(uid).get();
 
     if (doc.exists) {
-      return UserModel.fromMap(doc.data()!, doc.id);
+      final data = doc.data()!;
+      if (data['role'] == 'banned' || data['isDisabled'] == true) {
+        await firebaseAuth.signOut();
+        throw Exception('This account has been disabled by administrators.');
+      }
+      return UserModel.fromMap(data, doc.id);
     } else {
       // Create default shell if missing
       final currentUser = firebaseAuth.currentUser;

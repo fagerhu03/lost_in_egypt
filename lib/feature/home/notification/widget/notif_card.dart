@@ -7,6 +7,7 @@ class NotifCard extends StatelessWidget {
   final String timeText;
   final String? avatarUrl;
   final VoidCallback onTap;
+  final VoidCallback onAvatarTap;
 
   const NotifCard({
     super.key,
@@ -16,6 +17,7 @@ class NotifCard extends StatelessWidget {
     required this.timeText,
     required this.avatarUrl,
     required this.onTap,
+    required this.onAvatarTap,
   });
 
   @override
@@ -55,18 +57,21 @@ class NotifCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: primary.withOpacity(0.12),
-                ),
-                child: ClipOval(
-                  child: avatarUrl != null
-                      ? Image.network(avatarUrl!, fit: BoxFit.cover)
-                      : Icon(Icons.person,
-                          color: onSurface.withOpacity(0.65)),
+              GestureDetector(
+                onTap: onAvatarTap,
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: primary.withOpacity(0.12),
+                  ),
+                  child: ClipOval(
+                    child: avatarUrl != null
+                        ? Image.network(avatarUrl!, fit: BoxFit.cover)
+                        : Icon(Icons.person,
+                            color: onSurface.withOpacity(0.65)),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),

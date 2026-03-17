@@ -68,7 +68,9 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     Emitter<MapState> emit,
   ) {
     List<MapItem> items;
-    if (event.categoryId == 'all') {
+    if (event.categoryId == 'all' || event.categoryId == 'favorites' || event.categoryId == 'open_now') {
+      // 'all', 'favorites', and 'open_now' all need the full item list;
+      // actual filtering is handled in the UI layer
       items = state.allItemsCache.where(_shouldShowItem).toList();
     } else {
       items = state.allItemsCache.where((item) {

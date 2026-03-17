@@ -8,9 +8,17 @@ import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_field.dart';
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply_guide_screen.dart' as lost_in_egypt_guide_screen;
+import 'package:lost_in_egypt/feature/guide_application/presentation/bloc/apply_guide_cubit.dart' as lost_in_egypt_guide_cubit;
+import 'package:lost_in_egypt/feature/guide_application/domain/usecases/apply_guide_usecase.dart' as lost_in_egypt_guide_usecase;
+import 'package:get_it/get_it.dart';
+
+
+import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  final bool isGuidePreselected;
+  const SignupScreen({super.key, this.isGuidePreselected = false});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -23,6 +31,12 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPassController = TextEditingController();
+
+  final FocusNode _firstNameFocus = FocusNode();
+  final FocusNode _lastNameFocus = FocusNode();
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
+  final FocusNode _confirmPassFocus = FocusNode();
 
   // 2. State Variables
   bool obscure1 = true;
@@ -58,12 +72,25 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _applyAsGuide = widget.isGuidePreselected;
+  }
+
+  @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPassController.dispose();
+
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _confirmPassFocus.dispose();
+
     super.dispose();
   }
 
@@ -181,6 +208,8 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  bool _applyAsGuide = false;
+
   // 4. Signup Action
   Future<void> _handleSignup() async {
     if (!_validateForm()) return;
@@ -205,15 +234,34 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Account Created Successfully!"),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pushReplacement(
-          FadePageRoute(page: const LoginScreen()),
-        );
+        if (_applyAsGuide) {
+          // If applying as guide, redirect directly to ApplyGuideScreen 
+          // They are now authenticated but require extra steps
+          Navigator.of(context).pushAndRemoveUntil(
+             FadePageRoute(
+               page: BlocProvider(
+                 create: (context) => lost_in_egypt_guide_cubit.ApplyGuideCubit(
+                   applyGuideUseCase: GetIt.I<lost_in_egypt_guide_usecase.ApplyGuideUseCase>(),
+                 ),
+                 child: lost_in_egypt_guide_screen.ApplyGuideScreen(
+                   isFromSignup: true,
+                 ),
+               ),
+             ),
+             (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Account Created Successfully!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.of(context).pushAndRemoveUntil(
+            FadePageRoute(page: AuthGate()),
+            (route) => false,
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
       String msg = "Signup Failed";
@@ -232,26 +280,36 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFFCFBE8),
-          image: DecorationImage(
-            image: AssetImage("assets/pattern_comp.png"),
-            fit: BoxFit.cover,
-            opacity: 0.4,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFFCFBE8),
+        image: DecorationImage(
+          image: AssetImage("assets/pattern_comp.png"),
+          fit: BoxFit.cover,
+          opacity: 0.4,
         ),
-        child: Center(
-          child: SingleChildScrollView(
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        body: Center(
+            child: SingleChildScrollView(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
 
-                  // LOGO
+                  // BACK BUTTON & LOGO
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Color(0xff634700)),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+
                   Image.asset(
                     "assets/logo/logo_colorful_comp.png",
                     height: 140,
@@ -274,6 +332,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "First Name", 
                     controller: _firstNameController,
                     textInputAction: TextInputAction.next,
+                    focusNode: _firstNameFocus,
+                    onSubmitted: (_) => _lastNameFocus.requestFocus(),
                   ),
 
                   const SizedBox(height: 10),
@@ -283,6 +343,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: "Last Name", 
                     controller: _lastNameController,
                     textInputAction: TextInputAction.next,
+                    focusNode: _lastNameFocus,
+                    onSubmitted: (_) => _emailFocus.requestFocus(), // Skips DOB because it's a dropdown
                   ),
 
                   const SizedBox(height: 10),
@@ -319,6 +381,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
+                    focusNode: _emailFocus,
+                    onSubmitted: (_) => _passwordFocus.requestFocus(),
                   ),
 
                   const SizedBox(height: 15),
@@ -329,6 +393,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     obscureText: obscure1,
                     controller: _passwordController,
                     textInputAction: TextInputAction.next,
+                    focusNode: _passwordFocus,
+                    onSubmitted: (_) => _confirmPassFocus.requestFocus(),
                     onVisibilityToggle: () => setState(() => obscure1 = !obscure1),
                   ),
 
@@ -340,7 +406,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     obscureText: obscure2,
                     controller: _confirmPassController,
                     textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                    focusNode: _confirmPassFocus,
+                    onSubmitted: (_) {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      _handleSignup();
+                    },
                     onVisibilityToggle: () => setState(() => obscure2 = !obscure2),
                   ),
 
@@ -349,6 +419,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   // SIGN UP BUTTON
                   GestureDetector(
                     onTap: _isLoading ? null : _handleSignup,
+
                     child: Container(
                       width: double.infinity,
                       height: 55,
@@ -388,9 +459,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       const SizedBox(width: 5),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(
-                            FadePageRoute(page: const LoginScreen()),
-                          );
+                            Navigator.of(context).pushNamed('/login');
                         },
                         child: const Text(
                           "Login",

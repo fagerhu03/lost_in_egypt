@@ -208,24 +208,23 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     final textColor = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
-    return Scaffold(
-      backgroundColor: bg,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: Opacity(
-              opacity: patternOpacity,
-              child: Image.asset(
-                "assets/pattern_comp.png",
-                fit: BoxFit.cover,
-                repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => Container(),
-              ),
-            ),
-          ),
-
-          SafeArea(
+    return Container(
+      decoration: BoxDecoration(
+        color: bg,
+        image: DecorationImage(
+          image: const AssetImage("assets/pattern_comp.png"),
+          fit: BoxFit.cover,
+          repeat: ImageRepeat.repeat,
+          opacity: patternOpacity,
+        ),
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Column(
@@ -543,7 +542,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildLanguageDropdown({

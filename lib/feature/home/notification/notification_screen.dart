@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/empty_notifications_view.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/notif_card.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/notification_settings_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../tabs/community/data/repositories/firebase_community_repository.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/post_detail_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_post_model.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
+import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+
+import '../../../core/di/service_locator.dart';
+import 'domain/repositories/notifications_repository.dart';
+import 'domain/entities/notification_entity.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -15,14 +23,57 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  final FirebaseCommunityRepository _repo = FirebaseCommunityRepository();
+  final NotificationsRepository _repo = sl<NotificationsRepository>();
+  late Stream<List<NotificationEntity>> _notificationsStream;
 
   @override
   void initState() {
     super.initState();
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    _notificationsStream = _repo.getNotifications(userId);
+
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) _repo.markAllNotificationsAsRead();
+      if (mounted && userId.isNotEmpty) {
+        _repo.markAllAsRead(userId);
+      }
     });
+  }
+
+  Future<void> _handleNotifTap(NotificationEntity notif) async {
+    if (!notif.isRead) {
+      await _repo.markAsRead(notif.id);
+    }
+    if (notif.deepLinkTargetId != null && notif.deepLinkTargetId!.isNotEmpty) {
+      if (notif.type == 'comment' || notif.type.startsWith('like')) {
+        try {
+          final parts = notif.deepLinkTargetId!.split('_');
+          final postId = parts[0];
+          final commentId = parts.length > 1 ? parts[1] : null;
+
+          final doc = await FirebaseFirestore.instance.collection('community_posts').doc(postId).get();
+          if (doc.exists && mounted) {
+            final post = CommunityPostModel.fromSnapshot(doc);
+            Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailScreen(
+              post: post,
+              highlightCommentId: commentId,
+            )));
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post not found')));
+          }
+        } catch(e) { /* ignore */ }
+      }
+    }
+  }
+
+  Future<void> _handleAvatarTap(String senderId) async {
+    if (senderId.isEmpty) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(senderId).get();
+      if (doc.exists && mounted) {
+        final user = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+        Navigator.push(context, MaterialPageRoute(builder: (_) => UniversalProfileScreen(user: user)));
+      }
+    } catch(e) { /* ignore */ }
   }
 
   @override
@@ -113,8 +164,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   const SizedBox(height: 12),
 
                   Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: _repo.getNotificationsStream(),
+                    child: StreamBuilder<List<NotificationEntity>>(
+                      stream: _notificationsStream,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -123,9 +174,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   CircularProgressIndicator(color: primary));
                         }
 
-                        final docs = snapshot.data?.docs ?? [];
+                        final notifications = snapshot.data ?? [];
 
-                        if (docs.isEmpty) {
+                        if (notifications.isEmpty) {
                           return EmptyNotificationsView(
                             onTapSettings: () =>
                                 NotificationSettingsSheet.open(context),
@@ -150,29 +201,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               ),
                             ),
 
-                            ...docs.map((doc) {
-                              final data =
-                                  doc.data() as Map<String, dynamic>;
-                              final String notifId = doc.id;
-
-                              final bool isRead = data['isRead'] ?? false;
-                              final Timestamp? ts = data['timestamp'];
-                              final date =
-                                  ts?.toDate() ?? DateTime.now();
-
-                              final String senderName =
-                                  (data['senderName'] ?? "Someone")
-                                      .toString();
-                              final String message = (data['message'] ??
-                                      "interacted with your post")
-                                  .toString();
-                              final String avatar =
-                                  (data['senderAvatar'] ?? "").toString();
-
+                            ...notifications.map((notif) {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: Dismissible(
-                                  key: ValueKey(notifId),
+                                  key: ValueKey(notif.id),
                                   direction: DismissDirection.endToStart,
                                   background: Container(
                                     alignment: Alignment.centerRight,
@@ -188,8 +221,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                         color: Colors.white),
                                   ),
                                   onDismissed: (_) async {
-                                    await _repo
-                                        .deleteNotification(notifId);
+                                    await _repo.deleteNotification(notif.id);
                                     if (mounted) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -200,14 +232,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     }
                                   },
                                   child: NotifCard(
-                                    isRead: isRead,
-                                    senderName: senderName,
-                                    message: message,
-                                    timeText: timeago.format(date),
-                                    avatarUrl: avatar.isEmpty
+                                    isRead: notif.isRead,
+                                    senderName: notif.senderName,
+                                    message: notif.message,
+                                    timeText: timeago.format(notif.timestamp),
+                                    avatarUrl: notif.senderAvatar.isEmpty
                                         ? null
-                                        : avatar,
-                                    onTap: () {},
+                                        : notif.senderAvatar,
+                                    onTap: () => _handleNotifTap(notif),
+                                    onAvatarTap: () => _handleAvatarTap(notif.senderId),
                                   ),
                                 ),
                               );

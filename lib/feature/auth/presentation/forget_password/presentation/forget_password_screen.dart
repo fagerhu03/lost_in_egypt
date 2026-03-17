@@ -73,23 +73,25 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: const BackButton(color: Color(0xff634700)),
-      ),
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFFCFBE8),
-          image: DecorationImage(
-            image: AssetImage("assets/pattern_comp.png"),
-            fit: BoxFit.cover,
-            opacity: 0.4,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFFCFBE8),
+        image: DecorationImage(
+          image: AssetImage("assets/pattern_comp.png"),
+          fit: BoxFit.cover,
+          opacity: 0.4,
         ),
-        child: Center(
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: const BackButton(color: Color(0xff634700)),
+        ),
+        extendBodyBehindAppBar: true,
+        body: Center(
           child: Padding(
             padding: const EdgeInsets.all(30.0),
             child: Column(

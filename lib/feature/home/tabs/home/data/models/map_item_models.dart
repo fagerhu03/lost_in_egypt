@@ -5,6 +5,55 @@ import '../../../map/domain/place_importance.dart';
 import '../../../map/data/places_api_service.dart';
 
 // ==========================================================
+// 0. REVIEW MODEL
+// ==========================================================
+class PlaceReview {
+  final String authorName;
+  final double rating;
+  final String text;
+  final String relativeTime;
+
+  const PlaceReview({
+    required this.authorName,
+    required this.rating,
+    required this.text,
+    required this.relativeTime,
+  });
+
+  factory PlaceReview.fromJson(Map<String, dynamic> json) {
+    // authorAttribution can vary in structure
+    String authorName = 'Traveler';
+    final authorAttr = json['authorAttribution'];
+    if (authorAttr is Map<String, dynamic>) {
+      authorName = (authorAttr['displayName'] ?? 'Traveler').toString();
+    }
+
+    // originalText can also vary
+    String reviewText = '';
+    final origText = json['originalText'];
+    if (origText is Map<String, dynamic>) {
+      reviewText = (origText['text'] ?? '').toString();
+    } else if (json['text'] is Map<String, dynamic>) {
+      reviewText = ((json['text'] as Map<String, dynamic>)['text'] ?? '').toString();
+    }
+
+    return PlaceReview(
+      authorName: authorName,
+      rating: (json['rating'] ?? 0).toDouble(),
+      text: reviewText,
+      relativeTime: (json['relativePublishTimeDescription'] ?? '').toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'authorAttribution': {'displayName': authorName},
+    'rating': rating,
+    'originalText': {'text': text},
+    'relativePublishTimeDescription': relativeTime,
+  };
+}
+
+// ==========================================================
 // 1. SHARED INTERFACE (Domain Entity)
 // ==========================================================
 abstract class MapItem {
@@ -22,6 +71,9 @@ abstract class MapItem {
   String get description;
   List<String> get tags;
   int get importance;
+  bool get isCurrentlyOpen;
+  String get openingHoursText;
+  List<PlaceReview> get reviews;
 }
 
 // ==========================================================
@@ -84,8 +136,15 @@ class PlaceModel implements MapItem {
   final List<String> tags;
   @override
   final int importance;
+  @override
+  final bool isCurrentlyOpen;
+  @override
+  final String openingHoursText;
+  @override
+  final List<PlaceReview> reviews;
 
-  final bool isOpenNow;
+  // Legacy alias
+  bool get isOpenNow => isCurrentlyOpen;
 
   const PlaceModel({
     required this.id,
@@ -100,7 +159,9 @@ class PlaceModel implements MapItem {
     required this.duration,
     required this.weather,
     required this.description,
-    required this.isOpenNow,
+    this.isCurrentlyOpen = false,
+    this.openingHoursText = '',
+    this.reviews = const [],
     this.tags = const [],
     this.importance = 10,
   });
@@ -118,7 +179,8 @@ class PlaceModel implements MapItem {
       'duration': duration,
       'weather': weather,
       'description': description,
-      'isOpenNow': isOpenNow,
+      'isOpenNow': isCurrentlyOpen,
+      'openingHoursText': openingHoursText,
       'tags': tags,
       'importance': importance,
     };
@@ -141,7 +203,8 @@ class PlaceModel implements MapItem {
       duration: map['duration'] ?? '',
       weather: map['weather'] ?? '',
       description: map['description'] ?? '',
-      isOpenNow: map['isOpenNow'] ?? false,
+      isCurrentlyOpen: map['isOpenNow'] ?? false,
+      openingHoursText: map['openingHoursText'] ?? '',
       tags: (map['tags'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
@@ -225,6 +288,26 @@ class PlaceModel implements MapItem {
     // Build tags from types list
     final tags = types.take(5).toList();
 
+    // Opening hours
+    final openingHours = json['currentOpeningHours'] as Map<String, dynamic>?;
+    final isCurrentlyOpen = openingHours?['openNow'] as bool? ?? false;
+    final weekdayDescs = (openingHours?['weekdayDescriptions'] as List<dynamic>?);
+    String openingHoursText = '';
+    if (weekdayDescs != null && weekdayDescs.isNotEmpty) {
+      openingHoursText = weekdayDescs.map((d) => d.toString()).join('\n');
+    }
+
+    // Reviews
+    final reviewsList = <PlaceReview>[];
+    final rawReviews = json['reviews'] as List<dynamic>?;
+    if (rawReviews != null) {
+      for (int i = 0; i < rawReviews.length && i < 5; i++) {
+        try {
+          reviewsList.add(PlaceReview.fromJson(rawReviews[i] as Map<String, dynamic>));
+        } catch (_) {}
+      }
+    }
+
     return PlaceModel(
       id: placeId,
       title: title,
@@ -238,7 +321,9 @@ class PlaceModel implements MapItem {
       duration: '',
       weather: '',
       description: description,
-      isOpenNow: false,
+      isCurrentlyOpen: isCurrentlyOpen,
+      openingHoursText: openingHoursText,
+      reviews: reviewsList,
       tags: tags,
       importance: importance,
     );
@@ -300,6 +385,13 @@ class EventModel implements MapItem {
   final List<String> tags;
   @override
   final int importance;
+
+  @override
+  bool get isCurrentlyOpen => false;
+  @override
+  String get openingHoursText => '';
+  @override
+  List<PlaceReview> get reviews => const [];
 
   @override
   String get category => 'event';

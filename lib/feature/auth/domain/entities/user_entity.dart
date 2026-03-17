@@ -14,6 +14,8 @@ class UserEntity extends Equatable {
   final String nationality;
   final String bio;
   final List<String> interests;
+  final List<String> visitedLandmarks;
+  final List<String> savedPlaces;
 
   // Social Links
   final String instagramHandle;
@@ -29,6 +31,18 @@ class UserEntity extends Equatable {
   // Timestamps
   final DateTime createdAt;
 
+  // Guide Fields
+  final String applicationStatus; // 'none', 'pending', 'rejected', 'approved'
+  final String motaLicenseNumber;
+  final String syndicateNumber;
+  final List<String> certifiedLanguages;
+  final Map<String, String> guideDocuments;
+  final bool isVerifiedGuide;
+  final String? rejectionReason;
+
+  final double rating;
+  final int reviewCount;
+
   const UserEntity({
     required this.id,
     required this.email,
@@ -41,6 +55,8 @@ class UserEntity extends Equatable {
     this.nationality = '',
     this.bio = '',
     this.interests = const [],
+    this.visitedLandmarks = const [],
+    this.savedPlaces = const [],
     this.instagramHandle = '',
     this.twitterHandle = '',
     this.isNotificationsEnabled = true,
@@ -49,6 +65,15 @@ class UserEntity extends Equatable {
     this.phoneVerified = false,
     this.emailVerified = false,
     required this.createdAt,
+    this.applicationStatus = 'none',
+    this.motaLicenseNumber = '',
+    this.syndicateNumber = '',
+    this.certifiedLanguages = const [],
+    this.guideDocuments = const {},
+    this.isVerifiedGuide = false,
+    this.rejectionReason,
+    this.rating = 0.0,
+    this.reviewCount = 0,
   });
 
   @override
@@ -64,6 +89,8 @@ class UserEntity extends Equatable {
     nationality,
     bio,
     interests,
+    visitedLandmarks,
+    savedPlaces,
     instagramHandle,
     twitterHandle,
     isNotificationsEnabled,
@@ -72,5 +99,14 @@ class UserEntity extends Equatable {
     phoneVerified,
     emailVerified,
     createdAt,
+    applicationStatus,
+    motaLicenseNumber,
+    syndicateNumber,
+    certifiedLanguages,
+    guideDocuments,
+    isVerifiedGuide,
+    rejectionReason,
+    rating,
+    reviewCount,
   ];
 }

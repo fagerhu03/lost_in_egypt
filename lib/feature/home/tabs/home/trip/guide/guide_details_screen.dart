@@ -1,12 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
 import '../../../navigator/widget/account_menu_button.dart';
-import 'data/guide_model.dart';
+import '../../../../../auth/data/models/user.dart';
+import '../../../../../../core/di/service_locator.dart';
+import '../../../../../tours/presentation/widgets/tour_card.dart';
+import '../../../../../tours/domain/repositories/tours_repository.dart';
+import '../../../../../tours/domain/entities/tour_entity.dart';
+import '../../../account/presentation/edit_profile_screen_enhanced.dart';
 
 class GuideDetailsScreen extends StatefulWidget {
-  final GuideModel guide;
+  final UserModel guide;
 
   const GuideDetailsScreen({super.key, required this.guide});
 
@@ -71,7 +77,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
     return Scaffold(
       backgroundColor: isDark
           ? AppColors.darkBackground
-          : AppColors.lightBackground,
+          : const Color(0xFFFFFEF0),
       body: Stack(
         children: [
           Container(
@@ -136,7 +142,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                           children: [
                             _GuideHeaderCard(guide: widget.guide),
                             const SizedBox(height: 12),
-                            _InfoStrip(price: widget.guide.price),
+                            _InfoStrip(guide: widget.guide),
                             const SizedBox(height: 20),
                             Text(
                               'Brief Trip',
@@ -144,13 +150,9 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'This resort presents itself as a tranquil yet upscale getaway, set within the '
-                              'scenic landscape of the Faiyum region. The architecture and landscaping '
-                              'suggest a design that blends leisure luxury with the surrounding natural '
-                              'environment, think spacious grounds, open-pool areas, and resort buildings '
-                              'that feel relaxed yet refined. '
-                              'Guests can enjoy guided tours, sunset views, cultural storytelling sessions, '
-                              'and personalized experiences tailored to their interests.',
+                              widget.guide.bio.isNotEmpty 
+                                ? widget.guide.bio 
+                                : 'This guide has not provided a bio yet. Contact them to learn more about their experiences and offerings.',
                               maxLines: _expanded ? null : 4,
                               overflow: _expanded
                                   ? TextOverflow.visible
@@ -181,36 +183,47 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                             ),
                             const SizedBox(height: 18),
                             Text(
-                              'Photos',
+                              'Hosted Tours',
                               style: TextStyle(color: titleColor, fontSize: 24),
                             ),
                             const SizedBox(height: 10),
-                            _PhotosRow(isDark: isDark),
-                            const Spacer(),
                             SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: btnBg,
-                                  foregroundColor: Colors.black,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
+                              height: 320,
+                              child: _GuideToursList(guideId: widget.guide.id ?? ''),
+                            ),
+                            const Spacer(),
+                            if (FirebaseAuth.instance.currentUser?.uid == widget.guide.id)
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EditProfileScreenEnhanced(),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: btnBg,
+                                    foregroundColor: Colors.black,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    elevation: 0,
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: const Text(
-                                  'Book Now',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                                  child: const Text(
+                                    'Edit Profile',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
                             const SizedBox(height: 30 ),
                           ],
                         ),
@@ -225,10 +238,13 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
       ),
     );
   }
+
+  // Removed _showEditProfileSheet as we now use EditProfileScreenEnhanced
+
 }
 
 class _GuideHeaderCard extends StatelessWidget {
-  final GuideModel guide;
+  final UserModel guide;
 
   const _GuideHeaderCard({required this.guide});
 
@@ -254,12 +270,20 @@ class _GuideHeaderCard extends StatelessWidget {
                         ? const [Color(0xFF3E2C1E), Color(0xFF2A2119)]
                         : const [Color(0xFF7A4B1D), Color(0xFF4B3021)],
                   ),
+                  image: guide.profileImageUrl.isNotEmpty 
+                      ? DecorationImage(
+                          image: NetworkImage(guide.profileImageUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: const Icon(
-                  Icons.person,
-                  color: Color(0xFFEDE9D9),
-                  size: 52,
-                ),
+                child: guide.profileImageUrl.isEmpty
+                    ? const Icon(
+                        Icons.person,
+                        color: Color(0xFFEDE9D9),
+                        size: 52,
+                      )
+                    : null,
               ),
               Positioned(
                 top: 4,
@@ -286,7 +310,7 @@ class _GuideHeaderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  guide.name,
+                  '${guide.firstName} ${guide.lastName}'.trim(),
                   style: TextStyle(
                     fontSize: 24,
                     color: titleColor,
@@ -294,27 +318,23 @@ class _GuideHeaderCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: List.generate(
-                    5,
-                    (i) => Icon(
-                      Icons.star,
-                      color: i < guide.rating
-                          ? (isDark
-                                ? AppColors.darkPrimaryButton
-                                : AppColors.lightPrimaryButton)
-                          : (isDark ? Colors.white38 : const Color(0xFFBDBDBD)),
-                      size: 19,
-                    ),
+                if (guide.reviewCount == 0)
+                  Text("New Guide", style: TextStyle(color: titleColor, fontSize: 14, fontWeight: FontWeight.w600))
+                else 
+                  Row(
+                    children: [
+                      Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 16)),
+                      const Icon(Icons.star, color: Colors.amber, size: 19),
+                      Text(' (${guide.reviewCount})', style: TextStyle(color: titleColor.withOpacity(0.7), fontSize: 14)),
+                    ],
                   ),
-                ),
                 const SizedBox(height: 2),
                 Row(
                   children: [
                     Icon(Icons.location_on, size: 16, color: titleColor),
                     const SizedBox(width: 2),
                     Text(
-                      guide.location,
+                      guide.nationality.isNotEmpty ? guide.nationality : 'Egypt',
                       style: TextStyle(
                         fontSize: 16,
                         color: titleColor,
@@ -333,9 +353,9 @@ class _GuideHeaderCard extends StatelessWidget {
 }
 
 class _InfoStrip extends StatelessWidget {
-  final String price;
+  final UserModel guide;
 
-  const _InfoStrip({required this.price});
+  const _InfoStrip({required this.guide});
 
   @override
   Widget build(BuildContext context) {
@@ -369,9 +389,9 @@ class _InfoStrip extends StatelessWidget {
         children: [
           Expanded(
             child: _InfoItem(
-              icon: Icons.location_on_outlined,
-              title: 'Pyramids',
-              subtitle: 'Location',
+              icon: Icons.language,
+              title: guide.certifiedLanguages.isNotEmpty ? guide.certifiedLanguages.join(', ') : 'Arabic/English',
+              subtitle: 'Languages',
               titleStyle: itemTitleStyle,
               subtitleStyle: itemSubStyle,
             ),
@@ -379,9 +399,9 @@ class _InfoStrip extends StatelessWidget {
           _divider(isDark),
           Expanded(
             child: _InfoItem(
-              icon: Icons.payments_outlined,
-              title: price,
-              subtitle: 'Price',
+              icon: Icons.verified,
+              title: 'Verified',
+              subtitle: 'Status',
               titleStyle: itemTitleStyle,
               subtitleStyle: itemSubStyle,
             ),
@@ -389,9 +409,9 @@ class _InfoStrip extends StatelessWidget {
           _divider(isDark),
           Expanded(
             child: _InfoItem(
-              icon: Icons.access_time_outlined,
-              title: '2 hours',
-              subtitle: 'Duration',
+              icon: Icons.star_border,
+              title: guide.reviewCount == 0 ? 'New' : guide.rating.toStringAsFixed(1),
+              subtitle: 'Rating',
               titleStyle: itemTitleStyle,
               subtitleStyle: itemSubStyle,
             ),
@@ -536,6 +556,62 @@ class _PhotosRowState extends State<_PhotosRow> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _GuideToursList extends StatefulWidget {
+  final String guideId;
+
+  const _GuideToursList({super.key, required this.guideId});
+
+  @override
+  State<_GuideToursList> createState() => _GuideToursListState();
+}
+
+class _GuideToursListState extends State<_GuideToursList> {
+  late Future<dartz.Either<dynamic, List<TourEntity>>> _toursFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _toursFuture = sl<ToursRepository>().getToursForGuide(widget.guideId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<dartz.Either<dynamic, List<TourEntity>>>(
+      future: _toursFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+           return const Center(child: CircularProgressIndicator());
+        }
+        
+        if (snapshot.hasData) {
+          final result = snapshot.data!;
+          return result.fold(
+            (failure) => Center(child: Text('Failed to load tours')),
+            (tours) {
+              if (tours.isEmpty) {
+                return const Center(child: Text('No hosted tours yet.'));
+              }
+              return ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: tours.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  return SizedBox(
+                    width: 250,
+                    child: TourCard(tour: tours[index]),
+                  );
+                },
+              );
+            },
+          );
+        }
+
+        return const Center(child: Text('Failed to load tours'));
+      },
     );
   }
 }

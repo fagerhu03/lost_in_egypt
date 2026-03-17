@@ -34,6 +34,8 @@ class PlacesApiService {
       'places.photos',
       'places.editorialSummary',
       'places.priceLevel',
+      'places.currentOpeningHours',
+      'places.reviews',
     ].join(',');
 
     final bodyMap = <String, dynamic>{
@@ -78,30 +80,43 @@ class PlacesApiService {
     }
   }
 
-  /// Fetches places for multiple search queries in parallel.
+  /// Fetches places for multiple search queries in chunks to avoid rate limits and socket crashes.
   /// Returns a flat list of all results, de-duplicated by place ID.
   Future<List<Map<String, dynamic>>> searchMultipleQueries(
     List<PlacesSearchQuery> queries,
   ) async {
-    final futures = <Future<List<Map<String, dynamic>>>>[];
-
-    for (final q in queries) {
-      futures.add(textSearch(
-        query: q.query,
-        includedType: q.includedType,
-      ));
-    }
-
-    final results = await Future.wait(futures);
     final allPlaces = <Map<String, dynamic>>[];
     final seenIds = <String>{};
+    const int chunkSize = 5;
 
-    for (final list in results) {
-      for (final place in list) {
-        final id = place['id'] as String? ?? '';
-        if (id.isNotEmpty && seenIds.add(id)) {
-          allPlaces.add(place);
+    for (int i = 0; i < queries.length; i += chunkSize) {
+      final end = (i + chunkSize < queries.length) ? i + chunkSize : queries.length;
+      final chunk = queries.sublist(i, end);
+
+      debugPrint('📦 Fetching queries ${i + 1} to $end of ${queries.length}...');
+
+      final futures = <Future<List<Map<String, dynamic>>>>[];
+      for (final q in chunk) {
+        futures.add(textSearch(
+          query: q.query,
+          includedType: q.includedType,
+        ));
+      }
+
+      final results = await Future.wait(futures);
+
+      for (final list in results) {
+        for (final place in list) {
+          final id = place['id'] as String? ?? '';
+          if (id.isNotEmpty && seenIds.add(id)) {
+            allPlaces.add(place);
+          }
         }
+      }
+      
+      // Delay to avoid overwhelming sockets and rate limits
+      if (end < queries.length) {
+        await Future.delayed(const Duration(milliseconds: 500));
       }
     }
 

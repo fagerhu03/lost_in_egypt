@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
-import '../data/guide_model.dart';
+import '../../../../../../auth/data/models/user.dart';
 
 class GuideCard extends StatelessWidget {
-  final GuideModel guide;
+  final UserModel guide;
 
   const GuideCard({
     super.key,
@@ -58,6 +58,7 @@ class GuideCard extends StatelessWidget {
                   Container(
                     width: 82,
                     height: 82,
+                    clipBehavior: Clip.hardEdge,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(14),
                       gradient: LinearGradient(
@@ -66,11 +67,21 @@ class GuideCard extends StatelessWidget {
                             : const [Color(0xFF7A4B1D), Color(0xFF4B3021)],
                       ),
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xFFEDE9D9),
-                      size: 52,
-                    ),
+                    child: guide.profileImageUrl != null && guide.profileImageUrl!.isNotEmpty
+                        ? Image.network(
+                            guide.profileImageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => const Icon(
+                              Icons.person,
+                              color: Color(0xFFEDE9D9),
+                              size: 52,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            color: Color(0xFFEDE9D9),
+                            size: 52,
+                          ),
                   ),
                   Positioned(
                     top: 4,
@@ -97,7 +108,7 @@ class GuideCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      guide.name,
+                      '${guide.firstName} ${guide.lastName}'.trim(),
                       style: TextStyle(
                         fontSize: 28,
                         color: titleColor,
@@ -106,18 +117,19 @@ class GuideCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: List.generate(
-                        5,
-                            (i) => Icon(
-                          i < guide.rating
-                              ? Icons.star
-                              : Icons.star_border,
-                          color: AppColors.darkPrimaryButton,
-                          size: 18,
-                        ),
+                    if (guide.reviewCount == 0)
+                      Text(
+                        "New Guide", 
+                        style: TextStyle(color: titleColor, fontSize: 14, fontWeight: FontWeight.w600)
+                      )
+                    else 
+                      Row(
+                        children: [
+                          Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 16)),
+                          const Icon(Icons.star, color: Colors.amber, size: 18),
+                          Text(' (${guide.reviewCount})', style: TextStyle(color: labelColor, fontSize: 14)),
+                        ],
                       ),
-                    ),
                     const SizedBox(height: 2),
                     Row(
                       children: [
@@ -128,7 +140,7 @@ class GuideCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          guide.location,
+                          guide.nationality.isNotEmpty ? guide.nationality : 'Egypt',
                           style: TextStyle(
                             fontSize: 20,
                             color: titleColor,
@@ -137,13 +149,7 @@ class GuideCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Text(
-                      guide.price,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: titleColor,
-                      ),
-                    ),
+                    // Removed contact for price
                   ],
                 ),
               ),
@@ -170,7 +176,7 @@ class GuideCard extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  guide.languages,
+                  guide.certifiedLanguages.isNotEmpty ? guide.certifiedLanguages.join(', ') : 'Arabic, English',
                   textAlign: TextAlign.end,
                   style: TextStyle(
                     color: titleColor,
@@ -194,7 +200,7 @@ class GuideCard extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  guide.availability,
+                  'Flexible',
                   textAlign: TextAlign.end,
                   style: TextStyle(
                     color: titleColor,

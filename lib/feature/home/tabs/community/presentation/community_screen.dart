@@ -11,6 +11,7 @@ import '../domain/entities/community_post.dart';
 import './community_post_card.dart';
 import 'post_detail_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
+import '../../../../../core/widgets/shimmer_loading_widget.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -37,10 +38,12 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   String _sortBy = 'newest';
   List<File> _selectedImages = [];
+  late Stream<List<CommunityPost>> _postsStream;
 
   @override
   void initState() {
     super.initState();
+    _postsStream = _repository.getPostsStream(sortBy: _sortBy);
     _fetchUserProfile();
   }
 
@@ -391,11 +394,15 @@ class _CommunityScreenState extends State<CommunityScreen>
                       ),
                       Expanded(
                         child: StreamBuilder<List<CommunityPost>>(
-                          stream: _repository.getPostsStream(sortBy: _sortBy),
+                          stream: _postsStream,
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
-                              return Center(
-                                child: CircularProgressIndicator(color: primary),
+                              return ListView.separated(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: 4,
+                                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                itemBuilder: (_, __) => _buildShimmerSkeleton(surface, onSurface, isDark, boxShadow),
                               );
                             }
                             if (snapshot.hasError) {
@@ -568,7 +575,14 @@ class _CommunityScreenState extends State<CommunityScreen>
       borderRadius: BorderRadius.circular(20),
       clipBehavior: Clip.hardEdge,
       child: InkWell(
-        onTap: () => setState(() => _sortBy = value),
+        onTap: () {
+          if (_sortBy != value) {
+            setState(() {
+              _sortBy = value;
+              _postsStream = _repository.getPostsStream(sortBy: _sortBy);
+            });
+          }
+        },
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -756,6 +770,43 @@ class _CommunityScreenState extends State<CommunityScreen>
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerSkeleton(Color surface, Color onSurface, bool isDark, BoxShadow shadow) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.05)),
+        boxShadow: [shadow],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const ShimmerLoadingWidget.circular(width: 40, height: 40),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const ShimmerLoadingWidget.rectangular(width: 120, height: 14),
+                  const SizedBox(height: 6),
+                  const ShimmerLoadingWidget.rectangular(width: 80, height: 10),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const ShimmerLoadingWidget.rectangular(width: double.infinity, height: 14),
+          const SizedBox(height: 6),
+          const ShimmerLoadingWidget.rectangular(width: 200, height: 14),
+          const SizedBox(height: 12),
+          const ShimmerLoadingWidget.rectangular(width: double.infinity, height: 160),
         ],
       ),
     );

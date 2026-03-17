@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
+import '../../account/domain/badge_constants.dart';
+import '../../camera/widgets/badge_unlock_dialog.dart';
+import '../../account/widgets/scarab_overlay.dart';
+import 'saved_cards_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,6 +19,9 @@ class _SettingsScreenState extends State<SettingsScreen>
   final SettingsRepository _repository = SettingsRepository();
   UserModel? _currentUser;
   bool _isLoading = true;
+  int _versionTapCount = 0;
+  int _themeTapCount = 0;
+  DateTime _lastThemeTap = DateTime.now();
 
   @override
   void initState() {
@@ -58,30 +65,28 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
 
+  void _onVersionTapped() {
+    _versionTapCount++;
+    if (_versionTapCount == 5) {
+      if (_currentUser != null && !_currentUser!.visitedLandmarks.contains('easter_egg_pharaoh')) {
+        final newLandmarks = List<String>.from(_currentUser!.visitedLandmarks)..add('easter_egg_pharaoh');
+        _updateSetting('visitedLandmarks', newLandmarks);
+        
+        final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == 'easter_egg_pharaoh');
+        BadgeUnlockDialog.show(context, badge);
+      }
+      _versionTapCount = 0;
+    }
+  }
+
   Future<void> _updateSetting(String key, dynamic value) async {
     if (_currentUser == null) return;
 
-    final updatedUser = UserModel(
-      id: _currentUser!.id,
-      email: _currentUser!.email,
-      firstName: _currentUser!.firstName,
-      lastName: _currentUser!.lastName,
-      birthDate: _currentUser!.birthDate,
-      role: _currentUser!.role,
-      profileImageUrl: _currentUser!.profileImageUrl,
-      phoneNumber: _currentUser!.phoneNumber,
-      nationality: _currentUser!.nationality,
-      isNotificationsEnabled:
-          key == 'notif' ? value : _currentUser!.isNotificationsEnabled,
-      isDarkMode: key == 'theme' ? value : _currentUser!.isDarkMode,
-      language: key == 'lang' ? value : _currentUser!.language,
-      createdAt: _currentUser!.createdAt,
-      phoneVerified: _currentUser!.phoneVerified,
-      emailVerified: _currentUser!.emailVerified,
-      instagramHandle: _currentUser!.instagramHandle,
-      twitterHandle: _currentUser!.twitterHandle,
-      bio: _currentUser!.bio,
-      interests: _currentUser!.interests,
+    final updatedUser = _currentUser!.copyWith(
+      isNotificationsEnabled: key == 'notif' ? value : null,
+      isDarkMode: key == 'theme' ? value : null,
+      language: key == 'lang' ? value : null,
+      visitedLandmarks: key == 'visitedLandmarks' ? value : null,
     );
 
     if (mounted) {
@@ -243,14 +248,23 @@ class _SettingsScreenState extends State<SettingsScreen>
                             // Saved Card
                             _buildTile(
                               surfaceColor: surface,
-                              child: Text(
-                                "Saved Card",
-                                style: TextStyle(
-                                  color: textColor.withOpacity(0.85),
-                                  fontSize: 16,
-                                  fontFamily: "Marcellus",
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Saved Cards",
+                                    style: TextStyle(
+                                      color: textColor.withOpacity(0.85),
+                                      fontSize: 16,
+                                      fontFamily: "Marcellus",
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right, color: textColor.withOpacity(0.4)),
+                                ],
                               ),
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedCardsScreen()));
+                              },
                             ),
                             const SizedBox(height: 16),
 
@@ -278,6 +292,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                                       return GestureDetector(
                                         onTap: () async {
                                           final newValue = !isDarkNow;
+
+                                          // Easter Egg check: Scarab Swarm
+                                          final now = DateTime.now();
+                                          if (now.difference(_lastThemeTap).inMilliseconds < 800) {
+                                            _themeTapCount++;
+                                            if (_themeTapCount >= 4) {
+                                              _themeTapCount = 0;
+                                              ScarabOverlay.show(context);
+                                            }
+                                          } else {
+                                            _themeTapCount = 1; // reset if too slow
+                                          }
+                                          _lastThemeTap = now;
 
                                           // 1) change theme instantly
                                           ThemeController.setDark(newValue);
@@ -350,7 +377,59 @@ class _SettingsScreenState extends State<SettingsScreen>
                                   ),
                                 ],
                               ),
+                              ),
+                            const SizedBox(height: 32),
+                              
+                            // Debug Reset Button
+                            _buildTile(
+                              surfaceColor: Colors.red.withValues(alpha: 0.1),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: Colors.red),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    "Reset Badges (Debug)",
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 16,
+                                      fontFamily: "Marcellus",
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              onTap: _currentUser == null
+                                  ? null
+                                  : () {
+                                      _updateSetting('visitedLandmarks', <String>[]);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Badges successfully reset!"),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    },
                             ),
+                            const SizedBox(height: 32),
+                            
+                            // Version / Easter Egg Trigger
+                            Center(
+                              child: GestureDetector(
+                                onTap: _onVersionTapped,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    "Version 1.0.0",
+                                    style: TextStyle(
+                                      color: textColor.withValues(alpha: 0.5),
+                                      fontFamily: "Marcellus",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
                           ],
                         ),
                 ),

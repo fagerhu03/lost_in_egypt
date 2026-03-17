@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
 
 class ProfileViewScreen extends StatefulWidget {
   final String? uid; // optional: view other user's profile if provided
@@ -161,8 +163,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                   children: [
                     _buildStat('Posts', _postCount, onSurface),
                     const SizedBox(width: 24),
+                    _buildStat('Places', _user!.visitedLandmarks.length, onSurface),
+                    const SizedBox(width: 24),
                     _buildStat('Role', 0, onSurface,
-                        label: _user!.role),
+                        label: _user!.role.toUpperCase()),
                   ],
                 ),
               ],
@@ -254,6 +258,29 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                         color: onSurface.withOpacity(0.85)),
                   ),
               ],
+            ),
+            surface: surface,
+            onSurface: onSurface,
+            shadow: cardShadow,
+            borderColor: borderColor,
+          ),
+
+          // --- GAMIFICATION BADGES ---
+          _sectionCard(
+            title: 'Badges',
+            child: SizedBox(
+              height: 100,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: BadgeConstants.allBadges.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  final badge = BadgeConstants.allBadges[index];
+                  final isUnlocked = _user!.visitedLandmarks.length >= badge.requiredVisits;
+
+                  return _buildBadgeIcon(badge, isUnlocked, onSurface);
+                },
+              ),
             ),
             surface: surface,
             onSurface: onSurface,
@@ -372,6 +399,45 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBadgeIcon(dynamic badge, bool isUnlocked, Color onSurface) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isUnlocked
+                    ? Colors.amber.withValues(alpha: 0.15)
+                    : Colors.grey.withValues(alpha: 0.1),
+                border: Border.all(
+                  color: isUnlocked ? Colors.amber : Colors.grey.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: isUnlocked
+                  ? const Icon(Icons.star, color: Colors.amber, size: 30)
+                  : const Icon(Icons.lock, color: Colors.grey, size: 24),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          badge.name,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
+            color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
+          ),
+        ),
+      ],
     );
   }
 }
