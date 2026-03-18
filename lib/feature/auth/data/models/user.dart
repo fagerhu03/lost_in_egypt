@@ -21,7 +21,18 @@ class UserModel extends UserEntity {
     super.twitterHandle,
     super.phoneVerified,
     super.emailVerified,
+    super.visitedLandmarks,
+    super.savedPlaces,
     required super.createdAt,
+    super.applicationStatus,
+    super.motaLicenseNumber,
+    super.syndicateNumber,
+    super.certifiedLanguages,
+    super.guideDocuments,
+    super.isVerifiedGuide,
+    super.rejectionReason,
+    super.rating,
+    super.reviewCount,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, String documentId) {
@@ -41,15 +52,28 @@ class UserModel extends UserEntity {
       // New Profile Fields
       bio: data['bio'] ?? '',
       interests: List<String>.from(data['interests'] ?? []),
+      visitedLandmarks: List<String>.from(data['visitedLandmarks'] ?? []),
+      savedPlaces: List<String>.from(data['savedPlaces'] ?? []),
       instagramHandle: data['instagramHandle'] ?? '',
       twitterHandle: data['twitterHandle'] ?? '',
 
       // Verification & Settings
       phoneVerified: data['phoneVerified'] ?? false,
-      emailVerified: data['emailVerified'] ?? false,
+      emailVerified: data['emailVerified'] ?? data['verifiedEmail'] ?? false,
       isNotificationsEnabled: data['preferences']?['notifications'] ?? true,
       isDarkMode: data['preferences']?['darkMode'] ?? false,
       language: data['preferences']?['language'] ?? 'English',
+
+      // Guide Fields
+      applicationStatus: data['applicationStatus'] ?? 'none',
+      motaLicenseNumber: data['motaLicenseNumber'] ?? '',
+      syndicateNumber: data['syndicateNumber'] ?? '',
+      certifiedLanguages: List<String>.from(data['certifiedLanguages'] ?? []),
+      guideDocuments: Map<String, String>.from(data['guideDocuments'] ?? {}),
+      isVerifiedGuide: data['isVerifiedGuide'] ?? false,
+      rejectionReason: data['rejectionReason'],
+      rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: data['reviewCount'] ?? 0,
 
       // Timestamps
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -68,6 +92,8 @@ class UserModel extends UserEntity {
       'nationality': nationality,
       'bio': bio,
       'interests': interests,
+      'visitedLandmarks': visitedLandmarks,
+      'savedPlaces': savedPlaces,
       'instagramHandle': instagramHandle,
       'twitterHandle': twitterHandle,
       'phoneVerified': phoneVerified,
@@ -77,6 +103,15 @@ class UserModel extends UserEntity {
         'darkMode': isDarkMode,
         'language': language,
       },
+      'applicationStatus': applicationStatus,
+      'motaLicenseNumber': motaLicenseNumber,
+      'syndicateNumber': syndicateNumber,
+      'certifiedLanguages': certifiedLanguages,
+      'guideDocuments': guideDocuments,
+      'isVerifiedGuide': isVerifiedGuide,
+      'rejectionReason': rejectionReason,
+      'rating': rating,
+      'reviewCount': reviewCount,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -93,6 +128,8 @@ class UserModel extends UserEntity {
     String? nationality,
     String? bio,
     List<String>? interests,
+    List<String>? visitedLandmarks,
+    List<String>? savedPlaces,
     String? instagramHandle,
     String? twitterHandle,
     bool? isNotificationsEnabled,
@@ -101,6 +138,15 @@ class UserModel extends UserEntity {
     bool? phoneVerified,
     bool? emailVerified,
     DateTime? createdAt,
+    String? applicationStatus,
+    String? motaLicenseNumber,
+    String? syndicateNumber,
+    List<String>? certifiedLanguages,
+    Map<String, String>? guideDocuments,
+    bool? isVerifiedGuide,
+    String? rejectionReason,
+    double? rating,
+    int? reviewCount,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -114,6 +160,8 @@ class UserModel extends UserEntity {
       nationality: nationality ?? this.nationality,
       bio: bio ?? this.bio,
       interests: interests ?? this.interests,
+      visitedLandmarks: visitedLandmarks ?? this.visitedLandmarks,
+      savedPlaces: savedPlaces ?? this.savedPlaces,
       instagramHandle: instagramHandle ?? this.instagramHandle,
       twitterHandle: twitterHandle ?? this.twitterHandle,
       isNotificationsEnabled:
@@ -123,6 +171,15 @@ class UserModel extends UserEntity {
       phoneVerified: phoneVerified ?? this.phoneVerified,
       emailVerified: emailVerified ?? this.emailVerified,
       createdAt: createdAt ?? this.createdAt,
+      applicationStatus: applicationStatus ?? this.applicationStatus,
+      motaLicenseNumber: motaLicenseNumber ?? this.motaLicenseNumber,
+      syndicateNumber: syndicateNumber ?? this.syndicateNumber,
+      certifiedLanguages: certifiedLanguages ?? this.certifiedLanguages,
+      guideDocuments: guideDocuments ?? this.guideDocuments,
+      isVerifiedGuide: isVerifiedGuide ?? this.isVerifiedGuide,
+      rejectionReason: rejectionReason ?? this.rejectionReason,
+      rating: rating ?? this.rating,
+      reviewCount: reviewCount ?? this.reviewCount,
     );
   }
 }

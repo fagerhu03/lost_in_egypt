@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../../domain/entities/community_post.dart';
 import '../model/community_post_model.dart';
+import '../../../../../../core/utils/image_utils.dart';
 
 class FirebaseCommunityRepository {
   final CollectionReference _postsRef = FirebaseFirestore.instance.collection(
@@ -117,6 +118,7 @@ class FirebaseCommunityRepository {
       'userName': userDetails['name'],
       'userFlag': userDetails['flag'] ?? '🇪🇬',
       'userAvatar': userDetails['avatar'],
+      'isVerifiedGuide': userDetails['isVerifiedGuide'] ?? false,
       'content': content,
       'images': imageUrls,
       'locationName': locationName,
@@ -169,11 +171,12 @@ class FirebaseCommunityRepository {
 
   // --- Keep Existing Helper Methods (getUserDetails, deletePost, comments, uploadImages) ---
   // Just ensuring they exist in your file as before.
-  Future<Map<String, String>> _getUserDetails() async {
+  Future<Map<String, dynamic>> _getUserDetails() async {
     final user = FirebaseAuth.instance.currentUser;
     String name = "Traveler";
     String avatar = "";
     String flag = '🇪🇬';
+    bool isGuide = false;
     if (user != null) {
       final userDoc = await _usersRef.doc(user.uid).get();
       if (userDoc.exists) {
@@ -182,6 +185,7 @@ class FirebaseCommunityRepository {
         String last = data['lastName'] ?? "";
         if (first.isNotEmpty || last.isNotEmpty) name = "$first $last".trim();
         avatar = data['profileImageUrl'] ?? "";
+        isGuide = data['isVerifiedGuide'] ?? false;
         // Attempt to derive flag from stored nationality (ISO code preferred)
         final nat = (data['nationality'] ?? '').toString();
         if (nat.length == 2) {
@@ -221,7 +225,7 @@ class FirebaseCommunityRepository {
         }
       }
     }
-    return {'name': name, 'avatar': avatar, 'flag': flag};
+    return {'name': name, 'avatar': avatar, 'flag': flag, 'isVerifiedGuide': isGuide};
   }
 
   // Convert ISO country code (2 letters) to regional indicator emoji flag
@@ -302,6 +306,28 @@ class FirebaseCommunityRepository {
           'dislikes': FieldValue.arrayRemove([uid]),
           'likesCount': FieldValue.increment(1),
         });
+        
+        // Notify post owner of the like
+        final postOwnerId = data['userId'];
+        if (postOwnerId != null && postOwnerId != uid) {
+          final userDetails = await _getUserDetails();
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(postOwnerId)
+              .collection('notifications')
+              .add({
+            'recipientId': postOwnerId,
+            'senderId': uid,
+            'senderName': userDetails['name'],
+            'senderAvatar': userDetails['avatar'],
+            'title': 'New Like',
+            'deepLinkTargetId': postId,
+            'type': 'like_post', 
+            'message': 'liked your post.',
+            'isRead': false,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
       }
     } else {
       if (dislikes.contains(uid)) {
@@ -318,7 +344,7 @@ class FirebaseCommunityRepository {
     }
   }
 
-  Future<void> addComment(String postId, String text) async {
+  Future<void> addComment(String postId, String text, {String? replyToId}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -330,10 +356,11 @@ class FirebaseCommunityRepository {
     final userDetails = await _getUserDetails();
 
     // Add Comment
-    await _postsRef.doc(postId).collection('comments').add({
+    final newDoc = await _postsRef.doc(postId).collection('comments').add({
       'userId': user.uid,
       'userName': userDetails['name'],
       'userAvatar': userDetails['avatar'],
+      'replyToId': replyToId,
       'text': text,
       'likes': [],
       'dislikes': [],
@@ -346,14 +373,24 @@ class FirebaseCommunityRepository {
 
     // ⭐ TRIGGER NOTIFICATION (If not commenting on own post)
     if (postOwnerId != user.uid) {
-      await _notificationsRef.add({
+      final isReply = replyToId != null;
+      final msg = isReply 
+          ? 'replied in your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"'
+          : 'commented on your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"';
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(postOwnerId)
+          .collection('notifications')
+          .add({
         'recipientId': postOwnerId,
         'senderId': user.uid,
         'senderName': userDetails['name'],
         'senderAvatar': userDetails['avatar'],
-        'postId': postId,
-        'type': 'comment', // could be 'like' later
-        'message': 'commented on your post: "$text"',
+        'title': isReply ? 'New Reply' : 'New Comment',
+        'deepLinkTargetId': '${postId}_${newDoc.id}',
+        'type': 'comment', 
+        'message': msg,
         'isRead': false,
         'timestamp': FieldValue.serverTimestamp(),
       });
@@ -401,6 +438,29 @@ class FirebaseCommunityRepository {
             'likes': FieldValue.arrayUnion([uid]),
             'dislikes': FieldValue.arrayRemove([uid]),
           });
+          
+          // Notify comment owner
+          final commentOwnerId = data['userId'];
+          if (commentOwnerId != null && commentOwnerId != uid) {
+            _getUserDetails().then((userDetails) {
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(commentOwnerId)
+                  .collection('notifications')
+                  .add({
+                'recipientId': commentOwnerId,
+                'senderId': uid,
+                'senderName': userDetails['name'],
+                'senderAvatar': userDetails['avatar'],
+                'title': 'New Like',
+                'deepLinkTargetId': '${postId}_${commentId}',
+                'type': 'like_comment', 
+                'message': 'liked your comment.',
+                'isRead': false,
+                'timestamp': FieldValue.serverTimestamp(),
+              });
+            });
+          }
         }
       } else {
         // TOGGLE DISLIKE
@@ -423,11 +483,12 @@ class FirebaseCommunityRepository {
   Future<List<String>> _uploadImages(List<File> images) async {
     List<String> urls = [];
     for (var image in images) {
+      final file = await ImageUtils.compressImage(image) ?? image;
       String fileName = DateTime.now().millisecondsSinceEpoch.toString();
       Reference ref = FirebaseStorage.instance.ref().child(
         'post_images/$fileName',
       );
-      UploadTask uploadTask = ref.putFile(image);
+      UploadTask uploadTask = ref.putFile(file);
       TaskSnapshot snapshot = await uploadTask;
       String url = await snapshot.ref.getDownloadURL();
       urls.add(url);

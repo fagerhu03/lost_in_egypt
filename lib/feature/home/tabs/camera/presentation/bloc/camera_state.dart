@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 import '../../../home/data/models/map_item_models.dart';
+import '../../../account/domain/badge_model.dart';
 
 /// Represents the different states of the camera feature
 abstract class CameraState {
@@ -76,8 +77,9 @@ class CameraAnalyzing extends CameraState {
 /// Successfully identified a landmark
 class CameraLandmarkIdentified extends CameraState {
   final PlaceModel place;
+  final BadgeModel? newlyUnlockedBadge;
 
-  const CameraLandmarkIdentified(this.place);
+  const CameraLandmarkIdentified(this.place, {this.newlyUnlockedBadge});
 }
 
 /// No landmark found in the image - needs user action to dismiss
@@ -93,4 +95,9 @@ class CameraError extends CameraState {
   final bool isApiKeyError;
 
   const CameraError(this.message, {this.isApiKeyError = false});
+}
+
+/// Easter Egg state for Sphinx Riddle
+class CameraSphinxSecret extends CameraState {
+  const CameraSphinxSecret();
 }

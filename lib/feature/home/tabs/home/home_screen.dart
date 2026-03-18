@@ -18,10 +18,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _profileImageUrl;
+  late Stream<QuerySnapshot> _eventsStream;
 
   @override
   void initState() {
     super.initState();
+    _eventsStream = FirebaseFirestore.instance
+        .collection('events')
+        .limit(5)
+        .snapshots();
     _fetchUserProfile();
   }
 
@@ -157,15 +162,17 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: LocalMockData.categories.map((category) {
-                  return _categoryCard(
-                    icon: category.iconPath,
-                    title: category.title,
-                    surface: surface,
-                    textColor: onSurface,
-                    shadow: cardShadow,
-                  );
-                }).toList(),
+                children: [
+                  ...LocalMockData.categories.map((category) {
+                    return _categoryCard(
+                      icon: category.iconPath,
+                      title: category.title,
+                      surface: surface,
+                      textColor: onSurface,
+                      shadow: cardShadow,
+                    );
+                  }),
+                ],
               ),
             ),
 
@@ -203,10 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(
               height: 170,
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('events')
-                    .limit(5)
-                    .snapshots(),
+                stream: _eventsStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -278,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Expanded(
                     child: _tripCard(
-                      title: "Guide",
+                      title: "Tours & guides",
                       surface: surface,
                       textColor: onSurface,
                       shadow: cardShadow,
@@ -337,11 +341,10 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [shadow],
         border: Border.all(
-          color:
-              (Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black)
-                  .withOpacity(0.06),
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black)
+              .withOpacity(0.06),
         ),
       ),
       child: Material(
@@ -359,7 +362,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 40,
                 color: Theme.of(context).colorScheme.primary,
                 colorBlendMode: BlendMode.srcIn,
-              ),          const SizedBox(height: 8),
+              ),
+              const SizedBox(height: 8),
               Text(
                 title,
                 style: TextStyle(
@@ -522,7 +526,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                title == "Guide"
+                title == "Tours & guides"
                     ? "assets/icons/guide.png"
                     : "assets/icons/solo_trip.png",
                 width: 90,

@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   convex_bottom_bar: ^3.2.0
+  confetti: ^0.7.0
   pinput: ^6.0.1
   flutter:
     sdk: flutter
@@ -57,6 +58,7 @@ dependencies:
   image: ^4.1.7
   flutter_svg: ^2.0.9
   intl_phone_field: ^3.2.0
+  geocoding: ^3.0.0
   country_picker: ^2.0.27
   google_mlkit_translation: ^0.11.1
   speech_to_text: ^7.3.0
@@ -71,6 +73,12 @@ dependencies:
   path_provider: ^2.1.5
   crypto: ^3.0.7
   flutter_dotenv: ^6.0.0
+  flutter_local_notifications: ^20.1.0
+  timezone: ^0.10.1
+  shimmer: ^3.0.0
+  flutter_paymob: ^1.0.8
+  uuid: ^4.5.1
+  flutter_image_compress: ^2.4.0
 
 dev_dependencies:
   flutter_test:

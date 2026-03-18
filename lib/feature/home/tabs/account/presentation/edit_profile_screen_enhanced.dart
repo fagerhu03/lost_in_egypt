@@ -10,6 +10,9 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
+import '../../camera/widgets/badge_unlock_dialog.dart';
+import '../domain/badge_constants.dart';
+import 'package:lost_in_egypt/core/utils/image_utils.dart';
 
 class EditProfileScreenEnhanced extends StatefulWidget {
   const EditProfileScreenEnhanced({super.key});
@@ -88,7 +91,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           .child('profile_images')
           .child(filename);
 
-      final uploadTask = ref.putFile(_selectedImage!);
+      final fileToUpload = await ImageUtils.compressImage(_selectedImage!) ?? _selectedImage!;
+      final uploadTask = ref.putFile(fileToUpload);
 
       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
         final progress =
@@ -251,7 +255,17 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty),
         emailVerified: _currentUser!.emailVerified,
         createdAt: _currentUser!.createdAt,
+        visitedLandmarks: _currentUser!.visitedLandmarks,
       );
+
+      // Easter Egg: The Hidden Vault (Imhotep)
+      bool justUnlockedImhotep = false;
+      if (fName.trim().toLowerCase() == 'imhotep') {
+        if (!updatedUser.visitedLandmarks.contains('imhotep_secret')) {
+          updatedUser.visitedLandmarks.add('imhotep_secret');
+          justUnlockedImhotep = true;
+        }
+      }
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -269,18 +283,116 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       await _firebaseUser?.updateDisplayName("$fName $lName");
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text("Profile Updated ✅"),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
-        );
-        Navigator.pop(context);
+        if (justUnlockedImhotep) {
+           final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == 'imhotep_secret');
+           BadgeUnlockDialog.show(context, badge);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("Profile Updated ✅"),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          );
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       _showError("Error: $e");
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _requestLanguageAddition() async {
+    if (_firebaseUser == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final existingQuery = await FirebaseFirestore.instance
+          .collection('admin_requests')
+          .where('userId', isEqualTo: _firebaseUser!.uid)
+          .where('type', isEqualTo: 'language_addition')
+          .where('status', isEqualTo: 'pending')
+          .get();
+
+      if (existingQuery.docs.isNotEmpty) {
+        _showError("You already have a pending language request.");
+        setState(() => _isLoading = false);
+        return;
+      }
+    } catch (e) {
+      _showError("Failed to check existing requests: $e");
+      setState(() => _isLoading = false);
+      return;
+    }
+    setState(() => _isLoading = false);
+
+    final TextEditingController newLangController = TextEditingController();
+    final bool? shouldSubmit = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Request Language Addition', style: TextStyle(fontFamily: 'Marcellus')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "By Egyptian law, guides require official certification to guide in specific languages. "
+              "Please enter the language you wish to add. An admin will verify your syndicate/MOTA records.",
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: newLangController,
+              decoration: const InputDecoration(
+                hintText: "e.g., Spanish, German, Italian",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (newLangController.text.trim().isNotEmpty) {
+                 Navigator.pop(ctx, true);
+              }
+            },
+            child: const Text('Submit Request'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSubmit == true && _firebaseUser != null) {
+      setState(() => _isLoading = true);
+      try {
+        await FirebaseFirestore.instance.collection('admin_requests').add({
+          'type': 'language_addition',
+          'userId': _firebaseUser!.uid,
+          'requestedLanguage': newLangController.text.trim(),
+          'status': 'pending',
+          'createdAt': FieldValue.serverTimestamp(),
+          'userEmail': _currentUser?.email,
+          'userName': "${_currentUser?.firstName} ${_currentUser?.lastName}",
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Request submitted! An admin will review it shortly."),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        _showError("Failed to submit request: $e");
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -315,23 +427,23 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     final borderColor =
     (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
 
-    return Scaffold(
-      backgroundColor: bg,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: Opacity(
-              opacity: patternOpacity,
-              child: Image.asset(
-                "assets/pattern_comp.png",
-                fit: BoxFit.cover,
-                repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => const SizedBox.shrink(),
-              ),
-            ),
-          ),
-          SafeArea(
+    return Container(
+      decoration: BoxDecoration(
+        color: bg,
+        image: DecorationImage(
+          image: const AssetImage("assets/pattern_comp.png"),
+          fit: BoxFit.cover,
+          repeat: ImageRepeat.repeat,
+          opacity: patternOpacity,
+        ),
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            SafeArea(
             child: Column(
               children: [
                 _buildHeader(context, onSurface),
@@ -419,6 +531,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         borderColor: borderColor,
                       ),
                       const SizedBox(height: 30),
+                      
+                      if (_currentUser?.isVerifiedGuide == true) ...[
+                        _buildSectionTitle("Guide Credentials", onSurface),
+                        _buildLabel("Certified Languages (Locked)", onSurface),
+                        _buildLanguagesField(surface, onSurface, fieldShadow, borderColor),
+                        const SizedBox(height: 30),
+                      ],
 
                       _buildVerificationStatus(surface, onSurface, borderColor),
                       const SizedBox(height: 40),
@@ -433,7 +552,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildHeader(BuildContext context, Color onSurface) {
@@ -745,7 +864,11 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Text(
-        '🧳 Traveler',
+        _currentUser?.role == 'admin'
+            ? '👑 Admin'
+            : _currentUser?.isVerifiedGuide == true
+                ? '🧭 Verified Guide'
+                : '🧳 Tourist',
         style: TextStyle(
           color: onSurface,
           fontSize: 16,
@@ -803,6 +926,48 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
+  Widget _buildLanguagesField(
+      Color surface,
+      Color onSurface,
+      BoxShadow shadow,
+      Color borderColor,
+      ) {
+    final TextEditingController langsController = TextEditingController(
+      text: _currentUser?.certifiedLanguages.isNotEmpty == true 
+        ? _currentUser!.certifiedLanguages.join(', ') 
+        : "None certified yet.",
+    );
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildField(
+          controller: langsController,
+          surface: surface,
+          onSurface: onSurface,
+          shadow: shadow,
+          borderColor: borderColor,
+          readOnly: true,
+        ),
+        const SizedBox(height: 6),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _requestLanguageAddition,
+            icon: Icon(Icons.add_circle_outline, size: 18, color: Theme.of(context).colorScheme.primary),
+            label: Text(
+              "Request New Language",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSocialField({
     required TextEditingController controller,
     required String hint,
@@ -852,7 +1017,34 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             ),
           ),
           const SizedBox(height: 12),
-          _buildVerificationItem("Email", _currentUser?.emailVerified ?? false),
+          _buildVerificationItem(
+            "Email", 
+            _currentUser?.emailVerified ?? false,
+            onResend: () async {
+              try {
+                if (_firebaseUser != null && !_firebaseUser!.emailVerified) {
+                  await _firebaseUser!.sendEmailVerification();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Verification email sent! Check your inbox."),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Could not send email: $e"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+          ),
           const SizedBox(height: 8),
           _buildVerificationItem("Phone", _currentUser?.phoneVerified ?? false),
         ],
@@ -860,7 +1052,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
-  Widget _buildVerificationItem(String label, bool isVerified) {
+  Widget _buildVerificationItem(String label, bool isVerified, {VoidCallback? onResend}) {
     return Row(
       children: [
         Icon(
@@ -876,10 +1068,28 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             fontSize: 14,
           ),
         ),
+        if (!isVerified && onResend != null) ...[
+          const Spacer(),
+          TextButton(
+            onPressed: onResend,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              "Resend",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
-
   Widget _buildSubmitButton(Color primary, Color onSurface) {
     return SizedBox(
       width: double.infinity,

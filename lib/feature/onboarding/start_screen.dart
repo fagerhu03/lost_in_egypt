@@ -44,10 +44,7 @@ class StartScreen extends StatelessWidget {
                 clipBehavior: Clip.hardEdge,
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    );
+                    Navigator.of(context).pushNamed('/login');
                   },
                   child: Container(
                     width: 260,

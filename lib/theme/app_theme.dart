@@ -16,6 +16,10 @@ class AppTheme {
       foregroundColor: AppColors.lightText,
       elevation: 0,
     ),
+    snackBarTheme: const SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      insetPadding: EdgeInsets.only(bottom: 80, left: 15, right: 15),
+    ),
   );
 
   static ThemeData dark = ThemeData(
@@ -31,6 +35,10 @@ class AppTheme {
       backgroundColor: AppColors.darkBackground,
       foregroundColor: AppColors.darkText,
       elevation: 0,
+    ),
+    snackBarTheme: const SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      insetPadding: EdgeInsets.only(bottom: 80, left: 15, right: 15),
     ),
   );
 }

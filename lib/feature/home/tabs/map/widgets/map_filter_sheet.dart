@@ -6,12 +6,14 @@ class MapFilterSheet extends StatelessWidget {
   final String selectedCategory;
   final List<MapItem> allItems;
   final Function(String) onCategorySelected;
+  final Set<String> savedPlaceIds;
 
   const MapFilterSheet({
     super.key,
     required this.selectedCategory,
     required this.allItems,
     required this.onCategorySelected,
+    this.savedPlaceIds = const {},
   });
 
   bool _shouldShowItem(MapItem item) {
@@ -119,11 +121,15 @@ class MapFilterSheet extends StatelessWidget {
 
                     final count = category.id == 'all'
                         ? allItems.where(_shouldShowItem).length
-                        : allItems
-                        .where((item) =>
+                        : category.id == 'favorites'
+                            ? savedPlaceIds.length
+                            : category.id == 'open_now'
+                                ? allItems.where((item) => item.isCurrentlyOpen).length
+                                : allItems
+                            .where((item) =>
                     item.category.toLowerCase() ==
                         category.id.toLowerCase())
-                        .length;
+                            .length;
 
                     return Container(
                       color: surface,
@@ -158,7 +164,9 @@ class MapFilterSheet extends StatelessWidget {
                         subtitle: Text(
                           category.id == 'all'
                               ? '$count places • Zoom to see more'
-                              : '$count places',
+                              : category.id == 'favorites'
+                                  ? '$count saved places'
+                                  : '$count places',
                           style: TextStyle(
                             fontSize: 12,
                             color: onSurface.withOpacity(0.70),

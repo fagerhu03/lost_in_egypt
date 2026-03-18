@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 class NotificationSettingsSheet {
   static void open(BuildContext context) {
     final theme = Theme.of(context);
@@ -14,8 +15,70 @@ class NotificationSettingsSheet {
   }
 }
 
-class _SheetBody extends StatelessWidget {
+class _SheetBody extends StatefulWidget {
   const _SheetBody();
+
+  @override
+  State<_SheetBody> createState() => _SheetBodyState();
+}
+
+class _SheetBodyState extends State<_SheetBody> {
+  bool _isLoading = true;
+  bool _commentsEnabled = true;
+  bool _likesEnabled = true;
+  bool _mentionsEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+    
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        final Map<String, dynamic> prefs = data['notificationPreferences'] ?? {};
+        if (mounted) {
+          setState(() {
+            _commentsEnabled = prefs['comments'] ?? true;
+            _likesEnabled = prefs['likes'] ?? true;
+            _mentionsEnabled = prefs['mentions'] ?? false;
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _savePreferences() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'notificationPreferences': {
+          'comments': _commentsEnabled,
+          'likes': _likesEnabled,
+          'mentions': _mentionsEnabled,
+        }
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint("Error saving preferences: $e");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -58,47 +121,66 @@ class _SheetBody extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            const _SettingToggleTile(
-              title: "Comments",
-              subtitle: "Get notified when someone comments.",
-              initialValue: true,
-            ),
-            const SizedBox(height: 10),
-            const _SettingToggleTile(
-              title: "Likes",
-              subtitle: "Get notified when someone likes your post.",
-              initialValue: true,
-            ),
-            const SizedBox(height: 10),
-            const _SettingToggleTile(
-              title: "Mentions",
-              subtitle: "Get notified when someone mentions you.",
-              initialValue: false,
-            ),
-            const SizedBox(height: 14),
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else ...[
+              _SettingToggleTile(
+                title: "Comments",
+                subtitle: "Get notified when someone comments.",
+                initialValue: _commentsEnabled,
+                onChanged: (v) {
+                  _commentsEnabled = v;
+                  _savePreferences();
+                },
+              ),
+              const SizedBox(height: 10),
+              _SettingToggleTile(
+                title: "Likes",
+                subtitle: "Get notified when someone likes your post.",
+                initialValue: _likesEnabled,
+                onChanged: (v) {
+                  _likesEnabled = v;
+                  _savePreferences();
+                },
+              ),
+              const SizedBox(height: 10),
+              _SettingToggleTile(
+                title: "Mentions",
+                subtitle: "Get notified when someone mentions you.",
+                initialValue: _mentionsEnabled,
+                onChanged: (v) {
+                  _mentionsEnabled = v;
+                  _savePreferences();
+                },
+              ),
+              const SizedBox(height: 14),
 
-            SizedBox(
-              width: double.infinity,
-              height: 46,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 6,
                   ),
-                  elevation: 6,
-                ),
-                child: const Text(
-                  "Done",
-                  style: TextStyle(
-                    fontFamily: "Marcellus",
-                    fontWeight: FontWeight.w600,
+                  child: const Text(
+                    "Done",
+                    style: TextStyle(
+                      fontFamily: "Marcellus",
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -110,11 +192,13 @@ class _SettingToggleTile extends StatefulWidget {
   final String title;
   final String subtitle;
   final bool initialValue;
+  final ValueChanged<bool> onChanged;
 
   const _SettingToggleTile({
     required this.title,
     required this.subtitle,
     required this.initialValue,
+    required this.onChanged,
   });
 
   @override
@@ -168,7 +252,10 @@ class _SettingToggleTileState extends State<_SettingToggleTile> {
           Switch(
             value: _value,
             activeColor: primary,
-            onChanged: (v) => setState(() => _value = v),
+            onChanged: (v) {
+              setState(() => _value = v);
+              widget.onChanged(v);
+            },
           ),
         ],
       ),
