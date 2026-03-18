@@ -13,11 +13,11 @@ abstract class NotificationsRepository {
   Future<Either<Failure, void>> sendNotification(NotificationEntity notification);
 
   /// Used by the UI when a user taps a notification
-  Future<Either<Failure, void>> markAsRead(String notificationId);
+  Future<Either<Failure, void>> markAsRead(String userId, String notificationId);
 
   /// Mark all notifications as read for a specific user
   Future<Either<Failure, void>> markAllAsRead(String userId);
 
   /// Delete a notification securely by ID
-  Future<Either<Failure, void>> deleteNotification(String notificationId);
+  Future<Either<Failure, void>> deleteNotification(String userId, String notificationId);
 }

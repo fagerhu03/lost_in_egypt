@@ -25,23 +25,24 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationsRepository _repo = sl<NotificationsRepository>();
   late Stream<List<NotificationEntity>> _notificationsStream;
+  late final String _userId;
 
   @override
   void initState() {
     super.initState();
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    _notificationsStream = _repo.getNotifications(userId);
+    _userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    _notificationsStream = _repo.getNotifications(_userId);
 
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted && userId.isNotEmpty) {
-        _repo.markAllAsRead(userId);
+      if (mounted && _userId.isNotEmpty) {
+        _repo.markAllAsRead(_userId);
       }
     });
   }
 
   Future<void> _handleNotifTap(NotificationEntity notif) async {
     if (!notif.isRead) {
-      await _repo.markAsRead(notif.id);
+      await _repo.markAsRead(_userId, notif.id);
     }
     if (notif.deepLinkTargetId != null && notif.deepLinkTargetId!.isNotEmpty) {
       if (notif.type == 'comment' || notif.type.startsWith('like')) {
@@ -221,7 +222,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                         color: Colors.white),
                                   ),
                                   onDismissed: (_) async {
-                                    await _repo.deleteNotification(notif.id);
+                                    await _repo.deleteNotification(_userId, notif.id);
                                     if (mounted) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(

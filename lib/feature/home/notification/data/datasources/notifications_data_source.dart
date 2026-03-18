@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../../data/models/notification_model.dart';
 
 abstract class NotificationsDataSource {
   Stream<List<NotificationModel>> getNotifications(String userId);
   Stream<int> getUnreadCount(String userId);
   Future<void> sendNotification(NotificationModel notification);
-  Future<void> markAsRead(String notificationId);
+  Future<void> markAsRead(String userId, String notificationId);
   Future<void> markAllAsRead(String userId);
-  Future<void> deleteNotification(String notificationId);
+  Future<void> deleteNotification(String userId, String notificationId);
 }
 
 class NotificationsDataSourceImpl implements NotificationsDataSource {
@@ -39,55 +40,42 @@ class NotificationsDataSourceImpl implements NotificationsDataSource {
 
   @override
   Future<void> sendNotification(NotificationModel notification) async {
-    // 1. Fetch User Preferences to determine if this notification type is allowed
-    // Note: User preferences are stored within the user document per Phase 3 specifications.
     final userDoc = await _firestore.collection('users').doc(notification.recipientId).get();
-    
-    if (userDoc.exists) {
-      final data = userDoc.data()!;
-      
-      // Defaulting to true if the preference map isn't explicit
-      bool shouldSend = true;
-      final prefs = data['notificationPreferences'] as Map<String, dynamic>?;
 
-      if (prefs != null) {
-        if (notification.type == 'like' && prefs['likes'] == false) shouldSend = false;
-        if (notification.type == 'comment' && prefs['comments'] == false) shouldSend = false;
-        if (notification.type == 'booking' && prefs['bookings'] == false) shouldSend = false;
-        // admin and reminders cannot be opted out of for safety reasons
-      }
+    if (!userDoc.exists) {
+      debugPrint('sendNotification: recipient ${notification.recipientId} not found, dropping notification.');
+      return;
+    }
 
-      if (shouldSend) {
-        // 2. Write Notification to the subcollection
-        await _firestore
-            .collection('users')
-            .doc(notification.recipientId)
-            .collection('notifications')
-            .doc(notification.id)
-            .set(notification.toMap(), SetOptions(merge: true));
-            
-        // 3. Trigger Local Push Notification
-        // Since Flutter Local Notifications handles the foreground/background delivery, 
-        // a Cloud Function or FCM trigger (Node.js) usually handles this, but since we are running 
-        // completely serverless and requested local push, the client app that initiated the action 
-        // could theoretially trigger it, but standard practice triggers an HTTP / FCM boundary.
-        // For the scope of 'local push notifications' requested by the user, we will map a listener in the UI.
-      }
+    final data = userDoc.data()!;
+    bool shouldSend = true;
+    final prefs = data['notificationPreferences'] as Map<String, dynamic>?;
+
+    if (prefs != null) {
+      if (notification.type == 'like' && prefs['likes'] == false) shouldSend = false;
+      if (notification.type == 'comment' && prefs['comments'] == false) shouldSend = false;
+      if (notification.type == 'booking' && prefs['bookings'] == false) shouldSend = false;
+      // 'admin' and 'system' types cannot be opted out of
+    }
+
+    if (shouldSend) {
+      await _firestore
+          .collection('users')
+          .doc(notification.recipientId)
+          .collection('notifications')
+          .doc(notification.id)
+          .set(notification.toMap(), SetOptions(merge: true));
     }
   }
 
   @override
-  Future<void> markAsRead(String notificationId) async {
-    // To mark as read securely, run a collectionGroup query or require the recipientId.
-    // For simplicity, we query the subcollection group.
-    final query = await _firestore
-        .collectionGroup('notifications')
-        .where(FieldPath.documentId, isEqualTo: notificationId)
-        .get();
-
-    for (var doc in query.docs) {
-      await doc.reference.update({'isRead': true});
-    }
+  Future<void> markAsRead(String userId, String notificationId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('notifications')
+        .doc(notificationId)
+        .update({'isRead': true});
   }
 
   @override
@@ -107,14 +95,12 @@ class NotificationsDataSourceImpl implements NotificationsDataSource {
   }
 
   @override
-  Future<void> deleteNotification(String notificationId) async {
-    final query = await _firestore
-        .collectionGroup('notifications')
-        .where(FieldPath.documentId, isEqualTo: notificationId)
-        .get();
-
-    for (var doc in query.docs) {
-      await doc.reference.delete();
-    }
+  Future<void> deleteNotification(String userId, String notificationId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('notifications')
+        .doc(notificationId)
+        .delete();
   }
 }

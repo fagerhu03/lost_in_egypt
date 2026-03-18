@@ -30,6 +30,27 @@ class CreateTourCubit extends Cubit<CreateTourState> {
     required List<File> imageFiles,
     required int maxAttendees,
   }) async {
+    if (title.trim().isEmpty) {
+      emit(const CreateTourError("Tour title cannot be empty."));
+      return;
+    }
+    if (price <= 0) {
+      emit(const CreateTourError("Price must be greater than zero."));
+      return;
+    }
+    if (maxAttendees <= 0) {
+      emit(const CreateTourError("Max attendees must be at least 1."));
+      return;
+    }
+    if (meetingTime.isBefore(DateTime.now())) {
+      emit(const CreateTourError("Meeting time must be in the future."));
+      return;
+    }
+    if (imageFiles.isEmpty) {
+      emit(const CreateTourError("Please add at least one photo of the tour."));
+      return;
+    }
+
     emit(CreateTourLoading());
 
     final user = FirebaseAuth.instance.currentUser;

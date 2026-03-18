@@ -40,9 +40,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       return;
     }
 
-    if (_selectedPaymentMethod == 'wallet' && _walletPhoneController.text.trim().length < 11) {
-      _showSnackBar('Please enter a valid phone number.', isError: true);
-      return;
+    if (_selectedPaymentMethod == 'wallet') {
+      final phone = _walletPhoneController.text.trim();
+      final egyptianMobileRegex = RegExp(r'^01[0125][0-9]{8}$');
+      if (!egyptianMobileRegex.hasMatch(phone)) {
+        _showSnackBar('Please enter a valid Egyptian mobile number (e.g. 01XXXXXXXXX).', isError: true);
+        return;
+      }
     }
 
     setState(() => _isLoading = true);
@@ -126,16 +130,27 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   Future<void> _notifyGuide(String travelerId) async {
     try {
       final travelerDoc = await FirebaseFirestore.instance.collection('users').doc(travelerId).get();
-      final travelerName = travelerDoc.data()?['firstName'] ?? 'A traveler';
+      final travelerData = travelerDoc.data();
+      final travelerName = travelerData?['firstName'] ?? 'A traveler';
+      final travelerAvatar = travelerData?['profileImageUrl'] ?? '';
 
-      await FirebaseFirestore.instance.collection('notifications').add({
+      final notifRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.tour.guideId)
+          .collection('notifications')
+          .doc();
+
+      await notifRef.set({
         'recipientId': widget.tour.guideId,
-        'title': '🎉 New Booking!',
-        'body': '$travelerName booked your tour "${widget.tour.title}"',
+        'senderId': travelerId,
+        'senderName': travelerName,
+        'senderAvatar': travelerAvatar,
+        'title': 'New Booking!',
+        'message': '$travelerName booked your tour "${widget.tour.title}"',
         'type': 'booking',
         'deepLinkTargetId': widget.tour.id,
-        'read': false,
-        'createdAt': FieldValue.serverTimestamp(),
+        'isRead': false,
+        'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       debugPrint('Error notifying guide: $e');
