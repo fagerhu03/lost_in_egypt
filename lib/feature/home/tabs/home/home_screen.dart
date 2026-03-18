@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/guides_body.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/solo_trip_screen.dart';
+import '../../../../theme/theme.dart';
 import '../navigator/widget/account_menu_button.dart';
 import '../navigator/widget/search_header.dart';
 import './data/datasources/local_mock_data.dart';
@@ -20,14 +23,51 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _profileImageUrl;
   late Stream<QuerySnapshot> _eventsStream;
 
+  final PageController _pageController = PageController();
+  Timer? _autoSlideTimer;
+  int _currentHeroIndex = 0;
+
+  final List<String> _heroImages = [
+    "assets/images/home_bridge.png",
+    "assets/images/home_bridge.png",
+    "assets/images/home_bridge.png",
+  ];
+
   @override
   void initState() {
     super.initState();
-    _eventsStream = FirebaseFirestore.instance
-        .collection('events')
-        .limit(5)
-        .snapshots();
+
+    _eventsStream =
+        FirebaseFirestore.instance.collection('events').limit(5).snapshots();
+
     _fetchUserProfile();
+    _startAutoSlide();
+  }
+
+  @override
+  void dispose() {
+    _autoSlideTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _startAutoSlide() {
+    _autoSlideTimer?.cancel();
+
+    _autoSlideTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!_pageController.hasClients || _heroImages.isEmpty) return;
+
+      int nextPage = _currentHeroIndex + 1;
+      if (nextPage >= _heroImages.length) {
+        nextPage = 0;
+      }
+
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   Future<void> _fetchUserProfile() async {
@@ -64,9 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final bg = theme.scaffoldBackgroundColor;
     final surface = theme.colorScheme.surface;
-    final onSurface = theme.colorScheme.onSurface;
+    final primary = isDark ? AppColors.darkNavBar : theme.colorScheme.primary;
 
-    // shadows: dark in light mode, light in dark mode
+    final textColor = isDark ? AppColors.darkText : AppColors.lightText;
+    final secondaryTextColor = textColor.withOpacity(0.65);
+
     final cardShadow = BoxShadow(
       color: isDark
           ? Colors.white.withOpacity(0.02)
@@ -82,27 +124,32 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🖼 HERO IMAGE + SEARCH
             Stack(
               children: [
-                Container(
+                SizedBox(
                   height: 300,
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage("assets/images/home_bridge.png"),
-                      fit: BoxFit.cover,
-                    ),
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _heroImages.length,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentHeroIndex = index;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      return Image.asset(
+                        _heroImages[index],
+                        fit: BoxFit.cover,
+                      );
+                    },
                   ),
                 ),
-
-                // overlay (keep same behavior)
                 Container(
                   height: 260,
                   width: double.infinity,
                   color: Colors.black.withOpacity(0.08),
                 ),
-
                 Padding(
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).padding.top + 8,
@@ -120,13 +167,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
                   child: Container(
-                    height: 30,
+                    height: 20,
                     decoration: BoxDecoration(
                       color: bg,
                       borderRadius: const BorderRadius.only(
@@ -138,25 +184,43 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: 50, end: 50),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_heroImages.length, (index) {
+                    final bool isActive = index == _currentHeroIndex;
 
-            const SizedBox(height: 20),
-
-            // ⭐ WHAT'S NEW
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      height: 8,
+                      width: isActive ? 22 : 8,
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? primary
+                            : primary.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 "Where do you want to go?",
                 style: TextStyle(
-                  color: onSurface.withOpacity(0.9),
+                  color: textColor.withOpacity(0.9),
                   fontSize: 22,
-                  fontWeight: FontWeight.bold,
                   fontFamily: "Marcellus",
                 ),
               ),
             ),
             const SizedBox(height: 12),
-
-            // CATEGORY GRID
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Wrap(
@@ -168,17 +232,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: category.iconPath,
                       title: category.title,
                       surface: surface,
-                      textColor: onSurface,
+                      textColor: textColor,
                       shadow: cardShadow,
+                      isDark: isDark,
                     );
                   }),
                 ],
               ),
             ),
-
             const SizedBox(height: 25),
-
-            // ⭐ EVENTS HEADER
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -187,16 +249,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     "Events",
                     style: TextStyle(
-                      color: onSurface.withOpacity(0.9),
+                      color: textColor.withOpacity(0.9),
                       fontSize: 22,
-                      fontWeight: FontWeight.bold,
                       fontFamily: "Marcellus",
                     ),
                   ),
                   Text(
                     "see all >",
                     style: TextStyle(
-                      color: onSurface.withOpacity(0.65),
+                      color: secondaryTextColor,
                       fontWeight: FontWeight.bold,
                       fontFamily: "Marcellus",
                     ),
@@ -205,10 +266,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 10),
-
-            // ⭐ REAL-TIME EVENTS LIST
             SizedBox(
-              height: 170,
+              height: 160,
               child: StreamBuilder<QuerySnapshot>(
                 stream: _eventsStream,
                 builder: (context, snapshot) {
@@ -223,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Center(
                       child: Text(
                         "Something went wrong",
-                        style: TextStyle(color: onSurface.withOpacity(0.8)),
+                        style: TextStyle(color: secondaryTextColor),
                       ),
                     );
                   }
@@ -231,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Center(
                       child: Text(
                         "No events found",
-                        style: TextStyle(color: onSurface.withOpacity(0.8)),
+                        style: TextStyle(color: secondaryTextColor),
                       ),
                     );
                   }
@@ -250,7 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: event.title,
                         imagePath: event.imagePath,
                         surface: surface,
-                        textColor: onSurface,
+                        textColor: textColor,
                         shadow: cardShadow,
                       );
                     },
@@ -258,16 +317,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-
             const SizedBox(height: 25),
-
-            // ⭐ PLAN YOUR TRIP
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 "Plan your trip",
                 style: TextStyle(
-                  color: onSurface.withOpacity(0.9),
+                  color: textColor.withOpacity(0.9),
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   fontFamily: "Marcellus",
@@ -275,23 +331,23 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Expanded(
                     child: _tripCard(
-                      title: "Tours & guides",
+                      title: "Guides",
                       surface: surface,
-                      textColor: onSurface,
+                      textColor: textColor,
                       shadow: cardShadow,
+                      isDark: isDark,
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => const GuideBodyScreen(),
-                          )
+                          ),
                         );
                       },
                     ),
@@ -301,8 +357,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: _tripCard(
                       title: "Solo trip",
                       surface: surface,
-                      textColor: onSurface,
+                      textColor: textColor,
                       shadow: cardShadow,
+                      isDark: isDark,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -316,7 +373,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 120),
           ],
         ),
@@ -324,14 +380,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- WIDGET HELPERS ---
-
   Widget _categoryCard({
     required String icon,
     required String title,
     required Color surface,
     required Color textColor,
     required BoxShadow shadow,
+    required bool isDark,
   }) {
     return Container(
       width: 120,
@@ -341,9 +396,10 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [shadow],
         border: Border.all(
-          color: (Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black)
+          color:
+          (Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black)
               .withOpacity(0.06),
         ),
       ),
@@ -360,7 +416,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Image.asset(
                 icon,
                 width: 40,
-                color: Theme.of(context).colorScheme.primary,
+                color: isDark
+                    ? AppColors.darkNavBar
+                    : Theme.of(context).colorScheme.primary,
                 colorBlendMode: BlendMode.srcIn,
               ),
               const SizedBox(height: 8),
@@ -395,10 +453,10 @@ class _HomeScreenState extends State<HomeScreen> {
         boxShadow: [shadow],
         border: Border.all(
           color:
-              (Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black)
-                  .withOpacity(0.06),
+          (Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black)
+              .withOpacity(0.06),
         ),
       ),
       child: Material(
@@ -419,16 +477,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Stack(
                   children: [
                     SizedBox(
-                      height: 110,
+                      height: 117,
                       width: double.infinity,
                       child: imagePath.startsWith('http')
                           ? CachedNetworkImage(
                         imageUrl: imagePath,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         placeholder: (context, url) => Container(
                           color: Colors.grey.shade300,
                           child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
@@ -442,17 +502,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           : Image.asset(
                         imagePath,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey.shade300,
-                          child: const Icon(Icons.image_not_supported),
-                        ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.image_not_supported),
+                            ),
                       ),
                     ),
                     Positioned(
                       top: 10,
                       right: 10,
                       child: Material(
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withOpacity(0.35),
                         shape: const CircleBorder(),
                         clipBehavior: Clip.hardEdge,
                         child: InkWell(
@@ -474,7 +535,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Text(
                   title,
                   style: TextStyle(
@@ -494,24 +556,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ✅ UPDATED: now it navigates using onTap
   Widget _tripCard({
     required String title,
     required Color surface,
     required Color textColor,
     required BoxShadow shadow,
+    required bool isDark,
     required VoidCallback onTap,
   }) {
     return Container(
-      height: 140,
+      height: 145,
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [shadow],
         border: Border.all(
-          color: (Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black)
+          color:
+          (Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black)
               .withOpacity(0.06),
         ),
       ),
@@ -526,11 +589,13 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                title == "Tours & guides"
+                title == "Guides"
                     ? "assets/icons/guide.png"
                     : "assets/icons/solo_trip.png",
-                width: 90,
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                width: 80,
+                color: isDark
+                    ? AppColors.darkNavBar.withOpacity(0.9)
+                    : Theme.of(context).colorScheme.primary.withOpacity(0.7),
                 colorBlendMode: BlendMode.srcIn,
               ),
               const SizedBox(height: 6),
@@ -538,7 +603,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title,
                 style: TextStyle(
                   color: textColor.withOpacity(0.9),
-                  fontSize: 20,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   fontFamily: "Marcellus",
                 ),

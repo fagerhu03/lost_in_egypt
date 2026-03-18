@@ -3,16 +3,15 @@ import 'package:flutter/rendering.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
-
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
+import '../../../../theme/theme.dart';
 import '../camera/presentation/camera_screen.dart';
 import '../community/presentation/community_screen.dart';
 import '../home/home_screen.dart';
 import '../map/presentation/map_screen.dart';
 import '../more/presentation/more_screen.dart';
 import '../../../admin/presentation/pages/upcoming_bookings_screen.dart';
-
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class HomeWrapper extends StatefulWidget {
@@ -58,8 +57,6 @@ class _HomeWrapperState extends State<HomeWrapper>
     MapFocusService.instance.tabSwitchNotifier.addListener(_handleTabSwitch);
   }
 
-
-
   void _handleTabSwitch() {
     final int i = MapFocusService.instance.tabSwitchNotifier.value;
     if (!mounted || i < 0 || i >= _pages.length) return;
@@ -84,12 +81,21 @@ class _HomeWrapperState extends State<HomeWrapper>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    final bg = theme.scaffoldBackgroundColor;
-    final primary = theme.colorScheme.primary;
-    final inactive = theme.colorScheme.onSurface.withOpacity(0.60);
-
     final bool isDark = theme.brightness == Brightness.dark;
+
+    // ✅ navbar background from AppColors in dark mode
+    final bg = isDark
+        ? AppColors.darkBackground // FCFBE8
+        : theme.scaffoldBackgroundColor;
+
+    // ✅ better icon colors for that light navbar in dark mode
+    final primary = isDark
+        ? AppColors.darkNavBar
+        : theme.colorScheme.primary;
+
+    final inactive = isDark
+        ? AppColors.darkNavBar.withOpacity(0.50)
+        : theme.colorScheme.primary.withOpacity(0.50);
 
     return Scaffold(
       extendBody: true,
@@ -121,21 +127,19 @@ class _HomeWrapperState extends State<HomeWrapper>
           children: _pages,
         ),
       ),
-
       bottomNavigationBar: AnimatedSlide(
         duration: const Duration(milliseconds: 200),
         offset: _isNavBarVisible ? Offset.zero : const Offset(0, 1),
         child: Container(
           decoration: BoxDecoration(
-            // ✅ shadow goes UP (visible)
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.white.withOpacity(0.02) // visible glow in dark mode
-                    : Colors.black.withOpacity(0.1), // visible shadow in light mode
+                    ? Colors.black.withOpacity(0.10)
+                    : Colors.black.withOpacity(0.10),
                 blurRadius: 28,
                 spreadRadius: 6,
-                offset: const Offset(0, -10), // IMPORTANT: negative = shadow up
+                offset: const Offset(0, -10),
               ),
             ],
           ),
@@ -147,7 +151,7 @@ class _HomeWrapperState extends State<HomeWrapper>
             backgroundColor: bg,
             activeColor: primary,
             color: inactive,
-            elevation: 0, // keep 0, we use BoxShadow instead
+            elevation: 0,
             items: _navItems,
             onTap: (i) {
               setState(() {
@@ -159,6 +163,7 @@ class _HomeWrapperState extends State<HomeWrapper>
             },
           ),
         ),
-      ),    );
+      ),
+    );
   }
 }

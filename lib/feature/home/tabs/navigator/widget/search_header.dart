@@ -20,7 +20,7 @@ class SearchHeader extends StatelessWidget {
 
     // like your old olive overlay, but theme-driven
     final bgColor = isDark
-        ? primary.withOpacity(0.25)
+        ? Colors.black.withOpacity(0.15)
         : primary.withOpacity(0.18);
 
     final textColor = isDark
