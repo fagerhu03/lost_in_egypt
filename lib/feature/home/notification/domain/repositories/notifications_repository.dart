@@ -20,4 +20,10 @@ abstract class NotificationsRepository {
 
   /// Delete a notification securely by ID
   Future<Either<Failure, void>> deleteNotification(String userId, String notificationId);
+
+  /// Start listening to Firestore and show OS-level popups for new notifications
+  void startListeningForNewNotifications(String userId);
+
+  /// Cancel the Firestore listener
+  void stopListening();
 }

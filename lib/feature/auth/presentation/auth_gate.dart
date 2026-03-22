@@ -5,6 +5,7 @@ import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.da
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/onboarding/onboarding_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/email_verification_screen.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/create_username_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/navigator/home_wrapper.dart';
 
 class AuthGate extends StatefulWidget {
@@ -20,12 +21,14 @@ class _AuthGateState extends State<AuthGate> {
   String? _appliedForUid; // prevents re-applying every rebuild
   Future<void>? _initFuture;
   bool _isFirestoreEmailVerified = false;
+  bool _hasUsername = true; // default true to avoid flash — corrected after load
 
   Future<void> _applySavedTheme(User firebaseUser) async {
     try {
       final UserModel? userModel = await _settingsRepo.fetchCurrentUser();
       if (userModel != null) {
         _isFirestoreEmailVerified = userModel.emailVerified;
+        _hasUsername = userModel.username.isNotEmpty;
       }
       ThemeController.setDark(userModel?.isDarkMode ?? false);
     } catch (_) {
@@ -51,6 +54,7 @@ class _AuthGateState extends State<AuthGate> {
           // Optional: reset to light on logout
           _appliedForUid = null;
           _initFuture = null;
+          _hasUsername = true;
           // ThemeController.setDark(false);
 
           return const OnboardingScreen();
@@ -77,6 +81,10 @@ class _AuthGateState extends State<AuthGate> {
             final freshUser = FirebaseAuth.instance.currentUser;
             if (freshUser != null && !freshUser.emailVerified && !_isFirestoreEmailVerified) {
               return const EmailVerificationScreen();
+            }
+            // Route to username creation if the user hasn't set one yet
+            if (!_hasUsername) {
+              return const CreateUsernameScreen();
             }
             return const HomeWrapper();
           },

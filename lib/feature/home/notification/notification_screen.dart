@@ -10,6 +10,7 @@ import 'package:lost_in_egypt/feature/home/tabs/community/presentation/post_deta
 import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_post_model.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 import '../../../core/di/service_locator.dart';
 import 'domain/repositories/notifications_repository.dart';
@@ -54,6 +55,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
           final doc = await FirebaseFirestore.instance.collection('community_posts').doc(postId).get();
           if (doc.exists && mounted) {
             final post = CommunityPostModel.fromSnapshot(doc);
+            // Switch HomeWrapper to the community tab so that pressing back
+            // from the post lands on community, not whichever tab was open.
+            MapFocusService.instance.tabSwitchNotifier.value = 1;
             Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailScreen(
               post: post,
               highlightCommentId: commentId,

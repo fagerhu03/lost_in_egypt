@@ -434,15 +434,26 @@ class _GuideTourCard extends StatelessWidget {
           .where('status', isEqualTo: 'confirmed')
           .get();
       for (final doc in bookings.docs) {
+        final touristId = (doc.data())['userId'] as String?;
         await doc.reference.update({'status': 'cancelled'});
-        await FirebaseFirestore.instance.collection('notifications').add({
-          'recipientId': (doc.data())['userId'],
-          'title': '⚠️ Tour Cancelled',
-          'body': 'The tour "${tour.title}" has been cancelled by the guide.',
-          'type': 'tour_cancelled',
-          'read': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+        if (touristId != null && touristId.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(touristId)
+              .collection('notifications')
+              .add({
+            'recipientId': touristId,
+            'senderId': 'system',
+            'senderName': 'Lost in Egypt',
+            'senderAvatar': '',
+            'title': '⚠️ Tour Cancelled',
+            'message': 'The tour "${tour.title}" has been cancelled by the guide.',
+            'type': 'tour_cancelled',
+            'deepLinkTargetId': tour.id,
+            'isRead': false,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
       }
       onRefresh();
     }

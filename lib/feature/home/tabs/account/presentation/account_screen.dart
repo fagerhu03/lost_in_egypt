@@ -210,6 +210,17 @@ class _AccountScreenState extends State<AccountScreen> {
                                       fontFamily: "Marcellus",
                                     ),
                                   ),
+                                  if (_user?.username.isNotEmpty == true) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "@${_user!.username}",
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.primary,
+                                        fontSize: 14,
+                                        fontFamily: "Marcellus",
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(height: 16),
                                   
                                   // --- GAMIFICATION UI HERE ---

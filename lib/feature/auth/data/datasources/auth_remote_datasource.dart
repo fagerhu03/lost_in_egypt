@@ -88,6 +88,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       isNotificationsEnabled: true,
       isDarkMode: false,
       createdAt: DateTime.now(),
+      // username is intentionally left empty — set via CreateUsernameScreen
     );
 
     // ✅ FIX: Use toMap(), not toDocument()

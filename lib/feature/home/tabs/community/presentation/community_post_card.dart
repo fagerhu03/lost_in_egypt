@@ -305,6 +305,17 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                           ),
                         ],
                       ),
+                      if (widget.post.userUsername.isNotEmpty) ...[
+                        const SizedBox(height: 1),
+                        Text(
+                          '@${widget.post.userUsername}',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 2),
                       Text(
                         widget.post.timeAgo,

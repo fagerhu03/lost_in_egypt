@@ -75,4 +75,14 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  void startListeningForNewNotifications(String userId) {
+    dataSource.startListeningForNewNotifications(userId);
+  }
+
+  @override
+  void stopListening() {
+    dataSource.stopListening();
+  }
 }

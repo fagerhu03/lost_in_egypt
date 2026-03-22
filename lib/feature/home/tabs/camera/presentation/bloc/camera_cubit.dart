@@ -14,6 +14,7 @@ import '../../data/repositories/landmark_repository_impl.dart';
 import '../../data/repositories/place_repository_impl.dart';
 import '../../../account/domain/badge_constants.dart';
 import '../../../account/domain/badge_model.dart';
+import '../../../../../home/notification/domain/services/local_notification_service.dart';
 import 'camera_state.dart';
 
 /// Camera Cubit using ChangeNotifier for state management
@@ -663,7 +664,9 @@ class CameraCubit extends ChangeNotifier {
           
           final newCount = visited.length;
           try {
-            return BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
+            final badge = BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
+            _sendBadgeNotification(user.uid, badge);
+            return badge;
           } catch (_) {
             return null;
           }
@@ -674,6 +677,32 @@ class CameraCubit extends ChangeNotifier {
       debugPrint("Error recording landmark visit: $e");
       return null;
     }
+  }
+
+  void _sendBadgeNotification(String uid, BadgeModel badge) {
+    // Local OS popup immediately
+    LocalNotificationService().showLocalNotification(
+      id: badge.id.hashCode.abs() % 100000,
+      title: 'Badge Unlocked! 🏆',
+      body: 'You earned the "${badge.name}" badge!',
+    );
+    // Persist in Firestore so it shows in the notification screen
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('notifications')
+        .add({
+      'recipientId': uid,
+      'senderId': 'system',
+      'senderName': 'Lost in Egypt',
+      'senderAvatar': '',
+      'title': 'Badge Unlocked! 🏆',
+      'message': 'You earned the "${badge.name}" badge!',
+      'type': 'badge',
+      'deepLinkTargetId': badge.id,
+      'isRead': false,
+      'timestamp': FieldValue.serverTimestamp(),
+    }).catchError((e) => debugPrint('Badge notification error: $e'));
   }
 
   /// Gamification: Unlock Secret Badge
@@ -694,9 +723,11 @@ class CameraCubit extends ChangeNotifier {
       if (!visited.contains(badgeId)) {
         // Fire and forget update to support offline unlocks
         userRef.update({'visitedLandmarks': FieldValue.arrayUnion([badgeId])});
-        
+
         try {
-          return BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
+          final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
+          _sendBadgeNotification(user.uid, badge);
+          return badge;
         } catch (_) {
           return null;
         }

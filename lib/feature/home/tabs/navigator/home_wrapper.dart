@@ -3,6 +3,8 @@ import 'package:flutter/rendering.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+import 'package:lost_in_egypt/core/di/service_locator.dart';
+import 'package:lost_in_egypt/feature/home/notification/domain/repositories/notifications_repository.dart';
 
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
@@ -56,6 +58,11 @@ class _HomeWrapperState extends State<HomeWrapper>
     ];
 
     MapFocusService.instance.tabSwitchNotifier.addListener(_handleTabSwitch);
+
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      sl<NotificationsRepository>().startListeningForNewNotifications(uid);
+    }
   }
 
 
@@ -76,6 +83,7 @@ class _HomeWrapperState extends State<HomeWrapper>
   @override
   void dispose() {
     MapFocusService.instance.tabSwitchNotifier.removeListener(_handleTabSwitch);
+    sl<NotificationsRepository>().stopListening();
     _tabController.dispose();
     _pageController.dispose();
     super.dispose();

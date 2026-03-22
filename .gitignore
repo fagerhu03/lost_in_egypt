@@ -57,3 +57,6 @@ functions/node_modules/
 functions/firebase-debug.log
 functions/firebase-debug.log.*
 .env
+
+# AI coding assistant context (local only)
+CLAUDE.md

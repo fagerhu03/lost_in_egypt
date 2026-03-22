@@ -307,15 +307,25 @@ class _AttendeeCardState extends State<_AttendeeCard> {
         'status': 'cancelled',
       });
       // Notify the traveler
-      await FirebaseFirestore.instance.collection('notifications').add({
-        'recipientId': widget.bookingData['userId'],
-        'title': '⚠️ Booking Cancelled',
-        'body': 'Your booking has been cancelled by the guide.',
-        'type': 'booking_cancelled',
-        'deepLinkTargetId': widget.bookingData['tourId'],
-        'read': false,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      final touristId = widget.bookingData['userId'] as String?;
+      if (touristId != null && touristId.isNotEmpty) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(touristId)
+            .collection('notifications')
+            .add({
+          'recipientId': touristId,
+          'senderId': 'system',
+          'senderName': 'Lost in Egypt',
+          'senderAvatar': '',
+          'title': '⚠️ Booking Cancelled',
+          'message': 'Your booking has been cancelled by the guide.',
+          'type': 'booking_cancelled',
+          'deepLinkTargetId': widget.bookingData['tourId'],
+          'isRead': false,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
     }
   }
 }

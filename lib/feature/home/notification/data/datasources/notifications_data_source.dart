@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../../data/models/notification_model.dart';
+import '../../domain/services/local_notification_service.dart';
 
 abstract class NotificationsDataSource {
   Stream<List<NotificationModel>> getNotifications(String userId);
@@ -9,10 +11,16 @@ abstract class NotificationsDataSource {
   Future<void> markAsRead(String userId, String notificationId);
   Future<void> markAllAsRead(String userId);
   Future<void> deleteNotification(String userId, String notificationId);
+  void startListeningForNewNotifications(String userId);
+  void stopListening();
 }
 
 class NotificationsDataSourceImpl implements NotificationsDataSource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  StreamSubscription<QuerySnapshot>? _notifSubscription;
+  final Set<String> _seenNotificationIds = {};
+  bool _isFirstSnapshot = true;
 
   @override
   Stream<List<NotificationModel>> getNotifications(String userId) {
@@ -102,5 +110,57 @@ class NotificationsDataSourceImpl implements NotificationsDataSource {
         .collection('notifications')
         .doc(notificationId)
         .delete();
+  }
+
+  @override
+  void startListeningForNewNotifications(String userId) {
+    _notifSubscription?.cancel();
+    _seenNotificationIds.clear();
+    _isFirstSnapshot = true;
+
+    _notifSubscription = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('notifications')
+        .snapshots()
+        .listen((snapshot) {
+      if (_isFirstSnapshot) {
+        // Populate known IDs so we don't re-notify about existing ones
+        _seenNotificationIds.addAll(snapshot.docs.map((d) => d.id));
+        _isFirstSnapshot = false;
+        return;
+      }
+
+      for (final change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added &&
+            !_seenNotificationIds.contains(change.doc.id)) {
+          _seenNotificationIds.add(change.doc.id);
+          final data = change.doc.data()!;
+          final senderName = (data['senderName'] ?? '') as String;
+          final title = (data['title'] as String? ?? '');
+          final message = (data['message'] ?? data['body'] ?? '') as String;
+          // Include sender name in the notification body so the popup reads
+          // e.g. "New Like / John Doe liked your post." instead of just "liked your post."
+          final body = senderName.isNotEmpty ? '$senderName $message' : message;
+          if (title.isNotEmpty || body.isNotEmpty) {
+            LocalNotificationService().showLocalNotification(
+              id: change.doc.id.hashCode.abs() % 100000,
+              title: title,
+              body: body,
+            );
+          }
+        }
+      }
+    }, onError: (e) {
+      debugPrint('NotificationListener error: $e');
+    });
+  }
+
+  @override
+  void stopListening() {
+    _notifSubscription?.cancel();
+    _notifSubscription = null;
+    _seenNotificationIds.clear();
+    _isFirstSnapshot = true;
   }
 }

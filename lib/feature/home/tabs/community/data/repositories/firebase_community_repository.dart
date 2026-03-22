@@ -116,6 +116,7 @@ class FirebaseCommunityRepository {
     await _postsRef.add({
       'userId': user.uid,
       'userName': userDetails['name'],
+      'userUsername': userDetails['username'] ?? '',
       'userFlag': userDetails['flag'] ?? '🇪🇬',
       'userAvatar': userDetails['avatar'],
       'isVerifiedGuide': userDetails['isVerifiedGuide'] ?? false,
@@ -174,6 +175,7 @@ class FirebaseCommunityRepository {
   Future<Map<String, dynamic>> _getUserDetails() async {
     final user = FirebaseAuth.instance.currentUser;
     String name = "Traveler";
+    String username = "";
     String avatar = "";
     String flag = '🇪🇬';
     bool isGuide = false;
@@ -184,6 +186,7 @@ class FirebaseCommunityRepository {
         String first = data['firstName'] ?? "";
         String last = data['lastName'] ?? "";
         if (first.isNotEmpty || last.isNotEmpty) name = "$first $last".trim();
+        username = data['username'] ?? "";
         avatar = data['profileImageUrl'] ?? "";
         isGuide = data['isVerifiedGuide'] ?? false;
         // Attempt to derive flag from stored nationality (ISO code preferred)
@@ -225,7 +228,7 @@ class FirebaseCommunityRepository {
         }
       }
     }
-    return {'name': name, 'avatar': avatar, 'flag': flag, 'isVerifiedGuide': isGuide};
+    return {'name': name, 'username': username, 'avatar': avatar, 'flag': flag, 'isVerifiedGuide': isGuide};
   }
 
   // Convert ISO country code (2 letters) to regional indicator emoji flag
@@ -311,6 +314,9 @@ class FirebaseCommunityRepository {
         final postOwnerId = data['userId'];
         if (postOwnerId != null && postOwnerId != uid) {
           final userDetails = await _getUserDetails();
+          final senderDisplayName = (userDetails['username'] as String).isNotEmpty
+              ? '@${userDetails['username']}'
+              : userDetails['name'] as String;
           await FirebaseFirestore.instance
               .collection('users')
               .doc(postOwnerId)
@@ -318,7 +324,7 @@ class FirebaseCommunityRepository {
               .add({
             'recipientId': postOwnerId,
             'senderId': uid,
-            'senderName': userDetails['name'],
+            'senderName': senderDisplayName,
             'senderAvatar': userDetails['avatar'],
             'title': 'New Like',
             'deepLinkTargetId': postId,
@@ -359,7 +365,9 @@ class FirebaseCommunityRepository {
     final newDoc = await _postsRef.doc(postId).collection('comments').add({
       'userId': user.uid,
       'userName': userDetails['name'],
+      'userUsername': userDetails['username'] ?? '',
       'userAvatar': userDetails['avatar'],
+      'userFlag': userDetails['flag'] ?? '🇪🇬',
       'replyToId': replyToId,
       'text': text,
       'likes': [],
@@ -374,9 +382,12 @@ class FirebaseCommunityRepository {
     // ⭐ TRIGGER NOTIFICATION (If not commenting on own post)
     if (postOwnerId != user.uid) {
       final isReply = replyToId != null;
-      final msg = isReply 
+      final msg = isReply
           ? 'replied in your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"'
           : 'commented on your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"';
+      final commentSenderDisplay = (userDetails['username'] as String).isNotEmpty
+          ? '@${userDetails['username']}'
+          : userDetails['name'] as String;
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -385,7 +396,7 @@ class FirebaseCommunityRepository {
           .add({
         'recipientId': postOwnerId,
         'senderId': user.uid,
-        'senderName': userDetails['name'],
+        'senderName': commentSenderDisplay,
         'senderAvatar': userDetails['avatar'],
         'title': isReply ? 'New Reply' : 'New Comment',
         'deepLinkTargetId': '${postId}_${newDoc.id}',
@@ -443,6 +454,9 @@ class FirebaseCommunityRepository {
           final commentOwnerId = data['userId'];
           if (commentOwnerId != null && commentOwnerId != uid) {
             _getUserDetails().then((userDetails) {
+              final likeNotifDisplay = (userDetails['username'] as String).isNotEmpty
+                  ? '@${userDetails['username']}'
+                  : userDetails['name'] as String;
               FirebaseFirestore.instance
                   .collection('users')
                   .doc(commentOwnerId)
@@ -450,7 +464,7 @@ class FirebaseCommunityRepository {
                   .add({
                 'recipientId': commentOwnerId,
                 'senderId': uid,
-                'senderName': userDetails['name'],
+                'senderName': likeNotifDisplay,
                 'senderAvatar': userDetails['avatar'],
                 'title': 'New Like',
                 'deepLinkTargetId': '${postId}_${commentId}',

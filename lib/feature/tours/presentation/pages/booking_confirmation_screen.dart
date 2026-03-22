@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../data/datasources/paymob_api_service.dart';
+import '../../../../feature/home/notification/domain/services/local_notification_service.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
   final TourEntity tour;
@@ -117,6 +118,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
     // Send notification to the guide
     _notifyGuide(userId);
+    // Notify tourist + schedule reminder
+    _notifyTouristAndScheduleReminder(userId);
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -124,6 +127,40 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         (l) => _showSnackBar('Booking Error: ${l.message}', isError: true),
         (r) => _showSuccessDialog(),
       );
+    }
+  }
+
+  Future<void> _notifyTouristAndScheduleReminder(String touristId) async {
+    try {
+      // In-app notification for the tourist
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(touristId)
+          .collection('notifications')
+          .add({
+        'recipientId': touristId,
+        'senderId': 'system',
+        'senderName': 'Lost in Egypt',
+        'senderAvatar': '',
+        'title': 'Booking Confirmed!',
+        'message': 'Your spot on "${widget.tour.title}" is confirmed. See you there!',
+        'type': 'booking_confirmed',
+        'deepLinkTargetId': widget.tour.id,
+        'isRead': false,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Schedule a local reminder 1 hour before the tour
+      final reminderTime = widget.tour.meetingTime.subtract(const Duration(hours: 1));
+      await LocalNotificationService().scheduleNotification(
+        id: widget.tour.id.hashCode.abs() % 100000,
+        title: 'Tour starting soon!',
+        body: '"${widget.tour.title}" starts in 1 hour. Head to ${widget.tour.meetingLocationName}.',
+        scheduledDate: reminderTime,
+        payload: widget.tour.id,
+      );
+    } catch (e) {
+      debugPrint('Error notifying tourist: $e');
     }
   }
 

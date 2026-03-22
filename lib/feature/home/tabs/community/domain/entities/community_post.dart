@@ -2,6 +2,7 @@ class CommunityPost {
   final String id;
   final String userId;
   final String userName;
+  final String userUsername; // @handle
   final String userFlag;
   final String userAvatar;
   final String timeAgo;
@@ -21,6 +22,7 @@ class CommunityPost {
     required this.id,
     required this.userId,
     required this.userName,
+    this.userUsername = '',
     required this.userFlag,
     this.userAvatar = "",
     required this.timeAgo,

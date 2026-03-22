@@ -182,6 +182,17 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        if (widget.user.username.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            '@${widget.user.username}',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: 14,
+              fontFamily: "Marcellus",
+            ),
+          ),
+        ],
         if (widget.user.bio.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
@@ -408,6 +419,17 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
                 '${guide.firstName} ${guide.lastName}'.trim(),
                 style: TextStyle(fontSize: 24, color: titleColor, fontWeight: FontWeight.bold, height: 1.1),
               ),
+              if (guide.username.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '@${guide.username}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 13,
+                    fontFamily: "Marcellus",
+                  ),
+                ),
+              ],
               const SizedBox(height: 6),
               if (guide.reviewCount == 0)
                 Text("New Guide", style: TextStyle(color: titleColor, fontSize: 14, fontWeight: FontWeight.w600))

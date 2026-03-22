@@ -70,6 +70,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   String? _replyingToCommentId;
   String? _replyingToUserName;
+  String? _replyingToMentionName;
+  final Set<String> _expandedThreadIds = {};
 
   late Stream<DocumentSnapshot> _postStream;
   late Stream<QuerySnapshot> _commentsStream;
@@ -107,7 +109,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (text.isEmpty) return;
     
     String? finalReplyToId = _replyingToCommentId;
-    if (_replyingToUserName != null && !text.startsWith("@\$_replyingToUserName")) {
+    if (_replyingToUserName != null && !text.startsWith("@$_replyingToUserName")) {
       finalReplyToId = null; // User removed the tag
     }
 
@@ -129,20 +131,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  void _handleReply(String parentThreadId, String userName) {
+  void _handleReply(String rootThreadId, String mentionedUserName) {
     setState(() {
-      _replyingToCommentId = parentThreadId;
-      _replyingToUserName = userName;
-      final tag = "@$userName ";
-      final currentText = _commentController.text;
-      if (!currentText.startsWith(tag)) {
-        _commentController.text = "$tag$currentText";
+      _replyingToCommentId   = rootThreadId;
+      _replyingToUserName    = mentionedUserName;
+      _replyingToMentionName = mentionedUserName;
+      final tag = "@$mentionedUserName ";
+      if (!_commentController.text.startsWith(tag)) {
+        _commentController.text = "$tag${_commentController.text}";
         _commentController.selection = TextSelection.fromPosition(
           TextPosition(offset: _commentController.text.length),
         );
       }
     });
     _focusNode.requestFocus();
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyingToCommentId   = null;
+      _replyingToUserName    = null;
+      _replyingToMentionName = null;
+      _commentController.clear();
+    });
   }
 
   void _deleteComment(String commentId) {
@@ -202,6 +213,35 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _focusNode.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Widget _buildReplyBanner(Color surface, Color onSurface, Color primary) {
+    if (_replyingToCommentId == null) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: primary.withOpacity(0.08),
+      child: Row(
+        children: [
+          Icon(Icons.reply, size: 14, color: primary),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              "Replying to @${_replyingToUserName ?? ''}",
+              style: TextStyle(
+                fontSize: 12,
+                color: primary,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          GestureDetector(
+            onTap: _cancelReply,
+            child: Icon(Icons.close, size: 16, color: onSurface.withOpacity(0.6)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -346,16 +386,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     for (var r in rootComments) {
                       collectIds(r.id);
                     }
-                    
+
                     for (var doc in rawComments) {
                       if (!allHandledIds.contains(doc.id)) {
                         rootComments.add(doc);
                         allHandledIds.add(doc.id);
-                        collectIds(doc.id); // Add its children too
+                        collectIds(doc.id);
                       }
                     }
 
-                    Widget buildCommentItem(QueryDocumentSnapshot doc, int depth) {
+                    // 4. Flatten to max 2 levels: BFS-merge all descendants of
+                    //    each root into a single flat list (chronological order).
+                    for (final root in rootComments) {
+                      final queue = List<QueryDocumentSnapshot>.from(childrenMap[root.id] ?? []);
+                      final flat  = <QueryDocumentSnapshot>[];
+                      while (queue.isNotEmpty) {
+                        final item = queue.removeAt(0);
+                        flat.add(item);
+                        queue.addAll(childrenMap[item.id] ?? []);
+                      }
+                      if (flat.isNotEmpty) childrenMap[root.id] = flat;
+                    }
+
+                    Widget buildCommentItem(QueryDocumentSnapshot doc, int depth, String rootThreadId) {
                       final data = doc.data() as Map<String, dynamic>;
                       final commentId = doc.id;
                       final ownerId = (data['userId'] ?? "") as String;
@@ -402,13 +455,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             : null,
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(
-                                        (data['userName'] ?? 'User') as String,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: isReply ? 12 : 13,
-                                          color: onSurface,
-                                        ),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            (data['userName'] ?? 'User') as String,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: isReply ? 12 : 13,
+                                              color: onSurface,
+                                            ),
+                                          ),
+                                          if ((data['userUsername'] ?? '').toString().isNotEmpty)
+                                            Text(
+                                              '@${data['userUsername']}',
+                                              style: TextStyle(
+                                                fontSize: isReply ? 9 : 10,
+                                                color: primary,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -544,7 +611,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    onTap: () => _handleReply(commentId, (data['userName'] ?? "User") as String),
+                                    onTap: () {
+                                      final uname = (data['userUsername'] ?? '') as String;
+                                      final mention = uname.isNotEmpty ? uname : (data['userName'] ?? 'User') as String;
+                                      _handleReply(rootThreadId, mention);
+                                    },
                                     borderRadius: BorderRadius.circular(8),
                                     child: Padding(
                                       padding: const EdgeInsets.all(4.0),
@@ -566,35 +637,68 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       );
                     }
 
-                    // 4. Recursive builder
+                    // 5. Tree builder — max 2 levels with collapse/expand
                     Widget buildTree(QueryDocumentSnapshot node, int depth) {
-                      final children = childrenMap[node.id] ?? [];
-                      
-                      if (children.isEmpty) {
-                        return buildCommentItem(node, depth);
-                      }
-                      
+                      final rootId     = node.id;
+                      final children   = childrenMap[rootId] ?? [];
+                      final isExpanded = _expandedThreadIds.contains(rootId);
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          buildCommentItem(node, depth),
-                          IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Dynamic indentation line
-                                SizedBox(width: depth == 0 ? 20 : 10),
-                                Container(width: 2, color: dividerColor),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: children.map((c) => buildTree(c, depth + 1)).toList(),
+                          buildCommentItem(node, 0, rootId),
+
+                          if (children.isNotEmpty) ...[
+                            if (!isExpanded)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 20, bottom: 8),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _expandedThreadIds.add(rootId)),
+                                  child: Text(
+                                    "View ${children.length} ${children.length == 1 ? 'reply' : 'replies'}  ▸",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
+                              )
+                            else ...[
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    const SizedBox(width: 20),
+                                    Container(width: 2, color: dividerColor),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: children
+                                            .map((c) => buildCommentItem(c, 1, rootId))
+                                            .toList(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 20, bottom: 8),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _expandedThreadIds.remove(rootId)),
+                                  child: Text(
+                                    "Hide replies  ▴",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: primary.withOpacity(0.7),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ],
                       );
                     }
@@ -603,6 +707,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
                     if (!_hasScrolledToHighlight && widget.highlightCommentId != null) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
+                        final hId = widget.highlightCommentId!;
+                        // Auto-expand the thread containing the highlighted comment
+                        if (!rootComments.any((r) => r.id == hId)) {
+                          for (final root in rootComments) {
+                            if ((childrenMap[root.id] ?? []).any((d) => d.id == hId)) {
+                              setState(() => _expandedThreadIds.add(root.id));
+                              break;
+                            }
+                          }
+                        }
                         _scrollToHighlight();
                       });
                     }
@@ -631,44 +745,52 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           ),
 
           // COMMENT INPUT
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: surface,
-              border: Border(top: BorderSide(color: dividerColor)),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.06)
-                      : Colors.black.withOpacity(0.06),
-                  blurRadius: 14,
-                  offset: const Offset(0, -6),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _commentController,
-                    focusNode: _focusNode,
-                    style: TextStyle(color: onSurface),
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _submitComment(),
-                    decoration: InputDecoration(
-                      hintText: "Write a comment...",
-                      hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildReplyBanner(surface, onSurface, primary),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: surface,
+                  border: Border(top: BorderSide(color: dividerColor)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.06)
+                          : Colors.black.withOpacity(0.06),
+                      blurRadius: 14,
+                      offset: const Offset(0, -6),
                     ),
-                  ),
+                  ],
                 ),
-                IconButton(
-                  icon: Icon(Icons.send_rounded, color: primary),
-                  onPressed: _submitComment,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _commentController,
+                        focusNode: _focusNode,
+                        style: TextStyle(color: onSurface),
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _submitComment(),
+                        decoration: InputDecoration(
+                          hintText: _replyingToCommentId != null
+                              ? "Write a reply..."
+                              : "Write a comment...",
+                          hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.send_rounded, color: primary),
+                      onPressed: _submitComment,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),

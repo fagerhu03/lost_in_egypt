@@ -27,11 +27,14 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
   // Controllers
   final _fullNameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _nationalityController = TextEditingController();
   final _bioController = TextEditingController();
   final _instagramController = TextEditingController();
   final _twitterController = TextEditingController();
+
+  String? _usernameError;
 
   // State variables
   String _completePhoneNumber = "";
@@ -154,6 +157,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
         _fullNameController.text =
         "${_currentUser!.firstName} ${_currentUser!.lastName}";
+        _usernameController.text = _currentUser!.username;
         _emailController.text = _currentUser!.email;
         _nationalityController.text = _currentUser!.nationality;
         _completePhoneNumber = _currentUser!.phoneNumber;
@@ -227,6 +231,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       }
     }
 
+    // Validate username before saving
+    final newUsername = _usernameController.text.trim().toLowerCase();
+    final usernameErr = await _validateUsername(newUsername);
+    if (usernameErr != null) {
+      setState(() => _usernameError = usernameErr);
+      return;
+    }
+    setState(() => _usernameError = null);
+
     setState(() => _isLoading = true);
 
     try {
@@ -246,6 +259,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         nationality: _nationalityController.text.trim(),
         bio: _bioController.text.trim(),
         interests: _selectedInterests,
+        username: newUsername,
         instagramHandle: _instagramController.text.trim(),
         twitterHandle: _twitterController.text.trim(),
         isNotificationsEnabled: _currentUser!.isNotificationsEnabled,
@@ -396,6 +410,26 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     }
   }
 
+  /// Validates username format and checks Firestore uniqueness.
+  /// Returns an error string or null if valid.
+  Future<String?> _validateUsername(String username) async {
+    if (username.isEmpty) return "Username cannot be empty";
+    if (username.length < 3) return "Username must be at least 3 characters";
+    if (username.length > 20) return "Username must be 20 characters or fewer";
+    if (!RegExp(r'^[a-z0-9_]+$').hasMatch(username)) {
+      return "Only lowercase letters, numbers, and underscores";
+    }
+    // Skip uniqueness check if unchanged
+    if (username == _currentUser?.username) return null;
+    final query = await FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .limit(1)
+        .get();
+    if (query.docs.isNotEmpty) return "Username is already taken";
+    return null;
+  }
+
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), backgroundColor: Colors.red),
@@ -468,6 +502,20 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         shadow: fieldShadow,
                         borderColor: borderColor,
                       ),
+                      const SizedBox(height: 20),
+
+                      _buildLabel("Username", onSurface),
+                      _buildUsernameField(surface, onSurface, fieldShadow, borderColor, primary),
+                      if (_usernameError != null) ...[
+                        const SizedBox(height: 6),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(
+                            _usernameError!,
+                            style: const TextStyle(color: Colors.red, fontSize: 12),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 20),
 
                       _buildLabel("Email", onSurface),
@@ -968,6 +1016,65 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
+  Widget _buildUsernameField(
+      Color surface,
+      Color onSurface,
+      BoxShadow shadow,
+      Color borderColor,
+      Color primary,
+      ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [shadow],
+        border: Border.all(
+          color: _usernameError != null ? Colors.red : borderColor,
+        ),
+      ),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Text(
+              "@",
+              style: TextStyle(
+                color: primary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              controller: _usernameController,
+              style: TextStyle(color: onSurface),
+              autocorrect: false,
+              enableSuggestions: false,
+              onChanged: (value) {
+                // Auto-lowercase
+                final lower = value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9_]'), '');
+                if (lower != value) {
+                  _usernameController.value = _usernameController.value.copyWith(
+                    text: lower,
+                    selection: TextSelection.collapsed(offset: lower.length),
+                  );
+                }
+                if (_usernameError != null) setState(() => _usernameError = null);
+              },
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                hintText: "your_handle",
+                hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSocialField({
     required TextEditingController controller,
     required String hint,
@@ -1118,6 +1225,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   @override
   void dispose() {
     _fullNameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _nationalityController.dispose();
     _bioController.dispose();
