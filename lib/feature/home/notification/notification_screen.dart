@@ -11,6 +11,14 @@ import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_p
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/feature/tours/data/models/tour_model.dart';
+import 'package:lost_in_egypt/feature/tours/presentation/pages/tour_detail_screen.dart';
+import 'package:lost_in_egypt/feature/tours/presentation/pages/booking_history_screen.dart';
+import 'package:lost_in_egypt/feature/tours/presentation/pages/guide_dashboard_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lost_in_egypt/feature/tours/presentation/bloc/guide_tours_cubit.dart';
+import 'package:lost_in_egypt/feature/tours/domain/usecases/get_guide_tours_usecase.dart';
+import 'package:get_it/get_it.dart';
 
 import '../../../core/di/service_locator.dart';
 import 'domain/repositories/notifications_repository.dart';
@@ -45,28 +53,57 @@ class _NotificationScreenState extends State<NotificationScreen> {
     if (!notif.isRead) {
       await _repo.markAsRead(_userId, notif.id);
     }
-    if (notif.deepLinkTargetId != null && notif.deepLinkTargetId!.isNotEmpty) {
-      if (notif.type == 'comment' || notif.type.startsWith('like')) {
-        try {
-          final parts = notif.deepLinkTargetId!.split('_');
-          final postId = parts[0];
-          final commentId = parts.length > 1 ? parts[1] : null;
+    final targetId = notif.deepLinkTargetId;
+    if (targetId == null || targetId.isEmpty) return;
 
-          final doc = await FirebaseFirestore.instance.collection('community_posts').doc(postId).get();
-          if (doc.exists && mounted) {
-            final post = CommunityPostModel.fromSnapshot(doc);
-            // Switch HomeWrapper to the community tab so that pressing back
-            // from the post lands on community, not whichever tab was open.
-            MapFocusService.instance.tabSwitchNotifier.value = 1;
-            Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailScreen(
-              post: post,
-              highlightCommentId: commentId,
-            )));
-          } else if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post not found')));
-          }
-        } catch(e) { /* ignore */ }
+    try {
+      // ── Community: post likes / comments ────────────────────────────
+      if (notif.type == 'comment' || notif.type.startsWith('like')) {
+        final parts = targetId.split('_');
+        final postId = parts[0];
+        final commentId = parts.length > 1 ? parts[1] : null;
+        final doc = await FirebaseFirestore.instance
+            .collection('community_posts').doc(postId).get();
+        if (!doc.exists || !mounted) return;
+        final post = CommunityPostModel.fromSnapshot(doc);
+        MapFocusService.instance.tabSwitchNotifier.value = 1;
+        Navigator.push(context, MaterialPageRoute(
+            builder: (_) => PostDetailScreen(post: post, highlightCommentId: commentId)));
+        return;
       }
+
+      // ── Tourist: booking confirmed or tour cancelled ─────────────────
+      if (notif.type == 'booking_confirmed' || notif.type == 'tour_cancelled' ||
+          notif.type == 'tour_updated') {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
+        return;
+      }
+
+      // ── Guide: new booking or cancellation → navigate to tour attendees
+      if (notif.type == 'booking' || notif.type == 'booking_cancelled') {
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => GuideToursCubit(
+                getGuideToursUseCase: GetIt.I<GetGuideToursUseCase>()),
+            child: const GuideDashboardScreen(),
+          ),
+        ));
+        return;
+      }
+
+      // ── Guide: new review → navigate to tour detail ──────────────────
+      if (notif.type == 'review') {
+        final doc = await FirebaseFirestore.instance
+            .collection('tours').doc(targetId).get();
+        if (!doc.exists || !mounted) return;
+        final tour = TourModel.fromMap(doc.data()!, doc.id);
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)));
+        return;
+      }
+    } catch (e) {
+      debugPrint('Notification deep link error: $e');
     }
   }
 

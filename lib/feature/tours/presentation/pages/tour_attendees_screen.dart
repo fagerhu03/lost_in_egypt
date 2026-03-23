@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 
 class TourAttendeesScreen extends StatelessWidget {
   final String tourId;
@@ -152,7 +154,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
       final doc = await FirebaseFirestore.instance.collection('users').doc(widget.bookingData['userId']).get();
       if (mounted) {
         setState(() {
-          _userData = doc.data();
+          _userData = doc.exists ? doc.data() : null;
           _loading = false;
         });
       }
@@ -179,9 +181,11 @@ class _AttendeeCardState extends State<_AttendeeCard> {
     }
 
     final name = '${_userData?['firstName'] ?? ''} ${_userData?['lastName'] ?? ''}'.trim();
+    final username = _userData?['username'] as String? ?? '';
     final phone = _userData?['phone'] ?? _userData?['phoneNumber'] ?? '';
     final email = _userData?['email'] ?? '';
     final profileUrl = _userData?['profileImageUrl'] ?? '';
+    final userId = widget.bookingData['userId'] as String? ?? '';
     final status = widget.bookingData['status'] ?? 'pending';
     final paymentStatus = widget.bookingData['paymentStatus'] ?? 'none';
 
@@ -203,6 +207,15 @@ class _AttendeeCardState extends State<_AttendeeCard> {
         children: [
           ListTile(
             contentPadding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            onTap: _userData != null && userId.isNotEmpty
+                ? () {
+                    final userModel = UserModel.fromMap(_userData!, userId);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => UniversalProfileScreen(user: userModel)),
+                    );
+                  }
+                : null,
             leading: CircleAvatar(
               radius: 24,
               backgroundImage: profileUrl.isNotEmpty ? NetworkImage(profileUrl) : null,
@@ -213,26 +226,38 @@ class _AttendeeCardState extends State<_AttendeeCard> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (username.isNotEmpty)
+                  Text('@$username', style: TextStyle(fontSize: 12, color: theme.colorScheme.primary.withOpacity(0.8), fontWeight: FontWeight.w500)),
                 if (email.isNotEmpty)
                   Text(email, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
                 if (phone.isNotEmpty)
                   Text(phone, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
               ],
             ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: paymentStatus == 'paid' ? Colors.green.withOpacity(0.12) : Colors.orange.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                paymentStatus == 'paid' ? 'PAID' : 'PENDING',
-                style: TextStyle(
-                  color: paymentStatus == 'paid' ? Colors.green : Colors.orange,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: paymentStatus == 'paid' ? Colors.green.withOpacity(0.12) : Colors.orange.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    paymentStatus == 'paid' ? 'PAID' : 'PENDING',
+                    style: TextStyle(
+                      color: paymentStatus == 'paid' ? Colors.green : Colors.orange,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
+                if (_userData != null) ...[
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, size: 18,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                ],
+              ],
             ),
           ),
           // Action buttons

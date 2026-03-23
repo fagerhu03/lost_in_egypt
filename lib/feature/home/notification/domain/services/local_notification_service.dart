@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:io';
+import 'dart:ui' show Color;
 
 class LocalNotificationService {
   static final LocalNotificationService _instance = LocalNotificationService._internal();
@@ -60,6 +61,9 @@ class LocalNotificationService {
       importance: Importance.max,
       priority: Priority.high,
       showWhen: true,
+      icon: '@mipmap/ic_launcher',
+      largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+      color: Color(0xFFD6A00F),
     );
 
     const NotificationDetails platformChannelSpecifics =
@@ -95,6 +99,9 @@ class LocalNotificationService {
           channelDescription: 'Channel for scheduled reminders',
           importance: Importance.high,
           priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+          color: Color(0xFFD6A00F),
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

@@ -337,11 +337,23 @@ class _AccountScreenState extends State<AccountScreen> {
                         ),
 
 
-                        if (_user?.role == 'tourist' && _user?.applicationStatus != 'pending') ...[
-                          _AccountTile(
-                            title: "Apply to be a Guide",
-                            onTap: () {
-                              Navigator.push(
+                        if (_user?.role == 'tourist') ...[
+                          if (_user?.applicationStatus == 'pending')
+                            _ApplicationStatusTile(
+                              status: 'pending',
+                              surface: surface,
+                              onSurface: onSurface,
+                              borderColor: borderColor,
+                              shadow: tileShadow,
+                            )
+                          else if (_user?.applicationStatus == 'rejected')
+                            _ApplicationStatusTile(
+                              status: 'rejected',
+                              surface: surface,
+                              onSurface: onSurface,
+                              borderColor: borderColor,
+                              shadow: tileShadow,
+                              onTap: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => BlocProvider(
@@ -351,13 +363,29 @@ class _AccountScreenState extends State<AccountScreen> {
                                     child: const lost_in_egypt_guide_screen.ApplyGuideScreen(),
                                   ),
                                 ),
-                              );
-                            },
-                            surface: surface,
-                            onSurface: onSurface,
-                            borderColor: borderColor,
-                            shadow: tileShadow,
-                          ),
+                              ),
+                            )
+                          else
+                            _AccountTile(
+                              title: "Apply to be a Guide",
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BlocProvider(
+                                      create: (context) => lost_in_egypt_guide_cubit.ApplyGuideCubit(
+                                        applyGuideUseCase: GetIt.I(),
+                                      ),
+                                      child: const lost_in_egypt_guide_screen.ApplyGuideScreen(),
+                                    ),
+                                  ),
+                                );
+                              },
+                              surface: surface,
+                              onSurface: onSurface,
+                              borderColor: borderColor,
+                              shadow: tileShadow,
+                            ),
                         ],
                         _AccountTile(
                           title: "Cards Detail",
@@ -460,6 +488,89 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ApplicationStatusTile extends StatelessWidget {
+  final String status; // 'pending' | 'rejected'
+  final Color surface;
+  final Color onSurface;
+  final Color borderColor;
+  final BoxShadow shadow;
+  final VoidCallback? onTap;
+
+  const _ApplicationStatusTile({
+    required this.status,
+    required this.surface,
+    required this.onSurface,
+    required this.borderColor,
+    required this.shadow,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isPending = status == 'pending';
+    final statusColor = isPending ? Colors.orange : Colors.red;
+    final statusLabel = isPending ? 'Under Review' : 'Not Approved';
+    final statusIcon = isPending ? Icons.hourglass_top_rounded : Icons.cancel_outlined;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+        boxShadow: [shadow],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.hardEdge,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: SizedBox(
+              height: 56,
+              child: Row(
+                children: [
+                  Icon(Icons.badge_outlined, color: statusColor, size: 20),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Guide Application',
+                    style: TextStyle(color: onSurface.withOpacity(0.85), fontSize: 16),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(statusIcon, size: 13, color: statusColor),
+                        const SizedBox(width: 4),
+                        Text(statusLabel,
+                            style: TextStyle(
+                                fontSize: 12, color: statusColor, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                  if (!isPending) ...[
+                    const SizedBox(width: 6),
+                    Icon(Icons.chevron_right, color: onSurface.withOpacity(0.5)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

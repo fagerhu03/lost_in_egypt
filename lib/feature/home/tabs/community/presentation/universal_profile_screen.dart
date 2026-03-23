@@ -308,6 +308,16 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           height: 400,
           child: _UniversalGuideToursList(guideId: widget.user.id),
         ),
+        // Reviews section
+        if (widget.user.reviewCount > 0) ...[
+          const SizedBox(height: 24),
+          Text(
+            'Traveler Reviews',
+            style: TextStyle(color: titleColor, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
+          ),
+          const SizedBox(height: 12),
+          _UniversalGuideReviews(guideId: widget.user.id),
+        ],
         if (FirebaseAuth.instance.currentUser?.uid == widget.user.id) ...[
           const SizedBox(height: 24),
           SizedBox(
@@ -501,6 +511,126 @@ class _UniversalInfoStrip extends StatelessWidget {
         Text(title, style: TextStyle(color: titleColor, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
         Text(subtitle, style: TextStyle(color: subColor, fontSize: 11)),
       ],
+    );
+  }
+}
+
+class _UniversalGuideReviews extends StatefulWidget {
+  final String guideId;
+  const _UniversalGuideReviews({required this.guideId});
+
+  @override
+  State<_UniversalGuideReviews> createState() => _UniversalGuideReviewsState();
+}
+
+class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
+  static const int _pageSize = 3;
+  int _limit = _pageSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('reviews')
+          .where('guideId', isEqualTo: widget.guideId)
+          .orderBy('createdAt', descending: true)
+          .limit(_limit)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) return const SizedBox.shrink();
+
+        final hasMore = docs.length == _limit;
+
+        return Column(
+          children: [
+            ...docs.map((doc) {
+            final d = doc.data() as Map<String, dynamic>;
+            final rating = (d['rating'] as num?)?.toDouble() ?? 0;
+            final text = (d['text'] ?? d['comment'] ?? '') as String;
+            final userName = (d['userName'] ?? 'Traveler') as String;
+            final userImage = d['userImage'] as String?;
+            final createdAt = (d['createdAt'] as Timestamp?)?.toDate();
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
+                    backgroundImage: (userImage != null && userImage.isNotEmpty)
+                        ? NetworkImage(userImage)
+                        : null,
+                    child: (userImage == null || userImage.isEmpty)
+                        ? const Icon(Icons.person, size: 18)
+                        : null,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(userName,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            const Spacer(),
+                            Row(
+                              children: List.generate(
+                                5,
+                                (i) => Icon(
+                                  i < rating ? Icons.star : Icons.star_border,
+                                  size: 12,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (text.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(text,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.75))),
+                        ],
+                        if (createdAt != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            '${createdAt.day}/${createdAt.month}/${createdAt.year}',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+            }).toList(),
+            if (hasMore)
+              TextButton.icon(
+                onPressed: () => setState(() => _limit += _pageSize),
+                icon: const Icon(Icons.expand_more, size: 18),
+                label: const Text('Show more reviews'),
+              ),
+          ],
+        );
+      },
     );
   }
 }

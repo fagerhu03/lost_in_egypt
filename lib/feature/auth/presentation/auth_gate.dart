@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
+import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/onboarding/onboarding_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/email_verification_screen.dart';
@@ -31,9 +32,11 @@ class _AuthGateState extends State<AuthGate> {
         _hasUsername = userModel.username.isNotEmpty;
       }
       ThemeController.setDark(userModel?.isDarkMode ?? false);
+      CurrencyController.setCurrency(userModel?.preferredCurrency ?? 'EGP');
     } catch (_) {
       // fallback if fetch fails
       ThemeController.setDark(false);
+      CurrencyController.setCurrency('EGP');
     }
   }
 
@@ -55,6 +58,7 @@ class _AuthGateState extends State<AuthGate> {
           _appliedForUid = null;
           _initFuture = null;
           _hasUsername = true;
+          CurrencyController.setCurrency('EGP');
           // ThemeController.setDark(false);
 
           return const OnboardingScreen();

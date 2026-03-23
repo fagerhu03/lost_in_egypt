@@ -1,10 +1,15 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_paymob/flutter_paymob.dart';
 import 'package:flutter_paymob/paymob_response.dart';
 
 /// Thin wrapper around the flutter_paymob SDK.
 /// Provides named methods for each payment type.
+///
+/// NOTE: We use the direct return value of payWithCard / payWithWallet
+/// (which comes from Navigator.pop inside the WebView) rather than the
+/// onPayment callback. The package wraps onPayment in addPostFrameCallback,
+/// which causes it to fire *after* the await resolves — making any Completer
+/// pattern race-prone. The Navigator.pop return value is immediate and reliable.
 class PaymobPaymentService {
   PaymobPaymentService._();
   static final PaymobPaymentService instance = PaymobPaymentService._();
@@ -15,18 +20,12 @@ class PaymobPaymentService {
     required double amountEGP,
     String currency = 'EGP',
   }) async {
-    final completer = Completer<PaymentPaymobResponse?>();
-    await FlutterPaymob.instance.payWithCard(
+    final result = await FlutterPaymob.instance.payWithCard(
       context: context,
       currency: currency,
       amount: amountEGP,
-      onPayment: (response) {
-        completer.complete(response);
-      },
     );
-    // If WebView was closed without completing, return null
-    if (!completer.isCompleted) completer.complete(null);
-    return completer.future;
+    return result as PaymentPaymobResponse?;
   }
 
   /// Pay via mobile wallet (Vodafone Cash, Orange, etc.)
@@ -36,17 +35,12 @@ class PaymobPaymentService {
     required String phoneNumber,
     String currency = 'EGP',
   }) async {
-    final completer = Completer<PaymentPaymobResponse?>();
-    await FlutterPaymob.instance.payWithWallet(
+    final result = await FlutterPaymob.instance.payWithWallet(
       context: context,
       currency: currency,
       amount: amountEGP,
       number: phoneNumber,
-      onPayment: (response) {
-        completer.complete(response);
-      },
     );
-    if (!completer.isCompleted) completer.complete(null);
-    return completer.future;
+    return result as PaymentPaymobResponse?;
   }
 }

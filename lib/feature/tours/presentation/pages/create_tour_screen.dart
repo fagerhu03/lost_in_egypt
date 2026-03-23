@@ -11,6 +11,11 @@ import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import '../../domain/entities/tour_entity.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
+import 'package:lost_in_egypt/feature/home/notification/data/datasources/notifications_data_source.dart';
+import 'package:lost_in_egypt/feature/home/notification/data/models/notification_model.dart';
 
 class CreateTourScreen extends StatefulWidget {
   final TourEntity? tourToEdit;
@@ -120,6 +125,53 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     }
   }
 
+  Future<void> _notifyAttendeesOfUpdate(String tourId, String tourTitle) async {
+    try {
+      final guide = FirebaseAuth.instance.currentUser;
+      if (guide == null) return;
+
+      String guideName = 'Your guide';
+      String guideImage = guide.photoURL ?? '';
+      final guideDoc = await FirebaseFirestore.instance
+          .collection('users').doc(guide.uid).get();
+      if (guideDoc.exists) {
+        final d = guideDoc.data()!;
+        final full = '${d['firstName'] ?? ''} ${d['lastName'] ?? ''}'.trim();
+        guideName = full.isNotEmpty ? full : (d['username'] ?? guideName);
+        guideImage = d['profileImageUrl'] ?? guideImage;
+      }
+
+      final bookingsSnap = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('tourId', isEqualTo: tourId)
+          .where('status', isEqualTo: 'confirmed')
+          .get();
+
+      final notifDs = NotificationsDataSourceImpl();
+      final seen = <String>{};
+      for (final doc in bookingsSnap.docs) {
+        final userId = doc.data()['userId'] as String? ?? '';
+        if (userId.isEmpty || userId == guide.uid || seen.contains(userId)) continue;
+        seen.add(userId);
+        await notifDs.sendNotification(NotificationModel(
+          id: const Uuid().v4(),
+          recipientId: userId,
+          senderId: guide.uid,
+          senderName: guideName,
+          senderAvatar: guideImage,
+          title: 'Tour Updated',
+          message: 'updated the details for "$tourTitle"',
+          type: 'tour_updated',
+          deepLinkTargetId: tourId,
+          isRead: false,
+          timestamp: DateTime.now(),
+        ));
+      }
+    } catch (e) {
+      debugPrint('Failed to notify attendees of tour update: $e');
+    }
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedMeetingTime == null) {
@@ -215,9 +267,16 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
               SnackBar(content: Text(state.message), backgroundColor: Colors.red),
             );
           } else if (state is CreateTourSuccess) {
+            final isEdit = widget.tourToEdit != null;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Tour created successfully!'), backgroundColor: Colors.green),
+              SnackBar(
+                content: Text(isEdit ? 'Tour updated!' : 'Tour created successfully!'),
+                backgroundColor: Colors.green,
+              ),
             );
+            if (isEdit) {
+              _notifyAttendeesOfUpdate(widget.tourToEdit!.id, widget.tourToEdit!.title);
+            }
             Navigator.of(context).pop();
           }
         },
@@ -387,7 +446,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _priceController,
-                          decoration: const InputDecoration(labelText: 'Price (USD)', border: OutlineInputBorder()),
+                          decoration: const InputDecoration(labelText: 'Price (EGP)', prefixText: 'EGP ', border: OutlineInputBorder()),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                         ),

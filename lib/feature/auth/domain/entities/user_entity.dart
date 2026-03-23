@@ -28,6 +28,7 @@ class UserEntity extends Equatable {
   final bool isNotificationsEnabled;
   final bool isDarkMode;
   final String language;
+  final String preferredCurrency;
   final bool phoneVerified;
   final bool emailVerified;
 
@@ -66,6 +67,7 @@ class UserEntity extends Equatable {
     this.isNotificationsEnabled = true,
     this.isDarkMode = false,
     this.language = 'English',
+    this.preferredCurrency = 'EGP',
     this.phoneVerified = false,
     this.emailVerified = false,
     required this.createdAt,
@@ -101,6 +103,7 @@ class UserEntity extends Equatable {
     isNotificationsEnabled,
     isDarkMode,
     language,
+    preferredCurrency,
     phoneVerified,
     emailVerified,
     createdAt,

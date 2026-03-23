@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/core/services/currency_controller.dart';
+import 'package:lost_in_egypt/core/services/currency_service.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
@@ -79,6 +81,33 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
 
+  static const List<String> _currencies = [
+    'EGP', 'USD', 'EUR', 'GBP', 'SAR', 'AED', 'JOD',
+    'QAR', 'KWD', 'OMR', 'BHD', 'JPY', 'INR', 'AUD', 'CAD', 'CHF',
+  ];
+
+  void _showCurrencyPicker() {
+    final theme = Theme.of(context);
+    final current = _currentUser?.preferredCurrency ?? 'EGP';
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => ListView(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        children: _currencies.map((code) => ListTile(
+          title: Text(code, style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: theme.colorScheme.onSurface)),
+          trailing: code == current ? Icon(Icons.check, color: theme.colorScheme.primary) : null,
+          onTap: () {
+            Navigator.pop(context);
+            _updateSetting('currency', code);
+          },
+        )).toList(),
+      ),
+    );
+  }
+
   Future<void> _updateSetting(String key, dynamic value) async {
     if (_currentUser == null) return;
 
@@ -86,8 +115,14 @@ class _SettingsScreenState extends State<SettingsScreen>
       isNotificationsEnabled: key == 'notif' ? value : null,
       isDarkMode: key == 'theme' ? value : null,
       language: key == 'lang' ? value : null,
+      preferredCurrency: key == 'currency' ? value : null,
       visitedLandmarks: key == 'visitedLandmarks' ? value : null,
     );
+
+    if (key == 'currency') {
+      CurrencyController.setCurrency(value as String);
+      CurrencyService.instance.invalidateCache();
+    }
 
     if (mounted) {
       setState(() {
@@ -208,6 +243,37 @@ class _SettingsScreenState extends State<SettingsScreen>
                                             : "English",
                                       );
                                     },
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Currency
+                            _buildTile(
+                              surfaceColor: surface,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Display Currency",
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 16,
+                                      fontFamily: "Marcellus",
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        _currentUser?.preferredCurrency ?? 'EGP',
+                                        style: TextStyle(
+                                          color: textColor.withOpacity(0.7),
+                                        ),
+                                      ),
+                                      Icon(Icons.keyboard_arrow_down, color: textColor),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              onTap: _currentUser == null ? null : _showCurrencyPicker,
                             ),
                             const SizedBox(height: 16),
 
