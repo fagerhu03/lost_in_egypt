@@ -14,6 +14,7 @@ import 'package:lost_in_egypt/feature/guide_application/presentation/bloc/apply_
 import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply_guide_screen.dart' as lost_in_egypt_guide_screen;
 import 'package:lost_in_egypt/feature/home/tabs/more/presentation/saved_cards_screen.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/booking_history_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/account/presentation/your_plan_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -320,6 +321,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
                         _AccountTile(
                           title: "Edit Profile",
+                          icon: Icons.person_outline_rounded,
                           onTap: () async {
                             await Navigator.push(
                               context,
@@ -330,10 +332,6 @@ class _AccountScreenState extends State<AccountScreen> {
                             );
                             _loadUser();
                           },
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
                         ),
 
 
@@ -368,6 +366,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           else
                             _AccountTile(
                               title: "Apply to be a Guide",
+                              icon: Icons.badge_outlined,
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -381,39 +380,29 @@ class _AccountScreenState extends State<AccountScreen> {
                                   ),
                                 );
                               },
-                              surface: surface,
-                              onSurface: onSurface,
-                              borderColor: borderColor,
-                              shadow: tileShadow,
                             ),
                         ],
                         _AccountTile(
                           title: "Cards Detail",
+                          icon: Icons.credit_card_outlined,
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedCardsScreen()));
                           },
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
                         ),
                         _AccountTile(
                           title: "My Bookings",
+                          icon: Icons.calendar_today_outlined,
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
                           },
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
                         ),
                         _AccountTile(
                           title: "Your plan",
-                          onTap: () {},
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
+                          icon: Icons.workspace_premium_outlined,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const YourPlanScreen()),
+                          ),
                         ),
                         
                         const SizedBox(height: 24),
@@ -577,57 +566,68 @@ class _ApplicationStatusTile extends StatelessWidget {
 
 class _AccountTile extends StatelessWidget {
   final String title;
+  final IconData icon;
   final VoidCallback onTap;
-
-  // themed
-  final Color surface;
-  final Color onSurface;
-  final Color borderColor;
-  final BoxShadow shadow;
 
   const _AccountTile({
     required this.title,
+    required this.icon,
     required this.onTap,
-    required this.surface,
-    required this.onSurface,
-    required this.borderColor,
-    required this.shadow,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+    final onSurface = theme.colorScheme.onSurface;
+    final surface = theme.colorScheme.surface;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
+      child: Material(
         color: surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
-        boxShadow: [shadow],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
         clipBehavior: Clip.hardEdge,
+        elevation: 0,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: SizedBox(
-              height: 56,
-              child: Row(
-                children: [
-                  Text(
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: primary.withOpacity(isDark ? 0.2 : 0.15),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: primary.withOpacity(isDark ? 0.2 : 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: primary, size: 20),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
                     title,
                     style: TextStyle(
-                      color: onSurface.withValues(alpha: 0.85),
+                      color: onSurface.withOpacity(0.88),
                       fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Marcellus',
                     ),
                   ),
-                  const Spacer(),
-                  Icon(Icons.chevron_right, color: onSurface.withValues(alpha: 0.5)),
-                ],
-              ),
+                ),
+                Icon(Icons.chevron_right_rounded,
+                    color: primary.withOpacity(0.6), size: 22),
+              ],
             ),
           ),
         ),

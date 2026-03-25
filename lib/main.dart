@@ -36,7 +36,7 @@ void main() async {
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
-    print("WARNING: .env file not found, Maps API might fail if not injected via CLI.");
+    debugPrint("WARNING: .env file not found, Maps API might fail if not injected via CLI.");
   }
 
   try {

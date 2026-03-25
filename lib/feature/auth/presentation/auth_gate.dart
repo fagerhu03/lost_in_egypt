@@ -67,7 +67,7 @@ class _AuthGateState extends State<AuthGate> {
         if (_appliedForUid != firebaseUser.uid) {
           _appliedForUid = firebaseUser.uid;
           _initFuture = Future.wait([
-            firebaseUser.reload().catchError((_) {}), 
+            firebaseUser.reload().catchError((_) {}),
             _applySavedTheme(firebaseUser)
           ]);
         }
@@ -84,7 +84,9 @@ class _AuthGateState extends State<AuthGate> {
             // Always get the freshly reloaded user to ensure emailVerified is accurate
             final freshUser = FirebaseAuth.instance.currentUser;
             if (freshUser != null && !freshUser.emailVerified && !_isFirestoreEmailVerified) {
-              return const EmailVerificationScreen();
+              return EmailVerificationScreen(
+                onVerified: () => setState(() => _isFirestoreEmailVerified = true),
+              );
             }
             // Route to username creation if the user hasn't set one yet
             if (!_hasUsername) {

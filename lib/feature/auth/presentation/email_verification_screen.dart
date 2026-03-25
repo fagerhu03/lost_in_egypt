@@ -3,7 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
-  const EmailVerificationScreen({Key? key}) : super(key: key);
+  /// Called when verification is confirmed (either via Firebase Auth or
+  /// a manual Firestore override). Lets AuthGate route past this screen
+  /// without a full re-fetch loop.
+  final VoidCallback? onVerified;
+
+  const EmailVerificationScreen({Key? key, this.onVerified}) : super(key: key);
 
   @override
   State<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
@@ -41,8 +46,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             .collection('users')
             .doc(_auth.currentUser!.uid)
             .update({'emailVerified': true});
-        // AuthStateChanges in main.dart should catch this change and route appropriately,
-        // but just in case, we can trigger a state change explicitly or navigate.
+        // Notify AuthGate directly — avoids a reload() loop
+        widget.onVerified?.call();
         if (mounted) setState(() {});
       } else {
         if (mounted) {

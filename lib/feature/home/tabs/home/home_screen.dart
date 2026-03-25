@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/guides_body.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/solo_trip_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/presentation/search_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/presentation/all_events_screen.dart';
 import '../navigator/widget/account_menu_button.dart';
 import '../navigator/widget/search_header.dart';
 import './data/datasources/local_mock_data.dart';
@@ -111,7 +113,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Row(
                     children: [
-                      Expanded(child: SearchHeader(onSignOut: () {})),
+                      Expanded(
+                    child: SearchHeader(
+                      onSignOut: () {},
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SearchScreen(),
+                        ),
+                      ),
+                    ),
+                  ),
                       const SizedBox(width: 12),
                       AccountMenuButton(
                         profileImageUrl: _profileImageUrl,
@@ -193,12 +205,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontFamily: "Marcellus",
                     ),
                   ),
-                  Text(
-                    "see all >",
-                    style: TextStyle(
-                      color: onSurface.withOpacity(0.65),
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "Marcellus",
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AllEventsScreen(),
+                      ),
+                    ),
+                    child: Text(
+                      "see all >",
+                      style: TextStyle(
+                        color: onSurface.withOpacity(0.65),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "Marcellus",
+                      ),
                     ),
                   ),
                 ],

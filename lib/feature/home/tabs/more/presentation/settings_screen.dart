@@ -203,33 +203,22 @@ class _SettingsScreenState extends State<SettingsScreen>
                           children: [
                             // Language
                             _buildTile(
-                              surfaceColor: surface,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                              icon: Icons.language_rounded,
+                              title: "Select Language",
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    "Select Language",
+                                    _currentUser?.language ?? "English",
                                     style: TextStyle(
-                                      color: textColor,
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
+                                      color: theme.colorScheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
                                     ),
                                   ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        _currentUser?.language ?? "English",
-                                        style: TextStyle(
-                                          color: textColor.withOpacity(0.7),
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.keyboard_arrow_down,
-                                        color: textColor,
-                                      ),
-                                    ],
-                                  ),
+                                  const SizedBox(width: 2),
+                                  Icon(Icons.keyboard_arrow_down_rounded,
+                                      color: theme.colorScheme.primary, size: 20),
                                 ],
                               ),
                               onTap: _currentUser == null
@@ -237,8 +226,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                                   : () {
                                       _updateSetting(
                                         'lang',
-                                        (_currentUser?.language ?? "English") ==
-                                                "English"
+                                        (_currentUser?.language ?? "English") == "English"
                                             ? "Arabic"
                                             : "English",
                                       );
@@ -248,29 +236,22 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                             // Currency
                             _buildTile(
-                              surfaceColor: surface,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              icon: Icons.currency_exchange_rounded,
+                              title: "Display Currency",
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    "Display Currency",
+                                    _currentUser?.preferredCurrency ?? 'EGP',
                                     style: TextStyle(
-                                      color: textColor,
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
+                                      color: theme.colorScheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
                                     ),
                                   ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        _currentUser?.preferredCurrency ?? 'EGP',
-                                        style: TextStyle(
-                                          color: textColor.withOpacity(0.7),
-                                        ),
-                                      ),
-                                      Icon(Icons.keyboard_arrow_down, color: textColor),
-                                    ],
-                                  ),
+                                  const SizedBox(width: 2),
+                                  Icon(Icons.keyboard_arrow_down_rounded,
+                                      color: theme.colorScheme.primary, size: 20),
                                 ],
                               ),
                               onTap: _currentUser == null ? null : _showCurrencyPicker,
@@ -279,191 +260,117 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                             // Notification
                             _buildTile(
-                              surfaceColor: surface,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Notification",
-                                    style: TextStyle(
-                                      color: textColor.withOpacity(0.85),
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
-                                    ),
-                                  ),
-                                  Switch(
-                                    value: _currentUser
-                                            ?.isNotificationsEnabled ??
-                                        true,
-                                    onChanged: _currentUser == null
-                                        ? null
-                                        : (v) => _updateSetting('notif', v),
-                                    activeColor: Colors.white,
-                                    activeTrackColor:
-                                        theme.colorScheme.primary,
-                                    inactiveThumbColor:
-                                        theme.colorScheme.primary,
-                                    inactiveTrackColor: Colors.white,
-                                  ),
-                                ],
+                              icon: Icons.notifications_outlined,
+                              title: "Notifications",
+                              trailing: Switch(
+                                value: _currentUser?.isNotificationsEnabled ?? true,
+                                onChanged: _currentUser == null
+                                    ? null
+                                    : (v) => _updateSetting('notif', v),
+                                activeColor: Colors.white,
+                                activeTrackColor: theme.colorScheme.primary,
+                                inactiveThumbColor: theme.colorScheme.primary,
+                                inactiveTrackColor: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 16),
 
-                            // Saved Card
+                            // Saved Cards
                             _buildTile(
-                              surfaceColor: surface,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Saved Cards",
-                                    style: TextStyle(
-                                      color: textColor.withOpacity(0.85),
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
-                                    ),
-                                  ),
-                                  Icon(Icons.chevron_right, color: textColor.withOpacity(0.4)),
-                                ],
+                              icon: Icons.credit_card_outlined,
+                              title: "Saved Cards",
+                              trailing: Icon(
+                                Icons.chevron_right_rounded,
+                                color: theme.colorScheme.primary.withOpacity(0.6),
+                                size: 22,
                               ),
-                              onTap: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedCardsScreen()));
-                              },
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const SavedCardsScreen()),
+                              ),
                             ),
                             const SizedBox(height: 16),
 
-                            // Theme (single source of truth: ThemeController.mode)
+                            // Theme
                             _buildTile(
-                              surfaceColor: surface,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Theme",
-                                    style: TextStyle(
-                                      color: textColor,
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
-                                    ),
-                                  ),
-                                  ValueListenableBuilder<ThemeMode>(
-                                    valueListenable: ThemeController.mode,
-                                    builder: (context, mode, _) {
-                                      final isDarkNow =
-                                          mode == ThemeMode.dark;
-
-                                      return GestureDetector(
-                                        onTap: () async {
-                                          final newValue = !isDarkNow;
-
-                                          // Easter Egg check: Scarab Swarm
-                                          final now = DateTime.now();
-                                          if (now.difference(_lastThemeTap).inMilliseconds < 800) {
-                                            _themeTapCount++;
-                                            if (_themeTapCount >= 4) {
-                                              _themeTapCount = 0;
-                                              ScarabOverlay.show(context);
-                                            }
-                                          } else {
-                                            _themeTapCount = 1; // reset if too slow
-                                          }
-                                          _lastThemeTap = now;
-
-                                          // 1) change theme instantly
-                                          ThemeController.setDark(newValue);
-
-                                          // 2) save to Firestore (if user exists)
-                                          if (_currentUser != null) {
-                                            await _updateSetting(
-                                              'theme',
-                                              newValue,
-                                            );
-                                          }
-                                        },
-                                        child: AnimatedContainer(
-                                          duration: const Duration(
-                                              milliseconds: 300),
-                                          width: 60,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: theme.colorScheme.primary,
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            border: Border.all(
-                                              color:
-                                                  textColor.withOpacity(0.4),
+                              icon: Icons.palette_outlined,
+                              title: "Theme",
+                              trailing: ValueListenableBuilder<ThemeMode>(
+                                valueListenable: ThemeController.mode,
+                                builder: (context, mode, _) {
+                                  final isDarkNow = mode == ThemeMode.dark;
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      final newValue = !isDarkNow;
+                                      final now = DateTime.now();
+                                      if (now.difference(_lastThemeTap).inMilliseconds < 800) {
+                                        _themeTapCount++;
+                                        if (_themeTapCount >= 4) {
+                                          _themeTapCount = 0;
+                                          ScarabOverlay.show(context);
+                                        }
+                                      } else {
+                                        _themeTapCount = 1;
+                                      }
+                                      _lastThemeTap = now;
+                                      ThemeController.setDark(newValue);
+                                      if (_currentUser != null) {
+                                        await _updateSetting('theme', newValue);
+                                      }
+                                    },
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 300),
+                                      width: 60,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: theme.colorScheme.onSurface.withOpacity(0.4),
+                                        ),
+                                      ),
+                                      child: Stack(
+                                        children: [
+                                          const Positioned(
+                                            left: 6, top: 6,
+                                            child: Icon(Icons.wb_sunny, size: 18, color: Colors.white),
+                                          ),
+                                          const Positioned(
+                                            right: 6, top: 6,
+                                            child: Icon(Icons.nightlight_round, size: 18, color: Colors.white),
+                                          ),
+                                          AnimatedAlign(
+                                            alignment: isDarkNow
+                                                ? Alignment.centerRight
+                                                : Alignment.centerLeft,
+                                            duration: const Duration(milliseconds: 300),
+                                            child: Container(
+                                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                                              width: 26,
+                                              height: 26,
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
-                                          child: Stack(
-                                            children: [
-                                              const Positioned(
-                                                left: 6,
-                                                top: 6,
-                                                child: Icon(
-                                                  Icons.wb_sunny,
-                                                  size: 18,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                              const Positioned(
-                                                right: 6,
-                                                top: 6,
-                                                child: Icon(
-                                                  Icons.nightlight_round,
-                                                  size: 18,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                              AnimatedAlign(
-                                                alignment: isDarkNow
-                                                    ? Alignment.centerRight
-                                                    : Alignment.centerLeft,
-                                                duration: const Duration(
-                                                    milliseconds: 300),
-                                                child: Container(
-                                                  margin: const EdgeInsets
-                                                      .symmetric(horizontal: 2),
-                                                  width: 26,
-                                                  height: 26,
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                              ),
+                            ),
                             const SizedBox(height: 32),
-                              
+
                             // Debug Reset Button
                             _buildTile(
-                              surfaceColor: Colors.red.withValues(alpha: 0.1),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.warning_amber_rounded, color: Colors.red),
-                                  const SizedBox(width: 12),
-                                  const Text(
-                                    "Reset Badges (Debug)",
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 16,
-                                      fontFamily: "Marcellus",
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              icon: Icons.warning_amber_rounded,
+                              title: "Reset Badges (Debug)",
+                              trailing: const SizedBox.shrink(),
+                              iconColor: Colors.red,
+                              iconBgColor: Colors.red.withOpacity(0.12),
+                              borderColor: Colors.red.withOpacity(0.25),
                               onTap: _currentUser == null
                                   ? null
                                   : () {
@@ -507,34 +414,70 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
+  /// Unified tile matching the app-wide icon + title + trailing design.
+  /// Pass [iconColor] / [iconBgColor] to override for special (e.g. red debug) tiles.
   Widget _buildTile({
-    required Widget child,
-    required Color surfaceColor,
+    required IconData icon,
+    required String title,
+    required Widget trailing,
     VoidCallback? onTap,
+    Color? iconColor,
+    Color? iconBgColor,
+    Color? borderColor,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+    final onSurface = theme.colorScheme.onSurface;
+    final surface = theme.colorScheme.surface;
+
+    final resolvedIconColor = iconColor ?? primary;
+    final resolvedIconBg = iconBgColor ?? primary.withOpacity(isDark ? 0.2 : 0.12);
+    final resolvedBorder = borderColor ?? primary.withOpacity(isDark ? 0.2 : 0.15);
+
     return Material(
-      color: surfaceColor,
-      borderRadius: BorderRadius.circular(12),
+      color: surface,
+      borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.hardEdge,
       elevation: 0,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          alignment: Alignment.centerLeft,
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 6,
-                offset: Offset(0, 3),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: resolvedBorder),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: resolvedIconBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: resolvedIconColor, size: 20),
               ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: iconColor != null
+                        ? iconColor
+                        : onSurface.withOpacity(0.88),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Marcellus',
+                  ),
+                ),
+              ),
+              trailing,
             ],
           ),
-          child: child,
         ),
       ),
     );

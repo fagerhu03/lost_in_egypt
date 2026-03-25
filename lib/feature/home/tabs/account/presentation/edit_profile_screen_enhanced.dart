@@ -281,11 +281,32 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         }
       }
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(updatedUser.id)
-          .set(updatedUser.toMap(), SetOptions(merge: true))
-          .timeout(const Duration(seconds: 10));
+      final db = FirebaseFirestore.instance;
+      final userRef = db.collection('users').doc(updatedUser.id);
+      final usernameChanged = newUsername != _currentUser!.username;
+
+      if (usernameChanged) {
+        // Atomically release old handle and claim new one
+        final oldClaimRef = db.collection('usernames').doc(_currentUser!.username);
+        final newClaimRef = db.collection('usernames').doc(newUsername);
+        await db.runTransaction((tx) async {
+          final newClaimSnap = await tx.get(newClaimRef);
+          if (newClaimSnap.exists && newClaimSnap.data()?['uid'] != updatedUser.id) {
+            throw FirebaseException(
+              plugin: 'firestore',
+              code: 'already-exists',
+              message: 'Username was just taken.',
+            );
+          }
+          if (_currentUser!.username.isNotEmpty) tx.delete(oldClaimRef);
+          tx.set(newClaimRef, {'uid': updatedUser.id});
+          tx.set(userRef, updatedUser.toMap(), SetOptions(merge: true));
+        });
+      } else {
+        await userRef
+            .set(updatedUser.toMap(), SetOptions(merge: true))
+            .timeout(const Duration(seconds: 10));
+      }
 
       if ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty) {
         await FirebaseFirestore.instance
@@ -309,6 +330,12 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           );
           Navigator.pop(context);
         }
+      }
+    } on FirebaseException catch (e) {
+      if (e.code == 'already-exists') {
+        setState(() => _usernameError = "That username was just taken — try another");
+      } else {
+        _showError("Error: $e");
       }
     } catch (e) {
       _showError("Error: $e");

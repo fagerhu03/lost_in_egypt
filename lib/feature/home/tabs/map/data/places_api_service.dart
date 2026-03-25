@@ -50,7 +50,7 @@ class PlacesApiService {
 
     final body = jsonEncode(bodyMap);
 
-    debugPrint('🔍 Places API request: query="$query", type=$includedType');
+    if (kDebugMode) debugPrint('🔍 Places API request: query="$query", type=$includedType');
 
     try {
       final response = await http.post(
@@ -63,15 +63,15 @@ class PlacesApiService {
         body: body,
       );
 
-      debugPrint('📡 Places API response status: ${response.statusCode}');
+      if (kDebugMode) debugPrint('📡 Places API response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final places = data['places'] as List<dynamic>? ?? [];
-        debugPrint('✅ Places API returned ${places.length} results for: "$query"');
+        if (kDebugMode) debugPrint('✅ Places API returned ${places.length} results for: "$query"');
         return places.cast<Map<String, dynamic>>();
       } else {
-        debugPrint('❌ Places API error ${response.statusCode}: ${response.body}');
+        if (kDebugMode) debugPrint('❌ Places API error ${response.statusCode}: ${response.body}');
         return [];
       }
     } catch (e) {
@@ -93,7 +93,7 @@ class PlacesApiService {
       final end = (i + chunkSize < queries.length) ? i + chunkSize : queries.length;
       final chunk = queries.sublist(i, end);
 
-      debugPrint('📦 Fetching queries ${i + 1} to $end of ${queries.length}...');
+      if (kDebugMode) debugPrint('📦 Fetching queries ${i + 1} to $end of ${queries.length}...');
 
       final futures = <Future<List<Map<String, dynamic>>>>[];
       for (final q in chunk) {
@@ -120,8 +120,66 @@ class PlacesApiService {
       }
     }
 
-    debugPrint('📦 Total unique places from API: ${allPlaces.length}');
+    if (kDebugMode) debugPrint('📦 Total unique places from API: ${allPlaces.length}');
     return allPlaces;
+  }
+
+  /// Searches for places near a specific coordinate within [radiusMeters].
+  ///
+  /// [lat] / [lng] — centre of the search circle
+  /// [includedTypes] — Places API type strings, e.g. `['police', 'hospital']`
+  /// [radiusMeters] — search radius (max 50 000 m)
+  /// [maxResultCount] — max results (1–20)
+  Future<List<Map<String, dynamic>>> nearbySearch({
+    required double lat,
+    required double lng,
+    required List<String> includedTypes,
+    double radiusMeters = 5000,
+    int maxResultCount = 5,
+  }) async {
+    const url = 'https://places.googleapis.com/v1/places:searchNearby';
+
+    final fieldMask = [
+      'places.id',
+      'places.displayName',
+      'places.location',
+      'places.formattedAddress',
+      'places.internationalPhoneNumber',
+      'places.primaryType',
+    ].join(',');
+
+    final body = jsonEncode({
+      'includedTypes': includedTypes,
+      'maxResultCount': maxResultCount,
+      'locationRestriction': {
+        'circle': {
+          'center': {'latitude': lat, 'longitude': lng},
+          'radius': radiusMeters,
+        },
+      },
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': fieldMask,
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return (data['places'] as List<dynamic>? ?? [])
+            .cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('❌ Nearby search error: $e');
+      return [];
+    }
   }
 
   /// Build a photo URL from a Places API photo resource name.

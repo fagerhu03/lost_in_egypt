@@ -3,6 +3,9 @@ import 'package:lost_in_egypt/feature/home/tabs/navigator/widget/account_menu_bu
 import 'package:lost_in_egypt/feature/home/tabs/more/presentation/settings_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/presentation/currency_converter_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/presentation/translator_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/presentation/help_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/presentation/contact_us_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/more/presentation/sos_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
 
 class MoreScreen extends StatefulWidget {
@@ -46,7 +49,6 @@ class _MoreScreenState extends State<MoreScreen> {
     final patternOpacity = isDark ? 0.1 : 0.4;
 
     final bg = theme.scaffoldBackgroundColor;
-    final surface = theme.colorScheme.surface;
     final textColor = theme.colorScheme.onSurface;
 
     return Scaffold(
@@ -99,31 +101,21 @@ class _MoreScreenState extends State<MoreScreen> {
 
                   _MoreTile(
                     title: "Currency",
-                    surfaceColor: surface,
-                    textColor: textColor,
-                    trailingColor: textColor.withOpacity(0.75),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CurrencyConverterScreen(),
-                        ),
-                      );
-                    },
+                    icon: Icons.currency_exchange_rounded,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CurrencyConverterScreen()),
+                    ),
                   ),
                   const SizedBox(height: 12),
 
                   _MoreTile(
                     title: "Settings",
-                    surfaceColor: surface,
-                    textColor: textColor,
-                    trailingColor: textColor.withOpacity(0.75),
+                    icon: Icons.settings_outlined,
                     onTap: () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const SettingsScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
                       );
                       _loadUserProfile();
                     },
@@ -132,36 +124,72 @@ class _MoreScreenState extends State<MoreScreen> {
 
                   _MoreTile(
                     title: "Help",
-                    surfaceColor: surface,
-                    textColor: textColor,
-                    trailingColor: textColor.withOpacity(0.75),
-                    onTap: () {},
+                    icon: Icons.help_outline_rounded,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HelpScreen()),
+                    ),
                   ),
                   const SizedBox(height: 12),
 
                   _MoreTile(
                     title: "Translator",
-                    surfaceColor: surface,
-                    textColor: textColor,
-                    trailingColor: textColor.withOpacity(0.75),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TranslatorScreen(),
-                        ),
-                      );
-                    },
+                    icon: Icons.translate_rounded,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const TranslatorScreen()),
+                    ),
                   ),
                   const SizedBox(height: 12),
 
                   _MoreTile(
                     title: "Contact us",
-                    trailing: Icons.keyboard_arrow_down,
-                    surfaceColor: surface,
-                    textColor: textColor,
-                    trailingColor: textColor.withOpacity(0.75),
-                    onTap: () {},
+                    icon: Icons.mail_outline_rounded,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // SOS button
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SOSScreen()),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.emergency_rounded, color: Colors.white, size: 22),
+                          SizedBox(width: 10),
+                          Text(
+                            "SOS — Emergency Numbers",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontFamily: 'Marcellus',
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
 
                   const Spacer(),
@@ -177,29 +205,25 @@ class _MoreScreenState extends State<MoreScreen> {
 
 class _MoreTile extends StatelessWidget {
   final String title;
-  final IconData trailing;
+  final IconData icon;
   final VoidCallback onTap;
-
-  // Theme-driven colors
-  final Color surfaceColor;
-  final Color textColor;
-  final Color trailingColor;
 
   const _MoreTile({
     required this.title,
+    required this.icon,
     required this.onTap,
-    required this.surfaceColor,
-    required this.textColor,
-    required this.trailingColor,
-    this.trailing = Icons.chevron_right,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+    final onSurface = theme.colorScheme.onSurface;
+    final surface = theme.colorScheme.surface;
 
     return Material(
-      color: surfaceColor,
+      color: surface,
       borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.hardEdge,
       elevation: 0,
@@ -207,33 +231,38 @@ class _MoreTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Container(
-          height: 60,
+          height: 64,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : Colors.black.withOpacity(0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
+            border: Border.all(
+              color: primary.withOpacity(isDark ? 0.2 : 0.15),
+            ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Row(
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor.withOpacity(0.85),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: "Marcellus",
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: primary.withOpacity(isDark ? 0.2 : 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: primary, size: 20),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: onSurface.withOpacity(0.88),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: "Marcellus",
+                  ),
                 ),
               ),
-              const Spacer(),
-              Icon(trailing, color: trailingColor),
+              Icon(Icons.chevron_right_rounded, color: primary.withOpacity(0.6), size: 22),
             ],
           ),
         ),

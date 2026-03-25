@@ -103,7 +103,6 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
   Future<void> _confirm() async {
     final username = _controller.text.trim();
 
-    // Final guard before saving
     final formatError = _formatError(username);
     if (formatError != null) {
       setState(() => _errorMessage = formatError);
@@ -117,10 +116,24 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
     setState(() => _isSaving = true);
 
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .update({'username': username});
+      final db = FirebaseFirestore.instance;
+      final claimRef = db.collection('usernames').doc(username);
+      final userRef = db.collection('users').doc(uid);
+
+      // Atomic claim: create the username doc only if it doesn't exist yet.
+      // This prevents two users who both saw "available" from both succeeding.
+      await db.runTransaction((tx) async {
+        final claimSnap = await tx.get(claimRef);
+        if (claimSnap.exists) {
+          throw FirebaseException(
+            plugin: 'firestore',
+            code: 'already-exists',
+            message: 'Username was just taken — please choose another.',
+          );
+        }
+        tx.set(claimRef, {'uid': uid});
+        tx.update(userRef, {'username': username});
+      });
 
       if (!mounted) return;
 
@@ -128,6 +141,14 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
         MaterialPageRoute(builder: (_) => const HomeWrapper()),
         (route) => false,
       );
+    } on FirebaseException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _errorMessage = e.code == 'already-exists'
+            ? "That username was just taken — try another"
+            : "Failed to save — please try again";
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
