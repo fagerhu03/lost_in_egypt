@@ -9,14 +9,24 @@ import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_s
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Emergency dial numbers — add / remove freely here
+// Emergency dial numbers — ordered by importance to tourists
+// isFeatured = full-width, large chip; subtitle = context line
 // ─────────────────────────────────────────────────────────────────────────────
 const _dialNumbers = [
-  _DialNumber(label: "Tourist Police", number: "126", color: Color(0xFF1565C0)),
-  _DialNumber(label: "Ambulance",      number: "123", color: Color(0xFFB71C1C)),
-  _DialNumber(label: "Police",         number: "122", color: Color(0xFF283593)),
-  _DialNumber(label: "Fire Brigade",   number: "180", color: Color(0xFFE65100)),
-  _DialNumber(label: "Gas Emergency",  number: "129", color: Color(0xFFF9A825)),
+  // Priority 1 — most useful for tourists; always full-width
+  _DialNumber(
+    label: "Tourist Police",
+    number: "126",
+    color: Color(0xFF1565C0),
+    isFeatured: true,
+    subtitle: "English-speaking operators · Available 24/7",
+  ),
+  // Priority 2 — critical emergencies; side by side
+  _DialNumber(label: "Ambulance", number: "123", color: Color(0xFFB71C1C)),
+  _DialNumber(label: "Police",    number: "122", color: Color(0xFF283593)),
+  // Priority 3 — specialist services; side by side
+  _DialNumber(label: "Fire Brigade",  number: "180", color: Color(0xFFE65100)),
+  _DialNumber(label: "Gas Emergency", number: "129", color: Color(0xFFF9A825)),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,7 +43,7 @@ const _categories = [
     label: "Hospital",
     icon: Icons.local_hospital_rounded,
     color: Color(0xFFB71C1C),
-    placeTypes: ["hospital", "emergency_room"],
+    placeTypes: ["hospital"],
   ),
   _HelpCategory(
     label: "Fire Station",
@@ -198,39 +208,54 @@ class _SOSScreenState extends State<SOSScreen> {
   }
 
   // ── Dial grid ──────────────────────────────────────────────────────────────
+  // Featured chips are always full-width; standard chips fill 2-column rows.
 
   List<Widget> _buildDialGrid(BuildContext context) {
-    final widgets = <Widget>[];
-    for (int i = 0; i < _dialNumbers.length; i += 2) {
-      final isLast = i + 1 >= _dialNumbers.length;
-      widgets.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: isLast
-              ? _DialChip(
-                  dialNumber: _dialNumbers[i],
-                  onTap: () => _call(_dialNumbers[i].number, context),
-                )
-              : Row(
-                  children: [
-                    Expanded(
-                      child: _DialChip(
-                        dialNumber: _dialNumbers[i],
-                        onTap: () => _call(_dialNumbers[i].number, context),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _DialChip(
-                        dialNumber: _dialNumbers[i + 1],
-                        onTap: () => _call(_dialNumbers[i + 1].number, context),
-                      ),
-                    ),
-                  ],
-                ),
+    final featured  = _dialNumbers.where((d) => d.isFeatured).toList();
+    final standard  = _dialNumbers.where((d) => !d.isFeatured).toList();
+    final widgets   = <Widget>[];
+
+    // Full-width featured chips first
+    for (final dial in featured) {
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: _DialChip(
+          dialNumber: dial,
+          onTap: () => _call(dial.number, context),
         ),
-      );
+      ));
     }
+
+    // Standard chips in 2-column rows
+    for (int i = 0; i < standard.length; i += 2) {
+      final isLast = i + 1 >= standard.length;
+      widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: isLast
+            ? _DialChip(
+                dialNumber: standard[i],
+                onTap: () => _call(standard[i].number, context),
+              )
+            : Row(
+                children: [
+                  Expanded(
+                    child: _DialChip(
+                      dialNumber: standard[i],
+                      onTap: () => _call(standard[i].number, context),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _DialChip(
+                      dialNumber: standard[i + 1],
+                      onTap: () => _call(standard[i + 1].number, context),
+                    ),
+                  ),
+                ],
+              ),
+      ));
+    }
+
     return widgets;
   }
 
@@ -422,7 +447,17 @@ class _DialNumber {
   final String label;
   final String number;
   final Color color;
-  const _DialNumber({required this.label, required this.number, required this.color});
+  /// When true, this chip renders full-width with larger text.
+  final bool isFeatured;
+  /// Optional context line shown below the label on featured chips.
+  final String? subtitle;
+  const _DialNumber({
+    required this.label,
+    required this.number,
+    required this.color,
+    this.isFeatured = false,
+    this.subtitle,
+  });
 }
 
 class _NearbyResult {
@@ -660,6 +695,7 @@ class _DialChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final featured = dialNumber.isFeatured;
     return Material(
       color: dialNumber.color,
       borderRadius: BorderRadius.circular(14),
@@ -668,43 +704,92 @@ class _DialChip extends StatelessWidget {
         onTap: onTap,
         splashColor: Colors.white.withOpacity(0.2),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: featured ? 18 : 14,
+          ),
           child: Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: featured ? 46 : 36,
+                height: featured ? 46 : 36,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.phone_rounded, color: Colors.white, size: 18),
+                child: Icon(
+                  Icons.phone_rounded,
+                  color: Colors.white,
+                  size: featured ? 22 : 18,
+                ),
               ),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    dialNumber.number,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'Marcellus',
-                      letterSpacing: 1.5,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          dialNumber.number,
+                          style: TextStyle(
+                            fontSize: featured ? 28 : 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontFamily: 'Marcellus',
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        if (featured) ...[
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.22),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'FOR TOURISTS',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ),
-                  Text(
-                    dialNumber.label,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.white.withOpacity(0.85),
-                      height: 1.2,
+                    Text(
+                      dialNumber.label,
+                      style: TextStyle(
+                        fontSize: featured ? 13 : 11,
+                        fontWeight:
+                            featured ? FontWeight.w600 : FontWeight.normal,
+                        color: Colors.white.withOpacity(0.9),
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                ],
+                    if (featured && dialNumber.subtitle != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        dialNumber.subtitle!,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.white.withOpacity(0.72),
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
+              if (featured)
+                const Icon(Icons.star_rounded, color: Colors.white70, size: 20),
             ],
           ),
         ),

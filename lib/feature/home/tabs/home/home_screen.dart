@@ -21,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? _profileImageUrl;
   late Stream<QuerySnapshot> _eventsStream;
+  Set<String> _savedEvents = {};
 
   @override
   void initState() {
@@ -42,13 +43,51 @@ class _HomeScreenState extends State<HomeScreen> {
             .get();
 
         if (doc.exists && mounted) {
+          final data = doc.data()!;
           setState(() {
-            _profileImageUrl = doc.data()?['profileImageUrl'];
+            _profileImageUrl = data['profileImageUrl'];
+            _savedEvents = Set<String>.from(
+                (data['savedEvents'] as List<dynamic>?) ?? []);
           });
         }
       } catch (e) {
         debugPrint("Error fetching profile: $e");
       }
+    }
+  }
+
+  Future<void> _toggleSaveEvent(String eventId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final isSaved = _savedEvents.contains(eventId);
+    setState(() {
+      if (isSaved) {
+        _savedEvents.remove(eventId);
+      } else {
+        _savedEvents.add(eventId);
+      }
+    });
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+        'savedEvents': isSaved
+            ? FieldValue.arrayRemove([eventId])
+            : FieldValue.arrayUnion([eventId]),
+      });
+    } catch (e) {
+      // Revert on failure
+      setState(() {
+        if (isSaved) {
+          _savedEvents.add(eventId);
+        } else {
+          _savedEvents.remove(eventId);
+        }
+      });
+      debugPrint("Error toggling event save: $e");
     }
   }
 
@@ -168,23 +207,25 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 12),
 
-            // CATEGORY GRID
+            // CATEGORY GRID — fixed 3 columns, adapts height automatically
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  ...LocalMockData.categories.map((category) {
-                    return _categoryCard(
-                      icon: category.iconPath,
-                      title: category.title,
-                      surface: surface,
-                      textColor: onSurface,
-                      shadow: cardShadow,
-                    );
-                  }),
-                ],
+              child: GridView.count(
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.15,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: LocalMockData.categories.map((category) {
+                  return _categoryCard(
+                    icon: category.iconPath,
+                    title: category.title,
+                    surface: surface,
+                    textColor: onSurface,
+                    shadow: cardShadow,
+                  );
+                }).toList(),
               ),
             ),
 
@@ -267,11 +308,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       final event = EventModel.fromMap(data, docs[index].id);
 
                       return _eventCard(
-                        title: event.title,
-                        imagePath: event.imagePath,
+                        event: event,
                         surface: surface,
                         textColor: onSurface,
                         shadow: cardShadow,
+                        isSaved: _savedEvents.contains(event.id),
+                        onFavorite: () => _toggleSaveEvent(event.id),
                       );
                     },
                   );
@@ -354,8 +396,6 @@ class _HomeScreenState extends State<HomeScreen> {
     required BoxShadow shadow,
   }) {
     return Container(
-      width: 120,
-      height: 100,
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(14),
@@ -400,12 +440,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _eventCard({
-    required String title,
-    required String imagePath,
+    required EventModel event,
     required Color surface,
     required Color textColor,
     required BoxShadow shadow,
+    required bool isSaved,
+    required VoidCallback onFavorite,
   }) {
+    final imagePath = event.imagePath;
     return Container(
       width: 200,
       margin: const EdgeInsets.only(right: 12),
@@ -443,46 +485,43 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: double.infinity,
                       child: imagePath.startsWith('http')
                           ? CachedNetworkImage(
-                        imageUrl: imagePath,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey.shade300,
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.grey.shade300,
-                          child: const Icon(
-                            Icons.broken_image,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      )
+                              imageUrl: imagePath,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: Colors.grey.shade300,
+                                child: const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: Colors.grey.shade300,
+                                child: const Icon(Icons.broken_image, color: Colors.grey),
+                              ),
+                            )
                           : Image.asset(
-                        imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey.shade300,
-                          child: const Icon(Icons.image_not_supported),
-                        ),
-                      ),
+                              imagePath,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: Colors.grey.shade300,
+                                child: const Icon(Icons.image_not_supported),
+                              ),
+                            ),
                     ),
                     Positioned(
-                      top: 10,
-                      right: 10,
+                      top: 8,
+                      right: 8,
                       child: Material(
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withOpacity(0.88),
                         shape: const CircleBorder(),
                         clipBehavior: Clip.hardEdge,
                         child: InkWell(
-                          onTap: () {},
+                          onTap: onFavorite,
                           customBorder: const CircleBorder(),
                           child: SizedBox(
                             width: 32,
                             height: 32,
                             child: Icon(
-                              Icons.favorite_border,
+                              isSaved ? Icons.favorite : Icons.favorite_border,
                               size: 18,
                               color: Colors.red.shade400,
                             ),
@@ -496,7 +535,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Text(
-                  title,
+                  event.title,
                   style: TextStyle(
                     color: textColor.withOpacity(0.9),
                     fontSize: 14,

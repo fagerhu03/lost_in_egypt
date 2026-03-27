@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
@@ -12,9 +13,9 @@ import 'package:lost_in_egypt/feature/tours/presentation/bloc/guide_tours_cubit.
 import 'package:lost_in_egypt/feature/tours/presentation/pages/guide_dashboard_screen.dart' as lost_in_egypt_tours;
 import 'package:lost_in_egypt/feature/guide_application/presentation/bloc/apply_guide_cubit.dart' as lost_in_egypt_guide_cubit;
 import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply_guide_screen.dart' as lost_in_egypt_guide_screen;
-import 'package:lost_in_egypt/feature/home/tabs/more/presentation/saved_cards_screen.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/booking_history_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/your_plan_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/saved_posts_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -34,14 +35,14 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _loadUser() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = sl<FirebaseAuth>().currentUser;
     if (user == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
 
     try {
-      final doc = await FirebaseFirestore.instance
+      final doc = await sl<FirebaseFirestore>()
           .collection('users')
           .doc(user.uid)
           .get();
@@ -63,7 +64,7 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
+    await sl<FirebaseAuth>().signOut();
 
     if (!context.mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
@@ -92,7 +93,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final borderColor =
     (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
-    final User? authUser = FirebaseAuth.instance.currentUser;
+    final User? authUser = sl<FirebaseAuth>().currentUser;
     String displayName = "User";
     if (_user != null) {
         displayName = "${_user!.firstName} ${_user!.lastName}".trim();
@@ -383,17 +384,17 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                         ],
                         _AccountTile(
-                          title: "Cards Detail",
-                          icon: Icons.credit_card_outlined,
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedCardsScreen()));
-                          },
-                        ),
-                        _AccountTile(
                           title: "My Bookings",
                           icon: Icons.calendar_today_outlined,
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
+                          },
+                        ),
+                        _AccountTile(
+                          title: "Saved Posts",
+                          icon: Icons.bookmark_outline_rounded,
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedPostsScreen()));
                           },
                         ),
                         _AccountTile(

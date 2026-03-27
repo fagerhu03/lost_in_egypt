@@ -5,6 +5,7 @@ import 'package:flutter_paymob/flutter_paymob.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
@@ -56,6 +57,12 @@ void main() async {
   }
 
   await di.init();
+
+  // Enable Firestore offline persistence
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
 
   // ⭐ FORCE LATEST MAP RENDERER
   final GoogleMapsFlutterPlatform mapsImplementation =

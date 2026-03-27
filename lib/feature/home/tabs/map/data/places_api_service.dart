@@ -151,6 +151,7 @@ class PlacesApiService {
     final body = jsonEncode({
       'includedTypes': includedTypes,
       'maxResultCount': maxResultCount,
+      'languageCode': 'en',
       'locationRestriction': {
         'circle': {
           'center': {'latitude': lat, 'longitude': lng},
@@ -175,11 +176,38 @@ class PlacesApiService {
         return (data['places'] as List<dynamic>? ?? [])
             .cast<Map<String, dynamic>>();
       }
+      debugPrint('❌ Nearby search error ${response.statusCode}: ${response.body}');
       return [];
     } catch (e) {
-      debugPrint('❌ Nearby search error: $e');
+      debugPrint('❌ Nearby search exception: $e');
       return [];
     }
+  }
+
+  /// Fetches full details for a single place by its Places API place ID.
+  Future<Map<String, dynamic>?> getPlaceDetails(String placeId) async {
+    if (placeId.isEmpty) return null;
+    final fieldMask = [
+      'id', 'displayName', 'location', 'formattedAddress',
+      'rating', 'primaryType', 'types', 'photos',
+      'editorialSummary', 'priceLevel', 'currentOpeningHours', 'reviews',
+    ].join(',');
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://places.googleapis.com/v1/places/$placeId'),
+        headers: {
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': fieldMask,
+        },
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint('❌ getPlaceDetails error: $e');
+    }
+    return null;
   }
 
   /// Build a photo URL from a Places API photo resource name.

@@ -39,7 +39,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   void initState() {
     super.initState();
-    _userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    _userId = sl<FirebaseAuth>().currentUser?.uid ?? '';
     _notificationsStream = _repo.getNotifications(_userId);
 
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -62,7 +62,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         final parts = targetId.split('_');
         final postId = parts[0];
         final commentId = parts.length > 1 ? parts[1] : null;
-        final doc = await FirebaseFirestore.instance
+        final doc = await sl<FirebaseFirestore>()
             .collection('community_posts').doc(postId).get();
         if (!doc.exists || !mounted) return;
         final post = CommunityPostModel.fromSnapshot(doc);
@@ -72,16 +72,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return;
       }
 
-      // ── Tourist: booking confirmed or tour cancelled ─────────────────
+      // ── Tourist: booking confirmed, tour cancelled, or booking cancelled by guide
       if (notif.type == 'booking_confirmed' || notif.type == 'tour_cancelled' ||
-          notif.type == 'tour_updated') {
+          notif.type == 'tour_updated' || notif.type == 'booking_cancelled') {
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
         return;
       }
 
-      // ── Guide: new booking or cancellation → navigate to tour attendees
-      if (notif.type == 'booking' || notif.type == 'booking_cancelled') {
+      // ── Guide: new booking received → navigate to guide dashboard
+      if (notif.type == 'booking') {
         Navigator.push(context, MaterialPageRoute(
           builder: (_) => BlocProvider(
             create: (_) => GuideToursCubit(
@@ -94,7 +94,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
       // ── Guide: new review → navigate to tour detail ──────────────────
       if (notif.type == 'review') {
-        final doc = await FirebaseFirestore.instance
+        final doc = await sl<FirebaseFirestore>()
             .collection('tours').doc(targetId).get();
         if (!doc.exists || !mounted) return;
         final tour = TourModel.fromMap(doc.data()!, doc.id);
@@ -110,7 +110,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Future<void> _handleAvatarTap(String senderId) async {
     if (senderId.isEmpty) return;
     try {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(senderId).get();
+      final doc = await sl<FirebaseFirestore>().collection('users').doc(senderId).get();
       if (doc.exists && mounted) {
         final user = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
         Navigator.push(context, MaterialPageRoute(builder: (_) => UniversalProfileScreen(user: user)));

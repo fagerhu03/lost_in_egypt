@@ -18,10 +18,18 @@ class CommunityPostModel extends CommunityPost {
     required super.images,
     super.locationName,
     super.locationId,
+    super.locationLat,
+    super.locationLng,
     required super.isLikedByMe,
     required super.isDislikedByMe,
     required super.isSavedByMe,
     required super.isVerifiedGuide,
+    super.isAdmin,
+    super.isPinned,
+    super.category,
+    super.views,
+    super.reactionCounts,
+    super.myReaction,
     required this.timestamp,
   });
 
@@ -32,7 +40,7 @@ class CommunityPostModel extends CommunityPost {
     final String currentUid = FirebaseAuth.instance.currentUser?.uid ?? "";
 
     final DateTime date = (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
-    
+
     // Time Logic
     final Duration diff = DateTime.now().difference(date);
     String timeLabel = "${diff.inHours}h ago";
@@ -43,6 +51,11 @@ class CommunityPostModel extends CommunityPost {
     final List likesList = (data['likes'] is List) ? data['likes'] : [];
     final List dislikesList = (data['dislikes'] is List) ? data['dislikes'] : [];
     final List savedList = (data['savedBy'] is List) ? data['savedBy'] : [];
+
+    // Reactions
+    final reactionsRaw = data['reactions'];
+    final Map<String, int> reactionCounts = _parseReactionCounts(reactionsRaw);
+    final String? myReaction = _findMyReaction(reactionsRaw, currentUid);
 
     // Debug Logging
     if (data['userId'] == null || data['userId'] == '') {
@@ -58,21 +71,51 @@ class CommunityPostModel extends CommunityPost {
       userAvatar: data['userAvatar'] ?? '',
       timeAgo: timeLabel,
       content: data['content'] ?? '',
-      
+
       likes: likesList.length,
       dislikes: dislikesList.length,
-      
+
       locationName: data['locationName'],
       locationId: data['locationId'],
-      
+      locationLat: (data['locationLat'] as num?)?.toDouble(),
+      locationLng: (data['locationLng'] as num?)?.toDouble(),
+
       isLikedByMe: likesList.contains(currentUid),
       isDislikedByMe: dislikesList.contains(currentUid),
       isSavedByMe: savedList.contains(currentUid),
       isVerifiedGuide: data['isVerifiedGuide'] ?? false,
+      isAdmin: data['isAdmin'] ?? false,
+      isPinned: data['isPinned'] ?? false,
 
       comments: data['commentsCount'] ?? 0,
-      images: List<String>.from(data['images'] ?? []), 
+      images: List<String>.from(data['images'] ?? []),
+      category: (data['category'] as String?) ?? '',
+      views: (data['views'] as int?) ?? 0,
+      reactionCounts: reactionCounts,
+      myReaction: myReaction,
       timestamp: date,
     );
+  }
+
+  static Map<String, int> _parseReactionCounts(dynamic raw) {
+    if (raw is! Map) return {};
+    final result = <String, int>{};
+    for (final entry in (raw as Map).entries) {
+      if (entry.value is List) {
+        final count = (entry.value as List).length;
+        if (count > 0) result[entry.key as String] = count;
+      }
+    }
+    return result;
+  }
+
+  static String? _findMyReaction(dynamic raw, String uid) {
+    if (raw is! Map || uid.isEmpty) return null;
+    for (final entry in (raw as Map).entries) {
+      if (entry.value is List && (entry.value as List).contains(uid)) {
+        return entry.key as String;
+      }
+    }
+    return null;
   }
 }

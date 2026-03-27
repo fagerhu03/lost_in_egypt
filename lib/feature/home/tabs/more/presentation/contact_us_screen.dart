@@ -29,7 +29,6 @@ class ContactUsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
@@ -73,7 +72,6 @@ class ContactUsScreen extends StatelessWidget {
             icon: Icons.email_outlined,
             title: "Email Support",
             subtitle: supportEmail,
-            isDark: isDark,
             surface: surface,
             onSurface: onSurface,
             primary: primary,
@@ -85,7 +83,6 @@ class ContactUsScreen extends StatelessWidget {
             icon: Icons.chat_bubble_outline_rounded,
             title: "WhatsApp",
             subtitle: "Chat with us directly",
-            isDark: isDark,
             surface: surface,
             onSurface: onSurface,
             primary: const Color(0xFF25D366),
@@ -96,7 +93,6 @@ class ContactUsScreen extends StatelessWidget {
             icon: Icons.camera_alt_outlined,
             title: "Instagram",
             subtitle: "@lostinegypt.app",
-            isDark: isDark,
             surface: surface,
             onSurface: onSurface,
             primary: const Color(0xFFE1306C),
@@ -128,7 +124,6 @@ class _ContactTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final bool isDark;
   final Color surface;
   final Color onSurface;
   final Color primary;
@@ -139,7 +134,6 @@ class _ContactTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.isDark,
     required this.surface,
     required this.onSurface,
     required this.primary,
@@ -149,6 +143,7 @@ class _ContactTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gold = Theme.of(context).colorScheme.primary;
     return Material(
       color: surface,
       borderRadius: BorderRadius.circular(14),
@@ -157,31 +152,23 @@ class _ContactTile extends StatelessWidget {
         onLongPress: onLongPress,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : Colors.black.withOpacity(0.07),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: gold.withOpacity(0.15)),
           ),
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: primary.withOpacity(0.12),
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: primary, size: 22),
+                child: Icon(icon, color: primary, size: 20),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +176,7 @@ class _ContactTile extends StatelessWidget {
                     Text(title,
                         style: TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Marcellus',
                           color: onSurface,
                         )),
                     const SizedBox(height: 2),
@@ -201,7 +188,7 @@ class _ContactTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: onSurface.withOpacity(0.4)),
+              Icon(Icons.chevron_right_rounded, color: gold),
             ],
           ),
         ),

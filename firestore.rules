@@ -100,6 +100,24 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── Events (read-only for authenticated users) ────────────────────────────
+    match /events/{eventId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // ── Reports ───────────────────────────────────────────────────────────────
+    match /reports/{reportId} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── Admin requests (language certifications, etc.) ────────────────────────
+    match /admin_requests/{requestId} {
+      allow create: if isGuide();
+      allow read, update, delete: if isAdmin();
+    }
+
     // ── Notifications (per-user subcollection) ────────────────────────────────
     match /users/{userId}/notifications/{notificationId} {
       allow read: if isAuth() && isSelf(userId);

@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../tours/domain/entities/tour_entity.dart';
 import '../../../tours/presentation/pages/tour_detail_screen.dart';
 import '../../../../core/services/currency_controller.dart';
 import '../../../../core/services/currency_service.dart';
+import '../../../../core/widgets/shimmer_loading_widget.dart';
 
 class TourCard extends StatelessWidget {
   final TourEntity tour;
@@ -50,10 +52,12 @@ class TourCard extends StatelessWidget {
                   height: 180,
                   width: double.infinity,
                   child: tour.images.isNotEmpty
-                      ? Image.network(
-                          tour.images.first,
+                      ? CachedNetworkImage(
+                          imageUrl: tour.images.first,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildPlaceholderImage(),
+                          placeholder: (_, __) =>
+                              const ShimmerLoadingWidget.rectangular(height: 180),
+                          errorWidget: (_, __, ___) => _buildPlaceholderImage(),
                         )
                       : _buildPlaceholderImage(),
                 ),

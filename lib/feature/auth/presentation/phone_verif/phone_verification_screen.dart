@@ -5,7 +5,13 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pinput/pinput.dart';
 
 class PhoneVerificationScreen extends StatefulWidget {
-  const PhoneVerificationScreen({super.key});
+  /// Called after successful verification. If null, falls back to Navigator.pop(true).
+  final VoidCallback? onVerified;
+
+  /// Called when the user taps "Skip for now". If null, no skip option is shown.
+  final VoidCallback? onSkip;
+
+  const PhoneVerificationScreen({super.key, this.onVerified, this.onSkip});
 
   @override
   State<PhoneVerificationScreen> createState() =>
@@ -37,7 +43,11 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
           'phoneVerified': true,
         }, SetOptions(merge: true));
         if (mounted) {
-          Navigator.pop(context, true);
+          if (widget.onVerified != null) {
+            widget.onVerified!();
+          } else {
+            Navigator.pop(context, true);
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Developer Phone Verified! ✅"), backgroundColor: Colors.green),
           );
@@ -115,7 +125,11 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       }, SetOptions(merge: true));
 
       if (mounted) {
-        Navigator.pop(context, true);
+        if (widget.onVerified != null) {
+          widget.onVerified!();
+        } else {
+          Navigator.pop(context, true);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Phone Verified! ✅"),
@@ -151,10 +165,15 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFF714611)),
-          onPressed: () => Navigator.pop(context, false),
-        ),
+        leading: widget.onSkip != null
+            ? IconButton(
+                icon: const Icon(Icons.close, color: Color(0xFF714611)),
+                onPressed: widget.onSkip,
+              )
+            : IconButton(
+                icon: const Icon(Icons.close, color: Color(0xFF714611)),
+                onPressed: () => Navigator.pop(context, false),
+              ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -278,6 +297,15 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                 },
                 child: const Text(
                   "Change Number",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+
+            if (widget.onSkip != null)
+              TextButton(
+                onPressed: widget.onSkip,
+                child: const Text(
+                  "Skip for now",
                   style: TextStyle(color: Colors.grey),
                 ),
               ),

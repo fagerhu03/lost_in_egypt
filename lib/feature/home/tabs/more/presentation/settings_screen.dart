@@ -7,7 +7,6 @@ import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.da
 import '../../account/domain/badge_constants.dart';
 import '../../camera/widgets/badge_unlock_dialog.dart';
 import '../../account/widgets/scarab_overlay.dart';
-import 'saved_cards_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -271,22 +270,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                                 activeTrackColor: theme.colorScheme.primary,
                                 inactiveThumbColor: theme.colorScheme.primary,
                                 inactiveTrackColor: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Saved Cards
-                            _buildTile(
-                              icon: Icons.credit_card_outlined,
-                              title: "Saved Cards",
-                              trailing: Icon(
-                                Icons.chevron_right_rounded,
-                                color: theme.colorScheme.primary.withOpacity(0.6),
-                                size: 22,
-                              ),
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const SavedCardsScreen()),
                               ),
                             ),
                             const SizedBox(height: 16),

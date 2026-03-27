@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -101,33 +102,66 @@ class _HomeWrapperState extends State<HomeWrapper>
 
     return Scaffold(
       extendBody: true,
-      body: NotificationListener<UserScrollNotification>(
-        onNotification: (notification) {
-          if (index == 1) {
-            if (notification.direction == ScrollDirection.reverse &&
-                _isNavBarVisible) {
-              setState(() => _isNavBarVisible = false);
-            } else if (notification.direction == ScrollDirection.forward &&
-                !_isNavBarVisible) {
-              setState(() => _isNavBarVisible = true);
-            }
-          }
-          return true;
+      body: StreamBuilder<List<ConnectivityResult>>(
+        stream: Connectivity().onConnectivityChanged,
+        builder: (context, snapshot) {
+          final results = snapshot.data ?? [];
+          final isOffline = results.isNotEmpty &&
+              results.every((r) => r == ConnectivityResult.none);
+          return Column(
+            children: [
+              if (isOffline)
+                Material(
+                  color: Colors.amber.shade700,
+                  child: const SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      child: Text(
+                        "You're offline — some features may be unavailable",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: NotificationListener<UserScrollNotification>(
+                  onNotification: (notification) {
+                    if (index == 1) {
+                      if (notification.direction == ScrollDirection.reverse &&
+                          _isNavBarVisible) {
+                        setState(() => _isNavBarVisible = false);
+                      } else if (notification.direction == ScrollDirection.forward &&
+                          !_isNavBarVisible) {
+                        setState(() => _isNavBarVisible = true);
+                      }
+                    }
+                    return true;
+                  },
+                  child: PageView(
+                    controller: _pageController,
+                    physics: (index == 2 || index == 3)
+                        ? const NeverScrollableScrollPhysics()
+                        : const BouncingScrollPhysics(),
+                    onPageChanged: (i) {
+                      setState(() {
+                        index = i;
+                        _isNavBarVisible = true;
+                      });
+                      _tabController.animateTo(i);
+                    },
+                    children: _pages,
+                  ),
+                ),
+              ),
+            ],
+          );
         },
-        child: PageView(
-          controller: _pageController,
-          physics: (index == 2 || index == 3)
-              ? const NeverScrollableScrollPhysics()
-              : const BouncingScrollPhysics(),
-          onPageChanged: (i) {
-            setState(() {
-              index = i;
-              _isNavBarVisible = true;
-            });
-            _tabController.animateTo(i);
-          },
-          children: _pages,
-        ),
       ),
 
       bottomNavigationBar: AnimatedSlide(

@@ -60,3 +60,6 @@ functions/firebase-debug.log.*
 
 # AI coding assistant context (local only)
 CLAUDE.md
+
+.vscode/
+.claude/

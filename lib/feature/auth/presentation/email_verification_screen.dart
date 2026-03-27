@@ -22,6 +22,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   Future<void> _checkVerification() async {
     setState(() => _isChecking = true);
     try {
+      // Force-reload the Firebase Auth user so emailVerified reflects
+      // the latest server state, not the stale cached value.
+      await _auth.currentUser?.reload();
+
       bool isEmailVerified = false;
       if (_auth.currentUser != null) {
         if (_auth.currentUser!.emailVerified) {

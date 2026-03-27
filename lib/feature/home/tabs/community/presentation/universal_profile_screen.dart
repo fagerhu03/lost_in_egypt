@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dartz/dartz.dart' as dartz;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:lost_in_egypt/theme/theme.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
@@ -17,6 +18,9 @@ import 'package:lost_in_egypt/feature/tours/domain/repositories/tours_repository
 import 'package:lost_in_egypt/feature/tours/presentation/widgets/tour_card.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_post_model.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/community_post_card.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/post_detail_screen.dart';
 
 class UniversalProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -112,7 +116,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                     ],
                   ),
                 ),
-                // Main Content
+                // Main Content with About/Posts tabs
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -125,9 +129,32 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.fromLTRB(16, 24, 16, 40),
-                          child: widget.user.isVerifiedGuide ? _buildGuideProfile(context, titleColor) : _buildTouristProfile(context, titleColor),
+                        child: DefaultTabController(
+                          length: 2,
+                          child: Column(
+                            children: [
+                              TabBar(
+                                labelColor: titleColor,
+                                unselectedLabelColor: titleColor.withOpacity(0.45),
+                                indicatorColor: theme.colorScheme.primary,
+                                labelStyle: const TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, fontSize: 14),
+                                tabs: const [Tab(text: 'About'), Tab(text: 'Posts')],
+                              ),
+                              Expanded(
+                                child: TabBarView(
+                                  children: [
+                                    SingleChildScrollView(
+                                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+                                      child: widget.user.isVerifiedGuide
+                                          ? _buildGuideProfile(context, titleColor)
+                                          : _buildTouristProfile(context, titleColor),
+                                    ),
+                                    _buildUserPostsTab(context, titleColor),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -138,6 +165,53 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildUserPostsTab(BuildContext context, Color titleColor) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: GetIt.I<FirebaseFirestore>()
+          .collection('community_posts')
+          .where('userId', isEqualTo: widget.user.id)
+          .orderBy('timestamp', descending: true)
+          .limit(20)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.post_add_outlined, size: 52, color: onSurface.withOpacity(0.2)),
+                const SizedBox(height: 12),
+                Text('No posts yet', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: onSurface.withOpacity(0.45))),
+              ],
+            ),
+          );
+        }
+        final posts = docs.map((d) => CommunityPostModel.fromSnapshot(d)).toList();
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 32),
+          itemCount: posts.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (context, i) {
+            final post = posts[i];
+            return CommunityPostCard(
+              key: ValueKey(post.id),
+              post: post,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailScreen(post: post))),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -199,6 +273,36 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             widget.user.bio,
             textAlign: TextAlign.center,
             style: TextStyle(color: onSurface.withOpacity(0.8), fontSize: 14),
+          ),
+        ],
+        if (widget.user.instagramHandle.isNotEmpty || widget.user.twitterHandle.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (widget.user.instagramHandle.isNotEmpty)
+                _SocialIconButton(
+                  icon: Icons.link,
+                  label: 'Instagram',
+                  color: const Color(0xFFE1306C),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://instagram.com/${widget.user.instagramHandle}'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+              if (widget.user.instagramHandle.isNotEmpty && widget.user.twitterHandle.isNotEmpty)
+                const SizedBox(width: 12),
+              if (widget.user.twitterHandle.isNotEmpty)
+                _SocialIconButton(
+                  icon: Icons.link,
+                  label: 'X / Twitter',
+                  color: const Color(0xFF1DA1F2),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://x.com/${widget.user.twitterHandle}'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+            ],
           ),
         ],
         const SizedBox(height: 24),
@@ -298,6 +402,35 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
               ),
             ),
           ),
+        if (widget.user.instagramHandle.isNotEmpty || widget.user.twitterHandle.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              if (widget.user.instagramHandle.isNotEmpty)
+                _SocialIconButton(
+                  icon: Icons.link,
+                  label: 'Instagram',
+                  color: const Color(0xFFE1306C),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://instagram.com/${widget.user.instagramHandle}'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+              if (widget.user.instagramHandle.isNotEmpty && widget.user.twitterHandle.isNotEmpty)
+                const SizedBox(width: 12),
+              if (widget.user.twitterHandle.isNotEmpty)
+                _SocialIconButton(
+                  icon: Icons.link,
+                  label: 'X / Twitter',
+                  color: const Color(0xFF1DA1F2),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://x.com/${widget.user.twitterHandle}'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+            ],
+          ),
+        ],
         const SizedBox(height: 24),
         Text(
           'Hosted Tours',
@@ -678,6 +811,51 @@ class _UniversalGuideToursListState extends State<_UniversalGuideToursList> {
         }
         return const Center(child: Text('Failed to load tours'));
       },
+    );
+  }
+}
+
+class _SocialIconButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _SocialIconButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
