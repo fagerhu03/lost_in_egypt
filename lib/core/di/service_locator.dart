@@ -40,6 +40,12 @@ import '../../feature/tours/domain/usecases/get_guide_tours_usecase.dart';
 import '../../feature/tours/domain/usecases/book_tour_usecase.dart';
 import '../../feature/tours/presentation/bloc/explorer_tours_cubit.dart';
 
+// --- Camera ---
+import '../../feature/home/tabs/camera/domain/repositories/landmark_repository.dart';
+import '../../feature/home/tabs/camera/domain/repositories/place_repository.dart';
+import '../../feature/home/tabs/camera/data/repositories/landmark_repository_impl.dart';
+import '../../feature/home/tabs/camera/data/repositories/place_repository_impl.dart';
+
 // --- Notifications ---
 import '../../feature/home/notification/data/datasources/notifications_data_source.dart';
 import '../../feature/home/notification/domain/repositories/notifications_repository.dart';
@@ -88,6 +94,12 @@ Future<void> init() async {
     ),
   );
   sl.registerLazySingleton<NavigationService>(() => NavigationService());
+
+  // --- Camera Repos ---
+  sl.registerLazySingleton<LandmarkRepository>(() => LandmarkRepositoryImpl());
+  sl.registerLazySingleton<PlaceRepository>(
+    () => PlaceRepositoryImpl(placesApiService: sl(), apiKey: apiKey),
+  );
 
   // --- Guide Application Deps ---
   sl.registerLazySingleton<GuideApplicationDataSource>(() => GuideApplicationDataSourceImpl());

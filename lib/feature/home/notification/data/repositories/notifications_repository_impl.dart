@@ -33,9 +33,9 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> markAsRead(String notificationId) async {
+  Future<Either<Failure, void>> markAsRead(String userId, String notificationId) async {
     try {
-      await dataSource.markAsRead(notificationId);
+      await dataSource.markAsRead(userId, notificationId);
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -67,12 +67,22 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteNotification(String notificationId) async {
+  Future<Either<Failure, void>> deleteNotification(String userId, String notificationId) async {
     try {
-      await dataSource.deleteNotification(notificationId);
+      await dataSource.deleteNotification(userId, notificationId);
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
+  }
+
+  @override
+  void startListeningForNewNotifications(String userId) {
+    dataSource.startListeningForNewNotifications(userId);
+  }
+
+  @override
+  void stopListening() {
+    dataSource.stopListening();
   }
 }

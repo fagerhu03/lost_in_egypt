@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
@@ -143,7 +144,20 @@ class MapRepository {
       _cache['all'] = items;
       return items;
     } catch (e) {
-      debugPrint('❌ MapRepo Error (all): $e');
+      debugPrint('❌ MapRepo API Error: $e — falling back to bundled asset');
+    }
+
+    // 4. Bundled asset fallback (cold-start offline)
+    try {
+      final jsonString = await rootBundle.loadString('assets/final_places_clean_v2.json');
+      final List<dynamic> decoded = jsonDecode(jsonString);
+      final rawList = decoded.cast<Map<String, dynamic>>();
+      final items = _parseJsonToItems(rawList);
+      debugPrint('📦 Loaded ${items.length} items from bundled asset (offline fallback)');
+      _cache['all'] = items;
+      return items;
+    } catch (e) {
+      debugPrint('❌ MapRepo bundled asset error: $e');
       return [];
     }
   }

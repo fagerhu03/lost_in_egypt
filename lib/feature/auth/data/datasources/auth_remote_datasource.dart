@@ -88,6 +88,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       isNotificationsEnabled: true,
       isDarkMode: false,
       createdAt: DateTime.now(),
+      // username is intentionally left empty — set via CreateUsernameScreen
     );
 
     // ✅ FIX: Use toMap(), not toDocument()
@@ -153,6 +154,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return _checkUserInFirestore(
       userCredential.user!.uid,
       newPhotoUrl: userCredential.user?.photoURL,
+      isEmailVerifiedByProvider: userCredential.user?.emailVerified ?? false,
     );
   }
 
@@ -171,6 +173,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return _checkUserInFirestore(
         userCredential.user!.uid,
         newPhotoUrl: userCredential.user?.photoURL,
+        isEmailVerifiedByProvider: userCredential.user?.emailVerified ?? false,
       );
     } else if (result.status == LoginStatus.cancelled) {
       return null;
@@ -184,28 +187,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<UserModel?> signInWithApple() async {
-    const mockEmail = "apple.demo@lostinegypt.com";
-    const mockPassword = "AppleDemoPassword123!";
-
-    UserCredential userCredential;
-    try {
-      userCredential = await firebaseAuth.signInWithEmailAndPassword(
-        email: mockEmail,
-        password: mockPassword,
-      );
-    } on FirebaseAuthException catch (_) {
-      userCredential = await firebaseAuth.createUserWithEmailAndPassword(
-        email: mockEmail,
-        password: mockPassword,
-      );
-    }
-
-    return _checkUserInFirestore(userCredential.user!.uid);
+    throw FirebaseAuthException(
+      code: 'operation-not-supported',
+      message: 'Apple Sign-In is not yet available.',
+    );
   }
 
   Future<UserModel?> _checkUserInFirestore(
     String uid, {
     String? newPhotoUrl,
+    bool isEmailVerifiedByProvider = false,
   }) async {
     final DocumentReference docRef = firestore.collection('users').doc(uid);
     final DocumentSnapshot doc = await docRef.get();
@@ -219,11 +210,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           message: 'This account has been disabled by administrators.',
         );
       }
-      
-      Map<String, dynamic> updateData = {'emailVerified': true};
+
+      // Only mark emailVerified=true if the OAuth provider confirms the email is
+      // verified. We never write false — so any manual override in Firestore
+      // console (e.g. for test accounts) is preserved.
+      Map<String, dynamic> updateData = {};
+      if (isEmailVerifiedByProvider) {
+        updateData['emailVerified'] = true;
+      }
 
       if (newPhotoUrl != null && newPhotoUrl.isNotEmpty) {
-        final currentData = doc.data() as Map<String, dynamic>;
         final currentPhoto = currentData['profileImageUrl'] as String?;
 
         if (currentPhoto == null ||
@@ -233,8 +229,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         }
       }
 
-      // ✅ Always verify email for social logins (Google, Facebook, Apple)
-      await docRef.update(updateData);
+      if (updateData.isNotEmpty) {
+        await docRef.update(updateData);
+      }
       final updatedDoc = await docRef.get();
       // ✅ FIX: fromMap
       return UserModel.fromMap(
@@ -356,38 +353,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<bool> checkEmailExists(String email) async {
-    try {
-      // Firebase removed fetchSignInMethodsForEmail() for security/enumeration prevention.
-      // The modern, secure workaround is attempting a dummy login with a bad password.
-      await firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: "TempInvalidPassword123!\$",
-      );
-      // If it surprisingly succeeds (impossible due to password), the email exists.
-      return true;
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
-        // Try the DB check, but gracefully fail if Firestore rules block unauthenticated reads
-        try {
-          final QuerySnapshot result = await firestore
-              .collection('users')
-              .where('email', isEqualTo: email)
-              .get();
-          return result.docs.isNotEmpty;
-        } on FirebaseException catch (_) {
-          // Permission Denied because user isn't logged in. 
-          // If Auth says not found, and DB blocks us, we assume it's an unregistered email.
-          return false;
-        } catch (_) {
-          return false;
-        }
-      } else if (e.code == 'wrong-password') {
-        // The email definitely exists!
-        return true;
-      }
-      return false; // Other errors
-    } catch (e) {
-      return false;
-    }
+    // We intentionally don't pre-check for existing emails — doing so via a
+    // dummy sign-in attempt leaks whether an email is registered (enumeration).
+    // Firebase will throw 'email-already-in-use' naturally during sign-up,
+    // which the UI handles as an error message. Always return false here.
+    return false;
   }
 }

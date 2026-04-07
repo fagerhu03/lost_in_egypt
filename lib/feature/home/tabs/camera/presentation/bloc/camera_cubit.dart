@@ -8,12 +8,12 @@ import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 import '../../data/datasources/landmark_remote_datasource.dart';
-import '../../data/repositories/landmark_repository_impl.dart';
-import '../../data/repositories/place_repository_impl.dart';
+import '../../domain/repositories/landmark_repository.dart';
+import '../../domain/repositories/place_repository.dart';
 import '../../../account/domain/badge_constants.dart';
 import '../../../account/domain/badge_model.dart';
+import '../../../../../home/notification/domain/services/local_notification_service.dart';
 import 'camera_state.dart';
 
 /// Camera Cubit using ChangeNotifier for state management
@@ -46,19 +46,27 @@ class CameraCubit extends ChangeNotifier {
   };
 
   // Repositories
-  final LandmarkRepositoryImpl _landmarkRepository;
-  final PlaceRepositoryImpl _placeRepository;
+  final LandmarkRepository _landmarkRepository;
+  final PlaceRepository _placeRepository;
   final ImagePicker _imagePicker;
+
+  // Firebase instances (injected — never accessed as static singletons)
+  final FirebaseAuth _firebaseAuth;
+  final FirebaseFirestore _firestore;
 
   String _sourceLang = 'English';
   String _targetLang = 'Arabic';
 
   CameraCubit({
-    LandmarkRepositoryImpl? landmarkRepository,
-    required PlaceRepositoryImpl placeRepository,
+    required LandmarkRepository landmarkRepository,
+    required PlaceRepository placeRepository,
+    required FirebaseAuth firebaseAuth,
+    required FirebaseFirestore firestore,
     ImagePicker? imagePicker,
-  })  : _landmarkRepository = landmarkRepository ?? LandmarkRepositoryImpl(),
+  })  : _landmarkRepository = landmarkRepository,
         _placeRepository = placeRepository,
+        _firebaseAuth = firebaseAuth,
+        _firestore = firestore,
         _imagePicker = imagePicker ?? ImagePicker();
 
   /// Current state
@@ -645,12 +653,12 @@ class CameraCubit extends ChangeNotifier {
   /// Gamification: Record visited landmark
   Future<BadgeModel?> _recordLandmarkVisit(String placeId) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _firebaseAuth.currentUser;
       if (user == null) return null;
 
-      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
-      
-      return await FirebaseFirestore.instance.runTransaction((transaction) async {
+      final userRef = _firestore.collection('users').doc(user.uid);
+
+      return await _firestore.runTransaction((transaction) async {
         final doc = await transaction.get(userRef);
         if (!doc.exists) return null;
         
@@ -663,7 +671,9 @@ class CameraCubit extends ChangeNotifier {
           
           final newCount = visited.length;
           try {
-            return BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
+            final badge = BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
+            _sendBadgeNotification(user.uid, badge);
+            return badge;
           } catch (_) {
             return null;
           }
@@ -676,13 +686,39 @@ class CameraCubit extends ChangeNotifier {
     }
   }
 
+  void _sendBadgeNotification(String uid, BadgeModel badge) {
+    // Local OS popup immediately
+    LocalNotificationService().showLocalNotification(
+      id: badge.id.hashCode.abs() % 100000,
+      title: 'Badge Unlocked! 🏆',
+      body: 'You earned the "${badge.name}" badge!',
+    );
+    // Persist in Firestore so it shows in the notification screen
+    _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('notifications')
+        .add({
+      'recipientId': uid,
+      'senderId': 'system',
+      'senderName': 'Lost in Egypt',
+      'senderAvatar': '',
+      'title': 'Badge Unlocked! 🏆',
+      'message': 'You earned the "${badge.name}" badge!',
+      'type': 'badge',
+      'deepLinkTargetId': badge.id,
+      'isRead': false,
+      'timestamp': FieldValue.serverTimestamp(),
+    }).catchError((e) => debugPrint('Badge notification error: $e'));
+  }
+
   /// Gamification: Unlock Secret Badge
   Future<BadgeModel?> unlockSecretBadge(String badgeId) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _firebaseAuth.currentUser;
       if (user == null) return null;
 
-      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final userRef = _firestore.collection('users').doc(user.uid);
       
       // Get current data first (reads from cache if offline)
       final doc = await userRef.get(const GetOptions(source: Source.serverAndCache));
@@ -694,9 +730,11 @@ class CameraCubit extends ChangeNotifier {
       if (!visited.contains(badgeId)) {
         // Fire and forget update to support offline unlocks
         userRef.update({'visitedLandmarks': FieldValue.arrayUnion([badgeId])});
-        
+
         try {
-          return BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
+          final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
+          _sendBadgeNotification(user.uid, badge);
+          return badge;
         } catch (_) {
           return null;
         }

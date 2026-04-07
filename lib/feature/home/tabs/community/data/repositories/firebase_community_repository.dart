@@ -100,12 +100,15 @@ class FirebaseCommunityRepository {
         .toList();
   }
 
-  // 3. ADD POST (With Location)
+  // 3. ADD POST (With Location + Category)
   Future<void> addPost(
     String content,
     List<File> localImages, {
     String? locationName,
     String? locationId,
+    double? locationLat,
+    double? locationLng,
+    String category = '',
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -116,18 +119,24 @@ class FirebaseCommunityRepository {
     await _postsRef.add({
       'userId': user.uid,
       'userName': userDetails['name'],
+      'userUsername': userDetails['username'] ?? '',
       'userFlag': userDetails['flag'] ?? '🇪🇬',
       'userAvatar': userDetails['avatar'],
       'isVerifiedGuide': userDetails['isVerifiedGuide'] ?? false,
+      'isAdmin': userDetails['isAdmin'] ?? false,
       'content': content,
       'images': imageUrls,
       'locationName': locationName,
       'locationId': locationId,
+      if (locationLat != null) 'locationLat': locationLat,
+      if (locationLng != null) 'locationLng': locationLng,
+      'category': category,
       'likes': [],
       'dislikes': [],
       'savedBy': [],
       'likesCount': 0,
       'commentsCount': 0,
+      'views': 0,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
@@ -174,9 +183,11 @@ class FirebaseCommunityRepository {
   Future<Map<String, dynamic>> _getUserDetails() async {
     final user = FirebaseAuth.instance.currentUser;
     String name = "Traveler";
+    String username = "";
     String avatar = "";
     String flag = '🇪🇬';
     bool isGuide = false;
+    bool isAdmin = false;
     if (user != null) {
       final userDoc = await _usersRef.doc(user.uid).get();
       if (userDoc.exists) {
@@ -184,48 +195,21 @@ class FirebaseCommunityRepository {
         String first = data['firstName'] ?? "";
         String last = data['lastName'] ?? "";
         if (first.isNotEmpty || last.isNotEmpty) name = "$first $last".trim();
+        username = data['username'] ?? "";
         avatar = data['profileImageUrl'] ?? "";
         isGuide = data['isVerifiedGuide'] ?? false;
-        // Attempt to derive flag from stored nationality (ISO code preferred)
-        final nat = (data['nationality'] ?? '').toString();
-        if (nat.length == 2) {
-          flag = _countryCodeToEmoji(nat);
-        } else if (nat.isNotEmpty) {
-          // common mapping fallback (extended)
-          final lower = nat.toLowerCase();
-          if (lower.contains('egypt'))
-            flag = '🇪🇬';
-          else if (lower.contains('algeria') || lower.contains('algerian'))
-            flag = '🇩🇿';
-          else if (lower.contains('morocco') || lower.contains('moroccan'))
-            flag = '🇲🇦';
-          else if (lower.contains('tunisia') || lower.contains('tunisian'))
-            flag = '🇹🇳';
-          else if (lower.contains('libya') || lower.contains('libyan'))
-            flag = '🇱🇾';
-          else if (lower.contains('sudan') || lower.contains('sudanese'))
-            flag = '🇸🇩';
-          else if (lower.contains('united states') ||
-              lower.contains('usa') ||
-              lower.contains('us'))
-            flag = '🇺🇸';
-          else if (lower.contains('united kingdom') ||
-              lower.contains('uk') ||
-              lower.contains('britain'))
-            flag = '🇬🇧';
-          else if (lower.contains('saudi'))
-            flag = '🇸🇦';
-          else if (lower.contains('france') || lower.contains('french'))
-            flag = '🇫🇷';
-          else if (lower.contains('germany') || lower.contains('german'))
-            flag = '🇩🇪';
-          else if (lower.contains('canada') || lower.contains('canadian'))
-            flag = '🇨🇦';
-          // else leave default
+        isAdmin = data['role'] == 'admin';
+        // Prefer directly stored flag emoji; fall back to extracting from nationality string
+        final storedFlag = data['nationalityFlag'] as String?;
+        if (storedFlag != null && storedFlag.isNotEmpty) {
+          flag = storedFlag;
+        } else {
+          final nat = (data['nationality'] ?? '').toString();
+          flag = _extractFlag(nat);
         }
       }
     }
-    return {'name': name, 'avatar': avatar, 'flag': flag, 'isVerifiedGuide': isGuide};
+    return {'name': name, 'username': username, 'avatar': avatar, 'flag': flag, 'isVerifiedGuide': isGuide, 'isAdmin': isAdmin};
   }
 
   // Convert ISO country code (2 letters) to regional indicator emoji flag
@@ -237,37 +221,52 @@ class FirebaseCommunityRepository {
     return String.fromCharCodes([first, second]);
   }
 
+  /// Extracts a flag emoji from a nationality string.
+  ///
+  /// country_picker stores nationality as "🇺🇸 United States" — the flag emoji
+  /// is always the first 4 UTF-16 code units (two regional-indicator surrogates,
+  /// each with high surrogate 0xD83C). We extract it directly instead of trying
+  /// to re-derive it from the country name.
+  String _extractFlag(String nat) {
+    if (nat.isEmpty) return '🇪🇬';
+
+    // Regional indicator surrogate pairs always have high surrogate 0xD83C.
+    // A flag emoji = 4 UTF-16 code units. Extract if present at position 0.
+    if (nat.length >= 4 && nat.codeUnitAt(0) == 0xD83C) {
+      return nat.substring(0, 4);
+    }
+
+    // Plain 2-letter ISO code (legacy)
+    if (nat.length == 2) return _countryCodeToEmoji(nat);
+
+    // Legacy name-based fallback for plain-text nationalities
+    final lower = nat.toLowerCase();
+    if (lower.contains('egypt')) return '🇪🇬';
+    if (lower.contains('alger')) return '🇩🇿';
+    if (lower.contains('morocco')) return '🇲🇦';
+    if (lower.contains('tunisia')) return '🇹🇳';
+    if (lower.contains('libya')) return '🇱🇾';
+    if (lower.contains('sudan')) return '🇸🇩';
+    if (lower.contains('saudi')) return '🇸🇦';
+    if (lower.contains('united states') || lower.contains('usa')) return '🇺🇸';
+    if (lower.contains('united kingdom') || lower.contains('britain')) return '🇬🇧';
+    if (lower.contains('france')) return '🇫🇷';
+    if (lower.contains('germany')) return '🇩🇪';
+    if (lower.contains('canada')) return '🇨🇦';
+
+    return '🇪🇬';
+  }
+
   /// Refreshes user posts to ensure their `userFlag` matches current profile
   Future<void> refreshUserPostsFlag(String uid) async {
     if (uid.isEmpty) return;
     final userDoc = await _usersRef.doc(uid).get();
     if (!userDoc.exists) return;
     final data = userDoc.data() as Map<String, dynamic>;
-    String flag = '🇪🇬';
-    final nat = (data['nationality'] ?? '').toString();
-    if (nat.length == 2)
-      flag = _countryCodeToEmoji(nat);
-    else if (nat.isNotEmpty) {
-      final lower = nat.toLowerCase();
-      if (lower.contains('alger'))
-        flag = '🇩🇿';
-      else if (lower.contains('egypt'))
-        flag = '🇪🇬';
-      else if (lower.contains('morocco'))
-        flag = '🇲🇦';
-      else if (lower.contains('tunisia'))
-        flag = '🇹🇳';
-      else if (lower.contains('libya'))
-        flag = '🇱🇾';
-      else if (lower.contains('sudan'))
-        flag = '🇸🇩';
-      else if (lower.contains('france'))
-        flag = '🇫🇷';
-      else if (lower.contains('germany'))
-        flag = '🇩🇪';
-      else if (lower.contains('canada'))
-        flag = '🇨🇦';
-    }
+    final storedFlag = data['nationalityFlag'] as String?;
+    final flag = (storedFlag != null && storedFlag.isNotEmpty)
+        ? storedFlag
+        : _extractFlag((data['nationality'] ?? '').toString());
 
     final snapshot = await _postsRef.where('userId', isEqualTo: uid).get();
     if (snapshot.docs.isEmpty) return;
@@ -277,6 +276,44 @@ class FirebaseCommunityRepository {
       if (current != flag) batch.update(doc.reference, {'userFlag': flag});
     }
     await batch.commit();
+  }
+
+  Future<void> pinPost(String postId, {required bool pin}) async {
+    await _postsRef.doc(postId).update({'isPinned': pin});
+  }
+
+  /// Toggle an emoji reaction on a post. Pass [emoji] = null to remove the
+  /// current user's reaction entirely.
+  Future<void> reactToPost(String postId, String emoji) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final uid = user.uid;
+    final docRef = _postsRef.doc(postId);
+    final doc = await docRef.get();
+    if (!doc.exists) return;
+    final data = doc.data() as Map<String, dynamic>;
+    final reactionsRaw = data['reactions'];
+    String? currentReaction;
+    if (reactionsRaw is Map) {
+      for (final entry in reactionsRaw.entries) {
+        if (entry.value is List && (entry.value as List).contains(uid)) {
+          currentReaction = entry.key as String;
+          break;
+        }
+      }
+    }
+
+    final Map<String, dynamic> updates = {};
+    if (currentReaction == emoji) {
+      // Toggling off the same reaction
+      updates['reactions.$emoji'] = FieldValue.arrayRemove([uid]);
+    } else {
+      if (currentReaction != null) {
+        updates['reactions.$currentReaction'] = FieldValue.arrayRemove([uid]);
+      }
+      updates['reactions.$emoji'] = FieldValue.arrayUnion([uid]);
+    }
+    await docRef.update(updates);
   }
 
   Future<void> deletePost(String postId) async {
@@ -311,6 +348,9 @@ class FirebaseCommunityRepository {
         final postOwnerId = data['userId'];
         if (postOwnerId != null && postOwnerId != uid) {
           final userDetails = await _getUserDetails();
+          final senderDisplayName = (userDetails['username'] as String).isNotEmpty
+              ? '@${userDetails['username']}'
+              : userDetails['name'] as String;
           await FirebaseFirestore.instance
               .collection('users')
               .doc(postOwnerId)
@@ -318,7 +358,7 @@ class FirebaseCommunityRepository {
               .add({
             'recipientId': postOwnerId,
             'senderId': uid,
-            'senderName': userDetails['name'],
+            'senderName': senderDisplayName,
             'senderAvatar': userDetails['avatar'],
             'title': 'New Like',
             'deepLinkTargetId': postId,
@@ -359,7 +399,9 @@ class FirebaseCommunityRepository {
     final newDoc = await _postsRef.doc(postId).collection('comments').add({
       'userId': user.uid,
       'userName': userDetails['name'],
+      'userUsername': userDetails['username'] ?? '',
       'userAvatar': userDetails['avatar'],
+      'userFlag': userDetails['flag'] ?? '🇪🇬',
       'replyToId': replyToId,
       'text': text,
       'likes': [],
@@ -374,9 +416,12 @@ class FirebaseCommunityRepository {
     // ⭐ TRIGGER NOTIFICATION (If not commenting on own post)
     if (postOwnerId != user.uid) {
       final isReply = replyToId != null;
-      final msg = isReply 
+      final msg = isReply
           ? 'replied in your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"'
           : 'commented on your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"';
+      final commentSenderDisplay = (userDetails['username'] as String).isNotEmpty
+          ? '@${userDetails['username']}'
+          : userDetails['name'] as String;
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -385,7 +430,7 @@ class FirebaseCommunityRepository {
           .add({
         'recipientId': postOwnerId,
         'senderId': user.uid,
-        'senderName': userDetails['name'],
+        'senderName': commentSenderDisplay,
         'senderAvatar': userDetails['avatar'],
         'title': isReply ? 'New Reply' : 'New Comment',
         'deepLinkTargetId': '${postId}_${newDoc.id}',
@@ -395,6 +440,13 @@ class FirebaseCommunityRepository {
         'timestamp': FieldValue.serverTimestamp(),
       });
     }
+  }
+
+  Future<void> editComment(String postId, String commentId, String newText) async {
+    await _postsRef.doc(postId).collection('comments').doc(commentId).update({
+      'text': newText,
+      'isEdited': true,
+    });
   }
 
   Future<void> deleteComment(String postId, String commentId) async {
@@ -443,6 +495,9 @@ class FirebaseCommunityRepository {
           final commentOwnerId = data['userId'];
           if (commentOwnerId != null && commentOwnerId != uid) {
             _getUserDetails().then((userDetails) {
+              final likeNotifDisplay = (userDetails['username'] as String).isNotEmpty
+                  ? '@${userDetails['username']}'
+                  : userDetails['name'] as String;
               FirebaseFirestore.instance
                   .collection('users')
                   .doc(commentOwnerId)
@@ -450,7 +505,7 @@ class FirebaseCommunityRepository {
                   .add({
                 'recipientId': commentOwnerId,
                 'senderId': uid,
-                'senderName': userDetails['name'],
+                'senderName': likeNotifDisplay,
                 'senderAvatar': userDetails['avatar'],
                 'title': 'New Like',
                 'deepLinkTargetId': '${postId}_${commentId}',

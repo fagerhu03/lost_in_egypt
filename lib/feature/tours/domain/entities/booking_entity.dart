@@ -10,6 +10,8 @@ class BookingEntity extends Equatable {
   final String paymentStatus;
   final DateTime date;
   final DateTime createdAt;
+  final int quantity;
+  final double totalAmountEGP;
 
   const BookingEntity({
     required this.id,
@@ -21,6 +23,8 @@ class BookingEntity extends Equatable {
     required this.paymentStatus,
     required this.date,
     required this.createdAt,
+    this.quantity = 1,
+    this.totalAmountEGP = 0,
   });
 
   @override
@@ -34,5 +38,7 @@ class BookingEntity extends Equatable {
         paymentStatus,
         date,
         createdAt,
+        quantity,
+        totalAmountEGP,
       ];
 }

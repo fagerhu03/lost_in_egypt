@@ -1,9 +1,11 @@
 import 'dart:math' as math;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 
@@ -229,37 +231,22 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                                     ),
                                   );
                                 },
-                                child: Image.network(
-                                  widget.place.imagePaths[index],
+                                child: CachedNetworkImage(
+                                  imageUrl: widget.place.imagePaths[index],
                                   fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      color: onSurface.withOpacity(0.06),
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: primary,
-                                          value: loadingProgress.expectedTotalBytes != null
-                                              ? loadingProgress.cumulativeBytesLoaded /
-                                                  loadingProgress.expectedTotalBytes!
-                                              : null,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (c, e, s) => Container(
-                                    color: onSurface.withOpacity(0.06),
+                                  placeholder: (_, __) => const ShimmerLoadingWidget.rectangular(height: 220),
+                                  errorWidget: (_, __, ___) => Container(
+                                    color: Colors.grey.withOpacity(0.15),
                                     child: Center(
                                       child: Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Icon(Icons.image_not_supported_outlined,
-                                              color: onSurface.withOpacity(0.35), size: 50),
+                                              color: Colors.grey.withOpacity(0.5), size: 50),
                                           const SizedBox(height: 8),
                                           Text('Photo not available',
                                               style: TextStyle(
-                                                  color: onSurface.withOpacity(0.4),
+                                                  color: Colors.grey.withOpacity(0.6),
                                                   fontSize: 12)),
                                         ],
                                       ),
@@ -270,24 +257,13 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             },
                           )
                         : widget.place.imagePath.isNotEmpty
-                            ? Image.network(
-                                widget.place.imagePath,
+                            ? CachedNetworkImage(
+                                imageUrl: widget.place.imagePath,
                                 fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    color: onSurface.withOpacity(0.06),
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: primary,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (c, e, s) => Container(
-                                  color: onSurface.withOpacity(0.06),
-                                  child: const Center(child: Icon(Icons.broken_image)),
+                                placeholder: (_, __) => const ShimmerLoadingWidget.rectangular(height: 220),
+                                errorWidget: (_, __, ___) => Container(
+                                  color: Colors.grey.withOpacity(0.15),
+                                  child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
                                 ),
                               )
                             : Container(

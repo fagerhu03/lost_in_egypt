@@ -5,6 +5,7 @@ import 'package:country_picker/country_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
@@ -13,6 +14,7 @@ import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verifi
 import '../../camera/widgets/badge_unlock_dialog.dart';
 import '../domain/badge_constants.dart';
 import 'package:lost_in_egypt/core/utils/image_utils.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/data/repositories/firebase_community_repository.dart';
 
 class EditProfileScreenEnhanced extends StatefulWidget {
   const EditProfileScreenEnhanced({super.key});
@@ -27,11 +29,18 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
   // Controllers
   final _fullNameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _nationalityController = TextEditingController();
   final _bioController = TextEditingController();
   final _instagramController = TextEditingController();
   final _twitterController = TextEditingController();
+
+  String? _usernameError;
+  String? _instagramError;
+  String? _twitterError;
+
+  String _selectedFlagEmoji = '';
 
   // State variables
   String _completePhoneNumber = "";
@@ -154,8 +163,14 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
         _fullNameController.text =
         "${_currentUser!.firstName} ${_currentUser!.lastName}";
+        _usernameController.text = _currentUser!.username;
         _emailController.text = _currentUser!.email;
         _nationalityController.text = _currentUser!.nationality;
+        // Extract the flag emoji from the stored nationality string (format: "🇺🇸 United States")
+        final nat = _currentUser!.nationality;
+        if (nat.length >= 4 && nat.codeUnitAt(0) == 0xD83C) {
+          _selectedFlagEmoji = nat.substring(0, 4);
+        }
         _completePhoneNumber = _currentUser!.phoneNumber;
         _bioController.text = _currentUser!.bio;
         _instagramController.text = _currentUser!.instagramHandle;
@@ -227,6 +242,31 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       }
     }
 
+    // Validate social handles
+    final igVal = _instagramController.text.trim();
+    final twVal = _twitterController.text.trim();
+    String? igErr;
+    String? twErr;
+    if (igVal.isNotEmpty && !RegExp(r'^[a-zA-Z0-9._]{1,30}$').hasMatch(igVal)) {
+      igErr = 'Instagram: letters, numbers, . and _ only (max 30)';
+    }
+    if (twVal.isNotEmpty && !RegExp(r'^[a-zA-Z0-9._]{1,15}$').hasMatch(twVal)) {
+      twErr = 'Twitter/X: letters, numbers, . and _ only (max 15)';
+    }
+    if (igErr != null || twErr != null) {
+      setState(() { _instagramError = igErr; _twitterError = twErr; });
+      return;
+    }
+
+    // Validate username before saving
+    final newUsername = _usernameController.text.trim().toLowerCase();
+    final usernameErr = await _validateUsername(newUsername);
+    if (usernameErr != null) {
+      setState(() => _usernameError = usernameErr);
+      return;
+    }
+    setState(() => _usernameError = null);
+
     setState(() => _isLoading = true);
 
     try {
@@ -246,6 +286,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         nationality: _nationalityController.text.trim(),
         bio: _bioController.text.trim(),
         interests: _selectedInterests,
+        username: newUsername,
         instagramHandle: _instagramController.text.trim(),
         twitterHandle: _twitterController.text.trim(),
         isNotificationsEnabled: _currentUser!.isNotificationsEnabled,
@@ -267,11 +308,38 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         }
       }
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(updatedUser.id)
-          .set(updatedUser.toMap(), SetOptions(merge: true))
-          .timeout(const Duration(seconds: 10));
+      final db = FirebaseFirestore.instance;
+      final userRef = db.collection('users').doc(updatedUser.id);
+      final usernameChanged = newUsername != _currentUser!.username;
+
+      if (usernameChanged) {
+        // Atomically release old handle and claim new one
+        final oldClaimRef = db.collection('usernames').doc(_currentUser!.username);
+        final newClaimRef = db.collection('usernames').doc(newUsername);
+        await db.runTransaction((tx) async {
+          final newClaimSnap = await tx.get(newClaimRef);
+          if (newClaimSnap.exists && newClaimSnap.data()?['uid'] != updatedUser.id) {
+            throw FirebaseException(
+              plugin: 'firestore',
+              code: 'already-exists',
+              message: 'Username was just taken.',
+            );
+          }
+          if (_currentUser!.username.isNotEmpty) tx.delete(oldClaimRef);
+          tx.set(newClaimRef, {'uid': updatedUser.id});
+          tx.set(userRef, {
+            ...updatedUser.toMap(),
+            if (_selectedFlagEmoji.isNotEmpty) 'nationalityFlag': _selectedFlagEmoji,
+          }, SetOptions(merge: true));
+        });
+      } else {
+        await userRef
+            .set({
+              ...updatedUser.toMap(),
+              if (_selectedFlagEmoji.isNotEmpty) 'nationalityFlag': _selectedFlagEmoji,
+            }, SetOptions(merge: true))
+            .timeout(const Duration(seconds: 10));
+      }
 
       if ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty) {
         await FirebaseFirestore.instance
@@ -281,6 +349,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       }
 
       await _firebaseUser?.updateDisplayName("$fName $lName");
+
+      // Refresh flag on community posts in background (fire-and-forget)
+      FirebaseCommunityRepository().refreshUserPostsFlag(updatedUser.id);
 
       if (mounted) {
         if (justUnlockedImhotep) {
@@ -295,6 +366,12 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           );
           Navigator.pop(context);
         }
+      }
+    } on FirebaseException catch (e) {
+      if (e.code == 'already-exists') {
+        setState(() => _usernameError = "That username was just taken — try another");
+      } else {
+        _showError("Error: $e");
       }
     } catch (e) {
       _showError("Error: $e");
@@ -396,6 +473,49 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     }
   }
 
+  /// Validates username format and checks Firestore uniqueness.
+  /// Returns an error string or null if valid.
+  Future<String?> _validateUsername(String username) async {
+    if (username.isEmpty) return "Username cannot be empty";
+    if (username.length < 3) return "Username must be at least 3 characters";
+    if (username.length > 20) return "Username must be 20 characters or fewer";
+    if (!RegExp(r'^[a-z0-9_]+$').hasMatch(username)) {
+      return "Only lowercase letters, numbers, and underscores";
+    }
+    // Skip uniqueness check if unchanged
+    if (username == _currentUser?.username) return null;
+    final query = await FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .limit(1)
+        .get();
+    if (query.docs.isNotEmpty) return "Username is already taken";
+    return null;
+  }
+
+  int _computeProfileCompletion() {
+    if (_currentUser == null) return 0;
+    int filled = 0;
+    // 1. Profile photo
+    if (_selectedImage != null || _currentUser!.profileImageUrl.isNotEmpty) filled++;
+    // 2. Full name (first + last parts)
+    final nameParts = _fullNameController.text.trim().split(' ');
+    if (nameParts.length >= 2 && nameParts[0].isNotEmpty && nameParts[1].isNotEmpty) filled++;
+    // 3. Username
+    if (_usernameController.text.trim().isNotEmpty) filled++;
+    // 4. Bio
+    if (_bioController.text.trim().isNotEmpty) filled++;
+    // 5. Nationality
+    if (_nationalityController.text.trim().isNotEmpty) filled++;
+    // 6. Phone verified
+    if (_currentUser!.phoneVerified) filled++;
+    // 7. At least 1 interest
+    if (_selectedInterests.isNotEmpty) filled++;
+    // 8. Instagram or Twitter
+    if (_instagramController.text.trim().isNotEmpty || _twitterController.text.trim().isNotEmpty) filled++;
+    return filled;
+  }
+
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), backgroundColor: Colors.red),
@@ -457,7 +577,51 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                     children: [
                       const SizedBox(height: 20),
                       _buildAvatar(primary, onSurface, fieldShadow),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 20),
+
+                      // Profile completion indicator
+                      Builder(builder: (context) {
+                        final completed = _computeProfileCompletion();
+                        final pct = (completed / 8 * 100).round();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Profile Completion",
+                                  style: TextStyle(
+                                    color: onSurface.withOpacity(0.7),
+                                    fontSize: 13,
+                                    fontFamily: 'Marcellus',
+                                  ),
+                                ),
+                                Text(
+                                  "$pct%",
+                                  style: TextStyle(
+                                    color: primary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Marcellus',
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: completed / 8,
+                                backgroundColor: primary.withOpacity(0.12),
+                                valueColor: AlwaysStoppedAnimation<Color>(primary),
+                                minHeight: 6,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                      const SizedBox(height: 20),
 
                       _buildSectionTitle("Basic Information", onSurface),
                       _buildLabel("Full name", onSurface),
@@ -468,6 +632,20 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         shadow: fieldShadow,
                         borderColor: borderColor,
                       ),
+                      const SizedBox(height: 20),
+
+                      _buildLabel("Username", onSurface),
+                      _buildUsernameField(surface, onSurface, fieldShadow, borderColor, primary),
+                      if (_usernameError != null) ...[
+                        const SizedBox(height: 6),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(
+                            _usernameError!,
+                            style: const TextStyle(color: Colors.red, fontSize: 12),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 20),
 
                       _buildLabel("Email", onSurface),
@@ -513,22 +691,28 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                       _buildLabel("Instagram", onSurface),
                       _buildSocialField(
                         controller: _instagramController,
-                        hint: "@username",
+                        hint: "username (no @)",
                         surface: surface,
                         onSurface: onSurface,
                         shadow: fieldShadow,
                         borderColor: borderColor,
+                        maxLength: 30,
+                        errorText: _instagramError,
+                        onChanged: (_) => setState(() => _instagramError = null),
                       ),
                       const SizedBox(height: 20),
 
                       _buildLabel("Twitter/X", onSurface),
                       _buildSocialField(
                         controller: _twitterController,
-                        hint: "@username",
+                        hint: "username (no @)",
                         surface: surface,
                         onSurface: onSurface,
                         shadow: fieldShadow,
                         borderColor: borderColor,
+                        maxLength: 15,
+                        errorText: _twitterError,
+                        onChanged: (_) => setState(() => _twitterError = null),
                       ),
                       const SizedBox(height: 30),
                       
@@ -806,6 +990,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             onSelect: (Country country) {
               setState(() {
                 _nationalityController.text = "${country.flagEmoji} ${country.name}";
+                _selectedFlagEmoji = country.flagEmoji;
               });
             },
             countryListTheme: CountryListThemeData(
@@ -968,6 +1153,65 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     );
   }
 
+  Widget _buildUsernameField(
+      Color surface,
+      Color onSurface,
+      BoxShadow shadow,
+      Color borderColor,
+      Color primary,
+      ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [shadow],
+        border: Border.all(
+          color: _usernameError != null ? Colors.red : borderColor,
+        ),
+      ),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Text(
+              "@",
+              style: TextStyle(
+                color: primary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              controller: _usernameController,
+              style: TextStyle(color: onSurface),
+              autocorrect: false,
+              enableSuggestions: false,
+              onChanged: (value) {
+                // Auto-lowercase
+                final lower = value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9_]'), '');
+                if (lower != value) {
+                  _usernameController.value = _usernameController.value.copyWith(
+                    text: lower,
+                    selection: TextSelection.collapsed(offset: lower.length),
+                  );
+                }
+                if (_usernameError != null) setState(() => _usernameError = null);
+              },
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                hintText: "your_handle",
+                hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSocialField({
     required TextEditingController controller,
     required String hint,
@@ -975,24 +1219,49 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     required Color onSurface,
     required BoxShadow shadow,
     required Color borderColor,
+    int maxLength = 30,
+    String? errorText,
+    ValueChanged<String>? onChanged,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [shadow],
-        border: Border.all(color: borderColor),
-      ),
-      child: TextField(
-        controller: controller,
-        style: TextStyle(color: onSurface),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          hintText: hint,
-          hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
+    final hasError = errorText != null && errorText.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [shadow],
+            border: Border.all(color: hasError ? Colors.red : borderColor),
+          ),
+          child: TextField(
+            controller: controller,
+            style: TextStyle(color: onSurface),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9._]')),
+              LengthLimitingTextInputFormatter(maxLength),
+            ],
+            onChanged: (val) {
+              if (hasError) setState(() {});
+              onChanged?.call(val);
+            },
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              hintText: hint,
+              hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
+            ),
+          ),
         ),
-      ),
+        if (hasError)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 4),
+            child: Text(
+              errorText,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
     );
   }
 
@@ -1046,13 +1315,36 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             },
           ),
           const SizedBox(height: 8),
-          _buildVerificationItem("Phone", _currentUser?.phoneVerified ?? false),
+          _buildVerificationItem(
+            "Phone",
+            _currentUser?.phoneVerified ?? false,
+            onVerify: (_currentUser?.phoneVerified ?? true)
+                ? null
+                : () async {
+                    final result = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PhoneVerificationScreen(),
+                      ),
+                    );
+                    if (result == true && mounted) {
+                      setState(() {
+                        _currentUser = _currentUser?.copyWith(phoneVerified: true);
+                      });
+                    }
+                  },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildVerificationItem(String label, bool isVerified, {VoidCallback? onResend}) {
+  Widget _buildVerificationItem(
+    String label,
+    bool isVerified, {
+    VoidCallback? onResend,
+    VoidCallback? onVerify,
+  }) {
     return Row(
       children: [
         Icon(
@@ -1079,6 +1371,25 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             ),
             child: Text(
               "Resend",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+        if (!isVerified && onVerify != null) ...[
+          const Spacer(),
+          TextButton(
+            onPressed: onVerify,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              "Verify now",
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
                 fontSize: 13,
@@ -1118,6 +1429,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   @override
   void dispose() {
     _fullNameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _nationalityController.dispose();
     _bioController.dispose();
