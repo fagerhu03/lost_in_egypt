@@ -275,14 +275,15 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
       case ReportType.guide:
         final u = UserModel.fromMap(snapshot.data() as Map<String, dynamic>, snapshot.id);
         if (u.isVerifiedGuide) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => UniversalProfileScreen(user: u)));
-        } else {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => BlocProvider(create: (_) => GuideToursCubit(getGuideToursUseCase: GetIt.I()), child: UniversalProfileScreen(user: u)),
             ),
-          );}
+          );
+        } else {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => UniversalProfileScreen(user: u)));
+        }
         break;
       case ReportType.comment:
         final parts = report.reportedItemId.split('_');

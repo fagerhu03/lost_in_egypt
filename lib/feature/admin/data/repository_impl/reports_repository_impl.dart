@@ -24,46 +24,56 @@ class ReportsRepositoryImpl implements ReportsRepository {
     return snapshot.docs.map((doc) => ReportModel.fromSnapshot(doc)).toList();
   }
 
+  static const _validStatuses = {'pending', 'dismissed', 'resolved'};
+
   @override
   Future<void> updateReportStatus(String reportId, String newStatus) async {
+    if (!_validStatuses.contains(newStatus)) {
+      throw ArgumentError('Invalid report status "$newStatus". Must be one of: ${_validStatuses.join(', ')}');
+    }
     await _firestore.collection('reports').doc(reportId).update({
       'status': newStatus,
+      'resolvedAt': FieldValue.serverTimestamp(),
     });
   }
 
   @override
   Future<void> deleteReportedContent(ReportModel report) async {
-    // Determine which collection to delete from based on the report type
     switch (report.reportedItemType) {
       case ReportType.post:
         await _firestore.collection('community_posts').doc(report.reportedItemId).delete();
         break;
       case ReportType.comment:
-        // Complex because we need the postId to delete a nested comment.
-        // We'll need to figure out the postId. If reportedItemId doesn't include it, we have to search or restructure.
-        // For now, let's assume if it's a comment, reportedItemId might be "postId_commentId" or we need to handle it differently.
-        // As a safeguard, we will only log an error here if the format isn't post_comment
-        final parts = report.reportedItemId.split('_');
-        if (parts.length >= 2) {
-          final postId = parts[0];
-          final commentId = parts[1];
-          await _firestore
-              .collection('community_posts')
-              .doc(postId)
-              .collection('comments')
-              .doc(commentId)
-              .delete();
-        } else {
-            throw Exception("Comment ID format invalid for deletion. Expected postId_commentId. Got: ${report.reportedItemId}");
+        // reportedItemId must be in "postId_commentId" format.
+        final separatorIndex = report.reportedItemId.indexOf('_');
+        if (separatorIndex <= 0 || separatorIndex == report.reportedItemId.length - 1) {
+          throw Exception(
+            'Comment ID format invalid. Expected "postId_commentId", got: "${report.reportedItemId}"',
+          );
         }
+        final postId = report.reportedItemId.substring(0, separatorIndex);
+        final commentId = report.reportedItemId.substring(separatorIndex + 1);
+        await _firestore
+            .collection('community_posts')
+            .doc(postId)
+            .collection('comments')
+            .doc(commentId)
+            .delete();
         break;
       case ReportType.tour:
         await _firestore.collection('tours').doc(report.reportedItemId).delete();
         break;
       case ReportType.user:
       case ReportType.guide:
-        // Usually we don't 'delete' users directly here, but we could ban them.
-        throw UnimplementedError('Cannot delete user profile directly through this method yet.');
+        await _banUser(report.reportedItemId);
+        break;
     }
+  }
+
+  Future<void> _banUser(String userId) async {
+    await _firestore.collection('users').doc(userId).update({
+      'banned': true,
+      'bannedAt': FieldValue.serverTimestamp(),
+    });
   }
 }

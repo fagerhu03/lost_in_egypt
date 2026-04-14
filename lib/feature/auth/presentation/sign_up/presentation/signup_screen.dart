@@ -29,12 +29,14 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPassController = TextEditingController();
 
   final FocusNode _firstNameFocus = FocusNode();
   final FocusNode _lastNameFocus = FocusNode();
   final FocusNode _emailFocus = FocusNode();
+  final FocusNode _phoneFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
   final FocusNode _confirmPassFocus = FocusNode();
 
@@ -82,12 +84,14 @@ class _SignupScreenState extends State<SignupScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPassController.dispose();
 
     _firstNameFocus.dispose();
     _lastNameFocus.dispose();
     _emailFocus.dispose();
+    _phoneFocus.dispose();
     _passwordFocus.dispose();
     _confirmPassFocus.dispose();
 
@@ -195,6 +199,16 @@ class _SignupScreenState extends State<SignupScreen> {
       return false;
     }
 
+    // Phone: optional but if provided must be digits only, 7–15 chars
+    final phone = _phoneController.text.trim();
+    if (phone.isNotEmpty) {
+      final phoneRegex = RegExp(r'^\+?[0-9]{7,15}$');
+      if (!phoneRegex.hasMatch(phone)) {
+        _showError("Please enter a valid phone number (digits only, 7–15 chars).");
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -230,7 +244,7 @@ class _SignupScreenState extends State<SignupScreen> {
         birthMonth: _selectedMonth!,
         birthDay: _selectedDay!,
         birthYear: _selectedYear!,
-        phoneNumber: "", // Placeholder until UI adds phone field
+        phoneNumber: _phoneController.text.trim(),
       );
 
       if (mounted) {
@@ -377,11 +391,23 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   // EMAIL
                   AuthTextField(
-                    hintText: "Email", 
+                    hintText: "Email",
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     focusNode: _emailFocus,
+                    onSubmitted: (_) => _phoneFocus.requestFocus(),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // PHONE (optional)
+                  AuthTextField(
+                    hintText: "Phone Number (optional)",
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.next,
+                    focusNode: _phoneFocus,
                     onSubmitted: (_) => _passwordFocus.requestFocus(),
                   ),
 

@@ -58,6 +58,14 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
   }
 
   Future<void> _submitReport() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must be logged in to submit a report.')),
+      );
+      return;
+    }
+
     if (_selectedReason == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a reason for reporting.')),
@@ -65,20 +73,25 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
       return;
     }
 
+    final description = _descriptionController.text.trim();
+    if (description.length > 500) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Description must be 500 characters or fewer.')),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final reporterId = user?.uid ?? 'anonymous';
-
       final report = ReportModel(
         id: '', // Firestore will generate this
-        reporterId: reporterId,
+        reporterId: user.uid,
         reportedItemType: widget.reportType,
         reportedItemId: widget.reportedItemId,
         reportedItemOwnerId: widget.reportedItemOwnerId,
         reason: _selectedReason!,
-        description: _descriptionController.text.trim(),
+        description: description,
         timestamp: DateTime.now(),
       );
 

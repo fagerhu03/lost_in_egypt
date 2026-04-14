@@ -138,13 +138,13 @@ class ToursDataSourceImpl implements ToursDataSource {
       final int currentCapacity = tourSnapshot.data()?['maxAttendees'] ?? 0;
 
       // 2. Check Capacity
-      if (currentCapacity <= 0) {
-        throw Exception("Tour is fully booked.");
+      if (currentCapacity < booking.quantity) {
+        throw Exception("Not enough spots available (only $currentCapacity left).");
       }
 
-      // 3. Decrement Capacity
+      // 3. Decrement Capacity by booked quantity
       transaction.update(tourRef, {
-        'maxAttendees': currentCapacity - 1,
+        'maxAttendees': currentCapacity - booking.quantity,
       });
 
       // 4. Create Booking Document

@@ -1,7 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../tours/domain/entities/tour_entity.dart';
 import '../../../tours/presentation/pages/tour_detail_screen.dart';
+import '../../../../core/services/currency_controller.dart';
+import '../../../../core/services/currency_service.dart';
+import '../../../../core/widgets/shimmer_loading_widget.dart';
 
 class TourCard extends StatelessWidget {
   final TourEntity tour;
@@ -13,14 +17,12 @@ class TourCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
-        );
-      },
-      child: Container(
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(20),
+      elevation: 0,
+      shadowColor: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+      child: Ink(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
@@ -32,7 +34,13 @@ class TourCard extends StatelessWidget {
             )
           ],
         ),
-        child: Column(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
+          ),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Image Banner
@@ -44,10 +52,12 @@ class TourCard extends StatelessWidget {
                   height: 180,
                   width: double.infinity,
                   child: tour.images.isNotEmpty
-                      ? Image.network(
-                          tour.images.first,
+                      ? CachedNetworkImage(
+                          imageUrl: tour.images.first,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildPlaceholderImage(),
+                          placeholder: (_, __) =>
+                              const ShimmerLoadingWidget.rectangular(height: 180),
+                          errorWidget: (_, __, ___) => _buildPlaceholderImage(),
                         )
                       : _buildPlaceholderImage(),
                 ),
@@ -78,13 +88,26 @@ class TourCard extends StatelessWidget {
                       // Rating badge
                       _buildRatingBadge(theme),
                       const SizedBox(width: 12),
-                      Text(
-                        '\$${tour.price}',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: theme.colorScheme.primary,
-                        ),
+                      ValueListenableBuilder<String>(
+                        valueListenable: CurrencyController.currency,
+                        builder: (context, currency, _) {
+                          return FutureBuilder<double>(
+                            future: CurrencyService.instance.convertFromEGP(tour.price, currency),
+                            builder: (context, snap) {
+                              final label = snap.hasData
+                                  ? CurrencyService.format(snap.data!, currency)
+                                  : 'EGP ${tour.price.toStringAsFixed(0)}';
+                              return Text(
+                                label,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              );
+                            },
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -137,7 +160,7 @@ class TourCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildRatingBadge(ThemeData theme) {

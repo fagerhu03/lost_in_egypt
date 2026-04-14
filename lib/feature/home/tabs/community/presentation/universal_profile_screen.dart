@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dartz/dartz.dart' as dartz;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:lost_in_egypt/theme/theme.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
@@ -17,6 +18,9 @@ import 'package:lost_in_egypt/feature/tours/domain/repositories/tours_repository
 import 'package:lost_in_egypt/feature/tours/presentation/widgets/tour_card.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_post_model.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/community_post_card.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/post_detail_screen.dart';
 
 class UniversalProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -112,7 +116,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                     ],
                   ),
                 ),
-                // Main Content
+                // Main Content with About/Posts tabs
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -125,9 +129,32 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                       ),
                       child: ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.fromLTRB(16, 24, 16, 40),
-                          child: widget.user.isVerifiedGuide ? _buildGuideProfile(context, titleColor) : _buildTouristProfile(context, titleColor),
+                        child: DefaultTabController(
+                          length: 2,
+                          child: Column(
+                            children: [
+                              TabBar(
+                                labelColor: titleColor,
+                                unselectedLabelColor: titleColor.withOpacity(0.45),
+                                indicatorColor: theme.colorScheme.primary,
+                                labelStyle: const TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, fontSize: 14),
+                                tabs: const [Tab(text: 'About'), Tab(text: 'Posts')],
+                              ),
+                              Expanded(
+                                child: TabBarView(
+                                  children: [
+                                    SingleChildScrollView(
+                                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+                                      child: widget.user.isVerifiedGuide
+                                          ? _buildGuideProfile(context, titleColor)
+                                          : _buildTouristProfile(context, titleColor),
+                                    ),
+                                    _buildUserPostsTab(context, titleColor),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -138,6 +165,53 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildUserPostsTab(BuildContext context, Color titleColor) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final primary = theme.colorScheme.primary;
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: GetIt.I<FirebaseFirestore>()
+          .collection('community_posts')
+          .where('userId', isEqualTo: widget.user.id)
+          .orderBy('timestamp', descending: true)
+          .limit(20)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.post_add_outlined, size: 52, color: onSurface.withOpacity(0.2)),
+                const SizedBox(height: 12),
+                Text('No posts yet', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: onSurface.withOpacity(0.45))),
+              ],
+            ),
+          );
+        }
+        final posts = docs.map((d) => CommunityPostModel.fromSnapshot(d)).toList();
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 32),
+          itemCount: posts.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (context, i) {
+            final post = posts[i];
+            return CommunityPostCard(
+              key: ValueKey(post.id),
+              post: post,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PostDetailScreen(post: post))),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -182,12 +256,53 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        if (widget.user.username.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            '@${widget.user.username}',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: 14,
+              fontFamily: "Marcellus",
+            ),
+          ),
+        ],
         if (widget.user.bio.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
             widget.user.bio,
             textAlign: TextAlign.center,
             style: TextStyle(color: onSurface.withOpacity(0.8), fontSize: 14),
+          ),
+        ],
+        if (widget.user.instagramHandle.isNotEmpty || widget.user.twitterHandle.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (widget.user.instagramHandle.isNotEmpty)
+                _SocialIconButton(
+                  icon: Icons.link,
+                  label: 'Instagram',
+                  color: const Color(0xFFE1306C),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://instagram.com/${widget.user.instagramHandle}'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+              if (widget.user.instagramHandle.isNotEmpty && widget.user.twitterHandle.isNotEmpty)
+                const SizedBox(width: 12),
+              if (widget.user.twitterHandle.isNotEmpty)
+                _SocialIconButton(
+                  icon: Icons.link,
+                  label: 'X / Twitter',
+                  color: const Color(0xFF1DA1F2),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://x.com/${widget.user.twitterHandle}'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+            ],
           ),
         ],
         const SizedBox(height: 24),
@@ -287,6 +402,35 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
               ),
             ),
           ),
+        if (widget.user.instagramHandle.isNotEmpty || widget.user.twitterHandle.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              if (widget.user.instagramHandle.isNotEmpty)
+                _SocialIconButton(
+                  icon: Icons.link,
+                  label: 'Instagram',
+                  color: const Color(0xFFE1306C),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://instagram.com/${widget.user.instagramHandle}'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+              if (widget.user.instagramHandle.isNotEmpty && widget.user.twitterHandle.isNotEmpty)
+                const SizedBox(width: 12),
+              if (widget.user.twitterHandle.isNotEmpty)
+                _SocialIconButton(
+                  icon: Icons.link,
+                  label: 'X / Twitter',
+                  color: const Color(0xFF1DA1F2),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://x.com/${widget.user.twitterHandle}'),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+            ],
+          ),
+        ],
         const SizedBox(height: 24),
         Text(
           'Hosted Tours',
@@ -297,6 +441,16 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           height: 400,
           child: _UniversalGuideToursList(guideId: widget.user.id),
         ),
+        // Reviews section
+        if (widget.user.reviewCount > 0) ...[
+          const SizedBox(height: 24),
+          Text(
+            'Traveler Reviews',
+            style: TextStyle(color: titleColor, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
+          ),
+          const SizedBox(height: 12),
+          _UniversalGuideReviews(guideId: widget.user.id),
+        ],
         if (FirebaseAuth.instance.currentUser?.uid == widget.user.id) ...[
           const SizedBox(height: 24),
           SizedBox(
@@ -408,6 +562,17 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
                 '${guide.firstName} ${guide.lastName}'.trim(),
                 style: TextStyle(fontSize: 24, color: titleColor, fontWeight: FontWeight.bold, height: 1.1),
               ),
+              if (guide.username.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '@${guide.username}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 13,
+                    fontFamily: "Marcellus",
+                  ),
+                ),
+              ],
               const SizedBox(height: 6),
               if (guide.reviewCount == 0)
                 Text("New Guide", style: TextStyle(color: titleColor, fontSize: 14, fontWeight: FontWeight.w600))
@@ -483,6 +648,126 @@ class _UniversalInfoStrip extends StatelessWidget {
   }
 }
 
+class _UniversalGuideReviews extends StatefulWidget {
+  final String guideId;
+  const _UniversalGuideReviews({required this.guideId});
+
+  @override
+  State<_UniversalGuideReviews> createState() => _UniversalGuideReviewsState();
+}
+
+class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
+  static const int _pageSize = 3;
+  int _limit = _pageSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('reviews')
+          .where('guideId', isEqualTo: widget.guideId)
+          .orderBy('createdAt', descending: true)
+          .limit(_limit)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) return const SizedBox.shrink();
+
+        final hasMore = docs.length == _limit;
+
+        return Column(
+          children: [
+            ...docs.map((doc) {
+            final d = doc.data() as Map<String, dynamic>;
+            final rating = (d['rating'] as num?)?.toDouble() ?? 0;
+            final text = (d['text'] ?? d['comment'] ?? '') as String;
+            final userName = (d['userName'] ?? 'Traveler') as String;
+            final userImage = d['userImage'] as String?;
+            final createdAt = (d['createdAt'] as Timestamp?)?.toDate();
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
+                    backgroundImage: (userImage != null && userImage.isNotEmpty)
+                        ? NetworkImage(userImage)
+                        : null,
+                    child: (userImage == null || userImage.isEmpty)
+                        ? const Icon(Icons.person, size: 18)
+                        : null,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(userName,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            const Spacer(),
+                            Row(
+                              children: List.generate(
+                                5,
+                                (i) => Icon(
+                                  i < rating ? Icons.star : Icons.star_border,
+                                  size: 12,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (text.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(text,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: theme.colorScheme.onSurface.withOpacity(0.75))),
+                        ],
+                        if (createdAt != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            '${createdAt.day}/${createdAt.month}/${createdAt.year}',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+            }).toList(),
+            if (hasMore)
+              TextButton.icon(
+                onPressed: () => setState(() => _limit += _pageSize),
+                icon: const Icon(Icons.expand_more, size: 18),
+                label: const Text('Show more reviews'),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _UniversalGuideToursList extends StatefulWidget {
   final String guideId;
 
@@ -526,6 +811,51 @@ class _UniversalGuideToursListState extends State<_UniversalGuideToursList> {
         }
         return const Center(child: Text('Failed to load tours'));
       },
+    );
+  }
+}
+
+class _SocialIconButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _SocialIconButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

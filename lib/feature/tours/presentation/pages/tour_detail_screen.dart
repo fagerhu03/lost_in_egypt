@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:lost_in_egypt/core/services/currency_controller.dart';
+import 'package:lost_in_egypt/core/services/currency_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,11 +17,21 @@ import '../../../admin/data/models/report_model.dart';
 import '../../../admin/domain/repositories/reports_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/account_screen.dart';
+import 'package:uuid/uuid.dart';
+import '../../../../feature/reviews/data/datasources/reviews_data_source.dart';
+import '../../../../feature/reviews/data/models/review_model.dart';
 
-class TourDetailScreen extends StatelessWidget {
+class TourDetailScreen extends StatefulWidget {
   final TourEntity tour;
 
   const TourDetailScreen({Key? key, required this.tour}) : super(key: key);
+
+  @override
+  State<TourDetailScreen> createState() => _TourDetailScreenState();
+}
+
+class _TourDetailScreenState extends State<TourDetailScreen> {
+  TourEntity get tour => widget.tour;
 
   @override
   Widget build(BuildContext context) {
@@ -81,8 +93,8 @@ class TourDetailScreen extends StatelessWidget {
                           CachedNetworkImage(
                             imageUrl: tour.images.first,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(color: Colors.grey.shade300),
-                            errorWidget: (context, url, error) => Container(color: Colors.grey.shade300, child: const Icon(Icons.image_not_supported)),
+                            placeholder: (context, url) => Container(color: Theme.of(context).colorScheme.surfaceContainerHighest),
+                            errorWidget: (context, url, error) => Container(color: Theme.of(context).colorScheme.surfaceContainerHighest, child: const Icon(Icons.image_not_supported)),
                           ),
                           // Dark gradient overlay to ensure text visibility
                           DecoratedBox(
@@ -100,7 +112,7 @@ class TourDetailScreen extends StatelessWidget {
                           ),
                         ],
                       )
-                    : Container(color: Colors.grey),
+                    : Container(color: Theme.of(context).colorScheme.surfaceContainerHighest),
               ),
             ),
           ),
@@ -116,13 +128,26 @@ class TourDetailScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '\$${tour.price}',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: theme.colorScheme.primary,
-                        ),
+                      ValueListenableBuilder<String>(
+                        valueListenable: CurrencyController.currency,
+                        builder: (context, currency, _) {
+                          return FutureBuilder<double>(
+                            future: CurrencyService.instance.convertFromEGP(tour.price, currency),
+                            builder: (context, snap) {
+                              final label = snap.hasData
+                                  ? CurrencyService.format(snap.data!, currency)
+                                  : 'EGP ${tour.price.toStringAsFixed(0)}';
+                              return Text(
+                                label,
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              );
+                            },
+                          );
+                        },
                       ),
                       Row(
                         children: [
@@ -575,10 +600,20 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
   }
 }
 
-class _ReviewsSection extends StatelessWidget {
+class _ReviewsSection extends StatefulWidget {
   final TourEntity tour;
 
   const _ReviewsSection({required this.tour});
+
+  @override
+  State<_ReviewsSection> createState() => _ReviewsSectionState();
+}
+
+class _ReviewsSectionState extends State<_ReviewsSection> {
+  static const int _reviewPageSize = 3;
+  int _reviewLimit = _reviewPageSize;
+
+  TourEntity get tour => widget.tour;
 
   @override
   Widget build(BuildContext context) {
@@ -613,15 +648,17 @@ class _ReviewsSection extends StatelessWidget {
         const SizedBox(height: 12),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
-              .collection('tours')
-              .doc(tour.id)
               .collection('reviews')
+              .where('tourId', isEqualTo: tour.id)
               .orderBy('createdAt', descending: true)
+              .limit(_reviewLimit)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) return const Text('Error loading reviews');
-            if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-            
+            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
             final docs = snapshot.data?.docs ?? [];
             if (docs.isEmpty) {
               return Container(
@@ -636,7 +673,11 @@ class _ReviewsSection extends StatelessWidget {
               );
             }
 
-            return ListView.separated(
+            final hasMore = docs.length == _reviewLimit;
+
+            return Column(
+              children: [
+                ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: docs.length,
@@ -648,6 +689,7 @@ class _ReviewsSection extends StatelessWidget {
                 final text = data['text'] ?? '';
                 final userName = data['userName'] ?? 'Anonymous';
                 final userId = data['userId'] as String?;
+                final reviewDocId = reviewDoc.id;
                 final userImage = data['userImage'] as String?;
                 final isOwnReview = userId == currentUid;
                 
@@ -706,6 +748,14 @@ class _ReviewsSection extends StatelessWidget {
                   ),
                 );
               },
+                ),
+                if (hasMore)
+                  TextButton.icon(
+                    onPressed: () => setState(() => _reviewLimit += _reviewPageSize),
+                    icon: const Icon(Icons.expand_more, size: 18),
+                    label: const Text('Show more reviews'),
+                  ),
+              ],
             );
           },
         ),
@@ -845,8 +895,10 @@ class _ReviewsSection extends StatelessWidget {
                         double newAvg = count > 0 ? ((currentAvg * count) - oldRating + selectedRating) / count : selectedRating;
                         if (newAvg.isNaN || newAvg.isInfinite) newAvg = selectedRating;
 
-                        transaction.update(tourRef.collection('reviews').doc(reviewDocId), {
+                        transaction.update(
+                            FirebaseFirestore.instance.collection('reviews').doc(reviewDocId), {
                           'rating': selectedRating,
+                          'comment': textController.text.trim(),
                           'text': textController.text.trim(),
                         });
 
@@ -899,7 +951,8 @@ class _ReviewsSection extends StatelessWidget {
                     double newAvg = newCount > 0 ? ((currentAvg * count) - oldRating) / newCount : 0.0;
                     if (newAvg.isNaN || newAvg.isInfinite) newAvg = 0.0;
 
-                    transaction.delete(tourRef.collection('reviews').doc(reviewDocId));
+                    transaction.delete(
+                        FirebaseFirestore.instance.collection('reviews').doc(reviewDocId));
                     transaction.update(tourRef, {
                       'reviewCount': newCount,
                       'rating': newAvg,
@@ -935,7 +988,7 @@ class _ReviewsSection extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(5, (index) {
                       return IconButton(
-                         icon: Icon(
+                        icon: Icon(
                           index < selectedRating ? Icons.star : Icons.star_border,
                           color: Colors.amber,
                           size: 32,
@@ -963,48 +1016,41 @@ class _ReviewsSection extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () async {
                     if (textController.text.trim().isEmpty) return;
-                    
                     final user = FirebaseAuth.instance.currentUser;
-                    if (user == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please log in to review.')));
-                      return;
-                    }
-                    
+                    if (user == null) return;
                     try {
-                      Navigator.pop(context); // close dialog
-                      final tourRef = FirebaseFirestore.instance.collection('tours').doc(tourId);
-                      final docRef = tourRef.collection('reviews').doc();
-                      
-                      final userName = user.displayName?.isNotEmpty == true ? user.displayName : 'Traveler';
+                      Navigator.pop(context);
 
-                      await FirebaseFirestore.instance.runTransaction((transaction) async {
-                        final tourDoc = await transaction.get(tourRef);
-                        if (!tourDoc.exists) return;
+                      // Fetch real name from Firestore
+                      String userName = 'Traveler';
+                      String userImage = user.photoURL ?? '';
+                      try {
+                        final userDoc = await FirebaseFirestore.instance
+                            .collection('users').doc(user.uid).get();
+                        if (userDoc.exists) {
+                          final d = userDoc.data()!;
+                          final full = '${d['firstName'] ?? ''} ${d['lastName'] ?? ''}'.trim();
+                          userName = full.isNotEmpty ? full : (d['username'] ?? 'Traveler');
+                          userImage = d['profileImageUrl'] ?? userImage;
+                        }
+                      } catch (_) {}
 
-                        final data = tourDoc.data()!;
-                        final int currentCount = (data['reviewCount'] ?? 0) as int;
-                        double currentRating = (data['rating'] ?? 0.0).toDouble();
-                        if (currentRating.isNaN || currentRating.isInfinite) currentRating = 0.0;
+                      // Get guideId from tour
+                      final tourDoc = await FirebaseFirestore.instance
+                          .collection('tours').doc(tourId).get();
+                      final guideId = tourDoc.data()?['guideId'] as String? ?? '';
 
-                        final newCount = currentCount + 1;
-                        double newRating = ((currentRating * currentCount) + selectedRating) / newCount;
-                        if (newRating.isNaN || newRating.isInfinite) newRating = selectedRating;
-
-                        transaction.set(docRef, {
-                          'userId': user.uid,
-                          'userName': userName,
-                          'userImage': user.photoURL ?? '',
-                          'rating': selectedRating,
-                          'text': textController.text.trim(),
-                          'createdAt': FieldValue.serverTimestamp(),
-                        });
-
-                        transaction.update(tourRef, {
-                          'reviewCount': newCount,
-                          'rating': newRating,
-                        });
-                      });
-                      
+                      await ReviewsDataSourceImpl().submitReview(ReviewModel(
+                        id: const Uuid().v4(),
+                        tourId: tourId,
+                        guideId: guideId,
+                        touristId: user.uid,
+                        rating: selectedRating,
+                        comment: textController.text.trim(),
+                        createdAt: DateTime.now(),
+                        userName: userName,
+                        userImage: userImage,
+                      ));
                     } catch (e) {
                       debugPrint('Error adding review: $e');
                     }

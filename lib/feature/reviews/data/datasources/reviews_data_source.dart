@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/review_model.dart';
 import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
+import '../../../home/notification/data/models/notification_model.dart';
+import '../../../home/notification/data/datasources/notifications_data_source.dart';
 
 abstract class ReviewsDataSource {
   Future<void> submitReview(ReviewModel review);
@@ -19,7 +22,6 @@ class ReviewsDataSourceImpl implements ReviewsDataSource {
 
     try {
       await _firestore.runTransaction((transaction) async {
-        // 1. Get current tour
         final tourDoc = await transaction.get(tourRef);
         double currentTourRating = 0.0;
         int tourReviewCount = 0;
@@ -29,40 +31,71 @@ class ReviewsDataSourceImpl implements ReviewsDataSource {
           tourReviewCount = tourDoc.data()?['reviewCount'] ?? 0;
         }
 
-        // 2. Get current guide profile
         final guideDoc = await transaction.get(guideRef);
         double currentGuideRating = 0.0;
         int guideReviewCount = 0;
 
         if (guideDoc.exists) {
-           currentGuideRating = (guideDoc.data()?['rating'] ?? 0.0).toDouble();
-           guideReviewCount = guideDoc.data()?['reviewCount'] ?? 0;
+          currentGuideRating = (guideDoc.data()?['rating'] ?? 0.0).toDouble();
+          guideReviewCount = guideDoc.data()?['reviewCount'] ?? 0;
         }
 
-        // 3. Calculate new Tour Averages
-        int newTourReviewCount = tourReviewCount + 1;
-        double newTourRating = ((currentTourRating * tourReviewCount) + review.rating) / newTourReviewCount;
+        final newTourReviewCount = tourReviewCount + 1;
+        final newTourRating =
+            ((currentTourRating * tourReviewCount) + review.rating) /
+                newTourReviewCount;
 
-        // 4. Calculate new Guide Averages
-        int newGuideReviewCount = guideReviewCount + 1;
-        double newGuideRating = ((currentGuideRating * guideReviewCount) + review.rating) / newGuideReviewCount;
+        final newGuideReviewCount = guideReviewCount + 1;
+        final newGuideRating =
+            ((currentGuideRating * guideReviewCount) + review.rating) /
+                newGuideReviewCount;
 
-        // 5. Atomic writes
         transaction.set(reviewRef, review.toMap());
-        
+
         transaction.update(tourRef, {
           'rating': newTourRating,
           'reviewCount': newTourReviewCount,
         });
 
         transaction.update(guideRef, {
-           'rating': newGuideRating,
-           'reviewCount': newGuideReviewCount,
+          'rating': newGuideRating,
+          'reviewCount': newGuideReviewCount,
         });
       });
+
+      // Notify the guide after a successful review
+      if (review.guideId.isNotEmpty && review.guideId != review.touristId) {
+        try {
+          final tourDoc =
+              await _firestore.collection('tours').doc(review.tourId).get();
+          final tourTitle =
+              tourDoc.exists ? (tourDoc.data()?['title'] ?? 'your tour') : 'your tour';
+          final stars = review.rating.toStringAsFixed(1);
+          final displayName =
+              review.userName.isNotEmpty ? review.userName : 'Someone';
+
+          final notif = NotificationModel(
+            id: const Uuid().v4(),
+            recipientId: review.guideId,
+            senderId: review.touristId,
+            senderName: displayName,
+            senderAvatar: review.userImage,
+            title: 'New Review ⭐$stars',
+            message: 'reviewed "$tourTitle"',
+            type: 'review',
+            deepLinkTargetId: review.tourId,
+            isRead: false,
+            timestamp: DateTime.now(),
+          );
+
+          await NotificationsDataSourceImpl().sendNotification(notif);
+        } catch (e) {
+          debugPrint('Failed to send review notification: $e');
+        }
+      }
     } catch (e) {
-      debugPrint("Error submitting review transaction: $e");
-      throw Exception("Failed to submit review");
+      debugPrint('Error submitting review transaction: $e');
+      throw Exception('Failed to submit review');
     }
   }
 
@@ -73,7 +106,9 @@ class ReviewsDataSourceImpl implements ReviewsDataSource {
         .where('guideId', isEqualTo: guideId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => ReviewModel.fromMap(doc.data(), doc.id)).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ReviewModel.fromMap(doc.data(), doc.id))
+            .toList());
   }
 
   @override
@@ -83,6 +118,8 @@ class ReviewsDataSourceImpl implements ReviewsDataSource {
         .where('tourId', isEqualTo: tourId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => ReviewModel.fromMap(doc.data(), doc.id)).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ReviewModel.fromMap(doc.data(), doc.id))
+            .toList());
   }
 }

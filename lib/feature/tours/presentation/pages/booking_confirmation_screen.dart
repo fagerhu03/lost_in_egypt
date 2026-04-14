@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lost_in_egypt/core/services/currency_controller.dart';
+import 'package:lost_in_egypt/core/services/currency_service.dart';
 import '../../domain/entities/tour_entity.dart';
 import '../../domain/entities/booking_entity.dart';
 import '../../domain/usecases/book_tour_usecase.dart';
@@ -8,6 +11,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../data/datasources/paymob_api_service.dart';
+import '../../../../feature/home/notification/domain/services/local_notification_service.dart';
+import 'booking_history_screen.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
   final TourEntity tour;
@@ -40,10 +45,33 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       return;
     }
 
-    if (_selectedPaymentMethod == 'wallet' && _walletPhoneController.text.trim().length < 11) {
-      _showSnackBar('Please enter a valid phone number.', isError: true);
-      return;
+    if (_selectedPaymentMethod == 'wallet') {
+      final phone = _walletPhoneController.text.trim();
+      final egyptianMobileRegex = RegExp(r'^01[0125][0-9]{8}$');
+      if (!egyptianMobileRegex.hasMatch(phone)) {
+        _showSnackBar('Please enter a valid Egyptian mobile number (e.g. 01XXXXXXXXX).', isError: true);
+        return;
+      }
     }
+
+    // Pre-check capacity before opening payment gateway
+    try {
+      final tourDoc = await FirebaseFirestore.instance
+          .collection('tours').doc(widget.tour.id).get();
+      final currentCap = (tourDoc.data()?['maxAttendees'] as num?)?.toInt() ?? 0;
+      if (currentCap < _quantity) {
+        if (currentCap <= 0) {
+          _showSnackBar('Sorry, this tour is now fully booked.', isError: true);
+        } else {
+          _showSnackBar(
+            'Only $currentCap seat${currentCap == 1 ? '' : 's'} remaining. Please reduce your selection.',
+            isError: true,
+          );
+          if (mounted) setState(() => _quantity = currentCap);
+        }
+        return;
+      }
+    } catch (_) {}
 
     setState(() => _isLoading = true);
 
@@ -55,7 +83,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             context: context,
             amountEGP: _totalPrice,
           );
-          if (response != null && response.success) {
+          if (response != null && (response.success ||
+                response.responseCode == 'APPROVED' ||
+                response.responseCode == '00' ||
+                (response.transactionID != null && response.transactionID!.isNotEmpty))) {
             await _onPaymentSuccess(response.transactionID ?? _uuid.v4(), user.uid);
           } else {
             if (mounted) {
@@ -71,7 +102,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             amountEGP: _totalPrice,
             phoneNumber: _walletPhoneController.text.trim(),
           );
-          if (response != null && response.success) {
+          if (response != null && (response.success ||
+                response.responseCode == 'APPROVED' ||
+                response.responseCode == '00' ||
+                (response.transactionID != null && response.transactionID!.isNotEmpty))) {
             await _onPaymentSuccess(response.transactionID ?? _uuid.v4(), user.uid);
           } else {
             if (mounted) {
@@ -106,6 +140,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       paymentStatus: 'paid',
       date: widget.tour.meetingTime,
       createdAt: DateTime.now(),
+      quantity: _quantity,
+      totalAmountEGP: _totalPrice,
     );
 
     final useCase = sl<BookTourUseCase>();
@@ -113,6 +149,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
     // Send notification to the guide
     _notifyGuide(userId);
+    // Notify tourist + schedule reminder
+    _notifyTouristAndScheduleReminder(userId);
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -123,19 +161,64 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     }
   }
 
+  Future<void> _notifyTouristAndScheduleReminder(String touristId) async {
+    try {
+      // In-app notification for the tourist
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(touristId)
+          .collection('notifications')
+          .add({
+        'recipientId': touristId,
+        'senderId': 'system',
+        'senderName': 'Lost in Egypt',
+        'senderAvatar': '',
+        'title': 'Booking Confirmed!',
+        'message': 'Your spot on "${widget.tour.title}" is confirmed. See you there!',
+        'type': 'booking_confirmed',
+        'deepLinkTargetId': widget.tour.id,
+        'isRead': false,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Schedule a local reminder 1 hour before the tour
+      final reminderTime = widget.tour.meetingTime.subtract(const Duration(hours: 1));
+      await LocalNotificationService().scheduleNotification(
+        id: widget.tour.id.hashCode.abs() % 100000,
+        title: 'Tour starting soon!',
+        body: '"${widget.tour.title}" starts in 1 hour. Head to ${widget.tour.meetingLocationName}.',
+        scheduledDate: reminderTime,
+        payload: widget.tour.id,
+      );
+    } catch (e) {
+      debugPrint('Error notifying tourist: $e');
+    }
+  }
+
   Future<void> _notifyGuide(String travelerId) async {
     try {
       final travelerDoc = await FirebaseFirestore.instance.collection('users').doc(travelerId).get();
-      final travelerName = travelerDoc.data()?['firstName'] ?? 'A traveler';
+      final travelerData = travelerDoc.data();
+      final travelerName = travelerData?['firstName'] ?? 'A traveler';
+      final travelerAvatar = travelerData?['profileImageUrl'] ?? '';
 
-      await FirebaseFirestore.instance.collection('notifications').add({
+      final notifRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.tour.guideId)
+          .collection('notifications')
+          .doc();
+
+      await notifRef.set({
         'recipientId': widget.tour.guideId,
-        'title': '🎉 New Booking!',
-        'body': '$travelerName booked your tour "${widget.tour.title}"',
+        'senderId': travelerId,
+        'senderName': travelerName,
+        'senderAvatar': travelerAvatar,
+        'title': 'New Booking!',
+        'message': '$travelerName booked your tour "${widget.tour.title}"',
         'type': 'booking',
         'deepLinkTargetId': widget.tour.id,
-        'read': false,
-        'createdAt': FieldValue.serverTimestamp(),
+        'isRead': false,
+        'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       debugPrint('Error notifying guide: $e');
@@ -153,10 +236,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: const Color(0xFFC79A00).withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle, color: Colors.green, size: 64),
+              child: const Icon(Icons.check_circle, color: Color(0xFFC79A00), size: 64),
             ),
             const SizedBox(height: 16),
             const Text('Booking Confirmed!', textAlign: TextAlign.center),
@@ -171,26 +254,51 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               style: const TextStyle(fontSize: 15),
             ),
             const SizedBox(height: 8),
-            Text(
-              'EGP ${_totalPrice.toStringAsFixed(2)} paid successfully.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+            ValueListenableBuilder<String>(
+              valueListenable: CurrencyController.currency,
+              builder: (context, currency, _) {
+                return FutureBuilder<double>(
+                  future: CurrencyService.instance.convertFromEGP(_totalPrice, currency),
+                  builder: (context, snap) {
+                    final label = snap.hasData
+                        ? CurrencyService.format(snap.data!, currency)
+                        : 'EGP ${_totalPrice.toStringAsFixed(0)}';
+                    return Text(
+                      '$label paid successfully.',
+                      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55)),
+                    );
+                  },
+                );
+              },
             ),
           ],
         ),
         actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFC79A00),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const BookingHistoryScreen()),
+                  );
+                },
+                child: const Text('View My Bookings',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
-              onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
-              child: const Text('Back to Home'),
-            ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                child: const Text('Back to Home'),
+              ),
+            ],
           ),
         ],
       ),
@@ -223,7 +331,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       body: Stack(
         children: [
           ListView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 160),
             children: [
               // ── Order Summary ──
               _buildSectionTitle('Order Summary'),
@@ -244,10 +352,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                   width: 60, 
                                   height: 60, 
                                   fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(width: 60, height: 60, color: Colors.grey[300]),
-                                  errorWidget: (context, url, err) => Container(width: 60, height: 60, color: Colors.grey[300], child: const Icon(Icons.landscape)),
+                                  placeholder: (context, url) => Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest),
+                                  errorWidget: (context, url, err) => Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest, child: const Icon(Icons.landscape)),
                                 )
-                              : Container(width: 60, height: 60, color: Colors.grey[300], child: const Icon(Icons.landscape)),
+                              : Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest, child: const Icon(Icons.landscape)),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -291,15 +399,31 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     ),
                     const Divider(height: 24),
                     // Price breakdown
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('$_quantity × EGP ${widget.tour.price.toStringAsFixed(2)}'),
-                        Text(
-                          'EGP ${_totalPrice.toStringAsFixed(2)}',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primary),
-                        ),
-                      ],
+                    ValueListenableBuilder<String>(
+                      valueListenable: CurrencyController.currency,
+                      builder: (context, currency, _) {
+                        return FutureBuilder<double>(
+                          future: CurrencyService.instance.convertFromEGP(widget.tour.price, currency),
+                          builder: (context, snap) {
+                            final unitLabel = snap.hasData
+                                ? CurrencyService.format(snap.data!, currency)
+                                : 'EGP ${widget.tour.price.toStringAsFixed(0)}';
+                            final totalLabel = snap.hasData
+                                ? CurrencyService.format(snap.data! * _quantity, currency)
+                                : 'EGP ${_totalPrice.toStringAsFixed(0)}';
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('$_quantity × $unitLabel'),
+                                Text(
+                                  totalLabel,
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primary),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -347,6 +471,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 TextField(
                   controller: _walletPhoneController,
                   keyboardType: TextInputType.phone,
+                  maxLength: 11,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
                     labelText: 'Wallet Phone Number',
                     hintText: '01XXXXXXXXX',
@@ -410,15 +536,39 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Total', style: TextStyle(fontSize: 16)),
-                  Text(
-                    'EGP ${_totalPrice.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: primary),
-                  ),
-                ],
+              ValueListenableBuilder<String>(
+                valueListenable: CurrencyController.currency,
+                builder: (context, currency, _) {
+                  return FutureBuilder<double>(
+                    future: CurrencyService.instance.convertFromEGP(_totalPrice, currency),
+                    builder: (context, snap) {
+                      final displayLabel = snap.hasData
+                          ? CurrencyService.format(snap.data!, currency)
+                          : 'EGP ${_totalPrice.toStringAsFixed(0)}';
+                      final showEgpNote = currency != 'EGP' && snap.hasData;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Total', style: TextStyle(fontSize: 16)),
+                              Text(
+                                displayLabel,
+                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: primary),
+                              ),
+                            ],
+                          ),
+                          if (showEgpNote)
+                            Text(
+                              'Charged as EGP ${_totalPrice.toStringAsFixed(0)} via Paymob',
+                              style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                            ),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 12),
               SizedBox(

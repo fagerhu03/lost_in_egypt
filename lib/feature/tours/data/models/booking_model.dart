@@ -12,6 +12,8 @@ class BookingModel extends BookingEntity {
     required super.paymentStatus,
     required super.date,
     required super.createdAt,
+    super.quantity = 1,
+    super.totalAmountEGP = 0,
   });
 
   factory BookingModel.fromMap(Map<String, dynamic> data, String documentId) {
@@ -25,6 +27,8 @@ class BookingModel extends BookingEntity {
       paymentStatus: data['paymentStatus'] ?? 'none',
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      quantity: (data['quantity'] as num?)?.toInt() ?? 1,
+      totalAmountEGP: (data['totalAmountEGP'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -38,6 +42,8 @@ class BookingModel extends BookingEntity {
       'paymentStatus': paymentStatus,
       'date': Timestamp.fromDate(date),
       'createdAt': Timestamp.fromDate(createdAt),
+      'quantity': quantity,
+      'totalAmountEGP': totalAmountEGP,
     };
   }
 }

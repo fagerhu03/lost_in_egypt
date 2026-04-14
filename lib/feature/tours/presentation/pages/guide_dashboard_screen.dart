@@ -11,7 +11,10 @@ import '../../domain/entities/tour_entity.dart';
 import 'create_tour_screen.dart';
 import 'tour_detail_screen.dart';
 import 'tour_attendees_screen.dart';
+import 'qr_scanner_screen.dart';
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/services/currency_controller.dart';
+import '../../../../core/services/currency_service.dart';
 
 class GuideDashboardScreen extends StatefulWidget {
   const GuideDashboardScreen({super.key});
@@ -41,6 +44,16 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
       appBar: AppBar(
         title: const Text('Guide Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            tooltip: 'Scan Ticket',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const QrScannerScreen()),
+            ),
+          ),
+        ],
       ),
       body: BlocBuilder<GuideToursCubit, GuideToursState>(
         builder: (context, state) {
@@ -140,10 +153,15 @@ class _EarningsSummary extends StatelessWidget {
           totalBookings = snapshot.data!.docs.length;
           for (final doc in snapshot.data!.docs) {
             final data = doc.data() as Map<String, dynamic>;
-            final tourId = data['tourId'] ?? '';
-            final tour = tours.where((t) => t.id == tourId).firstOrNull;
-            if (tour != null) {
-              totalRevenue += tour.price;
+            // Use stored totalAmountEGP if available; fall back to price × quantity
+            final stored = (data['totalAmountEGP'] as num?)?.toDouble();
+            if (stored != null && stored > 0) {
+              totalRevenue += stored;
+            } else {
+              final tourId = data['tourId'] ?? '';
+              final quantity = (data['quantity'] as num?)?.toDouble() ?? 1;
+              final tour = tours.where((t) => t.id == tourId).firstOrNull;
+              if (tour != null) totalRevenue += tour.price * quantity;
             }
           }
         }
@@ -166,7 +184,18 @@ class _EarningsSummary extends StatelessWidget {
               Container(width: 1, height: 50, color: primary.withOpacity(0.15)),
               _statItem('$totalBookings', 'Bookings', Icons.confirmation_number, Colors.green),
               Container(width: 1, height: 50, color: primary.withOpacity(0.15)),
-              _statItem('EGP ${totalRevenue.toStringAsFixed(0)}', 'Revenue', Icons.monetization_on, Colors.amber[700]!),
+              ValueListenableBuilder<String>(
+                valueListenable: CurrencyController.currency,
+                builder: (_, currency, __) => FutureBuilder<double>(
+                  future: CurrencyService.instance.convertFromEGP(totalRevenue, currency),
+                  builder: (_, snap) {
+                    final label = snap.hasData
+                        ? CurrencyService.format(snap.data!, currency)
+                        : 'EGP ${totalRevenue.toStringAsFixed(0)}';
+                    return _statItem(label, 'Revenue', Icons.monetization_on, Colors.amber[700]!);
+                  },
+                ),
+              ),
             ],
           ),
         );
@@ -226,7 +255,7 @@ class _GuideTourCard extends StatelessWidget {
                 children: [
                   tour.images.isNotEmpty
                       ? Image.network(tour.images.first, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey[300]))
-                      : Container(color: Colors.grey[300], child: const Center(child: Icon(Icons.landscape, size: 48, color: Colors.grey))),
+                      : Container(color: Theme.of(context).colorScheme.surfaceContainerHighest, child: Center(child: Icon(Icons.landscape, size: 48, color: Theme.of(context).colorScheme.outline.withOpacity(0.5)))),
                   // Gradient overlay
                   Positioned(
                     bottom: 0,
@@ -253,9 +282,17 @@ class _GuideTourCard extends StatelessWidget {
                         color: primary,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
-                        'EGP ${tour.price.toStringAsFixed(0)}',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      child: ValueListenableBuilder<String>(
+                        valueListenable: CurrencyController.currency,
+                        builder: (_, currency, __) => FutureBuilder<double>(
+                          future: CurrencyService.instance.convertFromEGP(tour.price, currency),
+                          builder: (_, snap) => Text(
+                            snap.hasData
+                                ? CurrencyService.format(snap.data!, currency)
+                                : 'EGP ${tour.price.toStringAsFixed(0)}',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -434,15 +471,26 @@ class _GuideTourCard extends StatelessWidget {
           .where('status', isEqualTo: 'confirmed')
           .get();
       for (final doc in bookings.docs) {
+        final touristId = (doc.data())['userId'] as String?;
         await doc.reference.update({'status': 'cancelled'});
-        await FirebaseFirestore.instance.collection('notifications').add({
-          'recipientId': (doc.data())['userId'],
-          'title': '⚠️ Tour Cancelled',
-          'body': 'The tour "${tour.title}" has been cancelled by the guide.',
-          'type': 'tour_cancelled',
-          'read': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+        if (touristId != null && touristId.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(touristId)
+              .collection('notifications')
+              .add({
+            'recipientId': touristId,
+            'senderId': 'system',
+            'senderName': 'Lost in Egypt',
+            'senderAvatar': '',
+            'title': '⚠️ Tour Cancelled',
+            'message': 'The tour "${tour.title}" has been cancelled by the guide.',
+            'type': 'tour_cancelled',
+            'deepLinkTargetId': tour.id,
+            'isRead': false,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
       }
       onRefresh();
     }

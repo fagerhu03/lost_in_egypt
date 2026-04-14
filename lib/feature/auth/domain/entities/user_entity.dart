@@ -17,6 +17,9 @@ class UserEntity extends Equatable {
   final List<String> visitedLandmarks;
   final List<String> savedPlaces;
 
+  // Username handle (unique, e.g. @explorer_ahmed)
+  final String username;
+
   // Social Links
   final String instagramHandle;
   final String twitterHandle;
@@ -25,6 +28,7 @@ class UserEntity extends Equatable {
   final bool isNotificationsEnabled;
   final bool isDarkMode;
   final String language;
+  final String preferredCurrency;
   final bool phoneVerified;
   final bool emailVerified;
 
@@ -57,11 +61,13 @@ class UserEntity extends Equatable {
     this.interests = const [],
     this.visitedLandmarks = const [],
     this.savedPlaces = const [],
+    this.username = '',
     this.instagramHandle = '',
     this.twitterHandle = '',
     this.isNotificationsEnabled = true,
     this.isDarkMode = false,
     this.language = 'English',
+    this.preferredCurrency = 'EGP',
     this.phoneVerified = false,
     this.emailVerified = false,
     required this.createdAt,
@@ -91,11 +97,13 @@ class UserEntity extends Equatable {
     interests,
     visitedLandmarks,
     savedPlaces,
+    username,
     instagramHandle,
     twitterHandle,
     isNotificationsEnabled,
     isDarkMode,
     language,
+    preferredCurrency,
     phoneVerified,
     emailVerified,
     createdAt,

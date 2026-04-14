@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/core/di/service_locator.dart';
 
 class SavedCardsScreen extends StatefulWidget {
   const SavedCardsScreen({Key? key}) : super(key: key);
@@ -10,10 +11,16 @@ class SavedCardsScreen extends StatefulWidget {
 }
 
 class _SavedCardsScreenState extends State<SavedCardsScreen> {
-  final _user = FirebaseAuth.instance.currentUser;
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = sl<FirebaseAuth>().currentUser;
+  }
 
   CollectionReference get _cardsRef =>
-      FirebaseFirestore.instance.collection('users').doc(_user!.uid).collection('savedCards');
+      sl<FirebaseFirestore>().collection('users').doc(_user!.uid).collection('savedCards');
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +179,7 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
   }
 
   Future<void> _setDefault(String cardId, List<QueryDocumentSnapshot> docs) async {
-    final batch = FirebaseFirestore.instance.batch();
+    final batch = sl<FirebaseFirestore>().batch();
     for (final doc in docs) {
       batch.update(doc.reference, {'isDefault': doc.id == cardId});
     }

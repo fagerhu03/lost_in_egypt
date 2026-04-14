@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
@@ -12,8 +13,9 @@ import 'package:lost_in_egypt/feature/tours/presentation/bloc/guide_tours_cubit.
 import 'package:lost_in_egypt/feature/tours/presentation/pages/guide_dashboard_screen.dart' as lost_in_egypt_tours;
 import 'package:lost_in_egypt/feature/guide_application/presentation/bloc/apply_guide_cubit.dart' as lost_in_egypt_guide_cubit;
 import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply_guide_screen.dart' as lost_in_egypt_guide_screen;
-import 'package:lost_in_egypt/feature/home/tabs/more/presentation/saved_cards_screen.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/booking_history_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/account/presentation/your_plan_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/community/presentation/saved_posts_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -33,14 +35,14 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _loadUser() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = sl<FirebaseAuth>().currentUser;
     if (user == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
 
     try {
-      final doc = await FirebaseFirestore.instance
+      final doc = await sl<FirebaseFirestore>()
           .collection('users')
           .doc(user.uid)
           .get();
@@ -62,7 +64,7 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
+    await sl<FirebaseAuth>().signOut();
 
     if (!context.mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
@@ -91,7 +93,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final borderColor =
     (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
-    final User? authUser = FirebaseAuth.instance.currentUser;
+    final User? authUser = sl<FirebaseAuth>().currentUser;
     String displayName = "User";
     if (_user != null) {
         displayName = "${_user!.firstName} ${_user!.lastName}".trim();
@@ -210,6 +212,17 @@ class _AccountScreenState extends State<AccountScreen> {
                                       fontFamily: "Marcellus",
                                     ),
                                   ),
+                                  if (_user?.username.isNotEmpty == true) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "@${_user!.username}",
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.primary,
+                                        fontSize: 14,
+                                        fontFamily: "Marcellus",
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(height: 16),
                                   
                                   // --- GAMIFICATION UI HERE ---
@@ -309,6 +322,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
                         _AccountTile(
                           title: "Edit Profile",
+                          icon: Icons.person_outline_rounded,
                           onTap: () async {
                             await Navigator.push(
                               context,
@@ -319,18 +333,26 @@ class _AccountScreenState extends State<AccountScreen> {
                             );
                             _loadUser();
                           },
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
                         ),
 
 
-                        if (_user?.role == 'tourist' && _user?.applicationStatus != 'pending') ...[
-                          _AccountTile(
-                            title: "Apply to be a Guide",
-                            onTap: () {
-                              Navigator.push(
+                        if (_user?.role == 'tourist') ...[
+                          if (_user?.applicationStatus == 'pending')
+                            _ApplicationStatusTile(
+                              status: 'pending',
+                              surface: surface,
+                              onSurface: onSurface,
+                              borderColor: borderColor,
+                              shadow: tileShadow,
+                            )
+                          else if (_user?.applicationStatus == 'rejected')
+                            _ApplicationStatusTile(
+                              status: 'rejected',
+                              surface: surface,
+                              onSurface: onSurface,
+                              borderColor: borderColor,
+                              shadow: tileShadow,
+                              onTap: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => BlocProvider(
@@ -340,41 +362,48 @@ class _AccountScreenState extends State<AccountScreen> {
                                     child: const lost_in_egypt_guide_screen.ApplyGuideScreen(),
                                   ),
                                 ),
-                              );
-                            },
-                            surface: surface,
-                            onSurface: onSurface,
-                            borderColor: borderColor,
-                            shadow: tileShadow,
-                          ),
+                              ),
+                            )
+                          else
+                            _AccountTile(
+                              title: "Apply to be a Guide",
+                              icon: Icons.badge_outlined,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BlocProvider(
+                                      create: (context) => lost_in_egypt_guide_cubit.ApplyGuideCubit(
+                                        applyGuideUseCase: GetIt.I(),
+                                      ),
+                                      child: const lost_in_egypt_guide_screen.ApplyGuideScreen(),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                         ],
                         _AccountTile(
-                          title: "Cards Detail",
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedCardsScreen()));
-                          },
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
-                        ),
-                        _AccountTile(
                           title: "My Bookings",
+                          icon: Icons.calendar_today_outlined,
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
                           },
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
+                        ),
+                        _AccountTile(
+                          title: "Saved Posts",
+                          icon: Icons.bookmark_outline_rounded,
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedPostsScreen()));
+                          },
                         ),
                         _AccountTile(
                           title: "Your plan",
-                          onTap: () {},
-                          surface: surface,
-                          onSurface: onSurface,
-                          borderColor: borderColor,
-                          shadow: tileShadow,
+                          icon: Icons.workspace_premium_outlined,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const YourPlanScreen()),
+                          ),
                         ),
                         
                         const SizedBox(height: 24),
@@ -453,33 +482,36 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 }
 
-class _AccountTile extends StatelessWidget {
-  final String title;
-  final VoidCallback onTap;
-
-  // themed
+class _ApplicationStatusTile extends StatelessWidget {
+  final String status; // 'pending' | 'rejected'
   final Color surface;
   final Color onSurface;
   final Color borderColor;
   final BoxShadow shadow;
+  final VoidCallback? onTap;
 
-  const _AccountTile({
-    required this.title,
-    required this.onTap,
+  const _ApplicationStatusTile({
+    required this.status,
     required this.surface,
     required this.onSurface,
     required this.borderColor,
     required this.shadow,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isPending = status == 'pending';
+    final statusColor = isPending ? Colors.orange : Colors.red;
+    final statusLabel = isPending ? 'Under Review' : 'Not Approved';
+    final statusIcon = isPending ? Icons.hourglass_top_rounded : Icons.cancel_outlined;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
         boxShadow: [shadow],
       ),
       child: Material(
@@ -495,17 +527,108 @@ class _AccountTile extends StatelessWidget {
               height: 56,
               child: Row(
                 children: [
+                  Icon(Icons.badge_outlined, color: statusColor, size: 20),
+                  const SizedBox(width: 10),
                   Text(
-                    title,
-                    style: TextStyle(
-                      color: onSurface.withValues(alpha: 0.85),
-                      fontSize: 16,
-                    ),
+                    'Guide Application',
+                    style: TextStyle(color: onSurface.withOpacity(0.85), fontSize: 16),
                   ),
                   const Spacer(),
-                  Icon(Icons.chevron_right, color: onSurface.withValues(alpha: 0.5)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(statusIcon, size: 13, color: statusColor),
+                        const SizedBox(width: 4),
+                        Text(statusLabel,
+                            style: TextStyle(
+                                fontSize: 12, color: statusColor, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                  if (!isPending) ...[
+                    const SizedBox(width: 6),
+                    Icon(Icons.chevron_right, color: onSurface.withOpacity(0.5)),
+                  ],
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AccountTile extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _AccountTile({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+    final onSurface = theme.colorScheme.onSurface;
+    final surface = theme.colorScheme.surface;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: surface,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.hardEdge,
+        elevation: 0,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: primary.withOpacity(isDark ? 0.2 : 0.15),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: primary.withOpacity(isDark ? 0.2 : 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: primary, size: 20),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: onSurface.withOpacity(0.88),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Marcellus',
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded,
+                    color: primary.withOpacity(0.6), size: 22),
+              ],
             ),
           ),
         ),
