@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/guides_body.dart';
-import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/solo_trip_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/solo_trip_page.dart';
 import '../../../../theme/theme.dart';
 import '../navigator/widget/account_menu_button.dart';
 import '../navigator/widget/search_header.dart';
@@ -364,8 +364,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const SoloTripScreen(),
-                          ),
+                            builder: (_) => SoloTripPage(profileImageUrl: _profileImageUrl, onSignOut: _handleSignOut,),),
+
+
                         );
                       },
                     ),

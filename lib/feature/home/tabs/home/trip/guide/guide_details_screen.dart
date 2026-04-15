@@ -101,6 +101,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                           icon: Icon(
                             Icons.chevron_left_rounded,
                             color: titleColor,
+                            size: 30,
                           ),
                         ),
                         Expanded(
