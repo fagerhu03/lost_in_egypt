@@ -1,4 +1,4 @@
-/// ✅ Centralized string constants to avoid hardcoded strings
+/// ✅ Centralized string domain to avoid hardcoded strings
 class AppStrings {
   // ===== GENERAL =====
   static const String appName = 'Lost in Egypt';

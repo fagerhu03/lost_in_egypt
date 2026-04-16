@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/customize_plan/presentation/pages/quiz_flow_screen.dart';
 import '../../../../../../../../theme/theme.dart';
-import '../customize_plan_screen.dart';
+import '../../../../../navigator/widget/account_menu_button.dart';
+import '../../../../../navigator/widget/search_header.dart';
 
-class CustomizePlanCard extends StatelessWidget {
+class CustomizePlanCard extends StatefulWidget {
   final VoidCallback? onTap;
 
   const CustomizePlanCard({super.key, this.onTap});
+
+  @override
+  State<CustomizePlanCard> createState() => _CustomizePlanCardState();
+}
+
+class _CustomizePlanCardState extends State<CustomizePlanCard> {
+  String? _profileImageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +25,10 @@ class CustomizePlanCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => const CustomizePlanScreen(),
+            builder: (_) => QuizFlowScreen(
+              searchHeader: SearchHeader(onSignOut: () {}),
+              accountMenu: AccountMenuButton(onSignOut: () {}),
+            ),
           ),
         );
       },
@@ -43,9 +55,7 @@ class CustomizePlanCard extends StatelessWidget {
             Icon(
               Icons.calendar_month_outlined,
               size: 47,
-              color: isDark
-                  ? AppColors.darkPrimaryButton
-                  : AppColors.lightBox,
+              color: isDark ? AppColors.darkPrimaryButton : AppColors.lightBox,
             ),
             const SizedBox(width: 18),
             Flexible(
@@ -56,9 +66,7 @@ class CustomizePlanCard extends StatelessWidget {
                   fontSize: 24,
                   height: 1.25,
                   fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? AppColors.darkText
-                      : AppColors.lightBox,
+                  color: isDark ? AppColors.darkText : AppColors.lightBox,
                 ),
               ),
             ),
