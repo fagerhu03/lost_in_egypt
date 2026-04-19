@@ -32,6 +32,12 @@ class UserEntity extends Equatable {
   final bool phoneVerified;
   final bool emailVerified;
 
+  // Granular notification preferences
+  final bool notifBookings;
+  final bool notifCommunity;
+  final bool notifReviews;
+  final bool notifGuideUpdates;
+
   // Timestamps
   final DateTime createdAt;
 
@@ -70,6 +76,10 @@ class UserEntity extends Equatable {
     this.preferredCurrency = 'EGP',
     this.phoneVerified = false,
     this.emailVerified = false,
+    this.notifBookings = true,
+    this.notifCommunity = true,
+    this.notifReviews = true,
+    this.notifGuideUpdates = true,
     required this.createdAt,
     this.applicationStatus = 'none',
     this.motaLicenseNumber = '',
@@ -106,6 +116,10 @@ class UserEntity extends Equatable {
     preferredCurrency,
     phoneVerified,
     emailVerified,
+    notifBookings,
+    notifCommunity,
+    notifReviews,
+    notifGuideUpdates,
     createdAt,
     applicationStatus,
     motaLicenseNumber,

@@ -45,6 +45,12 @@ class ToursDataSourceImpl implements ToursDataSource {
       rating: tour.rating,
       reviewCount: tour.reviewCount,
       createdAt: tour.createdAt,
+      totalCapacity: tour.totalCapacity,
+      recurrenceType: tour.recurrenceType,
+      recurrenceDays: tour.recurrenceDays,
+      meetingTimeOfDay: tour.meetingTimeOfDay,
+      nextOccurrence: tour.nextOccurrence,
+      isArchived: tour.isArchived,
     );
 
     // Save to Firestore
@@ -87,6 +93,12 @@ class ToursDataSourceImpl implements ToursDataSource {
       rating: tour.rating,
       reviewCount: tour.reviewCount,
       createdAt: tour.createdAt,
+      totalCapacity: tour.totalCapacity,
+      recurrenceType: tour.recurrenceType,
+      recurrenceDays: tour.recurrenceDays,
+      meetingTimeOfDay: tour.meetingTimeOfDay,
+      nextOccurrence: tour.nextOccurrence,
+      isArchived: tour.isArchived,
     );
 
     await _firestore.collection('tours').doc(tour.id).update(updatedTour.toMap());

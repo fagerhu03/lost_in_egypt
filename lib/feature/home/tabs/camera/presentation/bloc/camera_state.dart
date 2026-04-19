@@ -70,8 +70,10 @@ class CameraReady extends CameraState {
 /// Currently analyzing an image
 class CameraAnalyzing extends CameraState {
   final bool isGalleryImage;
-  
-  const CameraAnalyzing({this.isGalleryImage = false});
+  /// Path to the captured/gallery image to display as a still preview during analysis.
+  final String? capturedImagePath;
+
+  const CameraAnalyzing({this.isGalleryImage = false, this.capturedImagePath});
 }
 
 /// Successfully identified a landmark

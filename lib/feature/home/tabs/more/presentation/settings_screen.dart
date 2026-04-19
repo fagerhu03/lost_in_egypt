@@ -116,6 +116,10 @@ class _SettingsScreenState extends State<SettingsScreen>
       language: key == 'lang' ? value : null,
       preferredCurrency: key == 'currency' ? value : null,
       visitedLandmarks: key == 'visitedLandmarks' ? value : null,
+      notifBookings: key == 'notif.bookings' ? value : null,
+      notifCommunity: key == 'notif.community' ? value : null,
+      notifReviews: key == 'notif.reviews' ? value : null,
+      notifGuideUpdates: key == 'notif.guideUpdates' ? value : null,
     );
 
     if (key == 'currency') {
@@ -257,7 +261,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                             ),
                             const SizedBox(height: 16),
 
-                            // Notification
+                            // Notification master switch
                             _buildTile(
                               icon: Icons.notifications_outlined,
                               title: "Notifications",
@@ -272,7 +276,43 @@ class _SettingsScreenState extends State<SettingsScreen>
                                 inactiveTrackColor: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 8),
+
+                            // Notification sub-preferences
+                            ...[
+                              (Icons.confirmation_number_rounded, 'Bookings & Tours', 'notif.bookings',
+                                  _currentUser?.notifBookings ?? true),
+                              (Icons.people_alt_rounded, 'Community', 'notif.community',
+                                  _currentUser?.notifCommunity ?? true),
+                              (Icons.star_rounded, 'Reviews', 'notif.reviews',
+                                  _currentUser?.notifReviews ?? true),
+                              (Icons.verified_user_rounded, 'Guide Updates', 'notif.guideUpdates',
+                                  _currentUser?.notifGuideUpdates ?? true),
+                            ].map((entry) {
+                              final (icon, title, key, value) = entry;
+                              final masterOn = _currentUser?.isNotificationsEnabled ?? true;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8, left: 12),
+                                child: Opacity(
+                                  opacity: masterOn ? 1.0 : 0.4,
+                                  child: _buildTile(
+                                    icon: icon,
+                                    title: title,
+                                    trailing: Switch(
+                                      value: value,
+                                      onChanged: masterOn && _currentUser != null
+                                          ? (v) => _updateSetting(key, v)
+                                          : null,
+                                      activeColor: Colors.white,
+                                      activeTrackColor: theme.colorScheme.primary,
+                                      inactiveThumbColor: theme.colorScheme.primary,
+                                      inactiveTrackColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                            const SizedBox(height: 8),
 
                             // Theme
                             _buildTile(

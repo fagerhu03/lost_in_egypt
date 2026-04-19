@@ -33,6 +33,12 @@ class ToursRepositoryImpl implements ToursRepository {
         rating: tour.rating,
         reviewCount: tour.reviewCount,
         createdAt: tour.createdAt,
+        totalCapacity: tour.totalCapacity,
+        recurrenceType: tour.recurrenceType,
+        recurrenceDays: tour.recurrenceDays,
+        meetingTimeOfDay: tour.meetingTimeOfDay,
+        nextOccurrence: tour.nextOccurrence,
+        isArchived: tour.isArchived,
       );
 
       await remoteDataSource.createTour(tourModel, imageFiles);
@@ -62,6 +68,12 @@ class ToursRepositoryImpl implements ToursRepository {
         rating: tour.rating,
         reviewCount: tour.reviewCount,
         createdAt: tour.createdAt,
+        totalCapacity: tour.totalCapacity,
+        recurrenceType: tour.recurrenceType,
+        recurrenceDays: tour.recurrenceDays,
+        meetingTimeOfDay: tour.meetingTimeOfDay,
+        nextOccurrence: tour.nextOccurrence,
+        isArchived: tour.isArchived,
       );
 
       await remoteDataSource.updateTour(tourModel, newImageFiles);

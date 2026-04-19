@@ -34,6 +34,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Precache all onboarding images to avoid flash on first display
+    for (final page in pagesData) {
+      precacheImage(AssetImage(page['image']!), context);
+    }
+  }
+
   void goNext() {
     if (index < pagesData.length - 1) {
       _controller.nextPage(
@@ -66,19 +75,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 fit: BoxFit.cover,
                 color: Colors.black.withOpacity(0.45),
                 colorBlendMode: BlendMode.darken,
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded || frame != null) return child;
+                  return Container(color: const Color(0xFF0B1D26));
+                },
               );
             },
           ),
 
-          // ✅ الشيب ثابت + الكلام بيتغير بس
+          // Bottom panel: allow horizontal swipes to pass through to the PageView
           Align(
             alignment: Alignment.bottomCenter,
-            child: TrianglePanel(
-              title: current["title"]!,
-              subtitle: current["subtitle"]!,
-              index: index,
-              total: pagesData.length,
-              onNext: goNext,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onHorizontalDragEnd: (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity < -200 && index < pagesData.length - 1) {
+                  _controller.nextPage(
+                    duration: const Duration(milliseconds: 450),
+                    curve: Curves.easeInOut,
+                  );
+                } else if (velocity > 200 && index > 0) {
+                  _controller.previousPage(
+                    duration: const Duration(milliseconds: 450),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              },
+              child: TrianglePanel(
+                title: current["title"]!,
+                subtitle: current["subtitle"]!,
+                index: index,
+                total: pagesData.length,
+                onNext: goNext,
+              ),
             ),
           ),
         ],

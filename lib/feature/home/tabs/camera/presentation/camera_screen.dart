@@ -7,11 +7,9 @@ import 'package:lost_in_egypt/feature/home/tabs/camera/widgets/ar_bubble_overlay
 import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_cubit.dart';
 import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_state.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:lost_in_egypt/core/di/service_locator.dart';
-import 'package:lost_in_egypt/feature/home/tabs/camera/domain/repositories/landmark_repository.dart';
-import 'package:lost_in_egypt/feature/home/tabs/camera/domain/repositories/place_repository.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/camera/data/repositories/place_repository_impl.dart';
 
 import '../widgets/camera_error_view.dart';
 import '../widgets/camera_analyzing_view.dart';
@@ -35,12 +33,14 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   void initState() {
     super.initState();
-    _cameraCubit = CameraCubit(
-      landmarkRepository: sl<LandmarkRepository>(),
-      placeRepository: sl<PlaceRepository>(),
-      firebaseAuth: sl<FirebaseAuth>(),
-      firestore: sl<FirebaseFirestore>(),
+    final apiKey = dotenv.env['MAPS_API_KEY'] ?? '';
+    final placesApiService = PlacesApiService(apiKey: apiKey);
+    final placeRepository = PlaceRepositoryImpl(
+      placesApiService: placesApiService,
+      apiKey: apiKey,
     );
+    
+    _cameraCubit = CameraCubit(placeRepository: placeRepository);
     _cameraCubit.initCamera();
   }
 
@@ -173,7 +173,10 @@ class _CameraScreenState extends State<CameraScreen> {
                     children: [
                       Positioned.fill(
                         child: (controller != null && controller.value.isInitialized)
-                            ? CameraPreview(controller)
+                            ? AspectRatio(
+                                aspectRatio: controller.value.aspectRatio,
+                                child: CameraPreview(controller),
+                              )
                             : const Center(child: CircularProgressIndicator()),
                       ),
                       if (isTranslateMode && recognizedText != null && imageSize != null)

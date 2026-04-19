@@ -29,6 +29,10 @@ class CreateTourCubit extends Cubit<CreateTourState> {
     required String meetingLocationName,
     required List<File> imageFiles,
     required int maxAttendees,
+    String recurrenceType = 'one_time',
+    List<int> recurrenceDays = const [],
+    String meetingTimeOfDay = '',
+    DateTime? nextOccurrence,
   }) async {
     if (title.trim().isEmpty) {
       emit(const CreateTourError("Tour title cannot be empty."));
@@ -42,7 +46,7 @@ class CreateTourCubit extends Cubit<CreateTourState> {
       emit(const CreateTourError("Max attendees must be at least 1."));
       return;
     }
-    if (meetingTime.isBefore(DateTime.now())) {
+    if (recurrenceType == 'one_time' && meetingTime.isBefore(DateTime.now())) {
       emit(const CreateTourError("Meeting time must be in the future."));
       return;
     }
@@ -78,6 +82,12 @@ class CreateTourCubit extends Cubit<CreateTourState> {
       createdAt: DateTime.now(),
       rating: 0.0,
       reviewCount: 0,
+      totalCapacity: maxAttendees,
+      recurrenceType: recurrenceType,
+      recurrenceDays: recurrenceDays,
+      meetingTimeOfDay: meetingTimeOfDay,
+      nextOccurrence: nextOccurrence,
+      isArchived: false,
     );
 
     final params = CreateTourParams(tour: tourEntity, imageFiles: imageFiles);
@@ -103,6 +113,11 @@ class CreateTourCubit extends Cubit<CreateTourState> {
     required List<File> imageFiles,
     required List<String> oldImages,
     required int maxAttendees,
+    String recurrenceType = 'one_time',
+    List<int> recurrenceDays = const [],
+    String meetingTimeOfDay = '',
+    DateTime? nextOccurrence,
+    int totalCapacity = 0,
   }) async {
     emit(CreateTourLoading());
 
@@ -124,11 +139,17 @@ class CreateTourCubit extends Cubit<CreateTourState> {
       meetingTime: meetingTime,
       frequency: frequency,
       meetingLocationName: meetingLocationName,
-      images: oldImages, 
+      images: oldImages,
       maxAttendees: maxAttendees,
       createdAt: DateTime.now(), // updateTour actually preserves this locally though DB has real one, but it's ok for updating other fields
       rating: 0.0,
       reviewCount: 0,
+      totalCapacity: totalCapacity > 0 ? totalCapacity : maxAttendees,
+      recurrenceType: recurrenceType,
+      recurrenceDays: recurrenceDays,
+      meetingTimeOfDay: meetingTimeOfDay,
+      nextOccurrence: nextOccurrence,
+      isArchived: false,
     );
 
     final params = UpdateTourParams(tour: tourEntity, newImageFiles: imageFiles);

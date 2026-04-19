@@ -8,12 +8,12 @@ import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 import '../../data/datasources/landmark_remote_datasource.dart';
-import '../../domain/repositories/landmark_repository.dart';
-import '../../domain/repositories/place_repository.dart';
+import '../../data/repositories/landmark_repository_impl.dart';
+import '../../data/repositories/place_repository_impl.dart';
 import '../../../account/domain/badge_constants.dart';
 import '../../../account/domain/badge_model.dart';
-import '../../../../../home/notification/domain/services/local_notification_service.dart';
 import 'camera_state.dart';
 
 /// Camera Cubit using ChangeNotifier for state management
@@ -46,27 +46,19 @@ class CameraCubit extends ChangeNotifier {
   };
 
   // Repositories
-  final LandmarkRepository _landmarkRepository;
-  final PlaceRepository _placeRepository;
+  final LandmarkRepositoryImpl _landmarkRepository;
+  final PlaceRepositoryImpl _placeRepository;
   final ImagePicker _imagePicker;
-
-  // Firebase instances (injected — never accessed as static singletons)
-  final FirebaseAuth _firebaseAuth;
-  final FirebaseFirestore _firestore;
 
   String _sourceLang = 'English';
   String _targetLang = 'Arabic';
 
   CameraCubit({
-    required LandmarkRepository landmarkRepository,
-    required PlaceRepository placeRepository,
-    required FirebaseAuth firebaseAuth,
-    required FirebaseFirestore firestore,
+    LandmarkRepositoryImpl? landmarkRepository,
+    required PlaceRepositoryImpl placeRepository,
     ImagePicker? imagePicker,
-  })  : _landmarkRepository = landmarkRepository,
+  })  : _landmarkRepository = landmarkRepository ?? LandmarkRepositoryImpl(),
         _placeRepository = placeRepository,
-        _firebaseAuth = firebaseAuth,
-        _firestore = firestore,
         _imagePicker = imagePicker ?? ImagePicker();
 
   /// Current state
@@ -148,7 +140,6 @@ class CameraCubit extends ChangeNotifier {
       );
       _translatorInitialized = true;
     } catch (e) {
-      debugPrint("Failed to initialize translator: $e");
       _translatorInitialized = false;
     }
   }
@@ -171,31 +162,27 @@ class CameraCubit extends ChangeNotifier {
   /// Toggle AR translation mode
   Future<void> toggleTranslateMode() async {
     if (_state is! CameraReady) return;
-    
+
     final currentState = _state as CameraReady;
     final newMode = !currentState.isTranslateMode;
-    
+
     if (newMode) {
-      _emit(const CameraAnalyzing());
-      
+      // Switch to translate mode immediately — don't show CameraAnalyzing
+      // Models download in the background; stream starts once ready
+      _emit(currentState.copyWith(
+        isTranslateMode: true,
+        clearRecognizedText: true,
+        translations: {},
+        clearGalleryImage: true,
+      ));
+
       try {
         await _downloadModelsIfNeeded();
-        
-        // Re-emit CameraReady with translation mode on
-        _emit(currentState.copyWith(
-          isTranslateMode: true,
-          clearRecognizedText: true,
-          translations: {},
-          clearGalleryImage: true,
-        ));
-        
         if (_controller != null && _controller!.value.isInitialized) {
           _startImageStream();
         }
       } catch (e) {
-        debugPrint("Failed to initialize translation: $e");
         _emit(CameraError('Failed to initialize translation models. Please check your internet connection.'));
-        return;
       }
     } else {
       _stopImageStream();
@@ -213,15 +200,11 @@ class CameraCubit extends ChangeNotifier {
     final sourceMlLang = _mlLanguages[_sourceLang]!;
     final targetMlLang = _mlLanguages[_targetLang]!;
 
-    bool sourceDownloaded = await modelManager.isModelDownloaded(sourceMlLang.bcpCode);
-    bool targetDownloaded = await modelManager.isModelDownloaded(targetMlLang.bcpCode);
+    final sourceDownloaded = await modelManager.isModelDownloaded(sourceMlLang.bcpCode);
+    final targetDownloaded = await modelManager.isModelDownloaded(targetMlLang.bcpCode);
 
-    if (!sourceDownloaded) {
-      await modelManager.downloadModel(sourceMlLang.bcpCode);
-    }
-    if (!targetDownloaded) {
-      await modelManager.downloadModel(targetMlLang.bcpCode);
-    }
+    if (!sourceDownloaded) await modelManager.downloadModel(sourceMlLang.bcpCode);
+    if (!targetDownloaded) await modelManager.downloadModel(targetMlLang.bcpCode);
 
     _translator = OnDeviceTranslator(
       sourceLanguage: sourceMlLang,
@@ -490,9 +473,15 @@ class CameraCubit extends ChangeNotifier {
     final wasTranslateMode = _state is CameraReady && (_state as CameraReady).isTranslateMode;
 
     try {
+      // Emit a transient analyzing state (no image path yet — taken after this line)
       _emit(wasTranslateMode ? const CameraAnalyzing(isGalleryImage: true) : const CameraAnalyzing());
 
       final XFile imageFile = await _controller!.takePicture();
+
+      // Re-emit with the captured image path so the UI can show a still preview
+      if (!wasTranslateMode) {
+        _emit(CameraAnalyzing(capturedImagePath: imageFile.path));
+      }
       
       // If we are translating, just freeze and show translation immediately
       // without triggering Gamification gamification or API calls.
@@ -653,12 +642,12 @@ class CameraCubit extends ChangeNotifier {
   /// Gamification: Record visited landmark
   Future<BadgeModel?> _recordLandmarkVisit(String placeId) async {
     try {
-      final user = _firebaseAuth.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) return null;
 
-      final userRef = _firestore.collection('users').doc(user.uid);
-
-      return await _firestore.runTransaction((transaction) async {
+      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      
+      return await FirebaseFirestore.instance.runTransaction((transaction) async {
         final doc = await transaction.get(userRef);
         if (!doc.exists) return null;
         
@@ -671,9 +660,7 @@ class CameraCubit extends ChangeNotifier {
           
           final newCount = visited.length;
           try {
-            final badge = BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
-            _sendBadgeNotification(user.uid, badge);
-            return badge;
+            return BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
           } catch (_) {
             return null;
           }
@@ -686,39 +673,13 @@ class CameraCubit extends ChangeNotifier {
     }
   }
 
-  void _sendBadgeNotification(String uid, BadgeModel badge) {
-    // Local OS popup immediately
-    LocalNotificationService().showLocalNotification(
-      id: badge.id.hashCode.abs() % 100000,
-      title: 'Badge Unlocked! 🏆',
-      body: 'You earned the "${badge.name}" badge!',
-    );
-    // Persist in Firestore so it shows in the notification screen
-    _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('notifications')
-        .add({
-      'recipientId': uid,
-      'senderId': 'system',
-      'senderName': 'Lost in Egypt',
-      'senderAvatar': '',
-      'title': 'Badge Unlocked! 🏆',
-      'message': 'You earned the "${badge.name}" badge!',
-      'type': 'badge',
-      'deepLinkTargetId': badge.id,
-      'isRead': false,
-      'timestamp': FieldValue.serverTimestamp(),
-    }).catchError((e) => debugPrint('Badge notification error: $e'));
-  }
-
   /// Gamification: Unlock Secret Badge
   Future<BadgeModel?> unlockSecretBadge(String badgeId) async {
     try {
-      final user = _firebaseAuth.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) return null;
 
-      final userRef = _firestore.collection('users').doc(user.uid);
+      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
       
       // Get current data first (reads from cache if offline)
       final doc = await userRef.get(const GetOptions(source: Source.serverAndCache));
@@ -730,11 +691,9 @@ class CameraCubit extends ChangeNotifier {
       if (!visited.contains(badgeId)) {
         // Fire and forget update to support offline unlocks
         userRef.update({'visitedLandmarks': FieldValue.arrayUnion([badgeId])});
-
+        
         try {
-          final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
-          _sendBadgeNotification(user.uid, badge);
-          return badge;
+          return BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
         } catch (_) {
           return null;
         }

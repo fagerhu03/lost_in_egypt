@@ -532,8 +532,8 @@ class _PhotosRowState extends State<_PhotosRow> {
             itemBuilder: (context, index) {
               return ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  photos[index],
+                child: Image(
+                  image: ResizeImage(AssetImage(photos[index]), width: 220),
                   width: 110,
                   height: 110,
                   fit: BoxFit.cover,

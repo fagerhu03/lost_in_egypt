@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "description": "Onboarding taste quiz. Frontend renders each question as a set of tap-to-select option cards (multi-select allowed unless minSelect==maxSelect==1). Send picked options to applyQuizAnswers callable as { answers: [{ optionId, types, tags }] }. Keys in types/tags MUST match canonical sets in functions/recommendation.js.",
+  "questions": [
+    {
+      "id": "q1_era",
+      "prompt": "Which eras of Egypt excite you most?",
+      "minSelect": 1,
+      "maxSelect": 3,
+      "options": [
+        { "id": "era_pharaonic",  "label": "Pharaonic / Ancient",     "icon": "🏺", "types": ["archaeological_site", "monument"], "tags": ["ancient", "pharaonic", "historical"] },
+        { "id": "era_islamic",    "label": "Islamic Era",              "icon": "🕌", "types": ["mosque", "historical_landmark"],  "tags": ["islamic", "religious", "cultural"] },
+        { "id": "era_coptic",     "label": "Coptic Christian",         "icon": "✝️", "types": ["church", "historical_landmark"],   "tags": ["coptic", "religious", "cultural"] },
+        { "id": "era_modern",     "label": "Modern Egypt",             "icon": "🏙️", "types": ["art_gallery", "tourist_attraction"], "tags": ["modern"] }
+      ]
+    },
+    {
+      "id": "q2_activities",
+      "prompt": "What do you love doing on trips?",
+      "minSelect": 1,
+      "maxSelect": 4,
+      "options": [
+        { "id": "act_museums",   "label": "Museums & galleries",  "icon": "🖼️", "types": ["museum", "art_gallery"], "tags": ["cultural", "historical"] },
+        { "id": "act_markets",   "label": "Markets & bazaars",    "icon": "🛍️", "types": ["market", "shopping_mall"], "tags": ["shopping", "cultural"] },
+        { "id": "act_food",      "label": "Eating everything",    "icon": "🍽️", "types": ["restaurant", "cafe"], "tags": ["food"] },
+        { "id": "act_nature",    "label": "Nature & outdoors",    "icon": "🌿", "types": ["park", "beach"], "tags": ["natural", "relaxation"] },
+        { "id": "act_nightlife", "label": "Nightlife",            "icon": "🌙", "types": ["night_club"], "tags": ["entertainment", "modern"] },
+        { "id": "act_family",    "label": "Family-friendly",      "icon": "👨‍👩‍👧", "types": ["zoo", "amusement_park", "aquarium"], "tags": ["family", "entertainment"] }
+      ]
+    },
+    {
+      "id": "q3_pace",
+      "prompt": "What's your travel style?",
+      "minSelect": 1,
+      "maxSelect": 1,
+      "options": [
+        { "id": "pace_chill",     "label": "Chill & relaxing",          "icon": "🌴", "types": ["park", "spa", "beach"], "tags": ["relaxation"] },
+        { "id": "pace_balanced",  "label": "Balanced mix",              "icon": "⚖️", "types": ["tourist_attraction"],    "tags": ["cultural"] },
+        { "id": "pace_adventure", "label": "Pack every hour",           "icon": "🎒", "types": ["tourist_attraction", "historical_landmark"], "tags": ["adventure", "historical"] }
+      ]
+    },
+    {
+      "id": "q4_budget",
+      "prompt": "How do you like to spend?",
+      "minSelect": 1,
+      "maxSelect": 1,
+      "options": [
+        { "id": "budget_budget",  "label": "Budget-friendly",   "icon": "💸", "types": [], "tags": ["budget"] },
+        { "id": "budget_mid",     "label": "Mid-range",          "icon": "💳", "types": [], "tags": [] },
+        { "id": "budget_luxury",  "label": "Spoil me",           "icon": "💎", "types": ["spa"], "tags": ["luxury"] }
+      ]
+    },
+    {
+      "id": "q5_spiritual",
+      "prompt": "Interested in spiritual sites?",
+      "minSelect": 1,
+      "maxSelect": 1,
+      "options": [
+        { "id": "spir_yes",   "label": "Yes, show me all",    "icon": "🙏", "types": ["mosque", "church"], "tags": ["religious", "cultural"] },
+        { "id": "spir_some",  "label": "The famous ones",     "icon": "⭐", "types": ["mosque"],           "tags": ["religious", "historical"] },
+        { "id": "spir_skip",  "label": "Not really",          "icon": "🚫", "types": [], "tags": [] }
+      ]
+    },
+    {
+      "id": "q6_art",
+      "prompt": "Art & culture?",
+      "minSelect": 0,
+      "maxSelect": 2,
+      "options": [
+        { "id": "art_gallery",  "label": "Contemporary art",  "icon": "🎨", "types": ["art_gallery"], "tags": ["modern", "cultural"] },
+        { "id": "art_perform",  "label": "Live performances", "icon": "🎭", "types": ["stadium"],     "tags": ["entertainment"] }
+      ]
+    },
+    {
+      "id": "q7_depth",
+      "prompt": "How deep do you want to go into history?",
+      "minSelect": 1,
+      "maxSelect": 1,
+      "options": [
+        { "id": "depth_surface", "label": "Highlights only",        "icon": "📸", "types": ["tourist_attraction"], "tags": [] },
+        { "id": "depth_medium",  "label": "A bit of context",       "icon": "📖", "types": ["museum", "historical_landmark"], "tags": ["historical", "cultural"] },
+        { "id": "depth_deep",    "label": "I want the full story",  "icon": "🏛️", "types": ["museum", "archaeological_site", "monument"], "tags": ["historical", "ancient", "cultural"] }
+      ]
+    },
+    {
+      "id": "q8_crowd",
+      "prompt": "Crowded tourist hotspots?",
+      "minSelect": 1,
+      "maxSelect": 1,
+      "options": [
+        { "id": "crowd_love",  "label": "Love them — that's where the action is", "icon": "🙌", "types": ["tourist_attraction"], "tags": [] },
+        { "id": "crowd_avoid", "label": "Prefer hidden gems",                      "icon": "🗝️", "types": [], "tags": ["adventure"] }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
@@ -40,6 +44,22 @@ class _AuthGateState extends State<AuthGate> {
       // fallback if fetch fails
       ThemeController.setDark(false);
       CurrencyController.setCurrency('EGP');
+    }
+
+    // ── FCM token registration ─────────────────────────────────────────────
+    try {
+      if (Platform.isIOS) {
+        await FirebaseMessaging.instance.requestPermission();
+      }
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .update({'fcmToken': token});
+      }
+    } catch (e) {
+      debugPrint('FCM token registration error: $e');
     }
   }
 

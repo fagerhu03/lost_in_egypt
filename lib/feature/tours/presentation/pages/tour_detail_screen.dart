@@ -175,9 +175,21 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     ),
                     child: Column(
                       children: [
-                        _buildInfoRow(context, Icons.calendar_month, 'Date & Time', DateFormat('MMM d, yyyy - h:mm a').format(tour.meetingTime)),
+                        _buildInfoRow(
+                          context,
+                          Icons.calendar_month,
+                          'Date & Time',
+                          _buildDateTimeLabel(tour),
+                        ),
                         const Divider(height: 24),
-                        _buildInfoRow(context, Icons.people, 'Max Attendees', '${tour.maxAttendees} people'),
+                        _buildInfoRow(
+                          context,
+                          Icons.people,
+                          'Availability',
+                          tour.totalCapacity > 0
+                              ? '${tour.maxAttendees} of ${tour.totalCapacity} spots remaining'
+                              : '${tour.maxAttendees} spots remaining',
+                        ),
                         const Divider(height: 24),
                         _buildInfoRow(context, Icons.location_on, 'Location', tour.meetingLocationName),
                       ],
@@ -363,6 +375,51 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
     );
   }
 
+  String _buildDateTimeLabel(TourEntity t) {
+    final dateFormat = DateFormat('MMM d, yyyy');
+    final timeFormat = DateFormat('h:mm a');
+
+    if (t.recurrenceType == 'one_time') {
+      return DateFormat('MMM d, yyyy \'at\' h:mm a').format(t.meetingTime);
+    }
+
+    // Recurring: show "Next: Apr 6, 2026 · Every Sunday at 9:00 AM"
+    final nextDate = t.nextOccurrence ?? t.meetingTime;
+    final nextLabel = dateFormat.format(nextDate);
+
+    String everyLabel;
+    switch (t.recurrenceType) {
+      case 'daily':
+        everyLabel = 'Every day';
+        break;
+      case 'weekly':
+        if (t.recurrenceDays.isNotEmpty) {
+          final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+          everyLabel = 'Every ${days[t.recurrenceDays.first]}';
+        } else {
+          everyLabel = 'Weekly';
+        }
+        break;
+      case 'custom':
+        if (t.recurrenceDays.isNotEmpty) {
+          final labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          final sorted = List<int>.from(t.recurrenceDays)..sort();
+          everyLabel = 'Every ${sorted.map((d) => labels[d]).join(', ')}';
+        } else {
+          everyLabel = 'Custom schedule';
+        }
+        break;
+      default:
+        everyLabel = t.frequency;
+    }
+
+    final timeLabel = t.meetingTimeOfDay.isNotEmpty
+        ? t.meetingTimeOfDay
+        : timeFormat.format(t.meetingTime);
+
+    return 'Next: $nextLabel · $everyLabel at $timeLabel';
+  }
+
   Widget _buildInfoRow(BuildContext context, IconData icon, String title, String value) {
     final theme = Theme.of(context);
     return Row(
@@ -390,20 +447,28 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
   }
 
   Widget _buildScheduleRow(BuildContext context, String frequency) {
-    if (frequency == 'One-Time') {
+    // New recurrenceType-based display
+    if (tour.recurrenceType == 'one_time') {
       return Text('This is a one-time tour.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)));
     }
-    
-    final days = frequency.split(', ');
-    final allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+    if (tour.recurrenceType == 'daily') {
+      return Text('Runs every day.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)));
+    }
+
+    // weekly or custom: show day chips
+    final activeDayIndices = tour.recurrenceDays.isNotEmpty
+        ? tour.recurrenceDays
+        : _daysFromFrequencyString(frequency); // backward compat for old docs
+
+    final allDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: allDays.map((day) {
-        final isSelected = days.contains(day);
+      children: List.generate(allDayLabels.length, (i) {
+        final isSelected = activeDayIndices.contains(i);
         return Chip(
-          label: Text(day),
+          label: Text(allDayLabels[i]),
           backgroundColor: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
           labelStyle: TextStyle(
             color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
@@ -416,8 +481,17 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
             ),
           ),
         );
-      }).toList(),
+      }),
     );
+  }
+
+  /// Backward compat: parse old frequency strings like "Mon, Wed, Fri" into day indices.
+  List<int> _daysFromFrequencyString(String frequency) {
+    const map = {'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6};
+    return frequency.split(', ')
+        .map((d) => map[d])
+        .whereType<int>()
+        .toList();
   }
 }
 

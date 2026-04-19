@@ -24,13 +24,78 @@ class BookingConfirmationScreen extends StatefulWidget {
 }
 
 class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
+  static const bool _applePayEnabled = false;
+  static const bool _fawryEnabled = false;
+
   final Uuid _uuid = const Uuid();
   bool _isLoading = false;
   String _selectedPaymentMethod = 'card';
   final TextEditingController _walletPhoneController = TextEditingController();
   int _quantity = 1;
+  DateTime? _selectedSessionDate;
 
   double get _totalPrice => widget.tour.price * _quantity;
+
+  bool get _isRecurring => widget.tour.recurrenceType != 'one_time';
+
+  /// Compute the next N upcoming occurrences from now.
+  List<DateTime> _computeUpcomingOccurrences({int count = 4}) {
+    final tour = widget.tour;
+    final tod = _parseMeetingTimeOfDay(tour);
+    final now = DateTime.now();
+    final results = <DateTime>[];
+
+    if (tour.recurrenceType == 'daily') {
+      var candidate = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
+      if (!candidate.isAfter(now)) candidate = candidate.add(const Duration(days: 1));
+      for (int i = 0; i < count; i++) {
+        results.add(candidate.add(Duration(days: i)));
+      }
+    } else if ((tour.recurrenceType == 'weekly' || tour.recurrenceType == 'custom') &&
+        tour.recurrenceDays.isNotEmpty) {
+      // 0=Mon...6=Sun
+      final sortedDays = List<int>.from(tour.recurrenceDays)..sort();
+      var checkDate = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
+
+      for (int safety = 0; safety < 60 && results.length < count; safety++) {
+        final dartDay = checkDate.weekday - 1;
+        if (sortedDays.contains(dartDay) && checkDate.isAfter(now)) {
+          results.add(checkDate);
+        }
+        checkDate = checkDate.add(const Duration(days: 1));
+      }
+    } else {
+      // Fallback: use nextOccurrence or meetingTime
+      final base = tour.nextOccurrence ?? tour.meetingTime;
+      results.add(base);
+    }
+
+    return results;
+  }
+
+  _TimeOfDaySimple _parseMeetingTimeOfDay(TourEntity tour) {
+    if (tour.meetingTimeOfDay.isNotEmpty) {
+      final parts = tour.meetingTimeOfDay.split(':');
+      if (parts.length == 2) {
+        return _TimeOfDaySimple(
+          hour: int.tryParse(parts[0]) ?? 9,
+          minute: int.tryParse(parts[1]) ?? 0,
+        );
+      }
+    }
+    return _TimeOfDaySimple(hour: tour.meetingTime.hour, minute: tour.meetingTime.minute);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isRecurring) {
+      final occurrences = _computeUpcomingOccurrences();
+      if (occurrences.isNotEmpty) {
+        _selectedSessionDate = occurrences.first;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -138,10 +203,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       status: 'confirmed',
       paymentReference: transactionId,
       paymentStatus: 'paid',
-      date: widget.tour.meetingTime,
+      date: _selectedSessionDate ?? widget.tour.meetingTime,
       createdAt: DateTime.now(),
       quantity: _quantity,
       totalAmountEGP: _totalPrice,
+      sessionDate: _isRecurring ? _selectedSessionDate : null,
     );
 
     final useCase = sl<BookTourUseCase>();
@@ -375,6 +441,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         ),
                       ],
                     ),
+                    // Session date picker for recurring tours
+                    if (_isRecurring) ...[
+                      const Divider(height: 24),
+                      const Text('Select Session', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 10),
+                      _buildSessionDatePicker(primary),
+                    ],
                     const Divider(height: 24),
                     // Quantity selector
                     Row(
@@ -448,22 +521,22 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 value: 'wallet',
                 theme: theme,
               ),
-              _buildPaymentOption(
-                title: 'Apple Pay',
-                subtitle: 'iOS only • Coming soon',
-                icon: Icons.apple,
-                value: 'apple_pay',
-                theme: theme,
-                enabled: false, // Enable when Apple Pay integration is live
-              ),
-              _buildPaymentOption(
-                title: 'Fawry / Kiosk',
-                subtitle: 'Pay at any 172,000+ Fawry outlets',
-                icon: Icons.receipt_long,
-                value: 'kiosk',
-                theme: theme,
-                enabled: false, // Enable when kiosk integration is created
-              ),
+              if (_applePayEnabled)
+                _buildPaymentOption(
+                  title: 'Apple Pay',
+                  subtitle: 'iOS only',
+                  icon: Icons.apple,
+                  value: 'apple_pay',
+                  theme: theme,
+                ),
+              if (_fawryEnabled)
+                _buildPaymentOption(
+                  title: 'Fawry / Kiosk',
+                  subtitle: 'Pay at any 172,000+ Fawry outlets',
+                  icon: Icons.receipt_long,
+                  value: 'kiosk',
+                  theme: theme,
+                ),
 
               // Wallet phone input
               if (_selectedPaymentMethod == 'wallet') ...[
@@ -685,4 +758,83 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       ),
     );
   }
+
+  Widget _buildSessionDatePicker(Color primary) {
+    final occurrences = _computeUpcomingOccurrences(count: 4);
+    if (occurrences.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 56,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: occurrences.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, i) {
+          final date = occurrences[i];
+          final isSelected = _selectedSessionDate != null &&
+              _selectedSessionDate!.year == date.year &&
+              _selectedSessionDate!.month == date.month &&
+              _selectedSessionDate!.day == date.day;
+
+          final dayLabel = _dayOfWeekShort(date.weekday);
+          final dateLabel = '${_monthShort(date.month)} ${date.day}';
+
+          return GestureDetector(
+            onTap: () => setState(() => _selectedSessionDate = date),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? primary : primary.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected ? primary : primary.withOpacity(0.3),
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    dayLabel,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isSelected ? Colors.white : primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    dateLabel,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isSelected ? Colors.white : primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _dayOfWeekShort(int weekday) {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days[(weekday - 1).clamp(0, 6)];
+  }
+
+  String _monthShort(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[(month - 1).clamp(0, 11)];
+  }
+}
+
+/// Simple time-of-day struct used internally (avoids Flutter TimeOfDay dependency in logic methods)
+class _TimeOfDaySimple {
+  final int hour;
+  final int minute;
+  const _TimeOfDaySimple({required this.hour, required this.minute});
 }
