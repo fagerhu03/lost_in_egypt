@@ -15,6 +15,7 @@ import 'package:get_it/get_it.dart';
 
 
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+import 'package:lost_in_egypt/core/utils/error_handler.dart';
 
 class SignupScreen extends StatefulWidget {
   final bool isGuidePreselected;
@@ -284,7 +285,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (e.code == 'weak-password') msg = "The password is too weak.";
       if (mounted) _showError(msg);
     } catch (e) {
-      if (mounted) _showError("Error: ${e.toString()}");
+      if (mounted) _showError(ErrorHandler.handleGenericError(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

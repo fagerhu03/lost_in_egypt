@@ -15,7 +15,7 @@ class AIStorytellerService {
       return "The spirits of history are silent right now. Please try again later.";
     } catch (e) {
       debugPrint("AI Storyteller error: \$e");
-      return "The spirits of history are silent right now. Error: \$e";
+      return "The spirits of history are silent right now. Please try again later.";
     }
   }
 }

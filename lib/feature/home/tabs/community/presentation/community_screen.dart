@@ -12,6 +12,8 @@ import './community_post_card.dart';
 import 'post_detail_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import '../../../../../core/widgets/shimmer_loading_widget.dart';
+import '../../../../../core/utils/snack_bar_utils.dart';
+import '../../../../../core/utils/error_handler.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -27,6 +29,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   final FirebaseCommunityRepository _repository = FirebaseCommunityRepository();
   final TextEditingController _postController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   final FocusNode _composerFocusNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
 
@@ -50,6 +53,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   @override
   void dispose() {
     _postController.dispose();
+    _searchController.dispose();
     _composerFocusNode.dispose();
     super.dispose();
   }
@@ -318,12 +322,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       if (mounted) _composerFocusNode.unfocus();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
+        showErrorSnackBar(context, ErrorHandler.handleGenericError(e));
       }
     } finally {
       if (mounted) setState(() => _isPosting = false);
@@ -361,6 +360,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
     return Scaffold(
       backgroundColor: bg,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Positioned.fill(child: Container(color: bg)),
@@ -462,6 +462,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                                       ),
                                     );
                                   },
+                                  onHashtagTap: (tag) => setState(() {
+                                    _searchQuery = tag;
+                                    _searchController.text = tag;
+                                  }),
                                 );
                               },
                             );
@@ -508,6 +512,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 boxShadow: [shadow],
               ),
               child: TextField(
+                controller: _searchController,
                 onChanged: (val) => setState(() => _searchQuery = val),
                 textInputAction: TextInputAction.search,
                 style: TextStyle(

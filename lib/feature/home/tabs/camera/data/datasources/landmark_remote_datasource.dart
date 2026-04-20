@@ -59,6 +59,10 @@ class LandmarkRemoteDataSource {
             'base64Image': base64Image,
           }
         }),
+      ).timeout(
+        const Duration(seconds: 20),
+        onTimeout: () => throw LandmarkDetectionException(
+            'Request timed out. Please check your connection and try again.'),
       );
 
       // 4. Handle Response
@@ -93,9 +97,22 @@ class LandmarkRemoteDataSource {
         throw LandmarkDetectionException(
             'Cloud Function HTTP Error: ${response.statusCode} - $errorMsg');
       }
+    } on LandmarkDetectionException {
+      rethrow;
+    } on SocketException {
+      throw LandmarkDetectionException(
+          'No internet connection. Please check your network and try again.');
+    } on http.ClientException catch (e) {
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('host lookup') || msg.contains('connection') || msg.contains('network')) {
+        throw LandmarkDetectionException(
+            'No internet connection. Please check your network and try again.');
+      }
+      throw LandmarkDetectionException(
+          'Connection failed. Please check your internet and try again.');
     } catch (e) {
-      if (e is LandmarkDetectionException) rethrow;
-      throw LandmarkDetectionException('Failed to identify landmark: $e');
+      throw LandmarkDetectionException(
+          'Something went wrong. Please check your connection and try again.');
     }
   }
 }

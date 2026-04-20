@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -33,9 +34,9 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return const Right(null);
     } on FirebaseAuthException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Signup Failed'));
+      return Left(ServerFailure(ErrorHandler.handleAuthError(e)));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -56,9 +57,9 @@ class AuthRepositoryImpl implements AuthRepository {
       } else if (e.code == 'wrong-password') {
         return Left(ServerFailure('Wrong password provided.'));
       }
-      return Left(ServerFailure(e.message ?? 'Login Failed'));
+      return Left(ServerFailure(ErrorHandler.handleAuthError(e)));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -68,9 +69,9 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.forgetPassword(email: email);
       return const Right(null);
     } on FirebaseAuthException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Reset Failed'));
+      return Left(ServerFailure(ErrorHandler.handleAuthError(e)));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -80,9 +81,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final userModel = await remoteDataSource.signInWithGoogle();
       return Right(userModel);
     } on FirebaseAuthException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Google Sign In Failed'));
+      return Left(ServerFailure(ErrorHandler.handleAuthError(e)));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -92,9 +93,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final userModel = await remoteDataSource.signInWithFacebook();
       return Right(userModel);
     } on FirebaseAuthException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Facebook Sign In Failed'));
+      return Left(ServerFailure(ErrorHandler.handleAuthError(e)));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -104,9 +105,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final userModel = await remoteDataSource.signInWithApple();
       return Right(userModel);
     } on FirebaseAuthException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Apple Sign In Failed'));
+      return Left(ServerFailure(ErrorHandler.handleAuthError(e)));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -124,7 +125,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -135,7 +136,7 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(exists);
     } catch (e) {
       // Even if it fails, we return Left to handle it gracefully
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -145,7 +146,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final userModel = await remoteDataSource.getUserProfile(uid);
       return Right(userModel); // UserModel extends UserEntity, so this is valid
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -175,7 +176,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.updateUserProfile(userModel);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 }

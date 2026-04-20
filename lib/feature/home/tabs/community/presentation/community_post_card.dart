@@ -17,6 +17,7 @@ class CommunityPostCard extends StatefulWidget {
   final VoidCallback? onCommentTap;
   final VoidCallback? onTap;
   final bool isDetail;
+  final void Function(String hashtag)? onHashtagTap;
 
   const CommunityPostCard({
     super.key,
@@ -24,6 +25,7 @@ class CommunityPostCard extends StatefulWidget {
     this.onCommentTap,
     this.onTap,
     this.isDetail = false,
+    this.onHashtagTap,
   });
 
   @override
@@ -201,6 +203,71 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
     return RepaintBoundary(
       child: _buildCard(context, theme, isDark, surface, onSurface, primary, activeColor),
     );
+  }
+
+  Widget _buildRichContent(String text, Color onSurface, Color primary) {
+    final spans = <InlineSpan>[];
+    final regex = RegExp(r'(@\w+|#\w+)');
+    final baseStyle = TextStyle(color: onSurface, fontWeight: FontWeight.w600, fontSize: 15, fontFamily: "Mako", height: 1.4);
+    final highlightStyle = TextStyle(color: primary, fontWeight: FontWeight.bold, fontSize: 15, fontFamily: "Mako", height: 1.4);
+    int last = 0;
+
+    for (final match in regex.allMatches(text)) {
+      if (match.start > last) {
+        spans.add(TextSpan(text: text.substring(last, match.start), style: baseStyle));
+      }
+      final token = match.group(0)!;
+      if (token.startsWith('@')) {
+        final username = token.substring(1);
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: GestureDetector(
+            onTap: () => _navigateToProfileByUsername(username),
+            child: Text(token, style: highlightStyle),
+          ),
+        ));
+      } else {
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: GestureDetector(
+            onTap: () => widget.onHashtagTap?.call(token),
+            child: Text(token, style: highlightStyle),
+          ),
+        ));
+      }
+      last = match.end;
+    }
+    if (last < text.length) {
+      spans.add(TextSpan(text: text.substring(last), style: baseStyle));
+    }
+    if (spans.isEmpty) return Text(text, style: baseStyle);
+    return RichText(text: TextSpan(children: spans));
+  }
+
+  Future<void> _navigateToProfileByUsername(String username) async {
+    if (!mounted) return;
+    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    try {
+      final snap = await FirebaseFirestore.instance.collection('usernames').doc(username.toLowerCase()).get();
+      if (!mounted) return;
+      Navigator.pop(context);
+      if (!snap.exists) return;
+      final uid = snap.data()?['uid'] as String?;
+      if (uid == null || !mounted) return;
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (!mounted) return;
+      if (!userDoc.exists) return;
+      final profileUser = UserModel.fromMap(userDoc.data() as Map<String, dynamic>, uid);
+      if (profileUser.id == FirebaseAuth.instance.currentUser?.uid) {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountScreen()));
+      } else {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => UniversalProfileScreen(user: profileUser)));
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+    }
   }
 
   Widget _buildCard(BuildContext context, ThemeData theme, bool isDark, Color surface, Color onSurface, Color primary, Color activeColor) {
@@ -417,16 +484,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.post.content,
-                  style: TextStyle(
-                    color: onSurface,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    fontFamily: "Mako",
-                    height: 1.4,
-                  ),
-                ),
+                _buildRichContent(widget.post.content, onSurface, primary),
 
                 if (widget.post.locationName != null)
                   Padding(

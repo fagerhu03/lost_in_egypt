@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -101,14 +102,17 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
 
     try {
-      final result = await _translator.translateText(_sourceText);
+      final result = await _translator.translateText(_sourceText)
+          .timeout(const Duration(seconds: 15));
       setState(() {
         _translatedText = result;
         _targetController.text = result;
       });
+    } on TimeoutException {
+      if (mounted) _showError('Translation timed out. Models may still be downloading — try again in a moment.');
     } catch (e) {
       debugPrint("Translation error: $e");
-      _showError("Models may be downloading. Please try again.");
+      if (mounted) _showError('Translation failed. If offline, models may not be downloaded yet.');
     } finally {
       if (mounted) setState(() => _isTranslating = false);
     }

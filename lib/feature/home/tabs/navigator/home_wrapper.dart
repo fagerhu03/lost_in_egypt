@@ -97,7 +97,16 @@ class _HomeWrapperState extends State<HomeWrapper>
         ? AppColors.darkNavBar.withOpacity(0.50)
         : theme.colorScheme.primary.withOpacity(0.50);
 
-    return Scaffold(
+    return PopScope(
+      canPop: index == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && index != 0) {
+          setState(() => index = 0);
+          _tabController.animateTo(0);
+          _pageController.jumpToPage(0);
+        }
+      },
+      child: Scaffold(
       extendBody: true,
       body: NotificationListener<UserScrollNotification>(
         onNotification: (notification) {
@@ -145,6 +154,7 @@ class _HomeWrapperState extends State<HomeWrapper>
           ),
           child: ConvexAppBar(
             controller: _tabController,
+            initialActiveIndex: index,
             style: TabStyle.react,
             height: 55,
             curveSize: 90,
@@ -164,6 +174,6 @@ class _HomeWrapperState extends State<HomeWrapper>
           ),
         ),
       ),
-    );
+    ));
   }
 }

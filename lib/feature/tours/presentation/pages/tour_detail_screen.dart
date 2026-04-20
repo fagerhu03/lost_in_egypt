@@ -136,7 +136,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                             builder: (context, snap) {
                               final label = snap.hasData
                                   ? CurrencyService.format(snap.data!, currency)
-                                  : 'EGP ${tour.price.toStringAsFixed(0)}';
+                                  : snap.hasError
+                                      ? 'EGP ${tour.price.toStringAsFixed(0)} ⚠'
+                                      : 'EGP ${tour.price.toStringAsFixed(0)}';
                               return Text(
                                 label,
                                 style: TextStyle(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
+import 'package:lost_in_egypt/core/utils/error_handler.dart';
 
 class AdminLanguageRequestsScreen extends StatelessWidget {
   const AdminLanguageRequestsScreen({Key? key}) : super(key: key);
@@ -42,7 +43,7 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to update request: \$e'),
+          content: Text(ErrorHandler.handleGenericError(e)),
           backgroundColor: Colors.red,
         ));
       }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/utils/error_handler.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   /// Called when verification is confirmed (either via Firebase Auth or
@@ -86,7 +87,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Failed to resend: ${e.toString()}"),
+            content: Text(ErrorHandler.handleGenericError(e)),
             backgroundColor: Colors.red,
           ),
         );

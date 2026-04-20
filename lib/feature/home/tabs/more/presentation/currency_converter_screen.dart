@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/currency_repository.dart';
+import 'package:lost_in_egypt/core/utils/error_handler.dart';
 
 class CurrencyConverterScreen extends StatefulWidget {
   const CurrencyConverterScreen({super.key});
@@ -72,7 +73,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showError(e.toString().replaceAll("Exception: ", ""));
+        _showError(ErrorHandler.handleGenericError(e));
         setState(() => _isConverting = false);
       }
     }

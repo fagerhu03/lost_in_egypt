@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
+import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 
@@ -104,7 +105,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           _isSaved = !_isSaved;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update favorite: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     }

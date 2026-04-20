@@ -10,6 +10,7 @@ import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_fi
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -81,12 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
         body: BlocConsumer<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state is LoginFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error),
-                backgroundColor: Colors.redAccent,
-              ),
-            );
+            showErrorSnackBar(context, state.error);
           } else if (state is LoginSuccess) {
             final user = state.user;
 

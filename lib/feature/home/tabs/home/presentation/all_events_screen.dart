@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
+import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class AllEventsScreen extends StatefulWidget {
@@ -63,11 +64,10 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
             return Center(child: CircularProgressIndicator(color: primary));
           }
           if (snap.hasError) {
-            return Center(
-              child: Text(
-                'Something went wrong',
-                style: TextStyle(color: onSurface.withOpacity(0.6)),
-              ),
+            return AppErrorWidget(
+              message: 'Could not load events.\nCheck your connection and try again.',
+              icon: Icons.event_busy_rounded,
+              onRetry: () => setState(() {}),
             );
           }
 

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/widgets/shimmer_loading_widget.dart';
+import '../../../../core/widgets/app_error_widget.dart';
 import '../../domain/entities/tour_entity.dart';
 import '../bloc/explorer_tours_cubit.dart';
 import '../bloc/explorer_tours_state.dart';
@@ -411,8 +412,9 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
   Widget _buildBody(ExplorerToursState state, List<TourEntity> allTours, ThemeData theme) {
     if (state is ExplorerToursLoading) return _buildShimmerLoading();
     if (state is ExplorerToursError) {
-      return Center(
-        child: Text('Failed to load tours.\n${state.message}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+      return AppErrorWidget(
+        message: 'Could not load tours.\nCheck your connection and try again.',
+        onRetry: () => context.read<ExplorerToursCubit>().loadTours(),
       );
     }
     if (state is ExplorerToursLoaded) {
@@ -471,18 +473,15 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
 
   Widget _buildShimmerLoading() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
       itemCount: 4,
-      itemBuilder: (context, index) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          height: 300,
-          decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-        );
-      },
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: const ShimmerLoadingWidget.rectangular(height: 280),
+        ),
+      ),
     );
   }
 }

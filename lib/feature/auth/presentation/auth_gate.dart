@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
@@ -60,6 +62,23 @@ class _AuthGateState extends State<AuthGate> {
       }
     } catch (e) {
       debugPrint('FCM token registration error: $e');
+    }
+
+    // ── Battery optimization exemption (Android only — Samsung/OEM fix) ────
+    if (Platform.isAndroid) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final alreadyPrompted = prefs.getBool('battery_opt_prompted') ?? false;
+        if (!alreadyPrompted) {
+          final isDisabled = await DisableBatteryOptimization.isBatteryOptimizationDisabled;
+          if (isDisabled != true) {
+            await DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
+          }
+          await prefs.setBool('battery_opt_prompted', true);
+        }
+      } catch (e) {
+        debugPrint('Battery optimization check error: $e');
+      }
     }
   }
 

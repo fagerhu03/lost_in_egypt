@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -21,6 +22,7 @@ import '../../../../feature/reviews/data/models/review_model.dart';
 import '../../../../feature/home/notification/data/datasources/notifications_data_source.dart';
 import '../../../../feature/home/notification/data/models/notification_model.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/utils/error_handler.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main screen
@@ -99,21 +101,9 @@ class _BookingTabState extends State<_BookingTab> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: 60, color: theme.colorScheme.error),
-                const SizedBox(height: 12),
-                const Text('Error loading bookings'),
-                const SizedBox(height: 8),
-                Text(
-                  'Check the debug console for a Firestore index link.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                ),
-              ],
-            ),
+          return AppErrorWidget(
+            message: 'Could not load bookings.\nCheck your connection and try again.',
+            icon: Icons.book_outlined,
           );
         }
 
@@ -570,7 +560,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       if (mounted) {
         setState(() => _cancelling = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to cancel: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     }
@@ -725,7 +715,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                     } catch (e) {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $e')),
+                          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
                         );
                       }
                     }
@@ -776,7 +766,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to re-book: $e')),
+        SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
       );
     }
   }

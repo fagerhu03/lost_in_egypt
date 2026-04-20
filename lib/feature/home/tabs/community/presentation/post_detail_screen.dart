@@ -8,6 +8,7 @@ import '../data/model/community_post_model.dart';
 import './community_post_card.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import '../../../../../core/widgets/universal_report_dialog.dart';
+import '../../../../../core/utils/error_handler.dart';
 import '../../../../admin/data/models/report_model.dart';
 import '../../../../admin/domain/repositories/reports_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
@@ -196,7 +197,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to post comment: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     }

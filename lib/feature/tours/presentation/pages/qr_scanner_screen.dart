@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/utils/error_handler.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({Key? key}) : super(key: key);
@@ -69,7 +70,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         alreadyCheckedIn: status == 'checked_in' || status == 'partially_checked_in',
       );
     } catch (e) {
-      _showResult(context, valid: false, message: 'Error: $e');
+      _showResult(context, valid: false, message: ErrorHandler.handleGenericError(e));
     }
   }
 
@@ -310,7 +311,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         } catch (e) {
                           if (mounted) {
                             Navigator.pop(ctx);
-                            _showResult(context, valid: false, message: 'Error: $e');
+                            _showResult(context, valid: false, message: ErrorHandler.handleGenericError(e));
                           }
                         }
                       },

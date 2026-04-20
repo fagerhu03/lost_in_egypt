@@ -15,6 +15,7 @@ import 'qr_scanner_screen.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/currency_controller.dart';
 import '../../../../core/services/currency_service.dart';
+import '../../../../core/widgets/app_error_widget.dart';
 
 class GuideDashboardScreen extends StatefulWidget {
   const GuideDashboardScreen({super.key});
@@ -166,6 +167,10 @@ class _EarningsSummary extends StatelessWidget {
         int totalBookings = 0;
         double totalRevenue = 0;
 
+        if (snapshot.hasError) {
+          return AppErrorWidget(message: 'Could not load earnings.\nCheck your connection and try again.');
+        }
+
         if (snapshot.hasData) {
           totalBookings = snapshot.data!.docs.length;
           for (final doc in snapshot.data!.docs) {
@@ -208,7 +213,9 @@ class _EarningsSummary extends StatelessWidget {
                   builder: (_, snap) {
                     final label = snap.hasData
                         ? CurrencyService.format(snap.data!, currency)
-                        : 'EGP ${totalRevenue.toStringAsFixed(0)}';
+                        : snap.hasError
+                            ? 'EGP ${totalRevenue.toStringAsFixed(0)} ⚠'
+                            : 'EGP ${totalRevenue.toStringAsFixed(0)}';
                     return _statItem(label, 'Revenue', Icons.monetization_on, Colors.amber[700]!);
                   },
                 ),
@@ -306,7 +313,9 @@ class _GuideTourCard extends StatelessWidget {
                           builder: (_, snap) => Text(
                             snap.hasData
                                 ? CurrencyService.format(snap.data!, currency)
-                                : 'EGP ${tour.price.toStringAsFixed(0)}',
+                                : snap.hasError
+                                    ? 'EGP ${tour.price.toStringAsFixed(0)} ⚠'
+                                    : 'EGP ${tour.price.toStringAsFixed(0)}',
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                           ),
                         ),
@@ -381,6 +390,12 @@ class _GuideTourCard extends StatelessWidget {
                 .where('status', isEqualTo: 'confirmed')
                 .get(),
             builder: (context, snap) {
+              if (snap.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: AppErrorWidget(message: 'Could not load bookings.', icon: Icons.book_outlined),
+                );
+              }
               final count = snap.data?.docs.length ?? 0;
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14),

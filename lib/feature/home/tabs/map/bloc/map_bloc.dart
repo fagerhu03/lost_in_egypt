@@ -59,7 +59,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       ));
     } catch (e) {
       debugPrint('❌ Error loading map items: $e');
-      emit(state.copyWith(isLoading: false, error: 'Error loading places: $e'));
+      emit(state.copyWith(isLoading: false, error: 'Failed to load places. Please check your connection.'));
     }
   }
 
@@ -199,7 +199,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       emit(state.copyWithClearPlace(
         isLoadingRoute: false,
         isNavigationMode: false,
-        error: 'Navigation error: $e',
+        error: 'Navigation failed. Please try again.',
       ));
     }
   }

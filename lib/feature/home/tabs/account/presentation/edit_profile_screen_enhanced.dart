@@ -14,6 +14,7 @@ import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verifi
 import '../../camera/widgets/badge_unlock_dialog.dart';
 import '../domain/badge_constants.dart';
 import 'package:lost_in_egypt/core/utils/image_utils.dart';
+import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/data/repositories/firebase_community_repository.dart';
 
 class EditProfileScreenEnhanced extends StatefulWidget {
@@ -371,10 +372,10 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       if (e.code == 'already-exists') {
         setState(() => _usernameError = "That username was just taken — try another");
       } else {
-        _showError("Error: $e");
+        _showError(ErrorHandler.handleGenericError(e));
       }
     } catch (e) {
-      _showError("Error: $e");
+      _showError(ErrorHandler.handleGenericError(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -398,7 +399,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         return;
       }
     } catch (e) {
-      _showError("Failed to check existing requests: $e");
+      _showError(ErrorHandler.handleGenericError(e));
       setState(() => _isLoading = false);
       return;
     }
@@ -466,7 +467,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           );
         }
       } catch (e) {
-        _showError("Failed to submit request: $e");
+        _showError(ErrorHandler.handleGenericError(e));
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
@@ -1306,7 +1307,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("Could not send email: $e"),
+                      content: Text(ErrorHandler.handleGenericError(e)),
                       backgroundColor: Colors.red,
                     ),
                   );

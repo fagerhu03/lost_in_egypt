@@ -13,6 +13,7 @@ import '../../../../core/di/service_locator.dart';
 import '../../data/datasources/paymob_api_service.dart';
 import '../../../../feature/home/notification/domain/services/local_notification_service.dart';
 import 'booking_history_screen.dart';
+import '../../../../core/utils/error_handler.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
   final TourEntity tour;
@@ -189,7 +190,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        _showSnackBar('Payment Error: $e', isError: true);
+        _showSnackBar(ErrorHandler.handleGenericError(e), isError: true);
       }
     }
   }
@@ -328,7 +329,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   builder: (context, snap) {
                     final label = snap.hasData
                         ? CurrencyService.format(snap.data!, currency)
-                        : 'EGP ${_totalPrice.toStringAsFixed(0)}';
+                        : snap.hasError
+                            ? 'EGP ${_totalPrice.toStringAsFixed(0)} ⚠'
+                            : 'EGP ${_totalPrice.toStringAsFixed(0)}';
                     return Text(
                       '$label paid successfully.',
                       style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55)),
@@ -480,10 +483,14 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           builder: (context, snap) {
                             final unitLabel = snap.hasData
                                 ? CurrencyService.format(snap.data!, currency)
-                                : 'EGP ${widget.tour.price.toStringAsFixed(0)}';
+                                : snap.hasError
+                                    ? 'EGP ${widget.tour.price.toStringAsFixed(0)} ⚠'
+                                    : 'EGP ${widget.tour.price.toStringAsFixed(0)}';
                             final totalLabel = snap.hasData
                                 ? CurrencyService.format(snap.data! * _quantity, currency)
-                                : 'EGP ${_totalPrice.toStringAsFixed(0)}';
+                                : snap.hasError
+                                    ? 'EGP ${_totalPrice.toStringAsFixed(0)} ⚠'
+                                    : 'EGP ${_totalPrice.toStringAsFixed(0)}';
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -617,7 +624,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     builder: (context, snap) {
                       final displayLabel = snap.hasData
                           ? CurrencyService.format(snap.data!, currency)
-                          : 'EGP ${_totalPrice.toStringAsFixed(0)}';
+                          : snap.hasError
+                              ? 'EGP ${_totalPrice.toStringAsFixed(0)} ⚠'
+                              : 'EGP ${_totalPrice.toStringAsFixed(0)}';
                       final showEgpNote = currency != 'EGP' && snap.hasData;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.end,

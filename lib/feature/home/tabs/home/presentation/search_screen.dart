@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
@@ -32,6 +33,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<MapItem> _placeResults = [];
   List<TourEntity> _tourResults = [];
   bool _loading = false;
+  String? _error;
 
   // Cached full place list (loaded once)
   List<MapItem>? _allPlaces;
@@ -55,9 +57,10 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       final repo = GetIt.instance<MapRepository>();
       final places = await repo.fetchAllMapItemsLimited();
-      if (mounted) setState(() => _allPlaces = places);
+      if (mounted) setState(() { _allPlaces = places; _error = null; });
     } catch (e) {
       debugPrint('Search: failed to load places: $e');
+      if (mounted) setState(() => _error = 'Could not load places.\nCheck your connection.');
     }
   }
 
@@ -143,9 +146,10 @@ class _SearchScreenState extends State<SearchScreen> {
             t.destinations.any((d) => d.toLowerCase().contains(_query));
       }).take(20).toList();
 
-      if (mounted) setState(() => _tourResults = all);
+      if (mounted) setState(() { _tourResults = all; _error = null; });
     } catch (e) {
       debugPrint('Search tours error: $e');
+      if (mounted) setState(() => _error = 'Could not load tours.\nCheck your connection.');
     }
   }
 
@@ -227,7 +231,12 @@ class _SearchScreenState extends State<SearchScreen> {
           ? _EmptyPrompt(primary: primary, onSurface: onSurface)
           : _loading
               ? Center(child: CircularProgressIndicator(color: primary))
-              : totalCount == 0
+              : _error != null && totalCount == 0
+                  ? AppErrorWidget(
+                      message: _error!,
+                      onRetry: () { setState(() => _error = null); _runSearch(); },
+                    )
+                  : totalCount == 0
                   ? _NoResults(query: _query, onSurface: onSurface)
                   : ListView.builder(
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -523,7 +532,9 @@ class _TourResultTile extends StatelessWidget {
                           builder: (_, snap) {
                             final label = snap.hasData
                                 ? CurrencyService.format(snap.data!, currencyCode)
-                                : 'EGP ${tour.price.toStringAsFixed(0)}';
+                                : snap.hasError
+                                    ? 'EGP ${tour.price.toStringAsFixed(0)} ⚠'
+                                    : 'EGP ${tour.price.toStringAsFixed(0)}';
                             return Text(
                               label,
                               style: TextStyle(

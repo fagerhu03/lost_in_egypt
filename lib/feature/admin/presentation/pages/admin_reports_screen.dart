@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/reports_repository.dart';
 import '../../data/models/report_model.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/utils/error_handler.dart';
 
 // Imports for Deep Linking context
 import '../../../home/tabs/community/presentation/post_detail_screen.dart';
@@ -55,7 +56,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching reports: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     } finally {
@@ -75,7 +76,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to dismiss: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     }
@@ -104,7 +105,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to delete content: $e')),
+                    SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
                   );
                 }
               }
@@ -129,7 +130,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to ban user: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ErrorHandler.handleGenericError(e))));
       }
     }
   }

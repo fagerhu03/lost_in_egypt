@@ -261,59 +261,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                             ),
                             const SizedBox(height: 16),
 
-                            // Notification master switch
-                            _buildTile(
-                              icon: Icons.notifications_outlined,
-                              title: "Notifications",
-                              trailing: Switch(
-                                value: _currentUser?.isNotificationsEnabled ?? true,
-                                onChanged: _currentUser == null
-                                    ? null
-                                    : (v) => _updateSetting('notif', v),
-                                activeColor: Colors.white,
-                                activeTrackColor: theme.colorScheme.primary,
-                                inactiveThumbColor: theme.colorScheme.primary,
-                                inactiveTrackColor: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-
-                            // Notification sub-preferences
-                            ...[
-                              (Icons.confirmation_number_rounded, 'Bookings & Tours', 'notif.bookings',
-                                  _currentUser?.notifBookings ?? true),
-                              (Icons.people_alt_rounded, 'Community', 'notif.community',
-                                  _currentUser?.notifCommunity ?? true),
-                              (Icons.star_rounded, 'Reviews', 'notif.reviews',
-                                  _currentUser?.notifReviews ?? true),
-                              (Icons.verified_user_rounded, 'Guide Updates', 'notif.guideUpdates',
-                                  _currentUser?.notifGuideUpdates ?? true),
-                            ].map((entry) {
-                              final (icon, title, key, value) = entry;
-                              final masterOn = _currentUser?.isNotificationsEnabled ?? true;
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 8, left: 12),
-                                child: Opacity(
-                                  opacity: masterOn ? 1.0 : 0.4,
-                                  child: _buildTile(
-                                    icon: icon,
-                                    title: title,
-                                    trailing: Switch(
-                                      value: value,
-                                      onChanged: masterOn && _currentUser != null
-                                          ? (v) => _updateSetting(key, v)
-                                          : null,
-                                      activeColor: Colors.white,
-                                      activeTrackColor: theme.colorScheme.primary,
-                                      inactiveThumbColor: theme.colorScheme.primary,
-                                      inactiveTrackColor: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                            const SizedBox(height: 8),
-
                             // Theme
                             _buildTile(
                               icon: Icons.palette_outlined,

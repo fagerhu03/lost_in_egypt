@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../feature/admin/data/models/report_model.dart';
 import '../../feature/admin/domain/repositories/reports_repository.dart';
+import '../utils/error_handler.dart';
 
 class UniversalReportDialog extends StatefulWidget {
   final ReportType reportType;
@@ -106,7 +107,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit report: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     } finally {

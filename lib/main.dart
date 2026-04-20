@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -134,6 +135,17 @@ void main() async {
   } catch (e) {
     debugPrint('Paymob initialization error: $e');
   }
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('[FlutterError] ${details.exceptionAsString()}');
+  };
+
+  // ignore: deprecated_member_use
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('[PlatformError] $error\n$stack');
+    return true;
+  };
 
   runApp(const MyApp());
 }

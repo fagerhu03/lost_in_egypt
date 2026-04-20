@@ -14,6 +14,7 @@ import '../../data/repositories/landmark_repository_impl.dart';
 import '../../data/repositories/place_repository_impl.dart';
 import '../../../account/domain/badge_constants.dart';
 import '../../../account/domain/badge_model.dart';
+import '../../../../../../core/utils/error_handler.dart';
 import 'camera_state.dart';
 
 /// Camera Cubit using ChangeNotifier for state management
@@ -89,7 +90,7 @@ class CameraCubit extends ChangeNotifier {
         _emit(const CameraError('No cameras available on this device'));
       }
     } catch (e) {
-      _emit(CameraError('Failed to initialize camera: $e'));
+      _emit(const CameraError('Failed to initialize camera. Please restart the app.'));
     }
   }
 
@@ -124,9 +125,9 @@ class CameraCubit extends ChangeNotifier {
       _emit(CameraReady(controller: _controller!));
     } catch (e) {
       debugPrint("Error initializing camera: $e");
-      _emit(CameraError('Failed to initialize camera: $e'));
+      _emit(const CameraError('Failed to initialize camera. Please restart the app.'));
     }
-  } 
+  }
 
   Future<void> _initTranslator() async {
     try {
@@ -370,7 +371,7 @@ class CameraCubit extends ChangeNotifier {
       _emit(CameraError(e.message, isApiKeyError: e.isApiKeyError));
     } catch (e) {
       debugPrint("General error: $e");
-      _emit(CameraError('Failed to analyze image: $e'));
+      _emit(CameraError(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -385,7 +386,7 @@ class CameraCubit extends ChangeNotifier {
       await _processImageForTranslation(image.path);
     } catch (e) {
       debugPrint("Gallery translation error: $e");
-      _emit(CameraError('Failed to translate gallery image: $e'));
+      _emit(CameraError(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -437,7 +438,7 @@ class CameraCubit extends ChangeNotifier {
           _translatorInitialized = true;
         } catch (e) {
           debugPrint("Failed to initialize translation: $e");
-          _emit(CameraError('Translation not available: $e. Please check your internet connection.'));
+          _emit(const CameraError('Could not download translation models. Please check your internet connection.'));
           return;
         }
       }
@@ -461,7 +462,7 @@ class CameraCubit extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint("Translation error: $e");
-      _emit(CameraError('Failed to translate image: $e'));
+      _emit(CameraError(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -525,7 +526,7 @@ class CameraCubit extends ChangeNotifier {
       _emit(CameraError(e.message, isApiKeyError: e.isApiKeyError));
     } catch (e) {
       debugPrint("Capture error: $e");
-      _emit(CameraError('Failed to analyze image: $e'));
+      _emit(CameraError(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -558,7 +559,7 @@ class CameraCubit extends ChangeNotifier {
           ));
         }
       } catch (e) {
-        _emit(CameraError('Failed to download language model: $e'));
+        _emit(const CameraError('Failed to download language model. Please check your internet connection.'));
       }
     } else if (_state is CameraReady) {
       _emit((_state as CameraReady).copyWith(sourceLang: lang));
@@ -594,7 +595,7 @@ class CameraCubit extends ChangeNotifier {
           ));
         }
       } catch (e) {
-        _emit(CameraError('Failed to download language model: $e'));
+        _emit(const CameraError('Failed to download language model. Please check your internet connection.'));
       }
     } else if (_state is CameraReady) {
       _emit((_state as CameraReady).copyWith(targetLang: lang));

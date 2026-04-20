@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../../domain/repositories/tours_repository.dart';
 import '../datasources/tours_data_source.dart';
 import '../models/tour_model.dart';
@@ -44,7 +45,7 @@ class ToursRepositoryImpl implements ToursRepository {
       await remoteDataSource.createTour(tourModel, imageFiles);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -79,7 +80,7 @@ class ToursRepositoryImpl implements ToursRepository {
       await remoteDataSource.updateTour(tourModel, newImageFiles);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -89,7 +90,7 @@ class ToursRepositoryImpl implements ToursRepository {
       final tours = await remoteDataSource.getToursForGuide(guideId);
       return Right(tours);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -99,7 +100,7 @@ class ToursRepositoryImpl implements ToursRepository {
       final tours = await remoteDataSource.getAllTours();
       return Right(tours);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -126,7 +127,7 @@ class ToursRepositoryImpl implements ToursRepository {
       await remoteDataSource.bookTour(bookingModel);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 }
