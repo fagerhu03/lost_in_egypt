@@ -27,38 +27,64 @@ class CameraAnalyzingView extends StatelessWidget {
             // Show the captured frame as a still background
             Image.file(
               File(capturedPath),
-              fit: BoxFit.cover,
+              fit: state.isGalleryImage ? BoxFit.contain : BoxFit.cover,
             )
           else if (state.isGalleryImage)
             const SizedBox.shrink()
           else if (controller != null && controller!.value.isInitialized)
-            AspectRatio(
-              aspectRatio: controller!.value.aspectRatio,
-              child: CameraPreview(controller!),
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: controller!.value.previewSize?.height ?? MediaQuery.of(context).size.width,
+                  height: controller!.value.previewSize?.width ?? MediaQuery.of(context).size.height,
+                  child: CameraPreview(controller!),
+                ),
+              ),
             ),
           // Dark overlay + spinner
           Container(color: Colors.black.withOpacity(capturedPath != null ? 0.55 : 0.0)),
           Center(
-            child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.75),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: Color(0xFFE6A44A)),
-                  SizedBox(height: 16),
-                  Text(
-                    'Identifying landmark…',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.95, end: 1.0),
+              duration: const Duration(milliseconds: 1500),
+              curve: Curves.easeInOutSine,
+              builder: (context, scale, child) {
+                return Transform.scale(
+                  scale: scale,
+                  child: child,
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.85),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE6A44A).withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    )
+                  ]
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(color: Color(0xFFE6A44A)),
+                    const SizedBox(height: 16),
+                    Text(
+                      state.message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

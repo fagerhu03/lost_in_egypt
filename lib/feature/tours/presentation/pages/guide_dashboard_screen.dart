@@ -78,9 +78,6 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
                 ),
               );
             }
-            final activeTours = tours.where((t) => !t.isArchived).toList();
-            final archivedTours = tours.where((t) => t.isArchived).toList();
-
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
               children: [
@@ -88,10 +85,10 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
                 _EarningsSummary(tours: tours),
                 const SizedBox(height: 20),
 
-                Text('Your Tours (${activeTours.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: onSurface)),
+                Text('Your Tours (${tours.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: onSurface)),
                 const SizedBox(height: 12),
 
-                ...activeTours.map((tour) => _GuideTourCard(
+                ...tours.map((tour) => _GuideTourCard(
                   tour: tour,
                   onRefresh: () {
                     final user = FirebaseAuth.instance.currentUser;
@@ -100,20 +97,6 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
                     }
                   },
                 )),
-
-                // ── Past / Archived Tours ──
-                if (archivedTours.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _ArchivedToursSection(
-                    archivedTours: archivedTours,
-                    onRefresh: () {
-                      final user = FirebaseAuth.instance.currentUser;
-                      if (user != null && mounted) {
-                        context.read<GuideToursCubit>().fetchTours(user.uid);
-                      }
-                    },
-                  ),
-                ],
               ],
             );
           }
@@ -214,7 +197,7 @@ class _EarningsSummary extends StatelessWidget {
                     final label = snap.hasData
                         ? CurrencyService.format(snap.data!, currency)
                         : snap.hasError
-                            ? 'EGP ${totalRevenue.toStringAsFixed(0)} ⚠'
+                            ? 'EGP ${totalRevenue.toStringAsFixed(0)} ΓÜá'
                             : 'EGP ${totalRevenue.toStringAsFixed(0)}';
                     return _statItem(label, 'Revenue', Icons.monetization_on, Colors.amber[700]!);
                   },
@@ -314,7 +297,7 @@ class _GuideTourCard extends StatelessWidget {
                             snap.hasData
                                 ? CurrencyService.format(snap.data!, currency)
                                 : snap.hasError
-                                    ? 'EGP ${tour.price.toStringAsFixed(0)} ⚠'
+                                    ? 'EGP ${tour.price.toStringAsFixed(0)} ΓÜá'
                                     : 'EGP ${tour.price.toStringAsFixed(0)}',
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                           ),
@@ -344,21 +327,9 @@ class _GuideTourCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
             child: Row(
               children: [
-                _infoChip(
-                  Icons.calendar_today,
-                  tour.recurrenceType != 'one_time' && tour.nextOccurrence != null
-                      ? 'Next: ${DateFormat('MMM d').format(tour.nextOccurrence!)}'
-                      : DateFormat('MMM d').format(tour.meetingTime),
-                  theme,
-                ),
+                _infoChip(Icons.calendar_today, DateFormat('MMM d').format(tour.meetingTime), theme),
                 const SizedBox(width: 12),
-                _infoChip(
-                  Icons.people,
-                  tour.totalCapacity > 0
-                      ? '${tour.maxAttendees}/${tour.totalCapacity} spots'
-                      : '${tour.maxAttendees} remaining',
-                  theme,
-                ),
+                _infoChip(Icons.people, '${tour.maxAttendees} max', theme),
                 const SizedBox(width: 12),
                 _infoChip(Icons.repeat, tour.frequency, theme),
                 const Spacer(),
@@ -507,117 +478,36 @@ class _GuideTourCard extends StatelessWidget {
       ),
     );
     if (confirmed == true) {
-      // Optimistically remove from UI immediately
-      if (context.mounted) {
-        context.read<GuideToursCubit>().removeTour(tour.id);
-      }
-
       await FirebaseFirestore.instance.collection('tours').doc(tour.id).delete();
-
-      // Batch-update all active bookings to 'tour_deleted' and notify tourists
-      final bookingsSnapshot = await FirebaseFirestore.instance
+      // Also cancel all pending bookings
+      final bookings = await FirebaseFirestore.instance
           .collection('bookings')
           .where('tourId', isEqualTo: tour.id)
-          .where('status', whereIn: ['confirmed', 'pending'])
+          .where('status', isEqualTo: 'confirmed')
           .get();
-
-      if (bookingsSnapshot.docs.isNotEmpty) {
-        final batch = FirebaseFirestore.instance.batch();
-        for (final doc in bookingsSnapshot.docs) {
-          batch.update(doc.reference, {'status': 'tour_deleted'});
-          final userId = (doc.data())['userId'] as String?;
-          if (userId != null && userId.isNotEmpty) {
-            final notifRef = FirebaseFirestore.instance
-                .collection('users')
-                .doc(userId)
-                .collection('notifications')
-                .doc();
-            batch.set(notifRef, {
-              'recipientId': userId,
-              'senderId': 'system',
-              'senderName': 'Lost in Egypt',
-              'senderAvatar': '',
-              'title': 'Tour No Longer Available',
-              'message': 'The tour "${tour.title}" has been removed by the guide.',
-              'type': 'tour_cancelled',
-              'deepLinkTargetId': '',
-              'isRead': false,
-              'timestamp': FieldValue.serverTimestamp(),
-            });
-          }
+      for (final doc in bookings.docs) {
+        final touristId = (doc.data())['userId'] as String?;
+        await doc.reference.update({'status': 'cancelled'});
+        if (touristId != null && touristId.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(touristId)
+              .collection('notifications')
+              .add({
+            'recipientId': touristId,
+            'senderId': 'system',
+            'senderName': 'Lost in Egypt',
+            'senderAvatar': '',
+            'title': '⚠️ Tour Cancelled',
+            'message': 'The tour "${tour.title}" has been cancelled by the guide.',
+            'type': 'tour_cancelled',
+            'deepLinkTargetId': tour.id,
+            'isRead': false,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
         }
-        await batch.commit();
       }
-
-      // Full refresh to sync server state
-      if (context.mounted) {
-        context.read<GuideToursCubit>().fetchTours(tour.guideId);
-      }
+      onRefresh();
     }
-  }
-}
-
-/// ─── Archived (Past) Tours Section ─────────────────────────────────────────
-class _ArchivedToursSection extends StatefulWidget {
-  final List<TourEntity> archivedTours;
-  final VoidCallback onRefresh;
-
-  const _ArchivedToursSection({required this.archivedTours, required this.onRefresh});
-
-  @override
-  State<_ArchivedToursSection> createState() => _ArchivedToursSectionState();
-}
-
-class _ArchivedToursSectionState extends State<_ArchivedToursSection> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final onSurface = theme.colorScheme.onSurface;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InkWell(
-          onTap: () => setState(() => _expanded = !_expanded),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: onSurface.withOpacity(0.04),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: onSurface.withOpacity(0.08)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.archive_outlined, size: 18, color: onSurface.withOpacity(0.5)),
-                const SizedBox(width: 8),
-                Text(
-                  'Past / Archived Tours (${widget.archivedTours.length})',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: onSurface.withOpacity(0.6),
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  _expanded ? Icons.expand_less : Icons.expand_more,
-                  color: onSurface.withOpacity(0.5),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (_expanded) ...[
-          const SizedBox(height: 12),
-          ...widget.archivedTours.map((tour) => Opacity(
-            opacity: 0.65,
-            child: _GuideTourCard(tour: tour, onRefresh: widget.onRefresh),
-          )),
-        ],
-      ],
-    );
   }
 }

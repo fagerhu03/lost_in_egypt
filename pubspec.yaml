@@ -87,6 +87,7 @@ dependencies:
   share_plus: ^10.1.4
   add_2_calendar: ^3.0.1
   connectivity_plus: ^6.1.4
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:

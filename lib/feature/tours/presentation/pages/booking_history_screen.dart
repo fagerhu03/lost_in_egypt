@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
+import '../../../../core/utils/error_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -22,7 +23,6 @@ import '../../../../feature/reviews/data/models/review_model.dart';
 import '../../../../feature/home/notification/data/datasources/notifications_data_source.dart';
 import '../../../../feature/home/notification/data/models/notification_model.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../core/utils/error_handler.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main screen
@@ -110,12 +110,10 @@ class _BookingTabState extends State<_BookingTab> {
         final allDocs = snapshot.data?.docs ?? [];
         final docs = allDocs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
-          // Use sessionDate if set (recurring tours), otherwise fall back to date
-          final sessionDate = (data['sessionDate'] as Timestamp?)?.toDate();
-          final date = sessionDate ?? (data['date'] as Timestamp?)?.toDate();
+          final date = (data['date'] as Timestamp?)?.toDate();
           if (date == null) return false;
           final status = data['status'] ?? '';
-          if (status == 'cancelled' || status == 'tour_deleted') return !widget.upcoming;
+          if (status == 'cancelled') return !widget.upcoming;
           return widget.upcoming ? date.isAfter(now) : date.isBefore(now);
         }).toList();
 
@@ -184,9 +182,7 @@ class _BookingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final status = data['status'] ?? 'pending';
-    // Use sessionDate if set (recurring tours), fall back to date
-    final sessionDate = (data['sessionDate'] as Timestamp?)?.toDate();
-    final date = sessionDate ?? (data['date'] as Timestamp?)?.toDate();
+    final date = (data['date'] as Timestamp?)?.toDate();
     final tourId = data['tourId'] ?? '';
     final quantity = (data['quantity'] as num?)?.toInt() ?? 1;
     final totalEGP = (data['totalAmountEGP'] as num?)?.toDouble() ?? 0;
@@ -196,9 +192,6 @@ class _BookingCard extends StatelessWidget {
       'cancelled': Colors.red,
       'pending': Colors.orange,
       'completed': Colors.blue,
-      'tour_deleted': Colors.grey,
-      'checked_in': Colors.teal,
-      'partially_checked_in': Colors.teal,
     }[status] ?? Colors.grey;
 
     return FutureBuilder<DocumentSnapshot>(
@@ -266,27 +259,11 @@ class _BookingCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      status == 'tour_deleted' ? 'TOUR REMOVED' : status.toUpperCase().replaceAll('_', ' '),
+                      status.toUpperCase(),
                       style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-                if (status == 'tour_deleted')
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(children: [
-                        Icon(Icons.info_outline, size: 14, color: Colors.grey),
-                        SizedBox(width: 6),
-                        Text('Tour no longer available', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
-                      ]),
-                    ),
-                  ),
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
@@ -447,8 +424,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   Future<void> _loadWeather() async {
     final lat = widget.tourData['meetingLatitude'];
     final lng = widget.tourData['meetingLongitude'];
-    final sessionTs = widget.bookingData['sessionDate'] as Timestamp?;
-    final dateTs = sessionTs ?? widget.bookingData['date'] as Timestamp?;
+    final dateTs = widget.bookingData['date'] as Timestamp?;
     if (lat == null || lng == null || dateTs == null) return;
 
     final date = dateTs.toDate();
@@ -567,9 +543,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   void _addToCalendar() {
-    final sessionTs = widget.bookingData['sessionDate'] as Timestamp?;
-    final rawDateTs = widget.bookingData['date'] as Timestamp?;
-    final dateTs = sessionTs ?? rawDateTs;
+    final dateTs = widget.bookingData['date'] as Timestamp?;
     final title = widget.tourData['title'] ?? 'Tour';
     final location = widget.tourData['meetingLocationName'] ?? '';
     if (dateTs == null) return;
@@ -588,10 +562,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
   void _shareTicket() {
     final title = widget.tourData['title'] ?? 'Tour';
-    final sessionTs = widget.bookingData['sessionDate'] as Timestamp?;
-    final rawDateTs = widget.bookingData['date'] as Timestamp?;
-    final effectiveDateTs = sessionTs ?? rawDateTs;
-    final date = effectiveDateTs != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(effectiveDateTs.toDate()) : 'TBD';
+    final dateTs = widget.bookingData['date'] as Timestamp?;
+    final date = dateTs != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(dateTs.toDate()) : 'TBD';
     final location = widget.tourData['meetingLocationName'] ?? '';
     final quantity = (widget.bookingData['quantity'] as num?)?.toInt() ?? 1;
 
@@ -735,7 +707,6 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     try {
       final tourData = widget.tourData;
       final tourId = tourData['id'] ?? widget.bookingData['tourId'] ?? '';
-      final maxAttendees = (tourData['maxAttendees'] as num?)?.toInt() ?? 0;
       final tour = TourModel(
         id: tourId,
         guideId: tourData['guideId'] ?? '',
@@ -749,16 +720,10 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         frequency: tourData['frequency'] ?? '',
         meetingLocationName: tourData['meetingLocationName'] ?? '',
         images: List<String>.from(tourData['images'] ?? []),
-        maxAttendees: maxAttendees,
+        maxAttendees: (tourData['maxAttendees'] as num?)?.toInt() ?? 0,
         rating: (tourData['rating'] as num?)?.toDouble() ?? 0,
         reviewCount: (tourData['reviewCount'] as num?)?.toInt() ?? 0,
         createdAt: (tourData['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-        totalCapacity: (tourData['totalCapacity'] as num?)?.toInt() ?? maxAttendees,
-        recurrenceType: tourData['recurrenceType'] as String? ?? 'one_time',
-        recurrenceDays: (tourData['recurrenceDays'] as List?)?.map((e) => e as int).toList() ?? [],
-        meetingTimeOfDay: tourData['meetingTimeOfDay'] as String? ?? '',
-        nextOccurrence: (tourData['nextOccurrence'] as Timestamp?)?.toDate(),
-        isArchived: tourData['isArchived'] as bool? ?? false,
       );
       Navigator.push(
         context,
@@ -775,10 +740,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final status = widget.bookingData['status'] ?? 'pending';
-    // Use sessionDate if set, otherwise fall back to date
-    final sessionDateTs = widget.bookingData['sessionDate'] as Timestamp?;
     final dateTs = widget.bookingData['date'] as Timestamp?;
-    final tourDate = sessionDateTs?.toDate() ?? dateTs?.toDate();
+    final tourDate = dateTs?.toDate();
     final title = widget.tourData['title'] ?? 'Tour';
     final images = widget.tourData['images'] as List?;
     final imageUrl = images?.isNotEmpty == true ? images!.first as String? : null;
@@ -795,9 +758,6 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       'cancelled': Colors.red,
       'pending': Colors.orange,
       'completed': Colors.blue,
-      'tour_deleted': Colors.grey,
-      'checked_in': Colors.teal,
-      'partially_checked_in': Colors.teal,
     }[status] ?? Colors.grey;
 
     return Scaffold(

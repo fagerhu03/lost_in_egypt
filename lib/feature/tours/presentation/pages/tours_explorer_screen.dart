@@ -31,7 +31,7 @@ class ToursExplorerView extends StatefulWidget {
   State<ToursExplorerView> createState() => _ToursExplorerViewState();
 }
 
-enum _SortOption { newest, cheapest, priciest, highestRated, mostPopular, upcomingFirst }
+enum _SortOption { newest, cheapest, priciest, highestRated, mostPopular }
 
 class _ToursExplorerViewState extends State<ToursExplorerView> {
   String _searchQuery = '';
@@ -44,8 +44,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
   final Set<String> _activeFilters = {};
 
   List<TourEntity> _applyFiltersAndSort(List<TourEntity> tours) {
-    // Filter out archived tours
-    var filtered = tours.where((t) => !t.isArchived).where((t) {
+    var filtered = tours.where((t) {
       // Text search
       if (_searchQuery.isNotEmpty) {
         final q = _searchQuery;
@@ -65,15 +64,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
       }
       // Frequency filter
       if (_selectedFrequency != null && _activeFilters.contains('frequency')) {
-        if (_selectedFrequency == 'Weekends') {
-          // Egypt weekends = Friday (4) + Saturday (5)
-          final hasFriOrSat = t.recurrenceDays.contains(4) || t.recurrenceDays.contains(5) ||
-              t.frequency.contains('Fri') || t.frequency.contains('Sat') ||
-              (t.recurrenceType == 'one_time' && t.frequency == 'Weekends');
-          if (!hasFriOrSat) return false;
-        } else {
-          if (t.frequency != _selectedFrequency) return false;
-        }
+        if (t.frequency != _selectedFrequency) return false;
       }
       return true;
     }).toList();
@@ -94,13 +85,6 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
         break;
       case _SortOption.mostPopular:
         filtered.sort((a, b) => b.reviewCount.compareTo(a.reviewCount));
-        break;
-      case _SortOption.upcomingFirst:
-        filtered.sort((a, b) {
-          final aDate = a.nextOccurrence ?? a.meetingTime;
-          final bDate = b.nextOccurrence ?? b.meetingTime;
-          return aDate.compareTo(bDate);
-        });
         break;
     }
     return filtered;
@@ -252,6 +236,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
@@ -317,29 +302,13 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                     PopupMenuButton<_SortOption>(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       onSelected: (v) => setState(() => _sortOption = v),
-                      itemBuilder: (ctx) {
-                        final activeColor = Theme.of(ctx).colorScheme.primary;
-                        PopupMenuItem<_SortOption> item(_SortOption opt, String label) {
-                          final isActive = _sortOption == opt;
-                          return PopupMenuItem(
-                            value: opt,
-                            child: Row(children: [
-                              if (isActive) Icon(Icons.check, size: 16, color: activeColor)
-                              else const SizedBox(width: 16),
-                              const SizedBox(width: 8),
-                              Text(label, style: TextStyle(fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
-                            ]),
-                          );
-                        }
-                        return [
-                          item(_SortOption.newest, 'Newest First'),
-                          item(_SortOption.cheapest, 'Cheapest First'),
-                          item(_SortOption.priciest, 'Priciest First'),
-                          item(_SortOption.highestRated, 'Highest Rated'),
-                          item(_SortOption.mostPopular, 'Most Popular'),
-                          item(_SortOption.upcomingFirst, 'Upcoming First'),
-                        ];
-                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(value: _SortOption.newest, child: Text('Newest First')),
+                        const PopupMenuItem(value: _SortOption.cheapest, child: Text('Cheapest First')),
+                        const PopupMenuItem(value: _SortOption.priciest, child: Text('Priciest First')),
+                        const PopupMenuItem(value: _SortOption.highestRated, child: Text('Highest Rated')),
+                        const PopupMenuItem(value: _SortOption.mostPopular, child: Text('Most Popular')),
+                      ],
                       child: Chip(
                         avatar: Icon(Icons.sort, size: 16, color: primary),
                         label: Text(_sortLabel(), style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w600)),
@@ -439,7 +408,6 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
       case _SortOption.priciest: return 'Priciest';
       case _SortOption.highestRated: return 'Top Rated';
       case _SortOption.mostPopular: return 'Popular';
-      case _SortOption.upcomingFirst: return 'Upcoming';
     }
   }
 

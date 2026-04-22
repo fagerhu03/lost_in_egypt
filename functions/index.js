@@ -4,6 +4,7 @@ const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const textToSpeech = require("@google-cloud/text-to-speech");
 
 admin.initializeApp();
 
@@ -12,7 +13,9 @@ Object.assign(exports, require("./recommendation"));
 
 // Define secrets stored securely in Google Cloud Secret Manager
 const geminiApiKey = defineSecret("GEMINI_API_KEY");
+const groqApiKey = defineSecret("GROQ_API_KEY");
 const googleCloudVisionApiKey = defineSecret("GOOGLE_CLOUD_VISION_API_KEY");
+
 
 // ── Rate limiting ────────────────────────────────────────────────────────────
 // Limits per user per function per hour, tracked in Firestore.
@@ -56,8 +59,8 @@ function sanitizeBase64(raw) {
   return raw;
 }
 
-// ===== SECURE API PROXY FOR GEMINI =====
-exports.analyzeImageOrStory = onCall({ secrets: [geminiApiKey] }, async (request) => {
+// ===== SECURE API PROXY FOR GROQ =====
+exports.analyzeImageOrStory = onCall({ secrets: [groqApiKey] }, async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "You must be logged in to use the AI Guide.");
   }
@@ -76,9 +79,7 @@ exports.analyzeImageOrStory = onCall({ secrets: [geminiApiKey] }, async (request
   }
 
   try {
-    const apiKey = geminiApiKey.value();
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const apiKey = groqApiKey.value();
 
     const prompt = `
       You are a fascinating historical guide for Egypt.
@@ -88,13 +89,30 @@ exports.analyzeImageOrStory = onCall({ secrets: [geminiApiKey] }, async (request
       Don't use any symbols since this will be read aloud. Just pure storytelling.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 250
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Groq API returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || "No story found.";
 
     return { story: text };
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Groq API Error:", error);
     throw new HttpsError("internal", "Failed to generate story.");
   }
 });
@@ -158,6 +176,55 @@ exports.identifyLandmark = onCall({ secrets: [googleCloudVisionApiKey] }, async 
   } catch (error) {
     console.error("Vision API Error:", error);
     throw new HttpsError("internal", "Failed to analyze image.");
+  }
+});
+
+// ===== GOOGLE CLOUD TTS (AI Narrator Voice — free tier, uses service account) =====
+exports.generateStoryAudio = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "You must be logged in to use the AI narrator.");
+  }
+
+  const allowed = await checkRateLimit(request.auth.uid, "analyzeImageOrStory");
+  if (!allowed) {
+    throw new HttpsError(
+      "resource-exhausted",
+      "You've reached the narration limit for this hour. Please try again later."
+    );
+  }
+
+  const text = request.data?.text;
+  if (!text || typeof text !== "string" || text.trim().length === 0) {
+    throw new HttpsError("invalid-argument", "Text content is required for narration.");
+  }
+
+  // Cap text at 4096 chars to stay within free tier
+  const sanitizedText = text.trim().slice(0, 4096);
+
+  try {
+    const client = new textToSpeech.TextToSpeechClient();
+
+    const [response] = await client.synthesizeSpeech({
+      input: { text: sanitizedText },
+      voice: {
+        languageCode: "en-US",
+        name: "en-US-Studio-Q",        // Premium Studio voice — deepest, most cinematic male
+        ssmlGender: "MALE",
+      },
+      audioConfig: {
+        audioEncoding: "MP3",
+        speakingRate: 0.78,            // Slow, deliberate — like a history documentary
+        pitch: -8.0,                   // Very deep, authoritative tone
+        volumeGainDb: 2.0,
+      },
+    });
+
+    // response.audioContent is a Buffer — convert to base64
+    const base64Audio = response.audioContent.toString("base64");
+    return { audio: base64Audio, format: "mp3" };
+  } catch (error) {
+    console.error("Google Cloud TTS Error:", error);
+    throw new HttpsError("internal", "Failed to generate audio narration.");
   }
 });
 

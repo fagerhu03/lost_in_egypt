@@ -34,7 +34,7 @@ class _AuthGateState extends State<AuthGate> {
 
   Future<void> _applySavedTheme(User firebaseUser) async {
     try {
-      final UserModel? userModel = await _settingsRepo.fetchCurrentUser();
+      final UserModel? userModel = await _settingsRepo.fetchCurrentUser().timeout(const Duration(seconds: 3));
       if (userModel != null) {
         _isFirestoreEmailVerified = userModel.emailVerified;
         _hasUsername = userModel.username.isNotEmpty;
@@ -48,21 +48,23 @@ class _AuthGateState extends State<AuthGate> {
       CurrencyController.setCurrency('EGP');
     }
 
-    // ── FCM token registration ─────────────────────────────────────────────
-    try {
-      if (Platform.isIOS) {
-        await FirebaseMessaging.instance.requestPermission();
+    // ── FCM token registration (Non-blocking) ────────────────────────────
+    Future.microtask(() async {
+      try {
+        if (Platform.isIOS) {
+          await FirebaseMessaging.instance.requestPermission();
+        }
+        final token = await FirebaseMessaging.instance.getToken().timeout(const Duration(seconds: 5));
+        if (token != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .update({'fcmToken': token});
+        }
+      } catch (e) {
+        debugPrint('FCM token registration error: $e');
       }
-      final token = await FirebaseMessaging.instance.getToken();
-      if (token != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(firebaseUser.uid)
-            .update({'fcmToken': token});
-      }
-    } catch (e) {
-      debugPrint('FCM token registration error: $e');
-    }
+    });
 
     // ── Battery optimization exemption (Android only — Samsung/OEM fix) ────
     if (Platform.isAndroid) {

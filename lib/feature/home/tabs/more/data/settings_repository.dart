@@ -11,7 +11,7 @@ class SettingsRepository {
     if (uid == null) return null;
 
     try {
-      final doc = await _firestore.collection('users').doc(uid).get();
+      final doc = await _firestore.collection('users').doc(uid).get(const GetOptions(source: Source.serverAndCache));
       if (doc.exists) {
         return UserModel.fromMap(doc.data()!, doc.id);
       }

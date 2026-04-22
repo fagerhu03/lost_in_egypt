@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -98,12 +99,21 @@ class _HomeWrapperState extends State<HomeWrapper>
         : theme.colorScheme.primary.withOpacity(0.50);
 
     return PopScope(
-      canPop: index == 0,
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && index != 0) {
+        if (didPop) return;
+
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+          return;
+        }
+
+        if (index != 0) {
           setState(() => index = 0);
           _tabController.animateTo(0);
           _pageController.jumpToPage(0);
+        } else {
+          SystemNavigator.pop();
         }
       },
       child: Scaffold(
@@ -174,6 +184,7 @@ class _HomeWrapperState extends State<HomeWrapper>
           ),
         ),
       ),
-    ));
+    ),
+  );
   }
 }

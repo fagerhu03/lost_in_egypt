@@ -10,7 +10,7 @@ import '../../../../core/widgets/shimmer_loading_widget.dart';
 class TourCard extends StatelessWidget {
   final TourEntity tour;
 
-  const TourCard({super.key, required this.tour});
+  const TourCard({Key? key, required this.tour}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +55,9 @@ class TourCard extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: tour.images.first,
                           fit: BoxFit.cover,
-                          placeholder: (_, _a) =>
+                          placeholder: (_, __) =>
                               const ShimmerLoadingWidget.rectangular(height: 180),
-                          errorWidget: (_, _a, _b) => _buildPlaceholderImage(),
+                          errorWidget: (_, __, ___) => _buildPlaceholderImage(),
                         )
                       : _buildPlaceholderImage(),
                 ),
@@ -97,7 +97,7 @@ class TourCard extends StatelessWidget {
                               final label = snap.hasData
                                   ? CurrencyService.format(snap.data!, currency)
                                   : snap.hasError
-                                      ? 'EGP ${tour.price.toStringAsFixed(0)} ⚠'
+                                      ? 'EGP ${tour.price.toStringAsFixed(0)} ΓÜá'
                                       : 'EGP ${tour.price.toStringAsFixed(0)}';
                               return Text(
                                 label,
@@ -121,7 +121,7 @@ class TourCard extends StatelessWidget {
                       Icon(Icons.calendar_month, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                       const SizedBox(width: 4),
                       Text(
-                        DateFormat('MMM d, yyyy').format(tour.nextOccurrence ?? tour.meetingTime),
+                        DateFormat('MMM d, yyyy').format(tour.meetingTime),
                         style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
                       ),
                       const SizedBox(width: 16),
@@ -131,32 +131,6 @@ class TourCard extends StatelessWidget {
                         'Up to ${tour.maxAttendees}',
                         style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
                       ),
-                      if (tour.recurrenceType != 'one_time') ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.repeat, size: 11, color: theme.colorScheme.primary),
-                              const SizedBox(width: 3),
-                              Text(
-                                'Recurring',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                   
@@ -200,7 +174,7 @@ class TourCard extends StatelessWidget {
           const Icon(Icons.star, color: Colors.amber, size: 16),
           const SizedBox(width: 2),
           Text(
-            tour.rating.toStringAsFixed(1),
+            '${tour.rating.toStringAsFixed(1)}',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,

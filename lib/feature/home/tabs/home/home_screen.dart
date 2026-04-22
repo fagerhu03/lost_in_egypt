@@ -482,30 +482,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: double.infinity,
                       child: imagePath.startsWith('http')
                           ? CachedNetworkImage(
-                              imageUrl: imagePath,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.broken_image, color: Colors.grey),
-                              ),
-                            )
-                          : Image(
-                              image: ResizeImage(
-                                AssetImage(imagePath),
-                                width: 400,
-                              ),
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.image_not_supported),
-                              ),
+                        imageUrl: imagePath,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey.shade300,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
                             ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey.shade300,
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                          : Image.asset(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.image_not_supported),
+                            ),
+                      ),
                     ),
                     Positioned(
                       top: 10,

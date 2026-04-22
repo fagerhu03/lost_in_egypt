@@ -19,7 +19,7 @@ import 'package:lost_in_egypt/feature/home/notification/data/models/notification
 
 class CreateTourScreen extends StatefulWidget {
   final TourEntity? tourToEdit;
-
+  
   const CreateTourScreen({super.key, this.tourToEdit});
 
   @override
@@ -42,14 +42,9 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
   String? _selectedAddress;
   TextEditingController? _destController;
 
-  // Recurrence fields
-  String _recurrenceType = 'one_time'; // 'one_time' | 'daily' | 'weekly' | 'custom'
-  DateTime? _selectedMeetingTime; // Used for one_time
-  TimeOfDay? _selectedTimeOfDay;  // Used for all recurrence types
-  int? _selectedWeeklyDay;        // Single day for 'weekly' (0=Mon...6=Sun)
-  final List<int> _customDays = []; // Multi-day for 'custom' (0=Mon...6=Sun)
-
-  final List<String> _weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  DateTime? _selectedMeetingTime;
+  final List<String> _selectedWeekdays = [];
+  final List<String> _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   final List<File> _selectedImages = [];
   List<String> _existingImages = [];
@@ -73,34 +68,10 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       _selectedLat = t.meetingLatitude;
       _selectedLng = t.meetingLongitude;
       _existingImages = List.from(t.images);
-      _recurrenceType = t.recurrenceType;
-
-      if (t.recurrenceType == 'one_time') {
-        _selectedMeetingTime = t.meetingTime;
-      }
-
-      // Restore time of day
-      if (t.meetingTimeOfDay.isNotEmpty) {
-        final parts = t.meetingTimeOfDay.split(':');
-        if (parts.length == 2) {
-          _selectedTimeOfDay = TimeOfDay(
-            hour: int.tryParse(parts[0]) ?? 9,
-            minute: int.tryParse(parts[1]) ?? 0,
-          );
-        }
-      } else {
-        // Fall back to meetingTime's time
-        _selectedTimeOfDay = TimeOfDay(
-          hour: t.meetingTime.hour,
-          minute: t.meetingTime.minute,
-        );
-      }
-
-      if (t.recurrenceType == 'weekly' && t.recurrenceDays.isNotEmpty) {
-        _selectedWeeklyDay = t.recurrenceDays.first;
-      }
-      if (t.recurrenceType == 'custom') {
-        _customDays.addAll(t.recurrenceDays);
+      _selectedMeetingTime = t.meetingTime;
+      
+      if (t.frequency != 'One-Time') {
+        _selectedWeekdays.addAll(t.frequency.split(', '));
       }
     }
   }
@@ -119,7 +90,6 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       if (mounted) setState(() => _isLoadingPlaces = false);
     }
   }
-
   Future<void> _pickImages() async {
     final List<XFile> pickedFiles = await _picker.pickMultiImage();
     if (pickedFiles.isNotEmpty) {
@@ -129,8 +99,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     }
   }
 
-  Future<void> _pickDateAndTime() async {
-    // For one_time: pick full date + time
+  Future<void> _pickDateTime() async {
     final date = await showDatePicker(
       context: context,
       initialDate: DateTime.now().add(const Duration(days: 1)),
@@ -145,91 +114,14 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       if (time != null) {
         setState(() {
           _selectedMeetingTime = DateTime(
-            date.year, date.month, date.day, time.hour, time.minute,
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
           );
-          _selectedTimeOfDay = time;
         });
       }
-    }
-  }
-
-  Future<void> _pickTimeOnly() async {
-    final time = await showTimePicker(
-      context: context,
-      initialTime: _selectedTimeOfDay ?? TimeOfDay.now(),
-    );
-    if (time != null && mounted) {
-      setState(() => _selectedTimeOfDay = time);
-    }
-  }
-
-  /// Computes the next occurrence DateTime given the recurrence pattern and a time of day.
-  DateTime _computeNextOccurrence(TimeOfDay tod) {
-    final now = DateTime.now();
-    if (_recurrenceType == 'one_time' && _selectedMeetingTime != null) {
-      return _selectedMeetingTime!;
-    }
-
-    if (_recurrenceType == 'daily') {
-      var candidate = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
-      if (!candidate.isAfter(now)) candidate = candidate.add(const Duration(days: 1));
-      return candidate;
-    }
-
-    if (_recurrenceType == 'weekly' && _selectedWeeklyDay != null) {
-      return _nextOccurrenceForDays([_selectedWeeklyDay!], tod, now);
-    }
-
-    if (_recurrenceType == 'custom' && _customDays.isNotEmpty) {
-      return _nextOccurrenceForDays(_customDays, tod, now);
-    }
-
-    // Fallback: tomorrow at the given time
-    return DateTime(now.year, now.month, now.day, tod.hour, tod.minute)
-        .add(const Duration(days: 1));
-  }
-
-  DateTime _nextOccurrenceForDays(List<int> days, TimeOfDay tod, DateTime now) {
-    // days are 0=Mon...6=Sun; DateTime.weekday: 1=Mon...7=Sun
-    final sorted = List<int>.from(days)..sort();
-    final nowJsDay = now.weekday - 1; // 0=Mon...6=Sun
-    for (final d in sorted) {
-      int daysUntil = (d - nowJsDay + 7) % 7;
-      final candidate = DateTime(now.year, now.month, now.day, tod.hour, tod.minute)
-          .add(Duration(days: daysUntil));
-      if (candidate.isAfter(now)) return candidate;
-    }
-    // All days this week have passed — next week's first
-    final firstDay = sorted.first;
-    int daysUntil = (firstDay - nowJsDay + 7) % 7;
-    if (daysUntil == 0) daysUntil = 7;
-    return DateTime(now.year, now.month, now.day, tod.hour, tod.minute)
-        .add(Duration(days: daysUntil));
-  }
-
-  String _formatTimeOfDay(TimeOfDay tod) {
-    final h = tod.hour.toString().padLeft(2, '0');
-    final m = tod.minute.toString().padLeft(2, '0');
-    return '$h:$m';
-  }
-
-  String _buildFrequencyString() {
-    switch (_recurrenceType) {
-      case 'daily':
-        return 'Daily';
-      case 'weekly':
-        if (_selectedWeeklyDay != null) {
-          return 'Weekly · ${_weekdayLabels[_selectedWeeklyDay!]}';
-        }
-        return 'Weekly';
-      case 'custom':
-        if (_customDays.isNotEmpty) {
-          final sorted = List<int>.from(_customDays)..sort();
-          return sorted.map((d) => _weekdayLabels[d]).join(', ');
-        }
-        return 'Custom';
-      default:
-        return 'One-Time';
     }
   }
 
@@ -282,29 +174,9 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-
-    // Validate recurrence-specific inputs
-    if (_recurrenceType == 'one_time' && _selectedMeetingTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a meeting date and time.')),
-      );
-      return;
-    }
-    if (_recurrenceType != 'one_time' && _selectedTimeOfDay == null) {
+    if (_selectedMeetingTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a meeting time.')),
-      );
-      return;
-    }
-    if (_recurrenceType == 'weekly' && _selectedWeeklyDay == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select the day of the week.')),
-      );
-      return;
-    }
-    if (_recurrenceType == 'custom' && _customDays.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one day.')),
       );
       return;
     }
@@ -314,12 +186,14 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       );
       return;
     }
+
     if (_selectedLat == null || _selectedLng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a meeting location on the map.')),
       );
       return;
     }
+
     if (_destinations.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please add at least one destination.')),
@@ -338,34 +212,12 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final attendees = int.tryParse(_maxAttendeesController.text) ?? 10;
     if (attendees <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Total capacity must be greater than zero.')),
+        const SnackBar(content: Text('Max attendees must be greater than zero.')),
       );
       return;
     }
 
-    // Determine meeting time anchor and next occurrence
-    final tod = _recurrenceType == 'one_time'
-        ? TimeOfDay(
-            hour: _selectedMeetingTime!.hour,
-            minute: _selectedMeetingTime!.minute,
-          )
-        : _selectedTimeOfDay!;
-
-    final nextOccurrence = _computeNextOccurrence(tod);
-
-    // meetingTime anchor: for recurring, use next occurrence date as anchor
-    final meetingTime = _recurrenceType == 'one_time'
-        ? _selectedMeetingTime!
-        : nextOccurrence;
-
-    final recurrenceDays = _recurrenceType == 'weekly'
-        ? [_selectedWeeklyDay!]
-        : _recurrenceType == 'custom'
-            ? List<int>.from(_customDays)
-            : <int>[];
-
-    final freqString = _buildFrequencyString();
-    final meetingTimeOfDay = _formatTimeOfDay(tod);
+    final freqString = _selectedWeekdays.isEmpty ? 'One-Time' : _selectedWeekdays.join(', ');
 
     if (widget.tourToEdit != null) {
       context.read<CreateTourCubit>().updateTour(
@@ -376,19 +228,12 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
         price: price,
         meetingLatitude: _selectedLat!,
         meetingLongitude: _selectedLng!,
-        meetingTime: meetingTime,
+        meetingTime: _selectedMeetingTime!,
         frequency: freqString,
         meetingLocationName: _selectedLocationName ?? "Meeting Location",
         imageFiles: _selectedImages,
         oldImages: _existingImages,
         maxAttendees: attendees,
-        recurrenceType: _recurrenceType,
-        recurrenceDays: recurrenceDays,
-        meetingTimeOfDay: meetingTimeOfDay,
-        nextOccurrence: nextOccurrence,
-        totalCapacity: widget.tourToEdit!.totalCapacity > 0
-            ? widget.tourToEdit!.totalCapacity
-            : attendees,
       );
     } else {
       context.read<CreateTourCubit>().submitTour(
@@ -398,15 +243,11 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
         price: price,
         meetingLatitude: _selectedLat!,
         meetingLongitude: _selectedLng!,
-        meetingTime: meetingTime,
+        meetingTime: _selectedMeetingTime!,
         frequency: freqString,
         meetingLocationName: _selectedLocationName ?? "Meeting Location",
         imageFiles: _selectedImages,
         maxAttendees: attendees,
-        recurrenceType: _recurrenceType,
-        recurrenceDays: recurrenceDays,
-        meetingTimeOfDay: meetingTimeOfDay,
-        nextOccurrence: nextOccurrence,
       );
     }
   }
@@ -416,7 +257,6 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
-    final primary = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.tourToEdit != null ? 'Edit Tour' : 'Create New Tour')),
@@ -615,7 +455,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _maxAttendeesController,
-                          decoration: const InputDecoration(labelText: 'Total Capacity', border: OutlineInputBorder()),
+                          decoration: const InputDecoration(labelText: 'Max Attendees', border: OutlineInputBorder()),
                           keyboardType: TextInputType.number,
                           validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                         ),
@@ -728,165 +568,47 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       },
                     ),
                   const SizedBox(height: 16),
-
-                  // ── Recurrence Type Selector ──────────────────────────────
-                  const Text('Schedule Type', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ListTile(
+                    title: Text(_selectedMeetingTime == null
+                        ? 'Select Meeting Time'
+                        : 'Meeting Time: ${DateFormat('yyyy-MM-dd HH:mm').format(_selectedMeetingTime!)}'),
+                    trailing: const Icon(Icons.calendar_today),
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    onTap: _pickDateTime,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Schedule Frequency (Days)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 4,
-                    children: [
-                      _RecurrenceChip(
-                        label: 'One-Time',
-                        icon: Icons.event,
-                        value: 'one_time',
-                        selected: _recurrenceType == 'one_time',
-                        onTap: () => setState(() => _recurrenceType = 'one_time'),
-                        primary: primary,
-                        textColor: textColor,
-                        isDark: isDark,
-                      ),
-                      _RecurrenceChip(
-                        label: 'Daily',
-                        icon: Icons.repeat,
-                        value: 'daily',
-                        selected: _recurrenceType == 'daily',
-                        onTap: () => setState(() => _recurrenceType = 'daily'),
-                        primary: primary,
-                        textColor: textColor,
-                        isDark: isDark,
-                      ),
-                      _RecurrenceChip(
-                        label: 'Weekly',
-                        icon: Icons.date_range,
-                        value: 'weekly',
-                        selected: _recurrenceType == 'weekly',
-                        onTap: () => setState(() => _recurrenceType = 'weekly'),
-                        primary: primary,
-                        textColor: textColor,
-                        isDark: isDark,
-                      ),
-                      _RecurrenceChip(
-                        label: 'Custom Days',
-                        icon: Icons.tune,
-                        value: 'custom',
-                        selected: _recurrenceType == 'custom',
-                        onTap: () => setState(() => _recurrenceType = 'custom'),
-                        primary: primary,
-                        textColor: textColor,
-                        isDark: isDark,
-                      ),
-                    ],
+                    children: _weekdays.map((day) {
+                      final isSelected = _selectedWeekdays.contains(day);
+                      return ChoiceChip(
+                        label: Text(
+                          day,
+                          style: TextStyle(
+                            color: isSelected ? Colors.black : textColor,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: const Color(0xFFC79A00),
+                        backgroundColor: isDark ? Colors.grey.shade800 : null,
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              _selectedWeekdays.add(day);
+                            } else {
+                              _selectedWeekdays.remove(day);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
                   ),
-                  const SizedBox(height: 16),
-
-                  // ── Recurrence-specific UI ────────────────────────────────
-                  if (_recurrenceType == 'one_time') ...[
-                    ListTile(
-                      title: Text(_selectedMeetingTime == null
-                          ? 'Select Meeting Date & Time'
-                          : 'Meeting Time: ${DateFormat('yyyy-MM-dd HH:mm').format(_selectedMeetingTime!)}'),
-                      trailing: const Icon(Icons.calendar_today),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      onTap: _pickDateAndTime,
-                    ),
-                  ],
-
-                  if (_recurrenceType == 'daily') ...[
-                    ListTile(
-                      title: Text(_selectedTimeOfDay == null
-                          ? 'Select Meeting Time'
-                          : 'Runs daily at ${_selectedTimeOfDay!.format(context)}'),
-                      trailing: const Icon(Icons.access_time),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      onTap: _pickTimeOnly,
-                    ),
-                  ],
-
-                  if (_recurrenceType == 'weekly') ...[
-                    const Text('Day of the Week', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: List.generate(_weekdayLabels.length, (i) {
-                        final isSelected = _selectedWeeklyDay == i;
-                        return ChoiceChip(
-                          label: Text(
-                            _weekdayLabels[i],
-                            style: TextStyle(color: isSelected ? Colors.black : textColor),
-                          ),
-                          selected: isSelected,
-                          selectedColor: const Color(0xFFC79A00),
-                          backgroundColor: isDark ? Colors.grey.shade800 : null,
-                          onSelected: (selected) {
-                            setState(() => _selectedWeeklyDay = selected ? i : null);
-                          },
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 12),
-                    ListTile(
-                      title: Text(_selectedTimeOfDay == null
-                          ? 'Select Meeting Time'
-                          : 'Time: ${_selectedTimeOfDay!.format(context)}'),
-                      trailing: const Icon(Icons.access_time),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      onTap: _pickTimeOnly,
-                    ),
-                  ],
-
-                  if (_recurrenceType == 'custom') ...[
-                    const Text('Select Days', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: List.generate(_weekdayLabels.length, (i) {
-                        final isSelected = _customDays.contains(i);
-                        return ChoiceChip(
-                          label: Text(
-                            _weekdayLabels[i],
-                            style: TextStyle(color: isSelected ? Colors.black : textColor),
-                          ),
-                          selected: isSelected,
-                          selectedColor: const Color(0xFFC79A00),
-                          backgroundColor: isDark ? Colors.grey.shade800 : null,
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                _customDays.add(i);
-                              } else {
-                                _customDays.remove(i);
-                              }
-                            });
-                          },
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 12),
-                    ListTile(
-                      title: Text(_selectedTimeOfDay == null
-                          ? 'Select Meeting Time'
-                          : 'Time: ${_selectedTimeOfDay!.format(context)}'),
-                      trailing: const Icon(Icons.access_time),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      onTap: _pickTimeOnly,
-                    ),
-                  ],
-
                   const SizedBox(height: 24),
                   Text(widget.tourToEdit != null ? 'Edit Tour Images' : 'Tour Images', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus")),
                   const SizedBox(height: 8),
@@ -975,64 +697,6 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-/// Small helper widget for recurrence type chip
-class _RecurrenceChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final String value;
-  final bool selected;
-  final VoidCallback onTap;
-  final Color primary;
-  final Color textColor;
-  final bool isDark;
-
-  const _RecurrenceChip({
-    required this.label,
-    required this.icon,
-    required this.value,
-    required this.selected,
-    required this.onTap,
-    required this.primary,
-    required this.textColor,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFFC79A00)
-              : (isDark ? Colors.grey.shade800 : Colors.grey.shade100),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? const Color(0xFFC79A00) : Colors.grey.shade400,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: selected ? Colors.black : textColor),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: selected ? Colors.black : textColor,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

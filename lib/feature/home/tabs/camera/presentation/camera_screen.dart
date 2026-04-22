@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+
 import 'package:lost_in_egypt/feature/home/tabs/camera/widgets/ar_bubble_overlay.dart';
 import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_cubit.dart';
 import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_state.dart';
-
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
-import 'package:lost_in_egypt/feature/home/tabs/camera/data/repositories/place_repository_impl.dart';
 
 import '../widgets/camera_error_view.dart';
 import '../widgets/camera_analyzing_view.dart';
@@ -29,39 +28,57 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   late CameraCubit _cameraCubit;
+  
+  Offset? _focusPoint;
+  bool _showFocusIndicator = false;
+  double _baseZoom = 1.0;
 
   @override
   void initState() {
     super.initState();
-    final apiKey = dotenv.env['MAPS_API_KEY'] ?? '';
-    final placesApiService = PlacesApiService(apiKey: apiKey);
-    final placeRepository = PlaceRepositoryImpl(
-      placesApiService: placesApiService,
-      apiKey: apiKey,
-    );
-    
-    _cameraCubit = CameraCubit(placeRepository: placeRepository);
+    _cameraCubit = GetIt.I<CameraCubit>();
     _cameraCubit.initCamera();
   }
 
   @override
   void dispose() {
-    _cameraCubit.dispose();
+    // Only dispose if we own it, if it's from GetIt factory, we should dispose it manually here
+    _cameraCubit.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: _cameraCubit,
-      builder: (context, child) {
-        return _buildContent();
-      },
+    return BlocProvider.value(
+      value: _cameraCubit,
+      child: BlocConsumer<CameraCubit, CameraState>(
+        listener: (context, state) {
+          if (state is CameraLandmarkIdentified) {
+            CameraResultSheet.show(context, state.place);
+            if (state.newlyUnlockedBadge != null) {
+              Future.delayed(const Duration(milliseconds: 600), () {
+                if (context.mounted) {
+                  BadgeUnlockDialog.show(context, state.newlyUnlockedBadge!);
+                }
+              });
+            }
+            _cameraCubit.resetToReady();
+          } else if (state is CameraSphinxSecret) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (dialogContext) => _buildSphinxDialog(dialogContext),
+            );
+          }
+        },
+        builder: (context, state) {
+          return _buildContent(state);
+        },
+      ),
     );
   }
 
-  Widget _buildContent() {
-    final state = _cameraCubit.state;
+  Widget _buildContent(CameraState state) {
 
     if (state is CameraError) {
       return CameraErrorView(state: state, cubit: _cameraCubit);
@@ -81,34 +98,10 @@ class _CameraScreenState extends State<CameraScreen> {
       return CameraNoLandmarkView(state: state, controller: _cameraCubit.controller, cubit: _cameraCubit);
     }
 
-    if (state is CameraLandmarkIdentified) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!context.mounted) return;
-        CameraResultSheet.show(context, state.place);
-        if (state.newlyUnlockedBadge != null) {
-          Future.delayed(const Duration(milliseconds: 600), () {
-            if (context.mounted) {
-              BadgeUnlockDialog.show(context, state.newlyUnlockedBadge!);
-            }
-          });
-        }
-        _cameraCubit.resetToReady();
-      });
+    if (state is CameraLandmarkIdentified || state is CameraSphinxSecret) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFFE6A44A)),
       );
-    }
-
-    if (state is CameraSphinxSecret) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!context.mounted) return;
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => _buildSphinxDialog(dialogContext),
-        );
-      });
-      return const Center(child: CircularProgressIndicator(color: Color(0xFFE6A44A)));
     }
 
     if (state is CameraReady) {
@@ -173,28 +166,86 @@ class _CameraScreenState extends State<CameraScreen> {
                     children: [
                       Positioned.fill(
                         child: (controller != null && controller.value.isInitialized)
-                            ? AspectRatio(
-                                aspectRatio: controller.value.aspectRatio,
-                                child: CameraPreview(controller),
+                            ? GestureDetector(
+                                onDoubleTap: () {
+                                  _cameraCubit.flipCamera();
+                                },
+                                onScaleStart: (details) {
+                                  if (state.minZoom < state.maxZoom) {
+                                    _baseZoom = state.currentZoom;
+                                  }
+                                },
+                                onScaleUpdate: (details) {
+                                  if (state.minZoom < state.maxZoom) {
+                                    double newZoom = _baseZoom * details.scale;
+                                    if (newZoom < state.minZoom) newZoom = state.minZoom;
+                                    if (newZoom > state.maxZoom) newZoom = state.maxZoom;
+                                    _cameraCubit.setZoomLevel(newZoom);
+                                  }
+                                },
+                                onTapDown: (details) {
+                                  final width = MediaQuery.of(context).size.width;
+                                  final height = MediaQuery.of(context).size.height;
+                                  final offset = Offset(
+                                    details.localPosition.dx / width,
+                                    details.localPosition.dy / height,
+                                  );
+                                  
+                                  setState(() {
+                                    _focusPoint = details.localPosition;
+                                    _showFocusIndicator = true;
+                                  });
+                                  
+                                  controller.setFocusPoint(offset).catchError((_) {});
+                                  
+                                  // Hide focus indicator after 2 seconds
+                                  Future.delayed(const Duration(seconds: 2), () {
+                                    if (mounted && _focusPoint == details.localPosition) {
+                                      setState(() {
+                                        _showFocusIndicator = false;
+                                      });
+                                    }
+                                  });
+                                },
+                                child: SizedBox.expand(
+                                  child: FittedBox(
+                                    fit: BoxFit.cover,
+                                    child: SizedBox(
+                                      width: controller.value.previewSize?.height ?? MediaQuery.of(context).size.width,
+                                      height: controller.value.previewSize?.width ?? MediaQuery.of(context).size.height,
+                                      child: CameraPreview(controller),
+                                    ),
+                                  ),
+                                ),
                               )
                             : const Center(child: CircularProgressIndicator()),
                       ),
-                      if (isTranslateMode && recognizedText != null && imageSize != null)
-                        Positioned.fill(
-                          child: ARBubbleOverlay(
-                            recognizedText: recognizedText,
-                            imageSize: imageSize,
-                            rotation: controller != null 
-                                ? (InputImageRotationValue.fromRawValue(
-                                    controller.description.sensorOrientation,
-                                  ) ?? InputImageRotation.rotation0deg)
-                                : InputImageRotation.rotation0deg,
-                            translations: translations,
-                            targetLang: state.targetLang,
-                            widgetSize: Size(
-                              MediaQuery.of(context).size.width,
-                              MediaQuery.of(context).size.height,
-                            ),
+                      if (_focusPoint != null)
+                        Positioned(
+                          left: _focusPoint!.dx - 30,
+                          top: _focusPoint!.dy - 30,
+                          child: TweenAnimationBuilder<double>(
+                            key: ValueKey(_focusPoint),
+                            tween: Tween(begin: 1.2, end: 1.0),
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutBack,
+                            builder: (context, scale, child) {
+                              return Transform.scale(
+                                scale: scale,
+                                child: AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 300),
+                                  opacity: _showFocusIndicator ? 1.0 : 0.0,
+                                  child: Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.amber, width: 2),
+                                      shape: BoxShape.rectangle,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                     ],
@@ -206,6 +257,35 @@ class _CameraScreenState extends State<CameraScreen> {
             cubit: _cameraCubit,
             showGalleryImage: showGalleryImage,
           ),
+
+          // Zoom slider
+          if (!showGalleryImage && controller != null && controller.value.isInitialized && state.minZoom < state.maxZoom)
+            Positioned(
+              right: 16,
+              bottom: 180,
+              top: 220,
+              child: RotatedBox(
+                quarterTurns: 3,
+                child: SliderTheme(
+                  data: SliderThemeData(
+                    trackHeight: 2,
+                    activeTrackColor: Colors.white,
+                    inactiveTrackColor: Colors.white.withOpacity(0.3),
+                    thumbColor: Colors.white,
+                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                    overlayColor: Colors.white.withOpacity(0.2),
+                  ),
+                  child: Slider(
+                    value: state.currentZoom,
+                    min: state.minZoom,
+                    max: state.maxZoom,
+                    onChanged: (val) {
+                      _cameraCubit.setZoomLevel(val);
+                    },
+                  ),
+                ),
+              ),
+            ),
 
           if (showGalleryImage && translations.isNotEmpty)
             TranslationDraggablePanel(

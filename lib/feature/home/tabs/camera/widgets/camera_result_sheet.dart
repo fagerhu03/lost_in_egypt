@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
@@ -25,17 +27,95 @@ class CameraResultSheet extends StatefulWidget {
 class _CameraResultSheetState extends State<CameraResultSheet> {
   String? story;
   bool isLoadingStory = false;
-  bool isSpeaking = false;
+  bool isLoadingAudio = false;
+  bool isPlaying = false;
+  bool isPaused = false;
   bool showFullDescription = false;
-  final FlutterTts tts = FlutterTts();
+  String? _audioFilePath; // cache the fetched audio so replay doesn't re-fetch
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  @override
+  void initState() {
+    super.initState();
+    _audioPlayer.onPlayerComplete.listen((_) {
+      if (mounted) setState(() { isPlaying = false; isPaused = false; });
+    });
+  }
 
   @override
   void dispose() {
-    if (isSpeaking) {
-      tts.stop();
-    }
+    _audioPlayer.dispose();
     super.dispose();
   }
+
+  Future<void> _handleAudioButton() async {
+    if (isPlaying) {
+      // Pause
+      await _audioPlayer.pause();
+      if (mounted) setState(() { isPlaying = false; isPaused = true; });
+      return;
+    }
+
+    if (isPaused) {
+      // Resume
+      await _audioPlayer.resume();
+      if (mounted) setState(() { isPlaying = true; isPaused = false; });
+      return;
+    }
+
+    // Fresh play (or replay after completion)
+    await _startPlayback();
+  }
+
+  Future<void> _handleReplay() async {
+    await _audioPlayer.stop();
+    setState(() { isPlaying = false; isPaused = false; });
+    await _startPlayback();
+  }
+
+  Future<void> _startPlayback() async {
+    if (story == null) return;
+
+    // Re-use cached file if available
+    if (_audioFilePath != null) {
+      await _audioPlayer.play(DeviceFileSource(_audioFilePath!));
+      if (mounted) setState(() { isPlaying = true; isPaused = false; });
+      return;
+    }
+
+    setState(() => isLoadingAudio = true);
+
+    try {
+      final audioBytes = await AIStorytellerService.getStoryAudio(story!);
+      if (audioBytes == null || !mounted) {
+        if (mounted) {
+          setState(() => isLoadingAudio = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not generate audio. Please try again.')),
+          );
+        }
+        return;
+      }
+
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/story_narration.mp3');
+      await file.writeAsBytes(audioBytes);
+      _audioFilePath = file.path;
+
+      await _audioPlayer.play(DeviceFileSource(_audioFilePath!));
+      if (mounted) setState(() { isPlaying = true; isPaused = false; isLoadingAudio = false; });
+    } catch (e) {
+      debugPrint("Audio playback error: $e");
+      if (mounted) {
+        setState(() => isLoadingAudio = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Audio playback failed. Please try again.')),
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -212,34 +292,39 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                   else
                     Row(
                       children: [
+                        // Play / Pause / Resume
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () async {
-                              if (isSpeaking) {
-                                await tts.stop();
-                                setState(() => isSpeaking = false);
-                              } else {
-                                setState(() => isSpeaking = true);
-                                await tts.speak(story!);
-                                tts.setCompletionHandler(() {
-                                  if (mounted) {
-                                    setState(() => isSpeaking = false);
-                                  }
-                                });
-                              }
-                            },
-                            icon: Icon(
-                              isSpeaking ? Icons.stop : Icons.play_arrow,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
+                            onPressed: isLoadingAudio ? null : _handleAudioButton,
+                            icon: isLoadingAudio
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Theme.of(context).colorScheme.onPrimary,
+                                    ),
+                                  )
+                                : Icon(
+                                    isPlaying
+                                        ? Icons.pause
+                                        : isPaused
+                                            ? Icons.play_arrow
+                                            : Icons.headphones,
+                                    color: Theme.of(context).colorScheme.onPrimary,
+                                  ),
                             label: Text(
-                              isSpeaking ? "Stop" : "Listen to Story",
+                              isLoadingAudio
+                                  ? "Generating..."
+                                  : isPlaying
+                                      ? "Pause"
+                                      : isPaused
+                                          ? "Resume"
+                                          : "Listen",
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -247,6 +332,20 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                             ),
                           ),
                         ),
+                        // Replay — only visible once audio is loaded
+                        if (_audioFilePath != null) ...[
+                          const SizedBox(width: 10),
+                          IconButton.filled(
+                            onPressed: isLoadingAudio ? null : _handleReplay,
+                            icon: const Icon(Icons.replay),
+                            tooltip: "Replay from start",
+                            style: IconButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                              foregroundColor: Theme.of(context).colorScheme.primary,
+                              padding: const EdgeInsets.all(12),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   const SizedBox(height: 20),

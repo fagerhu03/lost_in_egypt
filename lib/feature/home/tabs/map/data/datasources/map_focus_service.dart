@@ -13,11 +13,13 @@ class MapFocusService {
     debugPrint("🚀 MapFocusService.triggerFocus: ${item.title}");
     debugPrint("   📍 Coordinates: ${item.coordinate.latitude}, ${item.coordinate.longitude}");
     focusedItemNotifier.value = item;
-    // Reset to -1 first so ValueNotifier always fires even if already on tab 2
-    tabSwitchNotifier.value = -1;
-    Future.delayed(const Duration(milliseconds: 300), () {
+    if (tabSwitchNotifier.value != 2) {
       tabSwitchNotifier.value = 2;
-    });
+    } else {
+      // Force listener to fire if we are already on tab 2, so external UI can react
+      tabSwitchNotifier.value = -1;
+      tabSwitchNotifier.value = 2;
+    }
   }
 
   void clearFocus() {
@@ -34,11 +36,12 @@ class MapFocusService {
   void triggerTrip(List<MapItem> stops) {
     debugPrint("🗺️ MapFocusService.triggerTrip: ${stops.length} stops");
     pendingTripNotifier.value = stops;
-    // Reset to -1 first so ValueNotifier always fires even if already on tab 2
-    tabSwitchNotifier.value = -1;
-    Future.delayed(const Duration(milliseconds: 300), () {
+    if (tabSwitchNotifier.value != 2) {
       tabSwitchNotifier.value = 2;
-    });
+    } else {
+      tabSwitchNotifier.value = -1;
+      tabSwitchNotifier.value = 2;
+    }
   }
 
   void clearPendingTrip() {

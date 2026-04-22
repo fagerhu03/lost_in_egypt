@@ -62,49 +62,52 @@ class _ARBubbleOverlayState extends State<ARBubbleOverlay> {
                 }
               });
             },
-            child: isExpanded
-                ? Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    constraints: BoxConstraints(
-                      maxWidth: rect.width > 60 ? rect.width + 60 : 180,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      translated,
-                      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-                      textAlign: isArabic ? TextAlign.right : TextAlign.left,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                : Container(
-                    width: rect.width,
-                    height: rect.height,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutBack,
+              alignment: Alignment.topLeft,
+              child: Container(
+                padding: isExpanded 
+                    ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+                    : EdgeInsets.zero,
+                width: isExpanded ? (rect.width > 60 ? rect.width + 60 : 180) : rect.width,
+                height: isExpanded ? null : rect.height,
+                decoration: BoxDecoration(
+                  color: isExpanded 
+                      ? Theme.of(context).colorScheme.surface.withOpacity(0.95)
+                      : Theme.of(context).colorScheme.primary.withOpacity(0.45),
+                  border: Border.all(
+                    color: isExpanded
+                        ? Colors.transparent
+                        : Theme.of(context).colorScheme.primary,
+                    width: isExpanded ? 0 : 2.5,
                   ),
+                  borderRadius: BorderRadius.circular(isExpanded ? 12 : 6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: isExpanded ? 8 : 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: isExpanded
+                    ? SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Text(
+                          translated,
+                          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+                          textAlign: isArabic ? TextAlign.right : TextAlign.left,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ),
           ),
       );
 
@@ -147,13 +150,15 @@ class _ARBubbleOverlayState extends State<ARBubbleOverlay> {
     double offsetY = 0;
 
     if (widgetAspectRatio > imageAspectRatio) {
-      renderHeight = widgetSize.height;
-      renderWidth = imageWidth * (widgetSize.height / imageHeight);
-      offsetX = (widgetSize.width - renderWidth) / 2;
-    } else {
+      // BoxFit.cover -> Image Width scales to Widget Width. Height scales proportionally and overflows.
       renderWidth = widgetSize.width;
       renderHeight = imageHeight * (widgetSize.width / imageWidth);
       offsetY = (widgetSize.height - renderHeight) / 2;
+    } else {
+      // BoxFit.cover -> Image Height scales to Widget Height. Width scales proportionally and overflows.
+      renderHeight = widgetSize.height;
+      renderWidth = imageWidth * (widgetSize.height / imageHeight);
+      offsetX = (widgetSize.width - renderWidth) / 2;
     }
 
     scaleX = renderWidth / imageWidth;

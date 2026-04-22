@@ -45,6 +45,7 @@ import '../../feature/home/tabs/camera/domain/repositories/landmark_repository.d
 import '../../feature/home/tabs/camera/domain/repositories/place_repository.dart';
 import '../../feature/home/tabs/camera/data/repositories/landmark_repository_impl.dart';
 import '../../feature/home/tabs/camera/data/repositories/place_repository_impl.dart';
+import '../../feature/home/tabs/camera/presentation/bloc/camera_cubit.dart';
 
 // --- Notifications ---
 import '../../feature/home/notification/data/datasources/notifications_data_source.dart';
@@ -147,6 +148,13 @@ Future<void> init() async {
 
   sl.registerFactory<ExplorerToursCubit>(
     () => ExplorerToursCubit(getAllToursUseCase: sl()),
+  );
+
+  sl.registerFactory<CameraCubit>(
+    () => CameraCubit(
+      landmarkRepository: sl<LandmarkRepository>() as LandmarkRepositoryImpl,
+      placeRepository: sl<PlaceRepository>() as PlaceRepositoryImpl,
+    ),
   );
 }
 

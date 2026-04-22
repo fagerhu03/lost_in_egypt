@@ -50,22 +50,14 @@ class CameraErrorView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    OutlinedButton(
-                      onPressed: () => cubit.resetToReady(),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white54),
-                      ),
-                      child: const Text('Go Back'),
-                    ),
-                    const SizedBox(width: 16),
                     ElevatedButton(
-                      onPressed: () => cubit.initCamera(),
+                      onPressed: () => cubit.resetToReady(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE6A44A),
                         foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                       ),
-                      child: const Text('Retry'),
+                      child: const Text('Try Again', style: TextStyle(fontSize: 16)),
                     ),
                   ],
                 ),
