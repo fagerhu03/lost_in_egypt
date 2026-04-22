@@ -8,8 +8,8 @@ import 'package:lost_in_egypt/feature/auth/presentation/forget_password/presenta
 import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/role_selection_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_field.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
-import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/complete_profile_screen.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -65,6 +65,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _navigateToCompleteProfile() {
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        FadePageRoute(page: const CompleteProfileScreen()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -84,8 +93,13 @@ class _LoginScreenState extends State<LoginScreen> {
           if (state is LoginFailure) {
             showErrorSnackBar(context, state.error);
           } else if (state is LoginSuccess) {
-            final user = state.user;
+            // New social (Google/Facebook) user — no Firestore doc yet; collect DOB first
+            if (state.isNewSocialUser) {
+              _navigateToCompleteProfile();
+              return;
+            }
 
+            final user = state.user;
             if (user != null && user.role == 'guide' && user.applicationStatus != 'approved') {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -94,10 +108,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   duration: Duration(seconds: 4),
                 ),
               );
-              _navigateToHome();
-            } else {
-              _navigateToHome();
             }
+            _navigateToHome();
           }
         },
         builder: (context, state) {

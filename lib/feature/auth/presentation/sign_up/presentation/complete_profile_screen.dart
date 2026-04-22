@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lost_in_egypt/feature/auth/data/repository_impl/auth_repository_impl.dart';
+import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -119,7 +121,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       );
 
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+        Navigator.of(context).pushAndRemoveUntil(
+          FadePageRoute(page: const AuthGate()),
+          (route) => false,
+        );
       }
     } catch (e) {
       if (mounted) {

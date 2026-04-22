@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
@@ -139,10 +140,14 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
               child: SizedBox(
                 height: 220,
                 width: double.infinity,
-                child: Image.network(
-                  widget.place.imagePath,
+                child: CachedNetworkImage(
+                  imageUrl: widget.place.imagePath,
                   fit: BoxFit.cover,
-                  errorBuilder: (c, e, s) => Container(
+                  placeholder: (c, url) => Container(
+                    color: Colors.grey[300],
+                    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  ),
+                  errorWidget: (c, url, e) => Container(
                     color: Colors.grey[300],
                     child: const Icon(Icons.broken_image),
                   ),
