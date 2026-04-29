@@ -1,0 +1,112 @@
+[
+  {
+    "id": "cat_hotel_0",
+    "title": "Meraki Resort",
+    "category": "cat_hotel",
+    "city": "Sharm El Sheikh",
+    "latitude": 27.9665067,
+    "longitude": 34.4011046,
+    "rating": 4.9,
+    "userRatingCount": 11090,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJKb-cz-tJUxQRt6hTz5J3Ht8/photos/AU_ZVEFZ_OCmQRNjcl7QOJEneRwFjq9RsD70u9vmsGjbkmEsdgLkoUjDLhsEp1mmxZ_rmixqX8McscP3f1Il31fLqg8Vf3_WDClQI7M_N_5B8l-n_e7mlUMoQGpBAnoEgEI28WZbnKPDNpi_dHeTWTpVGlxdqFPxMyOFyTsAI-3eSW5WjYdQWHQAsr5-qu2eOXikOZAowFyAiTPVbfgHexfidFJYDjusNRQ4UucYMUOA1tdlH9l93wIAGnTIUWRFN9EIgO2KIRXcUVuD4XWe4TYfTVX57DK-1SbSeLpmX4Iaetr2-y6dQJNpTNkPQpQTr_Q4WyYsFW4SZjpTYbWYZRAbUkzbIBjM-zsRGzGDXQd7FjPPLx7_IhEcxLsLpmkOTUxQKbwOd_3BY9OIlOoP4K-YlNNtFocgx24aQDa1JiPaRV56zNyk/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_1",
+    "title": "Casa Cook El Gouna",
+    "category": "cat_hotel",
+    "city": "El Gouna",
+    "latitude": 27.4239356,
+    "longitude": 33.6664494,
+    "rating": 4.9,
+    "userRatingCount": 3697,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJEZ5i5L5nUhQRvOcZNGdFo-w/photos/AU_ZVEHdMPOnF7UO_yvI8CRYr4yV04F1RyNxLDnDO4p3rigbRP8jnkk0rSMCB0fYPL6MqMOcGj0fucyupv-NsKLkOuYxamJ8LqkfYvJHPZU2CA3stHdsrYyP4VLf60Fjdovpy0U-OL6usrZLUwj2UbwF3wYcsANzZomJaAqH4lR3QbY5w_JuLHnmxcUy1xA-G_ldHGV36GPXVsMbavHwU8kUaimINMYGICx4dl9iv1SQQCRwBg4VIzw_ZalQwn_0IehxAcTEsEDHRLgDjykTALAQw23kkP-pC_RkqOH-0f9Jl7KR9g/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_2",
+    "title": "Sofitel Legend Old Cataract Aswan",
+    "category": "cat_hotel",
+    "city": "Aswan",
+    "latitude": 24.0822263,
+    "longitude": 32.887936,
+    "rating": 4.9,
+    "userRatingCount": 9833,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJbT60cc9AWBQRwCWFHKKKk8Q/photos/AU_ZVEEksR_Q6Qj7mNPovkL1jt6xLoLa2gYMr2JfonQwxr8qZ2QxY3gSRF47Nd66LTe9RUEzL0wRtc0Hl8Y5oN9WZf-N0zhfE9kog1zc5PXFjPe4tZO5Sgh7Afk9Kgk8DJEF8arWrqgvasfNo0D2qCZtIchU9KaPtJveLq81-A9q0ZKUKbpbPxfS-hl9ySw4LMtV5E1TXW4TPWviniEbKZ1TOmGehEGZOJlbg7ty9ltIZgH-LWiowUANyJm6koX3yyHr67FtJQ_bZek0weMum7ErHLBcdNxtO3G-Se9wbdsRymIjPQ/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_3",
+    "title": "JAZ Dahabeya",
+    "category": "cat_hotel",
+    "city": "Dahab",
+    "latitude": 28.4798697,
+    "longitude": 34.490572,
+    "rating": 4.9,
+    "userRatingCount": 10934,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJoazCgV61VBQRT2u-C09iDRk/photos/AU_ZVEEc3uVZpXzNuFnyjCNerYQeJqKyKS47Iky0k5OpcXZ_QRyT--u0KBGjgh7HqzkTq1cLwoOZXJhTRjbXMFzLlonHrYDDxHCTWB-qnztX5lO_zBNa7QxqxLNW2kDN-gibHPBtKlo6a3OxT0li3ULewOIWnrO0FzUuALE7GtuJHmc0esio39am_fDh-KIBfYGD4I1gM670AHpvyBSxB971_gD_VvCgT5g7G9BySfWWn_NXOgvZJbavXk_gDpfRuzvHaU3j5ryCMHjbFldLd-lH98MnO891cibjrc8k46w_0xA5eQ/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_4",
+    "title": "SUNRISE Anjum Resort",
+    "category": "cat_hotel",
+    "city": "Marsa Alam",
+    "latitude": 24.882441,
+    "longitude": 34.983235,
+    "rating": 4.9,
+    "userRatingCount": 69,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ2RHRMwDptBURktgTjTNTV5c/photos/AU_ZVEF47wPolOfaVIm3bRIw1lPdFemyeLVcIlJ8go7217oyOjgiYY-LJyThXfx6xha3pkld39lazFb_6WJ-FkA5feMKW-9L8m2X1Uh3IqACHSaYJL_Ve2ge1NxRjGfvXOD1SLGzPRFTOxodDDBzssIs9_a-3ESjV9CPW2RRYubrGQ0EV3zSlJ1PxdY44x9fSxebgFQiy2lQFexK1tx_Yl3Nexj4YeY3ia89Z4Z8s_ufkOn0sGhzDkl51QkPgz9pZ875RuLXvLk_qDGeIc-L51JMGFktGHB0-SZlpGOyFnvM76e1jePQrBvAzmWATGe51D9z0EvbkDf4yRIVrG8ox7EPvqtGNxke53zZK6spsFxao7xRjmQbiDs6uHVRK-REmCoASsgDbjla-gWhPf9mZQVFdrIbHv-TdK-EyP8JCaIV3bmcpK7snzOJp3wXrhtODw/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_5",
+    "title": "Steigenberger Hotel & Nelson Village",
+    "category": "cat_hotel",
+    "city": "Taba",
+    "latitude": 29.4905338,
+    "longitude": 34.8996944,
+    "rating": 4.9,
+    "userRatingCount": 29506,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJB5OMLaB0ABURE737eXyTshI/photos/AU_ZVEH5GCy3IwPUwwwPgVyffp4gFGDB66NjIruoo4H57fp24cdtgFkbRKUf3tU33bMQyLUqXKyTTNWjwKL32Hz__WP3w6ATneetjvp5-E9HWmxwU_WHe89orwrAMfeMVftXqwwl05RsRTaPGGSzhFium0PRBLxLO0nCH3oUcDZiQ8yoogB18obqp7W9k3NZsDkljsv_4yCUnAa4ZDKxHeso1sJyaLxpzrMfu6Ai28yTX7SkmIvn8LSZboJwcFm_TKMhjKUtyAtJmOVqxkwXHPmA-2OFcEML125YbAAIre5eemVAiQ/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_6",
+    "title": "Steigenberger Hotel El Tahrir Cairo",
+    "category": "cat_hotel",
+    "city": "Cairo",
+    "latitude": 30.0467285,
+    "longitude": 31.235259,
+    "rating": 4.8,
+    "userRatingCount": 22768,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJFwK058ZAWBQRPaVPy7dwbqU/photos/AU_ZVEETSeHYl8wisUq4LNyS8dbpvatV7PAaeMTg3Dz5dwA1cXcLkw4trwGHEYpOW1SFDgqbY9w8wHMnEvcU0Pc5Agb3y_A26U_CeBdwnDE_LQAO9ssDPwOy2VV3eqQe__KjAf-2bef0BioArNi8OOW5ZaIThcAYfonZtWEu3nFOOKm0ZNZYl5YLHlTTfTMILr7oFIswFbFA0hM56MljKPBIr4p7mQnfILn6RdGAu3zj11laL6sfnIapIJx6k2W56G9mcCKkf3wxuQLw8bdhU_5eCdPWtYcubsYY3iRPKs0guvXTiQ/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_7",
+    "title": "The View Pyramids Hotel",
+    "category": "cat_hotel",
+    "city": "Giza",
+    "latitude": 29.9759337,
+    "longitude": 31.1443829,
+    "rating": 4.8,
+    "userRatingCount": 217,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJYQs0onhFWBQRVTRf6KJAe8I/photos/AU_ZVEHlYBzF5LJRAHB0pokpms4_he-orwu1UlDmWr8yqw87aMp1MLeEnXRYGaTJXKuceXGlqS8qQo1IkOvBYZfpRvxN4UAT0iW3v9HFzEg9tjUBIkxLGKUD50Czy0YlsCoA_CkpvFzpZASFKeCbdNVtxfmw3bj4c41vur-ZSgmeHMBEKvic639Mgyl5R1XIlOYd3D0ND60PmUzsJAP_gC40KZvqG8UuinhmwXNGht0-zJg2_E0E_87rurg1pwmRkDsLiz5T8JSXA7jn6eBxwtR_kGgYybj03TmDY25bUrh875k/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_8",
+    "title": "Rixos Montaza Alexandria",
+    "category": "cat_hotel",
+    "city": "Alexandria",
+    "latitude": 31.2879816,
+    "longitude": 30.0209911,
+    "rating": 4.8,
+    "userRatingCount": 2701,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJS968X17Q9RQRLbKT7qC0e4g/photos/AU_ZVEFDw_EXs1jA6IKtGbZWQ3neQiV8v-KjV-STsF9R1h3RNQKFT8XwDJ9eEkL9iEkpKR9zY8mmZ9QjHqNUGteJH0wXusBAavFmcmz94eRZvzRPsyvQMfpZgQX59LedkuIZkcoITe1Ld-G6_I2ME2JLs37xZtTMhvHm7dN6c_mGVI5jdtX-dxCf-cIImxeBiVsWFvh9PNtaJXHT1iqLHz_azvxN6NQk2fqfwqxwYxhB8q75pgqTSqNKtU19bdDu32D9zwKMCpojM7PBn-w4oXUutYAejSP-Oo-e5BpuqlG_NkQlBg/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  },
+  {
+    "id": "cat_hotel_9",
+    "title": "Steigenberger Aqua Magic Hotel",
+    "category": "cat_hotel",
+    "city": "Hurghada",
+    "latitude": 27.162313,
+    "longitude": 33.822763,
+    "rating": 4.8,
+    "userRatingCount": 34914,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJfwPUCMGAUhQRvVtueVteLaU/photos/AU_ZVEFLXZxWbFIIfal_Lj7hdqdbKM6f54WyXkwhjAdRtvsnsdK2VCdcuSkxTCJh1jcyNIwfl0W2dDPIvP_HkYjNFXkwVJqTlTzv5YYbHFg2tEduihTCDPvyKuO_AmDhOufWlNohyp3OpxJbcE18fnbB3y90EK5pfc-DkwqjZvDV5hYrD9gGcV6fLQAM-EjIM9p6yNIAUfaJa3-1yvO_vzRCw3zywHQjV0Cdv8zAqB_gBL_FPySbXqBeyd0KJHu0PVpDXv5zHiOQPOzQkRgxGr-3luNAPFXTDsizEujRjRos8fGmyg/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY"
+  }
+]

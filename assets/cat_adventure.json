@@ -1,0 +1,122 @@
+[
+  {
+    "id": "cat_adventure_0",
+    "title": "Glass Bottom Boat Hurghada",
+    "category": "cat_adventure",
+    "city": "Hurghada",
+    "latitude": 27.21,
+    "longitude": 33.835,
+    "rating": 5,
+    "activity_type": "Snorkeling",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJO77AMP6GUhQRswcphljkjq0/photos/AU_ZVEHqwSwreJL7zzQIc2mTRZV8mJrHPoxi77GHOwkUSilD0VvnfkSxsRn0IdS7aBCthVbtpDG7wGozMZhY3sB5-2vxxOge137hUTVBPUv-2P3zGrGH8f9Fi3_UHgF_1WtNC8PLKgR1mB3KvUFKm4ONC2ERKPq3a4j3inaurQGf_vtZ_Ke1OJxE9D7OLiGc4AyGODeK1hRMpQDFosxlzDoaM8peP8S6qNp3Zqs1Oyq6wiIYbu44uu2Sty-ipSM4QmAvOT3oi5P6Y809YQaF1HXdv0uA8ojaueyGc-J4Yyxee62UgZ8kCy3Y0BAP3HztMcUhoGNU65bC6CAGiHZu2h4dC6rtT-s-Rs3FDcVb2b2Ku5P86CHSYuKLmic6WftSR43afEi0sv6gExspH4AdEc7RabJUQeJRJrNS_qzBUOshAk0NIu4i/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 5
+  },
+  {
+    "id": "cat_adventure_1",
+    "title": "Wolf Safari Dahab Tours",
+    "category": "cat_adventure",
+    "city": "Dahab",
+    "latitude": 28.4935945,
+    "longitude": 34.5161071,
+    "rating": 5,
+    "activity_type": "Multi-Activity",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJrTO1cG1LqxUR1l9H1McXQ8U/photos/AU_ZVEGn6lT5ZVnrbCi7vpOzqYpQMBswGq63fMATWuIRA331_oxWljewtP4JkrXZTL5MHitRCKvLrdgcIgBs_W_dWZIOFueaghtsFywaj9B7mTeQqZ1EVUmrtjq1a9oNWdn2drOSEJpev5R6-Xjzeoc-YhIgoBIjkkjJiRbI2KDKaqHFZxpAT6Bfyc8AJ6tqNZ_gWbgiW4v0Dz_taePxvnyT2iEkfVt5vUjSAwPdXZ3H-1U1FpmdWsdKxvOd-q6u-qB-w2UYwxRVXZDh0HiOCm5hDe0FpP7yGR0WEIERFDVsiRdmeHbOg-K5YHPzwWWSdtyxdNIpma6mfwXYRK9Lh3WI759yZoUrxYQus2L2JAW0n4mURfP8yDbRfv7jZb5E7EnFYe6yQBBCVXwPun9nnpQFDUR3UgPpiXk7ITQQQoDJRe_9W9cYaU3t3HskzXBZ8geE/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 75
+  },
+  {
+    "id": "cat_adventure_2",
+    "title": "SkyScape Hot Air Balloon Luxor",
+    "category": "cat_adventure",
+    "city": "Luxor",
+    "latitude": 25.6986987,
+    "longitude": 32.6406148,
+    "rating": 5,
+    "activity_type": "Hot Air Balloon",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJU955vNYVSRQRlSpfuxsZpjQ/photos/AU_ZVEEBxw_A3C4QydGFCBmCqxARA5llbkD9HQ-lF8BCPmNBv1wk6MoHeXtg7CtBkZQHxcoEBUBTdHXY3P7Ij8mebCLuN6MCMbHtwzr7bKueN-GC_E8HNgrMDLE2ka85ufw4rBaRrwjLbBiI23las18Avjgjygqap0-4RkgW2lj-1UgqsjA18sivI5fdkiV1UoIo3J1w7bz5xWEMxjSDJICXXOykkmfNm1QV_8jihKQZPijmY5rfkpoBwtZNIzKrL7WUNDX8ZYm_f366PMo3YDPq2PlI-Lm4Syi4ljriDbSuWJrGqw/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 101
+  },
+  {
+    "id": "cat_adventure_3",
+    "title": "Sea College Dive Club",
+    "category": "cat_adventure",
+    "city": "Sharm El Sheikh",
+    "latitude": 27.9805263,
+    "longitude": 34.4239091,
+    "rating": 5,
+    "activity_type": "Scuba Diving",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ75cBQp5LUxQRMjrNYQx93g0/photos/AU_ZVEGwxITyE44SN8X45WxC-PvFFcoONvTlni6JEZCbzRPxbkFI7T6mhAO5e4Kdp5OoukXFKG5eAxzJif_lu_es3FyNq_2N6I5ky-dTEZvc6U6HzMZWgHAgEMq78uZisyKmJR17Ue46XsXikhqxv0e-K9p7qleAxsJ-ICwIcXKrPpOwSIixxJA_g98rOtKFjR-NgVl0Oild0d1bu4vi8yG1hVC42cnWBVCC5wOoxNq-2uMWjCRsZBrbClvzfHlqTZRXYhk1b3mfBHAoBGvLJqwCTScfXtTdqcDvWa-hT0G9fv1EjIsAdVU7Gzhj15eHKlIUucR61P06oN_uR2bEj6oHglD1eoU2jkh-dBKZYoftRnOJIcarNYkw6rnm4licjOxBzd6eL5kFLwi-jUZgV29WVUnanXQP14getN3MkI7f_xg4H__Dweul5AOYE8DrYLXn/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 2124
+  },
+  {
+    "id": "cat_adventure_4",
+    "title": "Fanadir Watersports Kitesurfing El Gouna",
+    "category": "cat_adventure",
+    "city": "El Gouna",
+    "latitude": 27.4151986,
+    "longitude": 33.6778034,
+    "rating": 5,
+    "activity_type": "Kitesurfing",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJz0r09OpnUhQRzEyLWVcKjQU/photos/AU_ZVEHl6zO3mBzSje1eiV6R_z2AKqNPO7zce8c9YDfNfn5iBTMgxN87wos0m_O5x2VZqEQwROa2J68h2t1kcbqTEx1fz2uvtIIhFfPftuf36iP8sH24-gwltNUYde8ZXotFCFpfZOPGdCg1WuUqy4sImZjUJLzY2fA7LJzbV3uDc_IC0kVK8nHtSZ9ZGYPRME8z173ZPN5mugPjfXmzl9lJaZxu1Fl4M4fsA2NVATPe8SEudB3hzoaE3NDD9zR-8RasGiGMZKQcZ-Kf2tGBTTLqaP1ho9XBsSEz-JFBFdqTqHfp6Q/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 336
+  },
+  {
+    "id": "cat_adventure_5",
+    "title": "White Desert Tour Bahariya",
+    "category": "cat_adventure",
+    "city": "Bahariya Oasis",
+    "latitude": 28.3724139,
+    "longitude": 28.8927856,
+    "rating": 5,
+    "activity_type": "Desert Camping",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJFdbx7QlNXRQREzAZKc_uEjc/photos/AU_ZVEEgq1zTmJYnx3GH1go8sVmRXU1Fsx_MSkkpg1ITESx26-gar04jpYkvQWBEwpay_yvu0Jf4yq33U2OK3bE7XqH_fs40k13LUONhD9XW2abprsXyk8NDES432gZMgra05Odv7y3eWe0TFwS5hO4OmPB92IhnF0f5CXUUQLomjeyYJXlYSntw6rcRWUTaVJ0bTF69WoJB1Nj1xM9kI_5bDWRAi7LTkAd_ic3aXuyqa2pSEfJxEGSwWQEhrhCeqcghv6Sk4-BzU4ghZIOR5nLnATn_KJGNalaAU6z0zD9QDJjHCxahcf6HlPCjq8fywlzVqvp_b1BYGx1yPOHJeg4a8ojly_zawtBayk3xtg6BdZmRYci9V5KW6ZtuoLbTzki2sYOVFFU5lcHlxHvNu1VUroaGEP348rEOXSgwWWdeGhDZuo4YGLjQbT9Ua49-52S5/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 107
+  },
+  {
+    "id": "cat_adventure_6",
+    "title": "Felucca Tour John Cairo Aswan",
+    "category": "cat_adventure",
+    "city": "Aswan",
+    "latitude": 24.0901153,
+    "longitude": 32.8945111,
+    "rating": 5,
+    "activity_type": "Nile Cruise",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJNV8BlF9lNhQRdupUCvoklxc/photos/AU_ZVEEWNeRV8XF9iDIeU2270Hl7ownI9BPOn_OBdh0ocdKv6fWx0jFTVwk5mGljaTiBq-JbDDQiRU0XB02C1o3qazK8iPOrZeqyWOizInE06hMqyCd6Bj4p0OgM0yoHsVaP8f6uRBZ4g-xuYyc4WgZHtg9ZbIayXkNBjDx7bjvFe83_wS5ilrExarMdJ5A7kPw_Jy3c1rEzn9FvIH60BHu50vKvXpDIzO6UPYZM-ePfxofzDRo44j2LxgtLsTxxi__PF_IzxlNMAwppnk615zkQz9r77bWD5n44Gu_U0j_g1oLa9-3_VzXZY2U3K90BWFUZnxdY46ovR_HltJBaWZl2hP2Mc_NLpAj09wDk9tA8CbBWetGo4hF3LmV7TxBtsIdZnUtmz2hXINO_BYkLl4CT00fYz_Fim8pkS35O1w0U8CymhYVaJp7Yyjyzd98e5mgn/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 112
+  },
+  {
+    "id": "cat_adventure_7",
+    "title": "Siwa Oasis Adventures",
+    "category": "cat_adventure",
+    "city": "Siwa",
+    "latitude": 29.2017939,
+    "longitude": 25.5179182,
+    "rating": 5,
+    "activity_type": "Desert Oasis",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJTdOrmSivehQRVVvoxuS9HhI/photos/AU_ZVEFUJvzMrJz5-AQi9idpoDE7Q4z6-8nAqgnOBOMdHpzoxo4ySRoxOmKvBdPL9Qw5xokkegtG-Hzjr7j61URt__-Z3WkAKzoeS9-M20hfJ2FbFBJXFemlloa9MYx2FJc70jQPXc1Q7d6qtjqOZXzgFbjzLy2pJ_hBWCPqXKDxUW9vEPFF4hiB93iWH4q2cS42SlBoGzl4B4C--OFqV2I6SOyWR3YsHWmESVVp-QOL4j8DhQsksM7JiXZQHfhehuAwXAf8RGuSS3yVTd8SkcpqB4J4UcAZUk7IbGBZZNQu-lzFFhfFsWawaOpQcZIvwyzzHFm_RtZLPK7AlFuOMhBYAZmd-BpyN-L-vdzZFAK5JNydI2B7jF2bX7kyKhCFAPhd3JioaA2rNb_FWwUWDJfYI7TquPLH0vRu0_qNcWO31G4yWR9OWDDMDidm6QEZ5qUA/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 108
+  },
+  {
+    "id": "cat_adventure_8",
+    "title": "Desert Fox Safari Giza Pyramids",
+    "category": "cat_adventure",
+    "city": "Giza",
+    "latitude": 29.9748327,
+    "longitude": 31.1424972,
+    "rating": 4.9,
+    "activity_type": "Quad Biking",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ87VfNm5FWBQRI1I6iRM1ZiU/photos/AU_ZVEFtacT92P9djYhfW4W_z7AefuUQRZgjN-xWDWaxwT9jGB9ZrybEKcay3eCyQhOoh6ZTjB3A9mRn8K_B3iU9ge8H65NnBiTt7GKyYJjzqf8hobjyDjB0Jol6uRCcTIrA4heRksEjvfwTFSiRsFE6ojFY3scgDqDbF5Obn1aYUJb-Yg02h6uP4bjV00zYBihsbUN36jfSdkPiPOCt63lk0IkZ-erXYxnF9WkpbL5Az2OGlQ0wORoExzYcEXxFWnnA_t5BwwDg50v1YRupyTkAaLgFieT7u4Yb-VDUbmQxCigkEw/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 338
+  },
+  {
+    "id": "cat_adventure_9",
+    "title": "Tornado Kite and Wing Surfing Soma Bay",
+    "category": "cat_adventure",
+    "city": "Soma Bay",
+    "latitude": 26.7945318,
+    "longitude": 33.9398277,
+    "rating": 4.9,
+    "activity_type": "Kitesurfing",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJI72gdDdyTRQRTt8VVyKfusk/photos/AU_ZVEHKD2vC_7nqav_gb7ICvU4T8kVZpYp-jh7vgaGkOAmF_kElwtaKalgOXieby_e4OeTM1kFnBVqg6syDFHj8726r92qa3kIa1Z8zKWl4CRDgVaGqxJZ2fo_epxOtm5MYXkb8vd5AMQ_1YFW47D_9ukMU1neVj9HepIkbCFpHHnkGZO7zodtEGcvBzRv7EdAwZshPAJSDKFLf5lcyX8_hxfVmMWXkbOI3Jl7CbnDhQpZK_mqFRH85FvdcETDT-oMnok1uW32MyeRo-qkV-s0ypCAhytQX7VNoQOBug4Kq9r7Vs5MEeovTvj6wEByj7zbipcSk6MPKIWP1Iz6QbQlVHgXuI5ll4xv7E-Co10dmfsQvhR60VD9PL8PRPGpRHzwPUnYtHpV9UJJEND49CihsomVDxLgn9RbnDgXADLpn2I47NA/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 160
+  }
+]

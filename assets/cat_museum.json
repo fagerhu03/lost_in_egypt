@@ -1,0 +1,112 @@
+[
+  {
+    "id": "cat_museum_0",
+    "title": "Turatheya Arts and Culture Port Said",
+    "category": "cat_museum",
+    "city": "Port Said",
+    "latitude": 31.2565963,
+    "longitude": 32.27857,
+    "rating": 5,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ-1ngJBud-RQRShu1v-eregk/photos/AU_ZVEFGYE4Id-zSW-AFo-naoxK15wDBeTBKg5oKUTFfDUC9yxY3YzzAcmenykSEIhLSi3ISSMNzZWG6A-sKWn40YtsbIvOyqm9WsmwmD3sEY9f67jaBF-PgamsNvi6P18SdZ84OholzwoyT2Z2evy2Lut_onVCEycqusXaKnBJZLWm8SnDVFuElUDZQgaLeGKOhJNZ_FiWi3L4PtbGqcquGQQrOSNSGVlQRUfQAWyqHzPVx4uEluC_xSanhd_3VLkOXXXDMsgaDZJKM27Uu3hDF1km-0M1kErgQ4zpD7tEGggjnw4yBRD8MXFK9LOc8FSkSXAOvxVFQRQf78wFSyMfqmon-dgEskutElvidIHkr2sFkB54xGoAUD4wDCuQDwZpoKUk7NEmTpR3_XRMIEdqdrWyt9jZdItKeOIdHO2SnxjyS1oc/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 8
+  },
+  {
+    "id": "cat_museum_1",
+    "title": "Karnak Open Air Museum",
+    "category": "cat_museum",
+    "city": "Luxor",
+    "latitude": 25.7188,
+    "longitude": 32.6562,
+    "rating": 4.9,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ4YNZALAVSRQRpPMu5ncf840/photos/AU_ZVEHr6qJZF8yqrAjapGxrKueqoZ6Pqb7KBLqU8VVftvQ-f84tVClBQzmp5sRsUtkyqBV-UzxBzX0D1bDHUze2hCR1IIwc3NdHAAIRN8nAbQhtkWe0Jura37Z3tUznGXeymlJ38lG161FjHTh8IlIl-OW-qRh5_IqPpZBh1typcNl9iQ6ZZc-DXEYiDL7f2T1E8YfG42kSzg_y09gUbDWinoVlW3Df6ByNxh-Vh3CO-HmVM31qyJSEfhC9frbXM1ad_0E2sKihG4mrhsZzBbUdSS1jhWFncoJkzPYNjb9MMf2E-_1E-doJWV1F-zMEVC0_cKyoe7stcmC8sEPix4jte2yvnKhh59yPp15wVD9jIfiu201O70aIqJ53k4oyMnCApuJopca-qdjkLIVt2TgFsbtiX0gBIMkKmG_BoYzYK1OWxFK0/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 101
+  },
+  {
+    "id": "cat_museum_2",
+    "title": "Suez Canal Museum",
+    "category": "cat_museum",
+    "city": "Ismailia",
+    "latitude": 30.5904953,
+    "longitude": 32.2731689,
+    "rating": 4.9,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJo_Wh81BZ-BQR7PS3WLTL6Jw/photos/AU_ZVEH8eyzZFJTaZzWtdwK4Wbij6ddw7OjhVADPV3q2Gs2t66YvCYmhwgMgcSWIDxqIR-89CpJmGek8XeSVzxcwu3YkzYKk5_n0tBWlB2m0Yd77qwZWADOvLAh1v6x4WW2qpTS1v2s7jcIMe8AFUOQkgYO0BgAthOJOE-03dkCFoD10wqxwdIM5xeSnQmtkrINq0pElR8GLKD-nHNKP4V2vtKh-jBmUMgT0AeXu8Vui7Vp7nul02d4418MJXlvURoeUvne1GX9xNfALTE1lY_gASG8hbRQ_upGXMIDK-A4H4f-QgQ/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 724
+  },
+  {
+    "id": "cat_museum_3",
+    "title": "Temple of Dendara",
+    "category": "cat_museum",
+    "city": "Qena",
+    "latitude": 26.1414,
+    "longitude": 32.6701,
+    "rating": 4.9,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJdS1idtPLThQRfxaX19asxVU/photos/AU_ZVEEYVvtv81_f9ulBNZW6cE2MwXB98JRuImxF-0-k_qivexaNxep0lslgKSo8AMxVsyDbm2x8WsjwO5YQeMpK4sclL0sCjd2Rd-moSgtQxVhLQfVeNKpCwBRAIGSMY_r1Gs322T5wOiw16RSkqd3ac475SVY9gpDAk-5Aw-ZbXWrwHKj8ouQTd9T62D1NFdnBoSWxp-Mjq9H2nB2fy2gz-IM_xpuTrPxKCzl66NFdpWsSk_AeFK1gE8PV8sY57PYxc1jns3gsoKzaCV4Glu11UPQyKTcQOa7cm-eZf_9QakvDhcr-i9aThPJrUeBjE5A6AYmNtkLEIQSic4QRNezzL7wjkkMNPfZRicExzhYeT0F7lRl0HlNo7amcjPZmYosqkDIUR1JFxcVDyA3BFZRHoLXFT5-1-lJJnr32-CecUDw/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 3813
+  },
+  {
+    "id": "cat_museum_4",
+    "title": "Wadi El Natrun Monasteries Museum",
+    "category": "cat_museum",
+    "city": "Beheira",
+    "latitude": 30.349,
+    "longitude": 30.3432,
+    "rating": 4.9,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJba5aOObJWBQRytoIHRDdjQM/photos/AU_ZVEHISNvaW6eFv32S7r8hrh82BoFrQ2hybGe1MpU4VXu2pVsiksUTKdlB544keN0VhvdeBqZ7wg2YL4n_fgZPgzmk_r_Yz6oAWRHFsZ8GByIwpTxK8emOsEDqmPi4EM0_s32ltfWi7ivVX6cluaZdjLYlc3Qed0DbxXO3vmFv5Sj70REvGhEQ15SPrruYqIPiREaIbfH6XMG8ukkeItH4qfZJVR4KlLmKOjrW7klGliPjcs9hQtRDzic9ijZ-s4nxmDUWarQq4EoKfmf6q3GaJKifdxa4w2fxUWlcp-VH0X4HDlEN6YNs1gaN5h10Ib_F7qsJ36eUGfwzqq4_QYiKZ_egfSFxgygA0LQcXw2wi0I3OmPF7Q-EcAN_2XuuJjO9JUZXbuJ8fc2oVjRz8c6fhF0CEaoCigJagefYRr5XGqvbpRdz/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 3149
+  },
+  {
+    "id": "cat_museum_5",
+    "title": "Solar Boat Museum",
+    "category": "cat_museum",
+    "city": "Giza",
+    "latitude": 29.9779,
+    "longitude": 31.1336,
+    "rating": 4.8,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJN3NGBVFFWBQRgCuPLIRY5R8/photos/AU_ZVEHKGqfQE6EqbJIt0NU8nR8xCCxFRsEbwKWeyKkPob62hJaai-W40LfCP4IOYzlMhyx7HEoLbmaJb4m6-BVL0OKKAlAl9Zbh42LGAXfHPKBMJQgTdITo6ugF6kkAjx2t3jZCoG4GaBP9Tg17kg_cMc95Mtd9aELC6_7nYohKAqKaJtOYhbYqKFXk0x8jOGufT7Ad9P0GiCTGhwYs2rJqQnq7VVjEnC9W4CO4FC4-BfvznFK2dh9zbPuzpvcjGF6gahe-LHYrTyQATacECq2bBhHwDajcYDMOxkUh80kibdmHl_3QKgQEIQSUxtcOfQgQBMephq_wOWXQ2aBs6sgCMkWS7u7NajEHjpFOi5iWVEGVljCm256XXla3szI7vQ3p4ONotTnyxB3V3kdtrpL_24Quye25kzaJTfw9pHx4OAxubga1avGu42PUIiIWyw/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 126
+  },
+  {
+    "id": "cat_museum_6",
+    "title": "Temple of Philae (Agilkia Island)",
+    "category": "cat_museum",
+    "city": "Aswan",
+    "latitude": 24.0245,
+    "longitude": 32.8848,
+    "rating": 4.8,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJuXeJLNtiNhQReOUrg0ms8pk/photos/AU_ZVEGNilN2RIOYx7OAI9le2Bg22MknDQsZibNJBigcvi9_8AV5Xh2u1OpxXh-YjvcObW25kg6F29cQWj_gIyu7nI8AcMBOtdgCujNPT5Dm2lCi7Kd0XiPM-QFeuGP4vLUDjrL__y5RAJ8KiSp9cZOUv0vxhJLA3HidYWrH-r3IJ6YxAlXrGGeRtpAxEc4mcKFdH9ytCms1dKfaEUrTuoAT1o-APUQQGfUOnNhX782LvMvlnmn7v_WuYCcKEyONznLcDRMqnAXTMd95fPdqbjQKLHZCLusj8cl331VsrrEPGyuR07jemUvbK__GTrapAQ0PeK3Rsz4ivI5RLxOyYA7m20iZc8Ic6B6JVneX3Nr70J03JJNWkJIIz55-5go9XVLAmL7TSQWvAiiJ0uuerbgZFzQENGNkzfliMGdvf2kumawCuw/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 14544
+  },
+  {
+    "id": "cat_museum_7",
+    "title": "Abydos Temple of Seti I",
+    "category": "cat_museum",
+    "city": "Sohag",
+    "latitude": 26.1836,
+    "longitude": 31.9193,
+    "rating": 4.8,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ04R1xci1SBQRjvFWGUFczlg/photos/AU_ZVEHXz-LgsAun4I7wUbb9exwv-aeQuSbZMJf2Is97Xf4KXBoJ9Fnypyx8f6DNPZOSKDaep-bg_jkuAC1mGBdk7oIm81LhfdSkUgvOPq3Dh2G6pk3fH5FxCts3sfpzJZJJY04e0O11mJYeUEjZA1auyu5NAQlpoOPwOr9RXg5354gOiYGgSrdB1u4g03hOJz-tsll-hmCeRDaJIuzbhgAS_JdwG-YUioMZEDgPDPJF-duzn5-afrfurPKOj1UWgn9887VIuJ9EY6XWVVt3l_QSP96qUv8ldRu2aS2tzvViRoENIJT1u8fut1Sc11vF99IBPdkVN8U8YGQUlqw52Goqw5WNt8HOV7uQ3VF6lw6LUozSsQgsgxi0IkpuE7gm9z57ztD-mNhzGcxwRlPUgELVas0VtLsGE2seabrEEA9nex24s4cW/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 500
+  },
+  {
+    "id": "cat_museum_8",
+    "title": "The National Museum of Egyptian Civilization",
+    "category": "cat_museum",
+    "city": "Cairo",
+    "latitude": 30.0085929,
+    "longitude": 31.2482393,
+    "rating": 4.7,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJj57jY2hHWBQRXRSPb0RY4MI/photos/AU_ZVEFX6W8u6L7cY645sQs-LCc3LPGVpKvmNpPD1WaKHJtuUAOkyVdjJ4lgBtqZ8j3DhkSVv27SHdHtL8sHpV-jSWHXyul5-QF_Z0r8GY3lcGOUFYapjAExEH6L8PAuV5DYjsCvdUWXwdrJLbiElosU5G3lhZ7mLFkdwG5e-l17V1QJgSQ9AMggVdUeq1RyLa1GO8sP11frrPAi3AszWPllFS3L8udHroUj6GvSa0BO7-qhRoG8SHMUTiHePB4qyN7AJ67FoEbpBp2aMHGiKFWRtW4mQP6BEmyPslLW7PqIxJiP9zUR9gZqihmQydt4epZLLzF_xnBaog1mcmGxdHcqAJGuKmt-bs6anZFi5mlwBsQ814_bIlYhTjrDjsZtH10GZyi9lEpWUWRTeW94jU4MsgiI_-BnFqa673lhQXUjC-U/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 29307
+  },
+  {
+    "id": "cat_museum_9",
+    "title": "Antiquities Museum at Bibliotheca Alexandrina",
+    "category": "cat_museum",
+    "city": "Alexandria",
+    "latitude": 31.208809,
+    "longitude": 29.9084594,
+    "rating": 4.7,
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJoSsNfgrD9RQRoK8fKCyHPps/photos/AU_ZVEEsz2qMJpX_IaKlVvKQHnG4LwaeTJaItxxuxY7l4jKLFfrEoIfWBhb-rTrNwhEZC8wSVsS-KKeGSH6iqUsVYzpidi4HcPDV0G1D62KQBfpgBttlhwmx99s3m1YVC18Pp5BLei-2yKKAaom9rS3vgRwXzxnsoLtWpULBPMD5ZyEmJh6doeZLEp-M1q6eEVdlMadtsFv1A-OSigY_vgDO2cNaIX5W1MFt2i0z54zEsklwdW65gfNhlXtxgr0GMjU4GwJwT5E6j6wu95Hw4erLw8Y3h5PqUWLp7hM7Haav02WPGpC9bLDJ9UxnrvGwhAeeKrPqYuqa2zBoI_O4JCAWm8tieMSuzIlO7grsB3Hg0VLjvATh3m_eLvbHQP5BvTFuSiIpkeT5MljdYp-nQSH5Yl9SW-UaoM8swwmL0-64gyurqXqlJPdb7Z62SGddnm64/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 60
+  }
+]

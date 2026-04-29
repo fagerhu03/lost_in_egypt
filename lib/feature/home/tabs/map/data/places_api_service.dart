@@ -10,6 +10,36 @@ class PlacesApiService {
 
   PlacesApiService({required this.apiKey});
 
+  // ── Global API call tracker ──
+  static int _totalApiCalls = 0;
+  static int get totalApiCalls => _totalApiCalls;
+
+  static void _logApiCall(String method, String detail) {
+    _totalApiCalls++;
+    final caller = _getCaller();
+    debugPrint('');
+    debugPrint('💰💰💰 PLACES API CALL #$_totalApiCalls 💰💰💰');
+    debugPrint('   Method : $method');
+    debugPrint('   Detail : $detail');
+    debugPrint('   Caller : $caller');
+    debugPrint('');
+  }
+
+  /// Walks up the stack to find the first caller outside PlacesApiService
+  static String _getCaller() {
+    try {
+      final stack = StackTrace.current.toString().split('\n');
+      for (final line in stack) {
+        if (!line.contains('PlacesApiService') &&
+            !line.contains('_logApiCall') &&
+            !line.contains('_getCaller') &&
+            line.trim().isNotEmpty) {
+          return line.trim();
+        }
+      }
+    } catch (_) {}
+    return 'unknown';
+  }
   /// Searches for places in Egypt using the Text Search (New) API.
   ///
   /// [query] — text query like "museums in Egypt" or "historical temples Egypt"
@@ -50,7 +80,9 @@ class PlacesApiService {
 
     final body = jsonEncode(bodyMap);
 
-    if (kDebugMode) debugPrint('🔍 Places API request: query="$query", type=$includedType');
+    if (kDebugMode) {
+      _logApiCall('textSearch', 'query="$query", type=$includedType');
+    }
 
     try {
       final response = await http.post(
@@ -160,6 +192,10 @@ class PlacesApiService {
       },
     });
 
+    if (kDebugMode) {
+      _logApiCall('nearbySearch', 'lat=$lat, lng=$lng, types=$includedTypes, radius=$radiusMeters');
+    }
+
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -187,6 +223,9 @@ class PlacesApiService {
   /// Fetches full details for a single place by its Places API place ID.
   Future<Map<String, dynamic>?> getPlaceDetails(String placeId) async {
     if (placeId.isEmpty) return null;
+    if (kDebugMode) {
+      _logApiCall('getPlaceDetails', 'placeId=$placeId');
+    }
     final fieldMask = [
       'id', 'displayName', 'location', 'formattedAddress',
       'rating', 'primaryType', 'types', 'photos',

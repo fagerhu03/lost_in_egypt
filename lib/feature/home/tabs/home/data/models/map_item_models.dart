@@ -124,6 +124,7 @@ class PlaceModel implements MapItem {
   final String locationAddress;
   @override
   final double rating;
+  final int userRatingCount;
   @override
   final double price;
   @override
@@ -155,6 +156,7 @@ class PlaceModel implements MapItem {
     this.imagePaths = const [],
     required this.locationAddress,
     required this.rating,
+    this.userRatingCount = 0,
     required this.price,
     required this.duration,
     required this.weather,
@@ -175,6 +177,7 @@ class PlaceModel implements MapItem {
       'imagePaths': imagePaths,
       'locationAddress': locationAddress,
       'rating': rating,
+      'userRatingCount': userRatingCount,
       'price': price,
       'duration': duration,
       'weather': weather,
@@ -199,6 +202,7 @@ class PlaceModel implements MapItem {
           [],
       locationAddress: map['locationAddress'] ?? '',
       rating: (map['rating'] ?? 0).toDouble(),
+      userRatingCount: (map['userRatingCount'] ?? 0).toInt(),
       price: (map['price'] ?? 0).toDouble(),
       duration: map['duration'] ?? '',
       weather: map['weather'] ?? '',
@@ -317,6 +321,7 @@ class PlaceModel implements MapItem {
       imagePaths: imagePaths,
       locationAddress: address,
       rating: rating,
+      userRatingCount: userRatingCount,
       price: price,
       duration: '',
       weather: '',

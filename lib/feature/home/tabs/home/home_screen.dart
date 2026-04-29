@@ -6,11 +6,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/guides_body.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/solo_trip_page.dart';
+import 'package:lost_in_egypt/feature/tours/domain/entities/tour_entity.dart';
+import 'package:lost_in_egypt/feature/tours/presentation/pages/tour_detail_screen.dart';
+import 'package:lost_in_egypt/core/services/currency_controller.dart';
+import 'package:lost_in_egypt/core/services/currency_service.dart';
 import '../../../../theme/theme.dart';
 import '../navigator/widget/account_menu_button.dart';
-import '../navigator/widget/search_header.dart';
 import './data/datasources/local_mock_data.dart';
+import './data/datasources/local_places_service.dart';
 import './data/models/map_item_models.dart';
+import './presentation/category_places_screen.dart';
+import './presentation/all_events_screen.dart';
+import './presentation/place_details_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,15 +28,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _profileImageUrl;
+  String? _firstName;
   late Stream<QuerySnapshot> _eventsStream;
+  List<PlaceModel> _popularPlaces = [];
 
   final PageController _pageController = PageController();
   Timer? _autoSlideTimer;
   int _currentHeroIndex = 0;
 
   final List<String> _heroImages = [
-    "assets/images/home_bridge.png",
-    "assets/images/home_bridge.png",
+    "assets/images/event1.jpg",
+    "assets/images/event3.jpg",
     "assets/images/home_bridge.png",
   ];
 
@@ -41,7 +50,14 @@ class _HomeScreenState extends State<HomeScreen> {
         FirebaseFirestore.instance.collection('events').limit(5).snapshots();
 
     _fetchUserProfile();
+    _loadPopularPlaces();
     _startAutoSlide();
+  }
+
+  Future<void> _loadPopularPlaces() async {
+    final places = await LocalPlacesService.getTopRatedPlaces(limit: 20);
+    places.shuffle();
+    if (mounted) setState(() => _popularPlaces = places.take(10).toList());
   }
 
   @override
@@ -82,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (doc.exists && mounted) {
           setState(() {
             _profileImageUrl = doc.data()?['profileImageUrl'];
+            _firstName = doc.data()?['firstName'];
           });
         }
       } catch (e) {
@@ -158,8 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Row(
                     children: [
-                      Expanded(child: SearchHeader(onSignOut: () {})),
-                      const SizedBox(width: 12),
+                      const Spacer(),
                       AccountMenuButton(
                         profileImageUrl: _profileImageUrl,
                         onSignOut: _handleSignOut,
@@ -209,6 +225,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            // ── Greeting ──
+            if (_firstName != null && _firstName!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  "${_greetingForTimeOfDay()}, $_firstName 👋",
+                  style: TextStyle(
+                    color: primary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "Marcellus",
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -235,31 +266,111 @@ class _HomeScreenState extends State<HomeScreen> {
                       textColor: textColor,
                       shadow: cardShadow,
                       isDark: isDark,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CategoryPlacesScreen(
+                              categoryId: category.id,
+                              categoryTitle: category.title,
+                            ),
+                          ),
+                        );
+                      },
                     );
                   }),
                 ],
               ),
             ),
             const SizedBox(height: 25),
+            // ── Popular Places ──
+            if (_popularPlaces.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: primary,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Popular Places",
+                      style: TextStyle(
+                        color: textColor.withOpacity(0.9),
+                        fontSize: 22,
+                        fontFamily: "Marcellus",
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(left: 16),
+                  itemCount: _popularPlaces.length,
+                  itemBuilder: (context, index) {
+                    final place = _popularPlaces[index];
+                    return _popularPlaceCard(
+                      place: place,
+                      primary: primary,
+                      textColor: textColor,
+                      shadow: cardShadow,
+                      isDark: isDark,
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 25),
+            ],
+            // ── Events ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Events",
-                    style: TextStyle(
-                      color: textColor.withOpacity(0.9),
-                      fontSize: 22,
-                      fontFamily: "Marcellus",
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: primary,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Events",
+                        style: TextStyle(
+                          color: textColor.withOpacity(0.9),
+                          fontSize: 22,
+                          fontFamily: "Marcellus",
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    "see all >",
-                    style: TextStyle(
-                      color: secondaryTextColor,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "Marcellus",
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AllEventsScreen()),
+                      );
+                    },
+                    child: Text(
+                      "see all >",
+                      style: TextStyle(
+                        color: primary,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "Marcellus",
+                      ),
                     ),
                   ),
                 ],
@@ -318,16 +429,39 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 25),
+            // ── Popular Tours ──
+            _popularToursSection(
+              primary: primary,
+              textColor: textColor,
+              secondaryTextColor: secondaryTextColor,
+              surface: surface,
+              cardShadow: cardShadow,
+              isDark: isDark,
+            ),
+            // ── Plan your trip ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                "Plan your trip",
-                style: TextStyle(
-                  color: textColor.withOpacity(0.9),
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "Marcellus",
-                ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Plan your trip",
+                    style: TextStyle(
+                      color: textColor.withOpacity(0.9),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Marcellus",
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 12),
@@ -365,8 +499,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => SoloTripPage(profileImageUrl: _profileImageUrl, onSignOut: _handleSignOut,),),
-
-
                         );
                       },
                     ),
@@ -388,6 +520,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color textColor,
     required BoxShadow shadow,
     required bool isDark,
+    required VoidCallback onTap,
   }) {
     return Container(
       width: 120,
@@ -409,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.hardEdge,
         child: InkWell(
-          onTap: () {},
+          onTap: onTap,
           borderRadius: BorderRadius.circular(14),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -613,6 +746,356 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  String _greetingForTimeOfDay() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  }
+
+  Widget _popularPlaceCard({
+    required PlaceModel place,
+    required Color primary,
+    required Color textColor,
+    required BoxShadow shadow,
+    required bool isDark,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => PlaceDetailsScreen(place: place)),
+        );
+      },
+      child: Container(
+        width: 170,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [shadow],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Image
+            place.imagePath.startsWith('http')
+                ? CachedNetworkImage(
+                    imageUrl: place.imagePath,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                      color: primary.withOpacity(0.08),
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: primary,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      color: primary.withOpacity(0.06),
+                      child: Icon(Icons.image_not_supported_outlined,
+                          color: primary.withOpacity(0.3), size: 32),
+                    ),
+                  )
+                : Image.asset(place.imagePath, fit: BoxFit.cover),
+            // Gradient overlay
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.65),
+                    ],
+                    stops: const [0.4, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            // Rating pill
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade700,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star_rounded, size: 12, color: Colors.white),
+                    const SizedBox(width: 2),
+                    Text(
+                      place.rating.toStringAsFixed(1),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Title + City
+            Positioned(
+              bottom: 10,
+              left: 10,
+              right: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    place.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Marcellus",
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (place.locationAddress.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_rounded, size: 11, color: Colors.white.withOpacity(0.8)),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            place.locationAddress,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 11,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _popularToursSection({
+    required Color primary,
+    required Color textColor,
+    required Color secondaryTextColor,
+    required Color surface,
+    required BoxShadow cardShadow,
+    required bool isDark,
+  }) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('tours')
+          .where('isArchived', isEqualTo: false)
+          .orderBy('rating', descending: true)
+          .limit(5)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final docs = snapshot.data!.docs;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Popular Tours",
+                    style: TextStyle(
+                      color: textColor.withOpacity(0.9),
+                      fontSize: 22,
+                      fontFamily: "Marcellus",
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(left: 16),
+                itemCount: docs.length,
+                itemBuilder: (context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
+                  final tour = TourEntity(
+                    id: docs[index].id,
+                    guideId: data['guideId'] ?? '',
+                    title: data['title'] ?? '',
+                    description: data['description'] ?? '',
+                    destinations: (data['destinations'] as List<dynamic>?)
+                            ?.map((e) => e.toString())
+                            .toList() ??
+                        [],
+                    price: (data['price'] ?? 0).toDouble(),
+                    meetingLatitude: (data['meetingLatitude'] ?? 30.0444).toDouble(),
+                    meetingLongitude: (data['meetingLongitude'] ?? 31.2357).toDouble(),
+                    meetingTime: (data['meetingTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+                    frequency: data['frequency'] ?? '',
+                    meetingLocationName: data['meetingLocationName'] ?? '',
+                    images: (data['images'] as List<dynamic>?)
+                            ?.map((e) => e.toString())
+                            .toList() ??
+                        [],
+                    maxAttendees: (data['maxAttendees'] ?? 10).toInt(),
+                    rating: (data['rating'] ?? 0).toDouble(),
+                    reviewCount: (data['reviewCount'] ?? 0).toInt(),
+                    createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+                  );
+
+                  final hasImage = tour.images.isNotEmpty;
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
+                      );
+                    },
+                    child: Container(
+                      width: 220,
+                      margin: const EdgeInsets.only(right: 12),
+                      decoration: BoxDecoration(
+                        color: surface,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [cardShadow],
+                        border: Border.all(
+                          color: (isDark ? Colors.white : Colors.black).withOpacity(0.06),
+                        ),
+                      ),
+                      clipBehavior: Clip.hardEdge,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Tour image
+                          SizedBox(
+                            height: 120,
+                            width: double.infinity,
+                            child: hasImage
+                                ? CachedNetworkImage(
+                                    imageUrl: tour.images.first,
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, __) => Container(
+                                      color: primary.withOpacity(0.08),
+                                    ),
+                                    errorWidget: (_, __, ___) => Container(
+                                      color: primary.withOpacity(0.06),
+                                      child: Icon(Icons.tour, color: primary.withOpacity(0.3)),
+                                    ),
+                                  )
+                                : Container(
+                                    color: primary.withOpacity(0.06),
+                                    child: Icon(Icons.tour, color: primary.withOpacity(0.3), size: 40),
+                                  ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  tour.title,
+                                  style: TextStyle(
+                                    color: textColor.withOpacity(0.9),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: "Marcellus",
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    if (tour.rating > 0) ...[
+                                      Icon(Icons.star_rounded, size: 14, color: Colors.amber.shade700),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        tour.rating.toStringAsFixed(1),
+                                        style: TextStyle(
+                                          color: secondaryTextColor,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                    ValueListenableBuilder<String>(
+                                      valueListenable: CurrencyController.currency,
+                                      builder: (context, currency, _) {
+                                        return FutureBuilder<double>(
+                                          future: CurrencyService.instance
+                                              .convertFromEGP(tour.price, currency),
+                                          builder: (_, snap) {
+                                            final label = snap.hasData
+                                                ? CurrencyService.format(snap.data!, currency)
+                                                : 'EGP ${tour.price.toStringAsFixed(0)}';
+                                            return Text(
+                                              label,
+                                              style: TextStyle(
+                                                color: primary,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 25),
+          ],
+        );
+      },
     );
   }
 }
