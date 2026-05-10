@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/customize_plan/presentation/pages/trip_time_step.dart';
 import '../manager/trip_planner_controller.dart';
 import 'area_step.dart';
@@ -7,16 +11,8 @@ import 'date_location_step.dart';
 import 'interest_step.dart';
 import 'result_screen.dart';
 
-
 class QuizFlowScreen extends StatefulWidget {
-  final Widget searchHeader;
-  final Widget accountMenu;
-
-  const QuizFlowScreen({
-    super.key,
-    required this.searchHeader,
-    required this.accountMenu,
-  });
+  const QuizFlowScreen({super.key});
 
   @override
   State<QuizFlowScreen> createState() => _QuizFlowScreenState();
@@ -27,29 +23,53 @@ class _QuizFlowScreenState extends State<QuizFlowScreen> {
   final TripPlannerController controller = TripPlannerController();
 
   void nextPage() {
+    // TripTimeStep (page 3) requires at least one selection.
+    if (controller.currentPage == 3 && controller.plan.tripTimes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select Day, Night, or both.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     if (controller.currentPage < 4) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 280),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ResultScreen(
-            prompt: controller.buildPrompt(),
-          ),
-        ),
-      );
+      _onFinish();
     }
+  }
+
+  void _onFinish() {
+    final plan = controller.plan;
+
+    // Fire-and-forget: apply quiz answers to taste vector
+    final answers = RecommendationMappings.answersFromSelections(
+      selectedInterests: plan.interests,
+      selectedAreas: plan.areas,
+    );
+    unawaited(RecommendationService.applyQuizAnswers(answers));
+
+    // Fire-and-forget: warm-start from existing Firestore history.
+    // Rate-limited server-side (1/day), so calling every quiz completion is safe.
+    unawaited(RecommendationService.warmStart());
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResultScreen(plan: plan),
+      ),
+    );
   }
 
   void backPage() {
     if (controller.currentPage == 0) {
-      Navigator.pop(context); // يرجع لـ SoloTripScreen
+      Navigator.pop(context);
       return;
     }
-
     _pageController.previousPage(
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeInOut,
@@ -86,36 +106,26 @@ class _QuizFlowScreenState extends State<QuizFlowScreen> {
             controller: controller,
             onNext: nextPage,
             onBack: backPage,
-            searchHeader: widget.searchHeader,
-            accountMenu: widget.accountMenu,
           ),
           InterestStep(
             controller: controller,
             onNext: nextPage,
             onBack: backPage,
-            searchHeader: widget.searchHeader,
-            accountMenu: widget.accountMenu,
           ),
           AreaStep(
             controller: controller,
             onNext: nextPage,
             onBack: backPage,
-            searchHeader: widget.searchHeader,
-            accountMenu: widget.accountMenu,
           ),
           TripTimeStep(
             controller: controller,
             onNext: nextPage,
             onBack: backPage,
-            searchHeader: widget.searchHeader,
-            accountMenu: widget.accountMenu,
           ),
           BudgetStep(
             controller: controller,
             onNext: nextPage,
             onBack: backPage,
-            searchHeader: widget.searchHeader,
-            accountMenu: widget.accountMenu,
           ),
         ],
       ),

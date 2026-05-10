@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:lost_in_egypt/core/utils/map_style_helper.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -32,6 +33,13 @@ class TourDetailScreen extends StatefulWidget {
 
 class _TourDetailScreenState extends State<TourDetailScreen> {
   TourEntity get tour => widget.tour;
+  GoogleMapController? _meetingMapController;
+
+  @override
+  void dispose() {
+    _meetingMapController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -234,6 +242,10 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                           zoomControlsEnabled: false,
                           myLocationButtonEnabled: false,
                           mapToolbarEnabled: false,
+                          onMapCreated: (controller) {
+                            _meetingMapController = controller;
+                            MapStyleHelper.applyTheme(controller, context);
+                          },
                         ),
                         Positioned.fill(
                           child: Material(

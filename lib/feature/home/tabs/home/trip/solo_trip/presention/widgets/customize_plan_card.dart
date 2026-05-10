@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/customize_plan/presentation/pages/quiz_flow_screen.dart';
 import '../../../../../../../../theme/theme.dart';
-import '../../../../../navigator/widget/account_menu_button.dart';
-import '../../../../../navigator/widget/search_header.dart';
 
-class CustomizePlanCard extends StatefulWidget {
+class CustomizePlanCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const CustomizePlanCard({super.key, this.onTap});
-
-  @override
-  State<CustomizePlanCard> createState() => _CustomizePlanCardState();
-}
-
-class _CustomizePlanCardState extends State<CustomizePlanCard> {
-  String? _profileImageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +16,7 @@ class _CustomizePlanCardState extends State<CustomizePlanCard> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => QuizFlowScreen(
-              searchHeader: SearchHeader(onSignOut: () {}),
-              accountMenu: AccountMenuButton(onSignOut: () {}),
-            ),
+            builder: (_) => const QuizFlowScreen(),
           ),
         );
       },
@@ -43,7 +31,7 @@ class _CustomizePlanCardState extends State<CustomizePlanCard> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

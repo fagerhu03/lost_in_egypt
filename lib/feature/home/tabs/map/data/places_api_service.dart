@@ -112,6 +112,110 @@ class PlacesApiService {
     }
   }
 
+  /// Cheap "find place by name" — returns just the lat/lng of the top match,
+  /// using a minimal field mask (Basic SKU only). Used to backfill coordinates
+  /// for AI-generated trip stops where the model omitted them.
+  ///
+  /// Returns null when no match found or the request failed.
+  Future<({double lat, double lng})?> findPlaceLocation(String query) async {
+    final cached = _locationCache[query];
+    if (cached != null) return cached;
+
+    const url = 'https://places.googleapis.com/v1/places:searchText';
+    // Basic field mask only — keeps cost at $0.017/call (vs $0.032 for Advanced)
+    const fieldMask = 'places.location';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': fieldMask,
+        },
+        body: jsonEncode({
+          'textQuery': query,
+          'maxResultCount': 1,
+          'languageCode': 'en',
+          'regionCode': 'EG',
+        }),
+      );
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final places = data['places'] as List<dynamic>? ?? const [];
+      if (places.isEmpty) return null;
+      final loc = (places.first as Map<String, dynamic>)['location']
+          as Map<String, dynamic>?;
+      final lat = (loc?['latitude'] as num?)?.toDouble();
+      final lng = (loc?['longitude'] as num?)?.toDouble();
+      if (lat == null || lng == null) return null;
+      final result = (lat: lat, lng: lng);
+      _locationCache[query] = result;
+      return result;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Memory cache so repeated lookups in a session don't re-bill.
+  static final Map<String, ({double lat, double lng})> _locationCache = {};
+
+  /// Full "find place by name" — returns the top match with the rich fields the
+  /// place-detail sheet needs (id, rating, photos, address, primary type).
+  /// Advanced SKU ($0.032/call) — call this on-demand (e.g. when the user
+  /// taps "View on Map") rather than for every stop, and the cache makes
+  /// repeated taps free.
+  ///
+  /// Returns the raw Places API place map (same shape as `textSearch`).
+  Future<Map<String, dynamic>?> findPlaceFull(String query) async {
+    final cached = _fullCache[query];
+    if (cached != null) return cached;
+
+    const url = 'https://places.googleapis.com/v1/places:searchText';
+    final fieldMask = [
+      'places.id',
+      'places.displayName',
+      'places.location',
+      'places.formattedAddress',
+      'places.primaryType',
+      'places.types',
+      'places.rating',
+      'places.userRatingCount',
+      'places.photos',
+      'places.editorialSummary',
+      'places.currentOpeningHours',
+      'places.reviews',
+    ].join(',');
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': fieldMask,
+        },
+        body: jsonEncode({
+          'textQuery': query,
+          'maxResultCount': 1,
+          'languageCode': 'en',
+          'regionCode': 'EG',
+        }),
+      );
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final places = data['places'] as List<dynamic>? ?? const [];
+      if (places.isEmpty) return null;
+      final place = Map<String, dynamic>.from(places.first as Map);
+      _fullCache[query] = place;
+      return place;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static final Map<String, Map<String, dynamic>> _fullCache = {};
+
   /// Fetches places for multiple search queries in chunks to avoid rate limits and socket crashes.
   /// Returns a flat list of all results, de-duplicated by place ID.
   Future<List<Map<String, dynamic>>> searchMultipleQueries(
@@ -220,9 +324,14 @@ class PlacesApiService {
     }
   }
 
+  static final Map<String, Map<String, dynamic>> _detailsCache = {};
+
   /// Fetches full details for a single place by its Places API place ID.
+  /// Results are cached in memory for the lifetime of the app session.
   Future<Map<String, dynamic>?> getPlaceDetails(String placeId) async {
     if (placeId.isEmpty) return null;
+    if (_detailsCache.containsKey(placeId)) return _detailsCache[placeId];
+
     if (kDebugMode) {
       _logApiCall('getPlaceDetails', 'placeId=$placeId');
     }
@@ -241,7 +350,9 @@ class PlacesApiService {
         },
       );
       if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        _detailsCache[placeId] = data;
+        return data;
       }
     } catch (e) {
       debugPrint('❌ getPlaceDetails error: $e');

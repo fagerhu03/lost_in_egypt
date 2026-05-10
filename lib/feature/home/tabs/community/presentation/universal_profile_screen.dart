@@ -533,14 +533,14 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: titleColor.withOpacity(0.3), width: 2),
-                image: guide.profileImageUrl.isNotEmpty 
-                    ? DecorationImage(image: NetworkImage(guide.profileImageUrl), fit: BoxFit.cover)
-                    : null,
                 color: isDark ? const Color(0xFF3E2C1E) : const Color(0xFF7A4B1D),
               ),
-              child: guide.profileImageUrl.isEmpty
-                  ? const Icon(Icons.person, color: Colors.white70, size: 50)
-                  : null,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: guide.profileImageUrl.isNotEmpty
+                    ? CachedNetworkImage(imageUrl: guide.profileImageUrl, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, color: Colors.white70, size: 50))
+                    : const Icon(Icons.person, color: Colors.white70, size: 50),
+              ),
             ),
             Positioned(
               top: 4,
@@ -703,12 +703,9 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
                   CircleAvatar(
                     radius: 18,
                     backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
-                    backgroundImage: (userImage != null && userImage.isNotEmpty)
-                        ? NetworkImage(userImage)
-                        : null,
-                    child: (userImage == null || userImage.isEmpty)
-                        ? const Icon(Icons.person, size: 18)
-                        : null,
+                    child: (userImage != null && userImage.isNotEmpty)
+                        ? ClipOval(child: CachedNetworkImage(imageUrl: userImage, width: 36, height: 36, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, size: 18)))
+                        : const Icon(Icons.person, size: 18),
                   ),
                   const SizedBox(width: 10),
                   Expanded(

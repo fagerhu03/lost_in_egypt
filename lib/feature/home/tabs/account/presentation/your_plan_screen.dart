@@ -15,7 +15,7 @@ class YourPlanScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
-        title: const Text("Your Plan", style: TextStyle(fontFamily: 'Marcellus')),
+        title: const Text("Membership", style: TextStyle(fontFamily: 'Marcellus')),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,

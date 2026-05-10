@@ -21,7 +21,7 @@ void main() {
         areas: ['Cairo', 'Luxor'],
         minBudget: 2000,
         maxBudget: 8000,
-        tripTime: 'Day',
+        tripTimes: ['Day'],
       );
       final prompt = useCase(plan);
 
@@ -48,7 +48,7 @@ void main() {
     });
 
     test('Night tripTime appears in prompt', () {
-      const plan = TripPlanEntity(tripTime: 'Night');
+      const plan = TripPlanEntity(tripTimes: ['Night']);
       expect(useCase(plan), contains('Night'));
     });
 

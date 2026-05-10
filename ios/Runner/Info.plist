@@ -8,6 +8,10 @@
     <string>We need microphone access for video features.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>We need gallery access to analyze your photos.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Lost in Egypt uses your location to recommend nearby trips and guide you between stops on your tour.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Lost in Egypt uses your location to recommend nearby trips and guide you between stops on your tour.</string>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>

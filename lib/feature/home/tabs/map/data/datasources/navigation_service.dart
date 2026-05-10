@@ -5,14 +5,23 @@ import 'package:http/http.dart' as http;
 
 import '../models/route_info.dart';
 
+enum NavigationFailureKind { noRoute, networkError, apiError }
+
+class NavigationException implements Exception {
+  final NavigationFailureKind kind;
+  final String? message;
+  NavigationException(this.kind, [this.message]);
+}
+
 class NavigationService {
   static const String _baseUrl =
       'https://maps.googleapis.com/maps/api/directions/json';
 
   /// Fetches directions from [origin] to [destination].
   ///
-  /// [mode] can be: 'driving', 'walking', 'transit', 'bicycling'
-  Future<RouteInfo?> getDirections({
+  /// Throws [NavigationException] on failure — check [NavigationException.kind]
+  /// to distinguish no-route, network, and API errors.
+  Future<RouteInfo> getDirections({
     required LatLng origin,
     required LatLng destination,
     required String apiKey,
@@ -34,16 +43,23 @@ class NavigationService {
       final response = await http.get(url);
 
       if (response.statusCode != 200) {
-        debugPrint('❌ Directions API error: ${response.statusCode}');
-        return null;
+        debugPrint('❌ Directions API HTTP ${response.statusCode}');
+        throw NavigationException(NavigationFailureKind.networkError,
+            'HTTP ${response.statusCode}');
       }
 
       final data = json.decode(response.body);
+      final status = data['status'] as String? ?? '';
 
-      if (data['status'] != 'OK') {
-        debugPrint('❌ Directions API status: ${data['status']}');
-        debugPrint('   ${data['error_message'] ?? ''}');
-        return null;
+      if (status == 'ZERO_RESULTS') {
+        debugPrint('❌ Directions API: ZERO_RESULTS');
+        throw NavigationException(NavigationFailureKind.noRoute);
+      }
+
+      if (status != 'OK') {
+        final msg = data['error_message'] as String? ?? status;
+        debugPrint('❌ Directions API status: $status — $msg');
+        throw NavigationException(NavigationFailureKind.apiError, msg);
       }
 
       final route = data['routes'][0];
@@ -95,9 +111,11 @@ class NavigationService {
       debugPrint('   ${steps.length} steps');
 
       return routeInfo;
+    } on NavigationException {
+      rethrow;
     } catch (e) {
-      debugPrint('❌ Directions error: $e');
-      return null;
+      debugPrint('❌ Directions network error: $e');
+      throw NavigationException(NavigationFailureKind.networkError);
     }
   }
 

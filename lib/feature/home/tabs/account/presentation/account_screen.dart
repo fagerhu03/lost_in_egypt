@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
@@ -16,6 +17,7 @@ import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply
 import 'package:lost_in_egypt/feature/tours/presentation/pages/booking_history_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/your_plan_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/saved_posts_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/my_plans_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -290,20 +292,15 @@ class _AccountScreenState extends State<AccountScreen> {
                             Container(
                               width: 100,
                               height: 100,
+                              clipBehavior: Clip.antiAlias,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: surface,
                                 border: Border.all(color: cardColor, width: 4),
-                                image: profileUrl.isNotEmpty 
-                                  ? DecorationImage(
-                                      image: NetworkImage(profileUrl),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
                               ),
-                              child: profileUrl.isEmpty
-                                  ? Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5))
-                                  : null,
+                              child: profileUrl.isNotEmpty
+                                  ? CachedNetworkImage(imageUrl: profileUrl, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5)))
+                                  : Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5)),
                             ),
                           ],
                         ),
@@ -398,7 +395,14 @@ class _AccountScreenState extends State<AccountScreen> {
                           },
                         ),
                         _AccountTile(
-                          title: "Your plan",
+                          title: "My Plans",
+                          icon: Icons.map_outlined,
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const MyPlansScreen()));
+                          },
+                        ),
+                        _AccountTile(
+                          title: "Membership",
                           icon: Icons.workspace_premium_outlined,
                           onTap: () => Navigator.push(
                             context,

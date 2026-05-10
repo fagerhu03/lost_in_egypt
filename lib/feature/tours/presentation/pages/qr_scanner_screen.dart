@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -189,11 +190,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage:
-                          (avatar != null && avatar.isNotEmpty) ? NetworkImage(avatar) : null,
-                      child: (avatar == null || avatar.isEmpty)
-                          ? const Icon(Icons.person, size: 28)
-                          : null,
+                      child: (avatar != null && avatar.isNotEmpty)
+                          ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 60, height: 60, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, size: 28)))
+                          : const Icon(Icons.person, size: 28),
                     ),
                     const SizedBox(width: 14),
                     Column(

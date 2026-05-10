@@ -151,5 +151,30 @@ service cloud.firestore {
       // (needed for like/comment/booking triggers from the client)
       allow write: if isAuth();
     }
+
+    // ── Solo plans (per-user subcollection) ───────────────────────────────────
+    // Users can fully manage their own plans; no one else can touch them.
+    match /users/{userId}/solo_plans/{planId} {
+      allow read, write: if isAuth() && isSelf(userId);
+    }
+
+    // ── Places API photo cache ────────────────────────────────────────────────
+    // Cached by authenticated clients; one doc per curated trip ID (slug).
+    match /place_photos/{tripId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+
+    // ── AI story cache (per-landmark slug, 90-day TTL) ────────────────────────
+    match /place_stories/{slug} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+
+    // ── Rate limits (Cloud Functions internal — server SDK bypasses rules) ─────
+    // Client never reads or writes this; deny everything to be explicit.
+    match /_rate_limits/{docId} {
+      allow read, write: if false;
+    }
   }
 }

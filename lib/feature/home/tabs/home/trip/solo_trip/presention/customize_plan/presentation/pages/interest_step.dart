@@ -4,30 +4,38 @@ import '../manager/trip_planner_controller.dart';
 import '../widgets/option_chip.dart';
 import '../widgets/quiz_scaffold.dart';
 
+const _interestEmojis = {
+  'Shopping': '🛍',
+  'Nightlife': '🌙',
+  'Monuments': '🏛',
+  'Museums': '🏺',
+  'Nature & Parks': '🌿',
+  'Beaches': '🏖',
+  'Culture & Traditions': '🎭',
+  'Entertainment': '🎡',
+  'Adventure Activities': '🧗',
+  'Local Experiences': '🍽',
+};
+
 class InterestStep extends StatelessWidget {
   final TripPlannerController controller;
   final VoidCallback onNext;
   final VoidCallback onBack;
-  final Widget searchHeader;
-  final Widget accountMenu;
 
   const InterestStep({
     super.key,
     required this.controller,
     required this.onNext,
     required this.onBack,
-    required this.searchHeader,
-    required this.accountMenu,
   });
 
   @override
   Widget build(BuildContext context) {
     return QuizScaffold(
-      title: '2. What is your interest?',
+      title: 'What are your interests?',
+      stepIndex: 1,
       onNext: onNext,
       onBack: onBack,
-      searchHeader: searchHeader,
-      accountMenu: accountMenu,
       child: SingleChildScrollView(
         child: Wrap(
           spacing: 10,
@@ -35,6 +43,7 @@ class InterestStep extends StatelessWidget {
           children: TripOptions.interests.map((item) {
             return OptionChip(
               label: item,
+              emoji: _interestEmojis[item],
               isSelected: controller.plan.interests.contains(item),
               onTap: () => controller.toggleInterest(item),
             );

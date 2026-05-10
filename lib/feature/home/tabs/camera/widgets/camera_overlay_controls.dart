@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:camera/camera.dart';
 import '../presentation/bloc/camera_cubit.dart';
 import '../presentation/bloc/camera_state.dart';
@@ -75,7 +74,7 @@ class CameraOverlayControls extends StatelessWidget {
                     if (showGalleryImage) {
                       cubit.clearGalleryImage();
                     } else {
-                      MapFocusService.instance.switchToTab(0);
+                      Navigator.of(context).maybePop();
                     }
                   },
                 ),

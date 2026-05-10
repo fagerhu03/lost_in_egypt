@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
+import 'package:lost_in_egypt/core/utils/map_style_helper.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import '../../domain/entities/tour_entity.dart';
@@ -52,6 +53,18 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
 
   List<MapItem> _availablePlaces = [];
   bool _isLoadingPlaces = true;
+  GoogleMapController? _previewMapController;
+
+  @override
+  void dispose() {
+    _previewMapController?.dispose();
+    _titleController.dispose();
+    _descController.dispose();
+    _destInputController.dispose();
+    _priceController.dispose();
+    _maxAttendeesController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -519,10 +532,13 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                     position: LatLng(_selectedLat!, _selectedLng!),
                                   ),
                                 },
-                                liteModeEnabled: Platform.isAndroid,
                                 zoomControlsEnabled: false,
                                 mapToolbarEnabled: false,
                                 myLocationButtonEnabled: false,
+                                onMapCreated: (controller) {
+                                  _previewMapController = controller;
+                                  MapStyleHelper.applyTheme(controller, context);
+                                },
                               ),
                               Positioned(
                                 top: 8, right: 8,

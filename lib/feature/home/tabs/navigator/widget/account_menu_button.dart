@@ -97,20 +97,15 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: (widget.profileImageUrl != null &&
-                        widget.profileImageUrl!.isNotEmpty)
+                    image: (widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty)
                         ? DecorationImage(
-                      image: NetworkImage(widget.profileImageUrl!),
-                      fit: BoxFit.cover,
-                    )
+                            image: NetworkImage(widget.profileImageUrl!),
+                            fit: BoxFit.cover,
+                          )
                         : null,
                   ),
                   child: (widget.profileImageUrl == null || widget.profileImageUrl!.isEmpty)
-                      ? Icon(
-                    Icons.person,
-                    size: 26,
-                    color: onSurface.withOpacity(0.9),
-                  )
+                      ? Icon(Icons.person, size: 26, color: onSurface.withOpacity(0.9))
                       : null,
                 ),
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -384,9 +385,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             children: [
               GestureDetector(
                 onTap: () => _navigateToProfile(ownerId),
-                child: avatar.isNotEmpty
-                    ? CircleAvatar(radius: 12, backgroundImage: NetworkImage(avatar))
-                    : CircleAvatar(radius: 12, backgroundColor: onSurface.withOpacity(0.08), child: Icon(Icons.person, size: 14, color: primary)),
+                child: CircleAvatar(
+                  radius: 12,
+                  backgroundColor: onSurface.withOpacity(0.08),
+                  child: avatar.isNotEmpty
+                      ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 24, height: 24, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 14, color: primary)))
+                      : Icon(Icons.person, size: 14, color: primary),
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -664,9 +669,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               child: Row(
                 children: [
                   // Current user avatar
-                  _currentUserAvatar != null && _currentUserAvatar!.isNotEmpty
-                      ? CircleAvatar(radius: 14, backgroundImage: NetworkImage(_currentUserAvatar!))
-                      : CircleAvatar(radius: 14, backgroundColor: onSurface.withOpacity(0.08), child: Icon(Icons.person, size: 16, color: primary)),
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: onSurface.withOpacity(0.08),
+                    child: _currentUserAvatar != null && _currentUserAvatar!.isNotEmpty
+                        ? ClipOval(child: CachedNetworkImage(imageUrl: _currentUserAvatar!, width: 28, height: 28, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 16, color: primary)))
+                        : Icon(Icons.person, size: 16, color: primary),
+                  ),
                   const SizedBox(width: 8),
                   // Text field
                   Expanded(
@@ -739,9 +748,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 }
                 return Row(
                   children: [
-                    authorAvatar.isNotEmpty
-                        ? CircleAvatar(radius: 14, backgroundImage: NetworkImage(authorAvatar))
-                        : CircleAvatar(radius: 14, backgroundColor: onSurface.withOpacity(0.08), child: Icon(Icons.person, size: 16, color: primary)),
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: onSurface.withOpacity(0.08),
+                      child: authorAvatar.isNotEmpty
+                          ? ClipOval(child: CachedNetworkImage(imageUrl: authorAvatar, width: 28, height: 28, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 16, color: primary)))
+                          : Icon(Icons.person, size: 16, color: primary),
+                    ),
                     const SizedBox(width: 8),
                     Flexible(child: Text(authorName, style: TextStyle(color: onSurface, fontSize: 15, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
                   ],

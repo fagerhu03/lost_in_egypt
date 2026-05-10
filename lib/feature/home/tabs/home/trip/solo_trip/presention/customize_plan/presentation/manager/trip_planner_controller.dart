@@ -26,6 +26,11 @@ class TripPlannerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateLocationCoords(double lat, double lng) {
+    _plan = _plan.copyWith(locationLat: lat, locationLng: lng);
+    notifyListeners();
+  }
+
   void updateFromDate(DateTime value) {
     _plan = _plan.copyWith(fromDate: value);
     notifyListeners();
@@ -58,8 +63,14 @@ class TripPlannerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setTripTime(String value) {
-    _plan = _plan.copyWith(tripTime: value);
+  void toggleTripTime(String value) {
+    final updated = List<String>.from(_plan.tripTimes);
+    if (updated.contains(value)) {
+      updated.remove(value);
+    } else {
+      updated.add(value);
+    }
+    _plan = _plan.copyWith(tripTimes: updated);
     notifyListeners();
   }
 
@@ -73,6 +84,11 @@ class TripPlannerController extends ChangeNotifier {
   void setMaxBudget(double value) {
     final newMax = value < _plan.minBudget ? _plan.minBudget : value;
     _plan = _plan.copyWith(maxBudget: newMax);
+    notifyListeners();
+  }
+
+  void updateBudgetRange(double min, double max) {
+    _plan = _plan.copyWith(minBudget: min, maxBudget: max);
     notifyListeners();
   }
 

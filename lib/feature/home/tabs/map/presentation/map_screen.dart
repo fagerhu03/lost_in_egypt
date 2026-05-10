@@ -12,7 +12,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 import 'package:lost_in_egypt/core/di/service_locator.dart';
+import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/active_tour_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/marker_filter_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_marker_service.dart';
@@ -90,6 +92,12 @@ class _MapScreenViewState extends State<MapScreenView>
   // Expandable FAB menu state
   bool _isFabExpanded = false;
 
+  // Active solo-tour stop — gold pin on map + "Back to Tour" button
+  MapItem? _tourStop;
+
+  // View-only route: all stop markers shown, camera fitted to bounds
+  List<MapItem> _viewRouteStops = [];
+
   // Cached popular nearby (shuffled once, not on every rebuild)
   List<MapItem> _cachedPopularPlaces = [];
   int _cachedPopularSourceHash = 0;
@@ -121,6 +129,9 @@ class _MapScreenViewState extends State<MapScreenView>
 
     MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequested);
     MapFocusService.instance.pendingTripNotifier.addListener(_onPendingTrip);
+    MapFocusService.instance.cameraOnlyNotifier.addListener(_onCameraFocusRequested);
+    MapFocusService.instance.tourStopNotifier.addListener(_onTourStopRequested);
+    MapFocusService.instance.viewRouteNotifier.addListener(_onViewRouteRequested);
 
     // Rebuild markers now that custom icons are loaded
     if (mounted) {
@@ -129,8 +140,12 @@ class _MapScreenViewState extends State<MapScreenView>
     }
 
     // Check if there's an item already focused before we even loaded
-    if (MapFocusService.instance.focusedItemNotifier.value != null) {
+    if (MapFocusService.instance.tourStopNotifier.value != null) {
+      _onTourStopRequested();
+    } else if (MapFocusService.instance.focusedItemNotifier.value != null) {
       _onFocusRequested();
+    } else if (MapFocusService.instance.cameraOnlyNotifier.value != null) {
+      _onCameraFocusRequested();
     } else if (MapFocusService.instance.pendingTripNotifier.value != null) {
       _onPendingTrip();
     } else {
@@ -196,6 +211,9 @@ class _MapScreenViewState extends State<MapScreenView>
     _positionStream?.cancel();
     MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
     MapFocusService.instance.pendingTripNotifier.removeListener(_onPendingTrip);
+    MapFocusService.instance.cameraOnlyNotifier.removeListener(_onCameraFocusRequested);
+    MapFocusService.instance.tourStopNotifier.removeListener(_onTourStopRequested);
+    MapFocusService.instance.viewRouteNotifier.removeListener(_onViewRouteRequested);
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -222,10 +240,125 @@ class _MapScreenViewState extends State<MapScreenView>
     final item = MapFocusService.instance.focusedItemNotifier.value;
     if (item != null && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<MapBloc>().add(MapPlaceSelected(item));
+        if (!mounted) return;
+        if (_viewRouteStops.isNotEmpty) setState(() => _viewRouteStops = []);
+        final allItems = context.read<MapBloc>().state.allItemsCache;
+        final resolved = _resolveDatasetMatch(item, allItems) ?? item;
+        context.read<MapBloc>().add(MapPlaceSelected(resolved));
+        _focusOnPlace(resolved);
+      });
+    }
+  }
+
+  /// Camera-only focus: pans to coordinates without selecting a place or
+  /// opening the detail sheet. Used by curated trip stops.
+  void _onCameraFocusRequested() {
+    final item = MapFocusService.instance.cameraOnlyNotifier.value;
+    if (item != null && mounted) {
+      MapFocusService.instance.clearCameraFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         _focusOnPlace(item);
       });
     }
+  }
+
+  void _onTourStopRequested() {
+    final item = MapFocusService.instance.tourStopNotifier.value;
+    if (item != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        // Resolve against the bundled dataset so the detail sheet shows real
+        // photos, reviews, and description instead of a blank synthetic pin.
+        final allItems = context.read<MapBloc>().state.allItemsCache;
+        final resolved = _resolveDatasetMatch(item, allItems) ?? item;
+        setState(() { _tourStop = resolved; _viewRouteStops = []; });
+        context.read<MapBloc>().add(MapPlaceSelected(resolved));
+        _updateVisibleMarkers(context.read<MapBloc>().state, forceInclude: resolved);
+        _focusOnPlace(resolved);
+      });
+    }
+  }
+
+  /// Searches the bundled dataset for a pin that best matches [synthetic].
+  ///
+  /// Strategy (in order):
+  /// 1. Exact normalised-title match within 2 km — always wins.
+  /// 2. ≥2 content-word overlap within 2 km (e.g. "grand" + "museum").
+  /// 3. 1 content-word overlap within 1 km, word ≥ 4 chars (e.g. "khan", "giza").
+  ///
+  /// Using a geographic radius prevents garbage Arabic/Hebrew-titled entries
+  /// (which normalise to an empty string and would satisfy `contains("")` for
+  /// every query) from matching everything.
+  MapItem? _resolveDatasetMatch(MapItem synthetic, List<MapItem> allItems) {
+    if (allItems.isEmpty) return null;
+    final q = _normalizeTitle(synthetic.title);
+    if (q.isEmpty) return null;
+
+    final sLat = synthetic.coordinate.latitude;
+    final sLng = synthetic.coordinate.longitude;
+    final qWords = _contentWords(q);
+
+    MapItem? bestMulti;        // best candidate with ≥2 word overlap (2 km)
+    int bestMultiScore = 1;
+    MapItem? bestSingle;       // best candidate with 1 word overlap (1 km)
+    double bestSingleDist = double.infinity;
+
+    for (final item in allItems) {
+      final dist = _haversineM(
+          sLat, sLng, item.coordinate.latitude, item.coordinate.longitude);
+      if (dist > 2000) continue;
+
+      final t = _normalizeTitle(item.title);
+      if (t.isEmpty) continue;           // skip Arabic/Hebrew-only entries
+      if (t == q) return item;           // exact title → immediate win
+
+      final overlap = qWords.intersection(_contentWords(t)).length;
+
+      if (overlap >= 2 && overlap > bestMultiScore) {
+        bestMultiScore = overlap;
+        bestMulti = item;
+      }
+
+      if (overlap == 1 && dist <= 1000 && dist < bestSingleDist) {
+        final word = qWords.intersection(_contentWords(t)).first;
+        if (word.length >= 4) {
+          bestSingleDist = dist;
+          bestSingle = item;
+        }
+      }
+    }
+
+    return bestMulti ?? bestSingle;
+    // Returns null → caller falls back to the synthetic pin (AI coordinates).
+  }
+
+  /// Content words: lower-case words ≥3 chars that are not common stop words.
+  /// Filters out "el", "al", "of", "the", etc. so they don't skew overlap.
+  Set<String> _contentWords(String normalized) {
+    const stop = {
+      'el', 'al', 'the', 'of', 'in', 'at', 'and', 'or', 'a', 'an',
+      'by', 'to', 'for', 'abu', 'ibn', 'bab', 'dar',
+    };
+    return normalized
+        .split(' ')
+        .where((w) => w.length >= 3 && !stop.contains(w))
+        .toSet();
+  }
+
+  String _normalizeTitle(String s) => s
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+
+  double _haversineM(double lat1, double lng1, double lat2, double lng2) {
+    const r = 6371000.0;
+    final p1 = lat1 * pi / 180, p2 = lat2 * pi / 180;
+    final dp = (lat2 - lat1) * pi / 180, dl = (lng2 - lng1) * pi / 180;
+    final a = sin(dp / 2) * sin(dp / 2) +
+        cos(p1) * cos(p2) * sin(dl / 2) * sin(dl / 2);
+    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
   }
 
   void _onPendingTrip() {
@@ -234,11 +367,15 @@ class _MapScreenViewState extends State<MapScreenView>
       MapFocusService.instance.clearPendingTrip();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
+        final allItems = context.read<MapBloc>().state.allItemsCache;
+        final resolved =
+            stops.map((s) => _resolveDatasetMatch(s, allItems) ?? s).toList();
         setState(() {
-          _tripItinerary = stops;
+          _tripItinerary = resolved;
           _tripCurrentIndex = 0;
+          _viewRouteStops = [];
         });
-        final firstStop = stops.first;
+        final firstStop = resolved.first;
         context.read<MapBloc>().add(MapPlaceSelected(firstStop));
         _focusOnPlace(firstStop);
         context.read<MapBloc>().add(
@@ -249,6 +386,56 @@ class _MapScreenViewState extends State<MapScreenView>
           ),
         );
       });
+    }
+  }
+
+  void _onViewRouteRequested() {
+    final rawStops = MapFocusService.instance.viewRouteNotifier.value;
+    if (rawStops == null || rawStops.isEmpty || !mounted) return;
+    MapFocusService.instance.clearViewRoute();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      // Resolve synthetic stops → real dataset items so tapping a gold route
+      // pin opens the full detail sheet (photos / reviews / description).
+      final allItems = context.read<MapBloc>().state.allItemsCache;
+      final resolved = rawStops
+          .map((s) => _resolveDatasetMatch(s, allItems) ?? s)
+          .toList();
+      setState(() => _viewRouteStops = resolved);
+      _updateVisibleMarkers(context.read<MapBloc>().state);
+      await _fitBoundsToStops(resolved);
+    });
+  }
+
+  Future<void> _fitBoundsToStops(List<MapItem> stops) async {
+    if (_mapController == null) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (_mapController == null) return;
+    }
+    double minLat = stops.first.coordinate.latitude;
+    double maxLat = minLat;
+    double minLng = stops.first.coordinate.longitude;
+    double maxLng = minLng;
+    for (final s in stops) {
+      if (s.coordinate.latitude < minLat) minLat = s.coordinate.latitude;
+      if (s.coordinate.latitude > maxLat) maxLat = s.coordinate.latitude;
+      if (s.coordinate.longitude < minLng) minLng = s.coordinate.longitude;
+      if (s.coordinate.longitude > maxLng) maxLng = s.coordinate.longitude;
+    }
+    // Add a small padding so pins aren't clipped by the screen edge
+    const pad = 0.01;
+    try {
+      await _mapController!.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(minLat - pad, minLng - pad),
+            northeast: LatLng(maxLat + pad, maxLng + pad),
+          ),
+          80, // pixels of padding inside the viewport
+        ),
+      );
+    } catch (e) {
+      debugPrint('_fitBoundsToStops error: $e');
     }
   }
 
@@ -317,12 +504,19 @@ class _MapScreenViewState extends State<MapScreenView>
       final isSelected = state.selectedPlace?.id == item.id;
       final isVisited = _visitedLandmarkIds.contains(item.id) ||
           _visitedLandmarkIds.contains(item.title);
+      // When this marker IS the active tour stop, paint it gold (instead
+      // of stacking a separate gold pin on top of the regular one — that
+      // hid the dataset pin and broke the photos/reviews flow).
+      final isTourStop = _tourStop?.id == item.id;
       return Marker(
         markerId: MarkerId(item.id),
         position: LatLng(item.coordinate.latitude, item.coordinate.longitude),
-        icon: _markerService.getMarkerIconByCategory(item, isSelected),
+        icon: isTourStop
+            ? BitmapDescriptor.defaultMarkerWithHue(50.0)
+            : _markerService.getMarkerIconByCategory(item, isSelected),
         anchor: const Offset(0.5, 1.0),
         alpha: isVisited ? 0.7 : 1.0,
+        zIndexInt: isTourStop ? 10 : 0,
         onTap: () {
           debugPrint('📍 Marker tapped: ${item.title} (id: ${item.id})');
           _searchController.clear();
@@ -333,7 +527,25 @@ class _MapScreenViewState extends State<MapScreenView>
       );
     }).toSet();
 
-    if (mounted) setState(() => _markers = markers);
+    // View-route pins — gold numbered markers for each stop in the route overview
+    final viewRouteMarkers = _viewRouteStops.asMap().entries.map((entry) {
+      final stop = entry.value;
+      return Marker(
+        markerId: MarkerId('__route_stop_${entry.key}__'),
+        position: LatLng(stop.coordinate.latitude, stop.coordinate.longitude),
+        icon: BitmapDescriptor.defaultMarkerWithHue(50.0),
+        anchor: const Offset(0.5, 1.0),
+        zIndexInt: 9,
+        onTap: () {
+          context.read<MapBloc>().add(MapPlaceSelected(stop));
+          _focusOnPlace(stop);
+        },
+      );
+    }).toSet();
+
+    if (mounted) {
+      setState(() => _markers = {...markers, ...viewRouteMarkers});
+    }
   }
 
   void _updatePolylines(MapState state) {
@@ -1163,6 +1375,66 @@ class _MapScreenViewState extends State<MapScreenView>
                           child: Icon(Icons.close, size: 20, color: onSurface.withOpacity(0.5)),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+
+              // ── Back to Tour button (shown when a solo plan stop is active) ──
+              if (_tourStop != null && !state.isNavigationMode)
+                Positioned(
+                  bottom: state.selectedPlace != null ? 370 : 105,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        final SavedPlan? plan =
+                            MapFocusService.instance.activeTourPlan;
+                        MapFocusService.instance.clearTourStop();
+                        setState(() => _tourStop = null);
+                        _updateVisibleMarkers(context.read<MapBloc>().state,
+                            forceInclude: state.selectedPlace);
+                        if (plan != null && mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ActiveTourScreen(plan: plan),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD6A00F),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.25),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.tour_outlined,
+                                color: Colors.white, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Back to Tour',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                fontFamily: 'Marcellus',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),

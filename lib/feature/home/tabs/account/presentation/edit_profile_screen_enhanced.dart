@@ -42,6 +42,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   String? _twitterError;
 
   String _selectedFlagEmoji = '';
+  // ISO 3166-1 alpha-2 code (e.g. "EG") — stored in Firestore as nationalityCode
+  // so the recommendation engine can look up country-level taste priors.
+  String _selectedCountryCode = '';
 
   // State variables
   String _completePhoneNumber = "";
@@ -331,6 +334,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           tx.set(userRef, {
             ...updatedUser.toMap(),
             if (_selectedFlagEmoji.isNotEmpty) 'nationalityFlag': _selectedFlagEmoji,
+              if (_selectedCountryCode.isNotEmpty) 'nationalityCode': _selectedCountryCode,
           }, SetOptions(merge: true));
         });
       } else {
@@ -338,6 +342,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             .set({
               ...updatedUser.toMap(),
               if (_selectedFlagEmoji.isNotEmpty) 'nationalityFlag': _selectedFlagEmoji,
+              if (_selectedCountryCode.isNotEmpty) 'nationalityCode': _selectedCountryCode,
             }, SetOptions(merge: true))
             .timeout(const Duration(seconds: 10));
       }
@@ -992,6 +997,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
               setState(() {
                 _nationalityController.text = "${country.flagEmoji} ${country.name}";
                 _selectedFlagEmoji = country.flagEmoji;
+                _selectedCountryCode = country.countryCode;
               });
             },
             countryListTheme: CountryListThemeData(

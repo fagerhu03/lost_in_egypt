@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -250,8 +251,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
         return Row(
           children: [
             CircleAvatar(
-              backgroundImage: data['profileImageUrl']?.isNotEmpty == true ? NetworkImage(data['profileImageUrl']) : null,
-              child: data['profileImageUrl']?.isEmpty == true ? const Icon(Icons.person) : null,
+              child: data['profileImageUrl']?.isNotEmpty == true
+                  ? ClipOval(child: CachedNetworkImage(imageUrl: data['profileImageUrl'], width: 40, height: 40, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person)))
+                  : const Icon(Icons.person),
             ),
             const SizedBox(width: 12),
             Expanded(child: Text('${data['firstName']} ${data['lastName']}\nRole: ${data['role']}')),

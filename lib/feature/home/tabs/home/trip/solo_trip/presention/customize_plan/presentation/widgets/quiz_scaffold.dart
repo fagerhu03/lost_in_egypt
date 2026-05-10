@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../../../../../theme/theme.dart';
 
-
 class QuizScaffold extends StatelessWidget {
   final String title;
   final Widget child;
   final VoidCallback onNext;
   final VoidCallback onBack;
   final String nextText;
-  final Widget searchHeader;
-  final Widget accountMenu;
+  final int stepIndex;
+  final int totalSteps;
 
   const QuizScaffold({
     super.key,
@@ -18,108 +17,146 @@ class QuizScaffold extends StatelessWidget {
     required this.child,
     required this.onNext,
     required this.onBack,
-    required this.searchHeader,
-    required this.accountMenu,
+    required this.stepIndex,
+    this.totalSteps = 5,
     this.nextText = 'Next',
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = AppColors.darkPrimaryButton;
+    final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final cardBg =
+        isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
+    final textColor = isDark ? AppColors.darkText : AppColors.lightText;
+    final labelColor = isDark ? AppColors.darkText : AppColors.lightBox;
 
     return Scaffold(
-      backgroundColor:
-      isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: bg,
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
+
+            // ── Header: back button + "Step X of 5" ───────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   GestureDetector(
                     onTap: onBack,
-                    child: Icon(
-                      Icons.arrow_back_ios_new,
-                      size: 18,
-                      color:
-                      isDark ? AppColors.darkText : AppColors.lightText,
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 16,
+                        color: primary,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(child: searchHeader),
-                  const SizedBox(width: 8),
-                  accountMenu,
+                  Expanded(
+                    child: Text(
+                      'Step ${stepIndex + 1} of $totalSteps',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: textColor.withValues(alpha: 0.55),
+                        letterSpacing: 0.5,
+                        fontFamily: 'Marcellus',
+                      ),
+                    ),
+                  ),
+                  // Invisible balance for the back button
+                  const SizedBox(width: 38),
                 ],
               ),
             ),
-            const SizedBox(height: 18),
+
+            const SizedBox(height: 10),
+
+            // ── Gold progress bar ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: (stepIndex + 1) / totalSteps,
+                  minHeight: 5,
+                  backgroundColor: primary.withValues(alpha: 0.14),
+                  valueColor: AlwaysStoppedAnimation<Color>(primary),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ── Content card ───────────────────────────────────────────────
             Expanded(
               child: Container(
                 width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 14),
-                padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+                margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.darkPatternOverlay
-                      : AppColors.lightPatternOverlay,
-                  borderRadius: BorderRadius.circular(20),
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(24),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Quiz:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: isDark
-                            ? AppColors.darkText
-                            : AppColors.lightBox,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 1.2,
-                      width: double.infinity,
-                      color: AppColors.darkPrimaryButton,
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
                       title,
                       style: TextStyle(
-                        fontSize: 16,
-                        color: isDark
-                            ? AppColors.darkText
-                            : AppColors.lightText,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
+                        color: labelColor,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Marcellus',
+                        height: 1.25,
                       ),
                     ),
                     const SizedBox(height: 18),
                     Expanded(child: child),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: SizedBox(
-                        height: 44,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.darkPrimaryButton,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                    const SizedBox(height: 14),
+
+                    // ── Next / Finish ──────────────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: onNext,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              nextText,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Marcellus',
+                              ),
                             ),
-                          ),
-                          onPressed: onNext,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(nextText),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward, size: 16),
-                            ],
-                          ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              nextText == 'Finish'
+                                  ? Icons.check_rounded
+                                  : Icons.arrow_forward_rounded,
+                              size: 16,
+                            ),
+                          ],
                         ),
                       ),
                     ),

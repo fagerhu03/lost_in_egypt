@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -218,9 +219,10 @@ class _AttendeeCardState extends State<_AttendeeCard> {
                 : null,
             leading: CircleAvatar(
               radius: 24,
-              backgroundImage: profileUrl.isNotEmpty ? NetworkImage(profileUrl) : null,
               backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
-              child: profileUrl.isEmpty ? Icon(Icons.person, color: theme.colorScheme.primary) : null,
+              child: profileUrl.isNotEmpty
+                  ? ClipOval(child: CachedNetworkImage(imageUrl: profileUrl, width: 48, height: 48, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, color: theme.colorScheme.primary)))
+                  : Icon(Icons.person, color: theme.colorScheme.primary),
             ),
             title: Text(name.isNotEmpty ? name : 'Unknown User', style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(

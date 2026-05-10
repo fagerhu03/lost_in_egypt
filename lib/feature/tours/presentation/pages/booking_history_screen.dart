@@ -1147,8 +1147,9 @@ class _GuideRow extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundImage: (avatar != null && avatar.isNotEmpty) ? NetworkImage(avatar) : null,
-              child: (avatar == null || avatar.isEmpty) ? const Icon(Icons.person) : null,
+              child: (avatar != null && avatar.isNotEmpty)
+                  ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 48, height: 48, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person)))
+                  : const Icon(Icons.person),
             ),
             const SizedBox(width: 12),
             Column(

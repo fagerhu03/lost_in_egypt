@@ -47,6 +47,20 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     _calculateDistance();
   }
 
+  @override
+  void didUpdateWidget(PlaceDetailSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.place.id != widget.place.id) {
+      setState(() {
+        _isSaved = false;
+        _currentImageIndex = 0;
+        _distanceKm = null;
+      });
+      _checkIfSaved();
+      _calculateDistance();
+    }
+  }
+
   Future<void> _checkIfSaved() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {

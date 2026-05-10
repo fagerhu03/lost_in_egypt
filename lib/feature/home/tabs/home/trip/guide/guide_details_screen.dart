@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/material.dart';
@@ -264,6 +265,7 @@ class _GuideHeaderCard extends StatelessWidget {
               Container(
                 width: 84,
                 height: 84,
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
                   gradient: LinearGradient(
@@ -271,20 +273,10 @@ class _GuideHeaderCard extends StatelessWidget {
                         ? const [Color(0xFF3E2C1E), Color(0xFF2A2119)]
                         : const [Color(0xFF7A4B1D), Color(0xFF4B3021)],
                   ),
-                  image: guide.profileImageUrl.isNotEmpty 
-                      ? DecorationImage(
-                          image: NetworkImage(guide.profileImageUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
                 ),
-                child: guide.profileImageUrl.isEmpty
-                    ? const Icon(
-                        Icons.person,
-                        color: Color(0xFFEDE9D9),
-                        size: 52,
-                      )
-                    : null,
+                child: guide.profileImageUrl.isNotEmpty
+                    ? CachedNetworkImage(imageUrl: guide.profileImageUrl, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, color: Color(0xFFEDE9D9), size: 52))
+                    : const Icon(Icons.person, color: Color(0xFFEDE9D9), size: 52),
               ),
               Positioned(
                 top: 4,

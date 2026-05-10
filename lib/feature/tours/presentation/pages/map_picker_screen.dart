@@ -135,13 +135,38 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             initialCameraPosition: MapConfig.initialPosition,
             markers: _pickedMarker != null ? {_pickedMarker!} : {},
             myLocationEnabled: true,
-            myLocationButtonEnabled: true,
+            // Native button sits at top-right and collides with the search bar —
+            // we render a custom FAB at the bottom-right instead.
+            myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             onMapCreated: (controller) async {
               _mapController = controller;
               await _loadAndApplyMapStyleIfNeeded();
             },
             onTap: _onMapTapped,
+          ),
+
+          // Custom my-location FAB (bottom-right, above the confirm button when shown)
+          Positioned(
+            right: 16,
+            bottom: _selectedLocation != null ? 200 : 32,
+            child: Material(
+              elevation: 4,
+              shape: const CircleBorder(),
+              color: Theme.of(context).colorScheme.surface,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: _zoomToUserLocation,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.my_location_rounded,
+                    color: const Color(0xFFC79A00),
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
           ),
           
           Positioned(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
@@ -121,13 +121,9 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                   child: CircleAvatar(
                     radius: 54,
                     backgroundColor: primary.withOpacity(0.18),
-                    backgroundImage: _user!.profileImageUrl.isNotEmpty
-                        ? NetworkImage(_user!.profileImageUrl)
-                        : null,
-                    child: _user!.profileImageUrl.isEmpty
-                        ? Icon(Icons.person,
-                        size: 48, color: onSurface)
-                        : null,
+                    child: _user!.profileImageUrl.isNotEmpty
+                        ? ClipOval(child: CachedNetworkImage(imageUrl: _user!.profileImageUrl, width: 108, height: 108, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 48, color: onSurface)))
+                        : Icon(Icons.person, size: 48, color: onSurface),
                   ),
                 ),
                 const SizedBox(height: 12),
