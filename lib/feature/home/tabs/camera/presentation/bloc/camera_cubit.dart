@@ -271,8 +271,8 @@ class CameraCubit extends Cubit<CameraState> {
       }
 
       final unlockedBadge = await _recordLandmarkVisit(place.id);
-      emit(CameraLandmarkIdentified(place, newlyUnlockedBadge: unlockedBadge));
-      
+      emit(CameraLandmarkIdentified(place, newlyUnlockedBadge: unlockedBadge, fromGallery: true));
+
     } on LandmarkDetectionException catch (e) {
       debugPrint("Landmark detection error: $e");
       emit(CameraError(e.message, isApiKeyError: e.isApiKeyError));

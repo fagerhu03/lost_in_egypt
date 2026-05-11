@@ -16,6 +16,7 @@ import '../../home/data/models/map_item_models.dart';
 import '../../map/data/places_api_service.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/utils/snack_bar_utils.dart';
+import '../../../../../core/services/recommendation_service.dart';
 
 // Available emoji reactions
 const List<String> _kReactions = ['❤️', '😮', '😄', '🔥', '👏'];
@@ -766,7 +767,17 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                       icon: widget.post.isLikedByMe ? Icons.favorite : Icons.favorite_border_rounded,
                       value: widget.post.likes,
                       color: widget.post.isLikedByMe ? Colors.red.shade400 : onSurface.withOpacity(0.65),
-                      onTap: () => _repo.togglePostLike(widget.post.id, true),
+                      onTap: () {
+                        if (!widget.post.isLikedByMe && widget.post.locationId != null) {
+                          RecommendationService.recordSignal(
+                            placeId: widget.post.locationId!,
+                            placeName: widget.post.locationName ?? '',
+                            signalType: 'like',
+                            source: 'community',
+                          );
+                        }
+                        _repo.togglePostLike(widget.post.id, true);
+                      },
                     ),
                     const SizedBox(width: 12),
                     // Comment

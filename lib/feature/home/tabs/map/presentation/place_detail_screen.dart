@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
@@ -39,12 +40,43 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   bool _isSaved = false;
   String? _userId;
   double? _distanceKm;
+  int? _crowdCount;
+  int _communityPostCount = 0;
 
   @override
   void initState() {
     super.initState();
     _checkIfSaved();
     _calculateDistance();
+    _loadCrowdLevel();
+    _loadCommunityPostCount();
+  }
+
+  Future<void> _loadCrowdLevel() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('place_affinity')
+          .doc(widget.place.id)
+          .get();
+      if (!mounted || !doc.exists) return;
+      final data = doc.data()!;
+      final buckets = (data['crowdBuckets'] as Map<String, dynamic>?) ?? {};
+      final h = DateTime.now().hour;
+      final current = (buckets['h$h'] as num? ?? 0).toInt();
+      final prev = (buckets['h${(h - 1 + 24) % 24}'] as num? ?? 0).toInt();
+      if (mounted) setState(() => _crowdCount = current + prev);
+    } catch (_) {}
+  }
+
+  Future<void> _loadCommunityPostCount() async {
+    try {
+      final q = await FirebaseFirestore.instance
+          .collection('community_posts')
+          .where('locationId', isEqualTo: widget.place.id)
+          .count()
+          .get();
+      if (mounted) setState(() => _communityPostCount = q.count ?? 0);
+    } catch (_) {}
   }
 
   @override
@@ -107,6 +139,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
         await FirebaseFirestore.instance.collection('users').doc(_userId).update({
           'savedPlaces': FieldValue.arrayUnion([widget.place.id])
         });
+        RecommendationService.recordSignal(
+          placeId: widget.place.id,
+          placeName: widget.place.title,
+          types: [widget.place.category],
+          tags: widget.place.tags,
+          signalType: 'save',
+          source: 'map',
+        );
       } else {
         await FirebaseFirestore.instance.collection('users').doc(_userId).update({
           'savedPlaces': FieldValue.arrayRemove([widget.place.id])
@@ -528,6 +568,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       ),
 
                     // Reviews section
+                    // ── Crowd level ─────────────────────────────────────────
+                    if (_crowdCount != null) ...[
+                      const SizedBox(height: 20),
+                      _buildCrowdBadge(_crowdCount!, primary, onSurface, isDark),
+                    ],
+
                     if (widget.place.reviews.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Divider(
@@ -546,6 +592,36 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       const SizedBox(height: 12),
                       ...widget.place.reviews.take(3).map((review) =>
                         _buildReviewCard(review, onSurface, primary, isDark),
+                      ),
+                    ],
+
+                    // ── Community posts from this place ──────────────────────
+                    if (_communityPostCount > 0) ...[
+                      const SizedBox(height: 16),
+                      Divider(thickness: 1, color: onSurface.withOpacity(0.10)),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Icon(Icons.people_outline_rounded, color: primary, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '$_communityPostCount traveler${_communityPostCount == 1 ? '' : 's'} posted from here',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: onSurface,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => _openCommunityPosts(context),
+                            child: Text(
+                              'See Posts',
+                              style: TextStyle(color: primary, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
 
@@ -639,6 +715,61 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     );
   }
 
+  Widget _buildCrowdBadge(int count, Color primary, Color onSurface, bool isDark) {
+    final Color dotColor;
+    final String label;
+    if (count <= 2) {
+      dotColor = Colors.green.shade500;
+      label = 'Quiet right now';
+    } else if (count <= 8) {
+      dotColor = Colors.amber.shade600;
+      label = 'Moderately busy';
+    } else {
+      dotColor = Colors.red.shade500;
+      label = 'Very busy';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: dotColor.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: dotColor.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: dotColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openCommunityPosts(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CommunityPostsSheet(
+        placeId: widget.place.id,
+        placeName: widget.place.title,
+      ),
+    );
+  }
+
   Widget _buildInfoTile({
     required IconData icon,
     required String text,
@@ -726,6 +857,126 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Community posts bottom sheet ──────────────────────────────────────────────
+
+class _CommunityPostsSheet extends StatelessWidget {
+  final String placeId;
+  final String placeName;
+
+  const _CommunityPostsSheet({required this.placeId, required this.placeName});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? const Color(0xFF1A2E3A) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final primary = Theme.of(context).colorScheme.primary;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      builder: (_, controller) => Container(
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: onSurface.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+              child: Row(
+                children: [
+                  Icon(Icons.people_outline_rounded, color: primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Posts from $placeName',
+                      style: TextStyle(
+                        fontFamily: 'Marcellus',
+                        fontSize: 18,
+                        color: textColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('community_posts')
+                    .where('locationId', isEqualTo: placeId)
+                    .orderBy('timestamp', descending: true)
+                    .limit(20)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final docs = snapshot.data?.docs ?? [];
+                  if (docs.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No posts yet from this place.\nBe the first to share!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: onSurface.withValues(alpha: 0.5)),
+                      ),
+                    );
+                  }
+                  return ListView.separated(
+                    controller: controller,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    itemCount: docs.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, i) {
+                      final data = docs[i].data() as Map<String, dynamic>;
+                      final content = data['content'] as String? ?? '';
+                      final userName = data['userName'] as String? ?? 'Traveler';
+                      final avatar = data['userAvatar'] as String? ?? '';
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        leading: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: primary.withValues(alpha: 0.15),
+                          child: avatar.isNotEmpty
+                              ? ClipOval(child: CachedNetworkImage(
+                                  imageUrl: avatar, width: 36, height: 36,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (ctx, url, err) => Icon(Icons.person, size: 16, color: primary),
+                                ))
+                              : Icon(Icons.person, size: 16, color: primary),
+                        ),
+                        title: Text(userName,
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: textColor)),
+                        subtitle: Text(
+                          content.length > 120 ? '${content.substring(0, 117)}…' : content,
+                          style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.75), height: 1.4),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -21,6 +21,7 @@ import 'package:lost_in_egypt/feature/home/tabs/account/presentation/account_scr
 import 'package:uuid/uuid.dart';
 import '../../../../feature/reviews/data/datasources/reviews_data_source.dart';
 import '../../../../feature/reviews/data/models/review_model.dart';
+import '../../../../core/services/recommendation_service.dart';
 
 class TourDetailScreen extends StatefulWidget {
   final TourEntity tour;
@@ -1065,6 +1066,17 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                         userName: userName,
                         userImage: userImage,
                       ));
+                      final reviewSignal = selectedRating >= 4 ? 'visit' : selectedRating <= 2 ? 'dismiss' : null;
+                      if (reviewSignal != null) {
+                        RecommendationService.recordSignal(
+                          placeId: tourId,
+                          placeName: widget.tour.title,
+                          types: ['tourist_attraction'],
+                          tags: ['cultural'],
+                          signalType: reviewSignal,
+                          source: 'review',
+                        );
+                      }
                     } catch (e) {
                       debugPrint('Error adding review: $e');
                     }

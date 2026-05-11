@@ -29,7 +29,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? _profileImageUrl;
   String? _firstName;
-  late Stream<QuerySnapshot> _eventsStream;
+  late Future<QuerySnapshot> _eventsFuture;
   List<PlaceModel> _popularPlaces = [];
 
   final PageController _pageController = PageController();
@@ -46,8 +46,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    _eventsStream =
-        FirebaseFirestore.instance.collection('events').limit(5).snapshots();
+    _eventsFuture =
+        FirebaseFirestore.instance.collection('events').orderBy('date').limit(5).get();
 
     _fetchUserProfile();
     _loadPopularPlaces();
@@ -379,28 +379,20 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 10),
             SizedBox(
               height: 160,
-              child: StreamBuilder<QuerySnapshot>(
-                stream: _eventsStream,
+              child: FutureBuilder<QuerySnapshot>(
+                future: _eventsFuture,
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+                  if (snapshot.connectionState != ConnectionState.done) {
                     return Center(
                       child: CircularProgressIndicator(
                         color: theme.colorScheme.primary,
                       ),
                     );
                   }
-                  if (snapshot.hasError) {
+                  if (snapshot.hasError || !snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(
                       child: Text(
-                        "Something went wrong",
-                        style: TextStyle(color: secondaryTextColor),
-                      ),
-                    );
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(
-                      child: Text(
-                        "No events found",
+                        "No events at the moment",
                         style: TextStyle(color: secondaryTextColor),
                       ),
                     );
@@ -415,10 +407,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemBuilder: (context, index) {
                       final data = docs[index].data() as Map<String, dynamic>;
                       final event = EventModel.fromMap(data, docs[index].id);
+                      // Firestore schema stores images as a list; fall back to first item
+                      final imageUrl = event.imagePath.isNotEmpty
+                          ? event.imagePath
+                          : ((data['images'] as List?)?.firstOrNull?.toString() ?? '');
 
                       return _eventCard(
                         title: event.title,
-                        imagePath: event.imagePath,
+                        imagePath: imageUrl,
                         surface: surface,
                         textColor: textColor,
                         shadow: cardShadow,

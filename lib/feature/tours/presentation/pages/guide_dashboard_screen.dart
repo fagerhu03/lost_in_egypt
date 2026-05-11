@@ -15,6 +15,7 @@ import 'qr_scanner_screen.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/currency_controller.dart';
 import '../../../../core/services/currency_service.dart';
+import '../../../../core/services/guide_location_service.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 
 class GuideDashboardScreen extends StatefulWidget {
@@ -25,12 +26,25 @@ class GuideDashboardScreen extends StatefulWidget {
 }
 
 class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
+  bool _isSharing = false;
+
   @override
   void initState() {
     super.initState();
+    _isSharing = GuideLocationService.instance.isSharing;
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       context.read<GuideToursCubit>().fetchTours(user.uid);
+    }
+  }
+
+  Future<void> _toggleSharing() async {
+    if (_isSharing) {
+      await GuideLocationService.instance.stopSharing();
+      if (mounted) setState(() => _isSharing = false);
+    } else {
+      await GuideLocationService.instance.startSharing();
+      if (mounted) setState(() => _isSharing = GuideLocationService.instance.isSharing);
     }
   }
 
@@ -46,6 +60,14 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
         title: const Text('Guide Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(
+              _isSharing ? Icons.location_on_rounded : Icons.location_off_rounded,
+              color: _isSharing ? Colors.green : null,
+            ),
+            tooltip: _isSharing ? 'Stop sharing live location' : 'Share live location with tourists',
+            onPressed: _toggleSharing,
+          ),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
             tooltip: 'Scan Ticket',

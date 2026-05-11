@@ -103,8 +103,9 @@ class CameraAnalyzing extends CameraState {
 class CameraLandmarkIdentified extends CameraState {
   final PlaceModel place;
   final BadgeModel? newlyUnlockedBadge;
+  final bool fromGallery;
 
-  const CameraLandmarkIdentified(this.place, {this.newlyUnlockedBadge});
+  const CameraLandmarkIdentified(this.place, {this.newlyUnlockedBadge, this.fromGallery = false});
 }
 
 /// No landmark found in the image - needs user action to dismiss

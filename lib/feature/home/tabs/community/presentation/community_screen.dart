@@ -14,6 +14,7 @@ import 'post_detail_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import '../../../../../core/widgets/shimmer_loading_widget.dart';
 import '../../map/data/places_api_service.dart';
+import '../../../../../core/services/recommendation_service.dart';
 import '../../../../../core/utils/snack_bar_utils.dart';
 
 class CommunityScreen extends StatefulWidget {
@@ -316,6 +317,9 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   Future<void> _handlePost() async {
     setState(() => _isPosting = true);
+    // Capture before setState clears them
+    final postLocationId = _selectedLocationId;
+    final postLocationName = _selectedLocationName;
     try {
       await _repository.addPost(
         _postController.text.trim(),
@@ -326,6 +330,14 @@ class _CommunityScreenState extends State<CommunityScreen>
         locationLng: _selectedLocationLng,
         category: _selectedCategory ?? '',
       );
+      if (postLocationId != null) {
+        RecommendationService.recordSignal(
+          placeId: postLocationId,
+          placeName: postLocationName,
+          signalType: 'post',
+          source: 'community',
+        );
+      }
       _postController.clear();
       setState(() {
         _selectedImages.clear();

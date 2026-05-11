@@ -23,6 +23,10 @@ import '../../../../feature/reviews/data/models/review_model.dart';
 import '../../../../feature/home/notification/data/datasources/notifications_data_source.dart';
 import '../../../../feature/home/notification/data/models/notification_model.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/guide_location_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../../../core/utils/map_style_helper.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main screen
@@ -677,6 +681,17 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         userName: userName,
                         userImage: userImage,
                       ));
+                      final reviewSignal = rating >= 4 ? 'visit' : rating <= 2 ? 'dismiss' : null;
+                      if (reviewSignal != null) {
+                        RecommendationService.recordSignal(
+                          placeId: tourId,
+                          placeName: widget.tourData['title'] ?? '',
+                          types: ['tourist_attraction'],
+                          tags: ['cultural'],
+                          signalType: reviewSignal,
+                          source: 'review',
+                        );
+                      }
                       if (mounted) {
                         Navigator.pop(ctx);
                         setState(() => _hasReviewed = true);
@@ -699,6 +714,16 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showGuideTrackingSheet(String guideId, String guideName) {
+    if (guideId.isEmpty) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _GuideTrackingSheet(guideId: guideId, guideName: guideName),
     );
   }
 
@@ -961,6 +986,40 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                             ),
                             const Spacer(),
                             Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // ── Track guide live location ────────────────────────────
+                  if (status == 'confirmed' && widget.upcoming) ...[
+                    const Divider(),
+                    InkWell(
+                      onTap: () => _showGuideTrackingSheet(
+                        widget.tourData['guideId'] ?? '',
+                        _guideData != null
+                            ? '${_guideData!['firstName'] ?? ''} ${_guideData!['lastName'] ?? ''}'.trim()
+                            : 'Guide',
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          children: [
+                            Icon(Icons.location_on_rounded, color: Colors.green.shade600),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Track Guide Live',
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                                Text('See your guide\'s real-time location',
+                                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                              ],
+                            ),
+                            const Spacer(),
+                            Icon(Icons.chevron_right, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                           ],
                         ),
                       ),
@@ -1238,6 +1297,161 @@ class _WeatherRow extends StatelessWidget {
     } catch (_) {
       return const SizedBox.shrink();
     }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Live guide location sheet
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _GuideTrackingSheet extends StatefulWidget {
+  final String guideId;
+  final String guideName;
+
+  const _GuideTrackingSheet({required this.guideId, required this.guideName});
+
+  @override
+  State<_GuideTrackingSheet> createState() => _GuideTrackingSheetState();
+}
+
+class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
+  GoogleMapController? _mapController;
+  bool _cameraMoved = false;
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.6,
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          // Handle + title
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: Column(
+              children: [
+                Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Icon(Icons.location_on_rounded, color: Colors.green.shade600, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${widget.guideName} – Live Location',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+          // Map
+          Expanded(
+            child: StreamBuilder<Map<String, double>?>(
+              stream: GuideLocationService.instance.watchGuide(widget.guideId),
+              builder: (context, snap) {
+                final loc = snap.data;
+
+                if (loc != null && !_cameraMoved && _mapController != null) {
+                  _cameraMoved = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _mapController?.animateCamera(
+                      CameraUpdate.newLatLngZoom(LatLng(loc['lat']!, loc['lng']!), 15),
+                    );
+                  });
+                }
+
+                final markers = loc == null
+                    ? <Marker>{}
+                    : {
+                        Marker(
+                          markerId: const MarkerId('guide'),
+                          position: LatLng(loc['lat']!, loc['lng']!),
+                          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+                          infoWindow: InfoWindow(title: widget.guideName),
+                        ),
+                      };
+
+                return ClipRRect(
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        initialCameraPosition: const CameraPosition(
+                          target: LatLng(30.0444, 31.2357),
+                          zoom: 12,
+                        ),
+                        markers: markers,
+                        myLocationButtonEnabled: false,
+                        zoomControlsEnabled: false,
+                        onMapCreated: (controller) {
+                          _mapController = controller;
+                          MapStyleHelper.applyTheme(controller, context);
+                          if (loc != null && !_cameraMoved) {
+                            _cameraMoved = true;
+                            controller.animateCamera(
+                              CameraUpdate.newLatLngZoom(LatLng(loc['lat']!, loc['lng']!), 15),
+                            );
+                          }
+                        },
+                      ),
+                      if (loc == null)
+                        Positioned(
+                          bottom: 20,
+                          left: 20,
+                          right: 20,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: primary.withValues(alpha: 0.15)),
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 16, height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: primary),
+                                ),
+                                const SizedBox(width: 10),
+                                const Expanded(
+                                  child: Text(
+                                    'Waiting for guide to share their location…',
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

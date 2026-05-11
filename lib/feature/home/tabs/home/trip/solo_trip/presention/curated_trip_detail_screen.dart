@@ -37,8 +37,10 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
   late final AnimationController _staggerCtrl;
   bool _saving = false;
   bool _isSaved = false;
+  bool _isActive = false;
   bool _starting = false;
   bool _navigatingToStop = false;
+  SavedPlan? _existingPlan;
 
   String? _photoUrl;
 
@@ -66,7 +68,13 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
     try {
       final existing =
           await SoloPlanService.instance.getCuratedPlanByTripId(widget.trip.id);
-      if (mounted && existing != null) setState(() => _isSaved = true);
+      if (mounted && existing != null) {
+        setState(() {
+          _isSaved = true;
+          _isActive = existing.status == SoloPlanStatus.active;
+          _existingPlan = existing;
+        });
+      }
     } catch (_) {/* best-effort — UI will fall back to the in-session state */}
   }
 
@@ -211,20 +219,13 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
   Future<void> _startTour() async {
     setState(() => _starting = true);
     try {
-      final plan = await SoloPlanService.instance.saveCuratedPlan(widget.trip);
-      await SoloPlanService.instance.startTour(plan.id);
-      final started = SavedPlan(
-        id: plan.id,
-        title: plan.title,
-        tagline: plan.tagline,
-        type: plan.type,
-        curatedTripId: plan.curatedTripId,
+      final plan = _existingPlan ?? await SoloPlanService.instance.saveCuratedPlan(widget.trip);
+      if (plan.status != SoloPlanStatus.active) {
+        await SoloPlanService.instance.startTour(plan.id);
+      }
+      final started = plan.copyWith(
         status: SoloPlanStatus.active,
-        days: plan.days,
-        estimatedBudget: plan.estimatedBudget,
-        areas: plan.areas,
-        startedAt: DateTime.now(),
-        createdAt: plan.createdAt,
+        startedAt: plan.startedAt ?? DateTime.now(),
       );
       if (!mounted) return;
       Navigator.push(
@@ -678,11 +679,15 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                               height: 16,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.play_arrow_rounded,
-                              size: 20, color: Colors.white),
-                      label: const Text(
-                        'Start Tour',
-                        style: TextStyle(
+                          : Icon(
+                              _isActive
+                                  ? Icons.directions_walk_rounded
+                                  : Icons.play_arrow_rounded,
+                              size: 20,
+                              color: Colors.white),
+                      label: Text(
+                        _isActive ? 'Continue Tour' : 'Start Tour',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,

@@ -54,7 +54,7 @@ class _CameraScreenState extends State<CameraScreen> {
       child: BlocConsumer<CameraCubit, CameraState>(
         listener: (context, state) {
           if (state is CameraLandmarkIdentified) {
-            CameraResultSheet.show(context, state.place);
+            CameraResultSheet.show(context, state.place, fromGallery: state.fromGallery);
             if (state.newlyUnlockedBadge != null) {
               Future.delayed(const Duration(milliseconds: 600), () {
                 if (context.mounted) {

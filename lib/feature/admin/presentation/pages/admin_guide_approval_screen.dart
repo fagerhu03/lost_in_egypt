@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../bloc/admin_guide_cubit.dart';
 import '../bloc/admin_guide_state.dart';
 import 'admin_guide_details_screen.dart';
@@ -53,7 +54,33 @@ class _AdminGuideApprovalScreenState extends State<AdminGuideApprovalScreen> {
                     title: Text('${guide.firstName} ${guide.lastName}', style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text('${guide.email}\nMOTA: ${guide.motaLicenseNumber ?? 'N/A'}'),
                     isThreeLine: true,
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance.collection('users').doc(guide.id).get(),
+                      builder: (context, snap) {
+                        final screening = (snap.data?.data() as Map<String, dynamic>?)?['aiScreeningResult'] as Map<String, dynamic>?;
+                        final flagged = screening?['flagged'] == true;
+                        final risk = screening?['risk'] as String? ?? 'low';
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (flagged)
+                              Container(
+                                margin: const EdgeInsets.only(right: 6),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: risk == 'high' ? Colors.red.shade600 : Colors.orange.shade600,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  risk == 'high' ? '⚠ High Risk' : '⚠ Review',
+                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        );
+                      },
+                    ),
                     onTap: () {
                       Navigator.push(
                         context,

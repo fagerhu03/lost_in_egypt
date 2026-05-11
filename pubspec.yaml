@@ -88,6 +88,9 @@ dependencies:
   add_2_calendar: ^3.0.1
   connectivity_plus: ^6.1.4
   audioplayers: ^6.1.0
+  pdf: ^3.11.1
+  printing: ^5.13.1
+  firebase_database: ^12.1.0
 
 dev_dependencies:
   flutter_test:

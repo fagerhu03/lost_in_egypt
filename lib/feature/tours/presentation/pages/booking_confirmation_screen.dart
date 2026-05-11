@@ -13,6 +13,7 @@ import '../../../../core/di/service_locator.dart';
 import '../../data/datasources/paymob_api_service.dart';
 import '../../../../feature/home/notification/domain/services/local_notification_service.dart';
 import 'booking_history_screen.dart';
+import '../../../../core/services/recommendation_service.dart';
 import '../../../../core/utils/error_handler.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
@@ -157,7 +158,17 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       setState(() => _isLoading = false);
       result.fold(
         (l) => _showSnackBar('Booking Error: ${l.message}', isError: true),
-        (r) => _showSuccessDialog(),
+        (r) {
+          RecommendationService.recordSignal(
+            placeId: widget.tour.id,
+            placeName: widget.tour.title,
+            types: ['tourist_attraction'],
+            tags: ['cultural', 'adventure'],
+            signalType: 'booking',
+            source: 'booking',
+          );
+          _showSuccessDialog();
+        },
       );
     }
   }

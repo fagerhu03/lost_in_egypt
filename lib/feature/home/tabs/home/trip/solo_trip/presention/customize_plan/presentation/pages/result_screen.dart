@@ -9,10 +9,14 @@ import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/active_tour_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart' show Share;
 
 import '../../../../../../../../../../theme/theme.dart';
 import '../../domain/entities/trip_plan_entity.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 
 // ── Data models ───────────────────────────────────────────────────────────────
 
@@ -463,6 +467,7 @@ class _PlanViewState extends State<_PlanView> {
   bool _isSaved = false;
   bool _viewingMap = false;
   bool _startingTour = false;
+  bool _exporting = false;
   SavedPlan? _savedPlan;
 
   _Plan get plan => widget.plan;
@@ -487,36 +492,39 @@ class _PlanViewState extends State<_PlanView> {
     if (_viewingMap) return; // debounce double-taps while we save+start
     setState(() => _viewingMap = true);
 
-    final activePlan = await _ensureSavedAndStarted();
-    if (!ctx.mounted) return;
+    try {
+      final activePlan = await _ensureSavedAndStarted();
+      if (!ctx.mounted) return;
 
-    // Build a synthetic PlaceModel from the AI stop. The map screen will
-    // attempt to match this against an existing dataset pin (by name, then
-    // proximity) and prefer the dataset's MapItem so the detail sheet
-    // shows real photos / reviews / description from the bundled JSON.
-    final model = PlaceModel(
-      id: stop.name.toLowerCase().replaceAll(' ', '_'),
-      title: stop.name,
-      category: stop.placeType,
-      coordinate: GeoPoint(stop.lat!, stop.lng!),
-      imagePath: '',
-      locationAddress: stop.name,
-      rating: 0,
-      price: 0,
-      duration: '${stop.estimatedHours} hrs',
-      weather: '',
-      description: stop.notes,
-    );
-    if (!ctx.mounted) return;
+      // Build a synthetic PlaceModel from the AI stop. The map screen will
+      // attempt to match this against an existing dataset pin (by name, then
+      // proximity) and prefer the dataset's MapItem so the detail sheet
+      // shows real photos / reviews / description from the bundled JSON.
+      final model = PlaceModel(
+        id: stop.name.toLowerCase().replaceAll(' ', '_'),
+        title: stop.name,
+        category: stop.placeType,
+        coordinate: GeoPoint(stop.lat!, stop.lng!),
+        imagePath: '',
+        locationAddress: stop.name,
+        rating: 0,
+        price: 0,
+        duration: '${stop.estimatedHours} hrs',
+        weather: '',
+        description: stop.notes,
+      );
+      if (!ctx.mounted) return;
 
-    MapFocusService.instance.clearTourStop();
-    if (activePlan != null) {
-      MapFocusService.instance.triggerTourStop(model, activePlan);
-    } else {
-      // Save failed — at least pan the camera so the user sees the location.
-      MapFocusService.instance.triggerCameraFocus(model);
+      MapFocusService.instance.clearTourStop();
+      if (activePlan != null) {
+        MapFocusService.instance.triggerTourStop(model, activePlan);
+      } else {
+        MapFocusService.instance.triggerCameraFocus(model);
+      }
+      Navigator.of(ctx).popUntil((r) => r.isFirst);
+    } finally {
+      if (mounted) setState(() => _viewingMap = false);
     }
-    Navigator.of(ctx).popUntil((r) => r.isFirst);
   }
 
   /// Persists the plan and flips it to "active" so [`triggerTourStop`] has a
@@ -665,6 +673,155 @@ class _PlanViewState extends State<_PlanView> {
     }
   }
 
+  Future<void> _exportPdf(BuildContext ctx) async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final doc = pw.Document();
+      final gold = PdfColor.fromHex('D6A00F');
+      final darkText = PdfColor.fromHex('1A1A1A');
+
+      doc.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(40),
+          build: (pw.Context _) => [
+            pw.Text(
+              plan.title,
+              style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold, color: gold),
+            ),
+            pw.SizedBox(height: 8),
+            pw.Text(
+              plan.summary,
+              style: pw.TextStyle(fontSize: 12, color: darkText, lineSpacing: 3),
+            ),
+            pw.SizedBox(height: 12),
+            if (plan.estimatedBudget.isNotEmpty)
+              pw.Text('Estimated Budget: ${plan.estimatedBudget}',
+                  style: pw.TextStyle(fontSize: 12, color: gold, fontWeight: pw.FontWeight.bold)),
+            if (_dateRange.isNotEmpty)
+              pw.Text('Dates: $_dateRange', style: pw.TextStyle(fontSize: 12, color: darkText)),
+            pw.Divider(color: gold, height: 28),
+            ...plan.days.expand((day) => [
+              if (day.transit != null) ...[
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(10),
+                  margin: const pw.EdgeInsets.only(bottom: 10),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: gold),
+                    borderRadius: pw.BorderRadius.circular(6),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'Travel: ${day.transit!.from} → ${day.transit!.to}',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: gold, fontSize: 12),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text('Mode: ${day.transit!.mode}', style: const pw.TextStyle(fontSize: 11)),
+                      if (day.transit!.duration.isNotEmpty)
+                        pw.Text('Duration: ${day.transit!.duration}', style: const pw.TextStyle(fontSize: 11)),
+                      if (day.transit!.approxCost.isNotEmpty)
+                        pw.Text('Cost: ${day.transit!.approxCost}', style: const pw.TextStyle(fontSize: 11)),
+                      if (day.transit!.tip.isNotEmpty)
+                        pw.Text('Tip: ${day.transit!.tip}', style: const pw.TextStyle(fontSize: 10)),
+                    ],
+                  ),
+                ),
+              ],
+              pw.Text(
+                day.label,
+                style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: gold),
+              ),
+              pw.SizedBox(height: 6),
+              ...day.stops.asMap().entries.map((e) => pw.Padding(
+                padding: const pw.EdgeInsets.only(bottom: 10),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Row(children: [
+                      pw.Text(
+                        '${e.key + 1}. ${e.value.name}',
+                        style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: darkText),
+                      ),
+                      pw.Spacer(),
+                      pw.Text(
+                        '${e.value.estimatedHours} hr',
+                        style: pw.TextStyle(fontSize: 11, color: gold),
+                      ),
+                    ]),
+                    if (e.value.reason.isNotEmpty)
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(top: 3),
+                        child: pw.Text(e.value.reason, style: const pw.TextStyle(fontSize: 11)),
+                      ),
+                    if (e.value.notes.isNotEmpty)
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(top: 2),
+                        child: pw.Text(e.value.notes,
+                            style: pw.TextStyle(fontSize: 11, color: PdfColor.fromHex('555555'))),
+                      ),
+                  ],
+                ),
+              )),
+              pw.SizedBox(height: 12),
+            ]),
+          ],
+        ),
+      );
+
+      final bytes = await doc.save();
+      if (!ctx.mounted) return;
+      await Printing.sharePdf(
+        bytes: bytes,
+        filename: '${plan.title.replaceAll(' ', '_')}.pdf',
+      );
+    } catch (_) {
+      if (!ctx.mounted) return;
+      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+        content: const Text('Could not export itinerary. Try again.'),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  Future<void> _discardPlan(BuildContext ctx) async {
+    final confirm = await showDialog<bool>(
+      context: ctx,
+      builder: (d) => AlertDialog(
+        title: const Text('Discard plan?'),
+        content: const Text('This plan will not be saved. You can always generate a new one.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Keep')),
+          TextButton(
+            onPressed: () => Navigator.pop(d, true),
+            child: Text('Discard', style: TextStyle(color: Colors.red.shade600)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !ctx.mounted) return;
+    final uniqueTypes = plan.days
+        .expand((d) => d.stops)
+        .map((s) => s.placeType)
+        .toSet();
+    for (final type in uniqueTypes) {
+      RecommendationService.recordSignal(
+        placeId: 'custom_${type.toLowerCase().replaceAll(' ', '_')}',
+        placeName: plan.title,
+        types: [type],
+        signalType: 'dismiss',
+        source: 'result_screen',
+      );
+    }
+    Navigator.pop(ctx);
+  }
+
   String get _dateRange {
     if (entity.fromDate == null && entity.toDate == null) return '';
     final fmt = DateFormat('MMM d');
@@ -716,6 +873,17 @@ class _PlanViewState extends State<_PlanView> {
                         ),
                   tooltip: _isSaved ? 'Saved' : 'Save Plan',
                   onPressed: (_saving || _isSaved) ? null : () => _savePlan(context),
+                ),
+                IconButton(
+                  icon: _exporting
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: gold),
+                        )
+                      : Icon(Icons.picture_as_pdf_outlined, color: textColor, size: 22),
+                  tooltip: 'Export PDF',
+                  onPressed: _exporting ? null : () => _exportPdf(context),
                 ),
                 IconButton(
                   icon: Icon(Icons.share_outlined, color: textColor, size: 22),
@@ -799,7 +967,26 @@ class _PlanViewState extends State<_PlanView> {
                     ],
                   ),
 
-                  // ── Start Tour CTA ────────────────────────────────────────
+                  // ── Discard / Start Tour CTAs ─────────────────────────────
+                  if (!_isSaved)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () => _discardPlan(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red.shade600,
+                            side: BorderSide(color: Colors.red.shade300),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: const Text('Discard',
+                              style: TextStyle(fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,

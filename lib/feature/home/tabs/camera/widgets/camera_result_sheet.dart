@@ -4,20 +4,22 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class CameraResultSheet extends StatefulWidget {
   final PlaceModel place;
+  final bool fromGallery;
 
-  const CameraResultSheet({super.key, required this.place});
+  const CameraResultSheet({super.key, required this.place, this.fromGallery = false});
 
-  static void show(BuildContext context, PlaceModel place) {
+  static void show(BuildContext context, PlaceModel place, {bool fromGallery = false}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) => CameraResultSheet(place: place),
+      builder: (ctx) => CameraResultSheet(place: place, fromGallery: fromGallery),
     );
   }
 
@@ -261,6 +263,16 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                   story = storyResult;
                                   isLoadingStory = false;
                                 });
+                                if (storyResult.isNotEmpty) {
+                                  RecommendationService.recordSignal(
+                                    placeId: widget.place.id,
+                                    placeName: widget.place.title,
+                                    types: [widget.place.category],
+                                    tags: widget.place.tags,
+                                    signalType: widget.fromGallery ? 'like' : 'visit',
+                                    source: 'camera',
+                                  );
+                                }
                               },
                         icon: isLoadingStory
                             ? SizedBox(

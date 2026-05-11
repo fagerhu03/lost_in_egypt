@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,6 +17,7 @@ import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/core/services/weather_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import '../../../../../../../theme/theme.dart';
 
 class ActiveTourScreen extends StatefulWidget {
@@ -196,6 +199,16 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
         stopIndex: stopIndex,
         completed: completed,
       );
+      if (completed) {
+        final stop = _plan.days[dayIndex].stops[stopIndex];
+        RecommendationService.recordSignal(
+          placeId: stop.name.toLowerCase().replaceAll(' ', '_'),
+          placeName: stop.name,
+          types: [stop.placeType],
+          signalType: 'visit',
+          source: 'active_tour',
+        );
+      }
       final updatedDays = List<SavedPlanDay>.from(_plan.days);
       updatedDays[dayIndex] =
           updatedDays[dayIndex].copyWithStop(stopIndex, completed);
@@ -263,6 +276,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       builder: (ctx) => _TourCompleteDialog(
         planTitle: _plan.title,
         stopsCompleted: _plan.totalStops,
+        completedStops: _plan.days.expand((d) => d.stops).toList(),
         onDone: () {
           Navigator.pop(ctx);
           Navigator.pop(context);
@@ -980,11 +994,13 @@ class _TourCompleteDialog extends StatefulWidget {
   final String planTitle;
   final int stopsCompleted;
   final VoidCallback onDone;
+  final List<SavedPlanStop> completedStops;
 
   const _TourCompleteDialog({
     required this.planTitle,
     required this.stopsCompleted,
     required this.onDone,
+    this.completedStops = const [],
   });
 
   @override
@@ -996,6 +1012,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
   late final AnimationController _ctrl;
   late final Animation<double> _scale;
   late final Animation<double> _fade;
+  List<String> _suggestionNames = [];
 
   @override
   void initState() {
@@ -1005,6 +1022,42 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
     _scale = CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut);
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
     _ctrl.forward();
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      final types = widget.completedStops
+          .map((s) => s.placeType)
+          .toSet()
+          .take(3)
+          .toList();
+      final candidates = types.map((t) => {
+        'placeId': t,
+        'name': t,
+        'types': [t],
+        'tags': <String>[],
+        'lat': 30.0444,
+        'lng': 31.2357,
+      }).toList();
+      if (candidates.isEmpty) return;
+      final fn = FirebaseFunctions.instance.httpsCallable('recommendPlaces');
+      final result = await fn.call({
+        'candidates': candidates,
+        'context': 'similar',
+        'limit': 3,
+        'excludeSeen': true,
+      });
+      final ranked = (result.data['ranked'] as List?) ?? [];
+      final names = ranked
+          .map((r) => r['name']?.toString() ?? '')
+          .where((n) => n.isNotEmpty)
+          .take(3)
+          .toList();
+      if (mounted) setState(() => _suggestionNames = names);
+    } catch (_) {}
   }
 
   @override
@@ -1116,6 +1169,38 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                     height: 1.5,
                   ),
                 ),
+                if (_suggestionNames.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'You might also love',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: textColor.withValues(alpha: 0.7),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ..._suggestionNames.map((name) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      children: [
+                        Icon(Icons.place_rounded, size: 14, color: gold),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: TextStyle(fontSize: 13, color: textColor),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+                ],
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,

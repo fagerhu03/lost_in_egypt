@@ -14,6 +14,7 @@ import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/w
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/widgets/plan_card.dart';
 import '../../../../../../../../theme/theme.dart';
 import '../../../../navigator/widget/account_menu_button.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 
 class SoloTripPage extends StatefulWidget {
   final String? profileImageUrl;
@@ -324,29 +325,53 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                       final isLast =
                                           entry.key == _trips.length - 1;
                                       final heroTag = 'trip-${trip.id}';
-                                      return Padding(
-                                        padding: EdgeInsets.only(
-                                            bottom: isLast ? 0 : 16),
-                                        child: PlanCard(
-                                          title: trip.title,
-                                          location: trip.primaryArea,
-                                          rating: trip.rating.round(),
-                                          image: trip.imagePath,
-                                          isBestMatch:
-                                              trip.id == _bestMatchId,
-                                          isSaved: savedTripIds
-                                              .contains(trip.id),
-                                          tagline: trip.tagline,
-                                          durationLabel: trip.durationLabel,
-                                          heroTag: heroTag,
-                                          tripId: trip.id,
-                                          onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  CuratedTripDetailScreen(
-                                                trip: trip,
-                                                heroTag: heroTag,
+                                      return Dismissible(
+                                        key: ValueKey(trip.id),
+                                        direction: DismissDirection.endToStart,
+                                        background: Container(
+                                          alignment: Alignment.centerRight,
+                                          padding: const EdgeInsets.only(right: 20),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade400,
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                                        ),
+                                        onDismissed: (_) {
+                                          for (final key in trip.scoringKeys) {
+                                            RecommendationService.recordSignal(
+                                              placeId: trip.id,
+                                              placeName: trip.title,
+                                              types: [key],
+                                              signalType: 'dismiss',
+                                              source: 'solo_trip',
+                                            );
+                                          }
+                                        },
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                              bottom: isLast ? 0 : 16),
+                                          child: PlanCard(
+                                            title: trip.title,
+                                            location: trip.primaryArea,
+                                            rating: trip.rating.round(),
+                                            image: trip.imagePath,
+                                            isBestMatch:
+                                                trip.id == _bestMatchId,
+                                            isSaved: savedTripIds
+                                                .contains(trip.id),
+                                            tagline: trip.tagline,
+                                            durationLabel: trip.durationLabel,
+                                            heroTag: heroTag,
+                                            tripId: trip.id,
+                                            onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    CuratedTripDetailScreen(
+                                                  trip: trip,
+                                                  heroTag: heroTag,
+                                                ),
                                               ),
                                             ),
                                           ),
