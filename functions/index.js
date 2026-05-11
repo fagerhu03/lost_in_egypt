@@ -642,6 +642,60 @@ exports.onGuideApplicationUpdated = onDocumentUpdated({ document: 'users/{userId
   }
 });
 
+// ── USER UPDATED → new guide application submitted → AI pre-screening ────────
+// Fires when applicationStatus changes to 'pending'. Calls Groq to flag
+// suspicious applications. Writes result to users/{uid}.aiScreeningResult.
+exports.prescreenGuideApplication = onDocumentUpdated(
+  { document: 'users/{userId}', region: 'europe-west1', secrets: [groqApiKey] },
+  async (event) => {
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+    if (!before || !after) return;
+    if (before.applicationStatus === after.applicationStatus) return;
+    if (after.applicationStatus !== 'pending') return;
+
+    const { firstName = '', lastName = '', email = '',
+            motaLicenseNumber = '', syndicateNumber = '',
+            certifiedLanguages = [] } = after;
+
+    const prompt = `You are screening a tour guide application for an Egyptian tourism app.
+Applicant: ${firstName} ${lastName}, email: ${email}
+MOTA License: ${motaLicenseNumber || 'not provided'}
+Syndicate Number: ${syndicateNumber || 'not provided'}
+Languages: ${certifiedLanguages.join(', ') || 'none listed'}
+
+Flag concerns ONLY if clearly suspicious (missing both license numbers, nonsense data, obviously fake name).
+Reply with JSON only: {"flagged": boolean, "risk": "low"|"medium"|"high", "notes": "one sentence max"}`;
+
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqApiKey.value()}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 80,
+          temperature: 0.1,
+          response_format: { type: 'json_object' },
+        }),
+      });
+      const data = await res.json();
+      const raw = data.choices?.[0]?.message?.content || '{}';
+      const screening = JSON.parse(raw);
+      await admin.firestore().collection('users').doc(event.params.userId).update({
+        aiScreeningResult: {
+          flagged: screening.flagged === true,
+          risk: screening.risk || 'low',
+          notes: screening.notes || '',
+          checkedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+      });
+    } catch (e) {
+      console.error('prescreenGuideApplication error:', e);
+    }
+  }
+);
+
 // ── ADMIN REQUEST UPDATED → language certification approved / rejected ─────────
 exports.onLanguageRequestUpdated = onDocumentUpdated({ document: 'admin_requests/{requestId}', region: 'europe-west1' }, async (event) => {
   const before = event.data.before.data();

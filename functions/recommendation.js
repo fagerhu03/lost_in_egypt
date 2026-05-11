@@ -396,8 +396,10 @@ function scoreCandidate({
     const sum = keys.reduce((acc, k) => acc + (tasteVector[k] || 0), 0);
     tasteMatch = sum / keys.length; // average over all relevant keys
   }
-  // Squash into [-1, 1] — dividing by 3 assumes typical vector values are in [-3, 3]
-  tasteMatch = clamp(tasteMatch / 3, -1, 1);
+  // tanh normalises to (-1, 1) smoothly — unlike hard clamp it never saturates,
+  // so the gradient stays non-zero even when the vector value is large.
+  // /2 keeps the midpoint steep: a value of 2.0 → ~0.76, 4.0 → ~0.96.
+  tasteMatch = Math.tanh(tasteMatch / 2);
 
   // ── Component 2: Rating score ─────────────────────────────────────────────
   // Remap Google star rating to [-1, +1] with 3.5 as neutral midpoint
@@ -598,20 +600,6 @@ function rankCandidates({
   // Filter out places the user has already seen in this surface
   const fresh = candidates.filter((c) => c.placeId && !seenSet.has(c.placeId));
 
-  // ε-greedy: flip a coin — 15% of the time return random picks instead of scored
-  if (rng() < epsilon && fresh.length > 0) {
-    const shuffled = [...fresh].sort(() => rng() - 0.5);
-    return shuffled.slice(0, limit).map((c, i) => ({
-      placeId: c.placeId,
-      name: c.name,
-      score: 0,
-      rank: i,
-      reasons: ["Fresh discovery"],
-      breakdown: {},
-      exploration: true, // tells the Flutter UI this is a serendipity pick
-    }));
-  }
-
   // Score every fresh candidate
   const scored = fresh.map((c) => ({
     candidate: c,
@@ -637,15 +625,29 @@ function rankCandidates({
 
   // Re-sort by adjusted (diversity-penalised) score and take top `limit` results
   picked.sort((a, b) => b.adjustedScore - a.adjustedScore);
+  const ranked = picked.slice(0, limit);
 
-  return picked.slice(0, limit).map((s, i) => ({
+  // ε-greedy (item-level): 15% chance to splice 2 serendipity picks into the
+  // ranked list at slots 4 and 9 (instead of replacing the entire result set).
+  // Users still see mostly relevant results; exploration never dominates a page.
+  if (rng() < epsilon && picked.length > limit) {
+    const pool = picked.slice(limit); // candidates that didn't make the top-limit cut
+    const shuffled = [...pool].sort(() => rng() - 0.5);
+    const insertAt = [Math.min(4, ranked.length - 1), ranked.length - 1];
+    for (let i = 0; i < Math.min(2, shuffled.length); i++) {
+      shuffled[i]._exploration = true;
+      ranked[insertAt[i]] = shuffled[i];
+    }
+  }
+
+  return ranked.map((s, i) => ({
     placeId: s.candidate.placeId,
     name: s.candidate.name,
     score: Number(s.adjustedScore.toFixed(4)),
     rank: i,
-    reasons: s.reasons,
-    breakdown: s.breakdown,
-    exploration: false,
+    reasons: s._exploration ? ["Fresh discovery"] : s.reasons,
+    breakdown: s._exploration ? {} : s.breakdown,
+    exploration: !!s._exploration,
   }));
 }
 
@@ -780,9 +782,36 @@ exports.recordTasteSignal = onCall(async (request) => {
         admin.firestore.FieldValue.increment(1);
     }
     tx.set(affinityRef, affinityUpdate, { merge: true });
+
+    // Crowd meter: bucket visits by hour-of-day (0–23). Each bucket key is
+    // "h0"…"h23" so the Flutter client can read the last 2 hours without a CF call.
+    if (signalType === "visit") {
+      const hourKey = `h${new Date().getUTCHours()}`;
+      tx.set(affinityRef, { crowdBuckets: { [hourKey]: admin.firestore.FieldValue.increment(1) } }, { merge: true });
+    }
   });
 
   return { status: "ok" };
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 7b. CLOUD FUNCTION: getCrowdLevel  (lightweight — reads place_affinity only)
+// ══════════════════════════════════════════════════════════════════════════════
+exports.getCrowdLevel = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Login required.");
+  const { placeId } = request.data || {};
+  if (!placeId) throw new HttpsError("invalid-argument", "placeId required.");
+
+  const doc = await db().collection("place_affinity").doc(placeId).get();
+  if (!doc.exists) return { level: "quiet", count: 0 };
+
+  const buckets = doc.data().crowdBuckets || {};
+  const now = new Date();
+  const h = now.getUTCHours();
+  const prev = (h - 1 + 24) % 24;
+  const count = (buckets[`h${h}`] || 0) + (buckets[`h${prev}`] || 0);
+  const level = count <= 2 ? "quiet" : count <= 8 ? "moderate" : "busy";
+  return { level, count };
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -871,13 +900,20 @@ exports.recommendPlaces = onCall(async (request) => {
   // map is pre-built nightly by rebuildPlaceNeighbors — this is just a read.
   const neighbors = {};
   try {
+    // Fetch the 30 most recent signals, then filter to positive ones in JS.
+    // Ordering by createdAt (not weight) means recent saves/bookings seed the
+    // collab component instead of being permanently overshadowed by old visits.
     const seedSnap = await db()
       .collection("users").doc(uid).collection("signals")
-      .where("weight", ">", 0)      // only positive signals (not dismiss/view)
-      .orderBy("weight", "desc")
-      .limit(10)                     // use the 10 strongest positive signals as seed
+      .orderBy("createdAt", "desc")
+      .limit(30)
       .get();
-    const seedIds = seedSnap.docs.map((d) => d.data().placeId).filter(Boolean);
+    const seedIds = seedSnap.docs
+      .map((d) => d.data())
+      .filter((d) => (d.weight || 0) > 0)
+      .map((d) => d.placeId)
+      .filter(Boolean)
+      .slice(0, 10);
     if (seedIds.length) {
       // Fetch neighbor lists for all seed places in parallel
       const neighborDocs = await Promise.all(
@@ -1316,6 +1352,88 @@ exports.rebuildCountryPriors = onSchedule(
 );
 
 // ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+// 13b. SCHEDULED: sendDailyDiscovery — personalized "Did you know?" push
+//      Runs daily at 9:00 AM UTC. Picks a landmark matching each user's top
+//      taste key, generates a short Groq fact, sends via FCM.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Famous Egyptian landmarks pool — Places API is the production source for live
+// data; this list is the daily-push candidate set (static, curated, no API call).
+const DISCOVERY_POOL = [
+  { name: "Karnak Temple", types: ["temple", "historical", "cultural"] },
+  { name: "Abu Simbel", types: ["temple", "historical", "monument"] },
+  { name: "Valley of the Kings", types: ["historical", "tombs", "cultural"] },
+  { name: "Bibliotheca Alexandrina", types: ["museum", "cultural", "modern"] },
+  { name: "Siwa Oasis", types: ["nature", "natural", "adventure"] },
+  { name: "Dahab Blue Hole", types: ["beach", "diving", "adventure"] },
+  { name: "Khan el-Khalili", types: ["bazaar", "shopping", "cultural"] },
+  { name: "Luxor Temple", types: ["temple", "historical", "monument"] },
+  { name: "Citadel of Saladin", types: ["historical", "islamic", "monument"] },
+  { name: "White Desert", types: ["nature", "natural", "adventure"] },
+  { name: "Edfu Temple", types: ["temple", "historical", "pharaonic"] },
+  { name: "Ras Muhammad National Park", types: ["nature", "beach", "diving"] },
+];
+
+exports.sendDailyDiscovery = onSchedule(
+  { schedule: "0 9 * * *", region: "europe-west1", secrets: [groqApiKey] },
+  async () => {
+    const usersSnap = await db().collection("users")
+      .where("notifications", "==", true)
+      .select("fcmToken", "tasteVector", "notificationPreferences")
+      .limit(500)
+      .get();
+
+    const tasks = usersSnap.docs.map(async (userDoc) => {
+      try {
+        const { fcmToken, tasteVector = {}, notificationPreferences = {} } = userDoc.data();
+        if (!fcmToken) return;
+        // Check user hasn't disabled community-style notifications (reuse 'community' pref or default true)
+        if (notificationPreferences.community === false) return;
+
+        // Pick the pool entry whose types best overlap the user's taste vector
+        let bestMatch = DISCOVERY_POOL[Math.floor(Math.random() * DISCOVERY_POOL.length)];
+        let bestScore = -Infinity;
+        for (const landmark of DISCOVERY_POOL) {
+          const score = landmark.types.reduce((sum, t) => sum + (tasteVector[t] || 0), 0);
+          if (score > bestScore) { bestScore = score; bestMatch = landmark; }
+        }
+
+        // Generate a short "Did you know?" fact via Groq
+        const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${groqApiKey.value()}`,
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [{
+              role: "user",
+              content: `Write one fascinating "Did you know?" fact about ${bestMatch.name} in Egypt. Max 20 words. No emojis. Just the fact, no label.`,
+            }],
+            max_tokens: 60,
+            temperature: 0.8,
+          }),
+        });
+        const groqData = await groqRes.json();
+        const fact = groqData.choices?.[0]?.message?.content?.trim() || `Discover ${bestMatch.name} today`;
+
+        await admin.messaging().send({
+          token: fcmToken,
+          notification: { title: `📍 ${bestMatch.name}`, body: fact },
+          data: { type: "daily_discovery", landmark: bestMatch.name },
+          android: { priority: "normal" },
+          apns: { payload: { aps: { contentAvailable: true } } },
+        });
+      } catch (_) { /* skip individual user errors */ }
+    });
+
+    await Promise.allSettled(tasks);
+    console.log(`sendDailyDiscovery: processed ${usersSnap.docs.length} users`);
+  }
+);
+
 // 14. _internal exports — for local testing WITHOUT Firebase credentials
 // ══════════════════════════════════════════════════════════════════════════════
 
