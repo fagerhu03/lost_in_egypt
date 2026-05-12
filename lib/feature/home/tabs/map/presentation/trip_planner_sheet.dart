@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class TripPlannerSheet extends StatefulWidget {
@@ -16,7 +18,109 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
   final TextEditingController _searchController = TextEditingController();
   List<MapItem> _searchResults = [];
   bool _isSorting = false;
-  double? _totalDistanceKm;
+
+  List<MapItem> _suggestions = [];
+  bool _loadingSuggestions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestions();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadSuggestions() async {
+    final sorted = List<MapItem>.from(widget.allItems)
+      ..sort((a, b) => b.rating.compareTo(a.rating));
+    final pool = sorted.take(50).toList();
+
+    final candidates = pool.map((item) => <String, dynamic>{
+      'placeId': item.id,
+      'name': item.title,
+      'types': [item.category],
+      'tags': item.tags,
+      'rating': item.rating,
+      'userRatingCount': 0,
+      'lat': item.coordinate.latitude,
+      'lng': item.coordinate.longitude,
+    }).toList();
+
+    final result = await RecommendationService.recommendPlaces(
+      candidates: candidates,
+      context: 'solo',
+      limit: 8,
+      excludeSeen: false,
+    );
+
+    if (!mounted) return;
+
+    if (result != null && result.recommendations.isNotEmpty) {
+      final idToItem = {for (final item in pool) item.id: item};
+      final suggested = result.recommendations
+          .map((r) => idToItem[r.placeId])
+          .whereType<MapItem>()
+          .toList();
+      setState(() {
+        _suggestions = suggested;
+        _loadingSuggestions = false;
+      });
+    } else {
+      setState(() {
+        _suggestions = pool.take(8).toList();
+        _loadingSuggestions = false;
+      });
+    }
+  }
+
+  Future<void> _refreshSuggestions() async {
+    if (_itinerary.isEmpty) return;
+    setState(() => _loadingSuggestions = true);
+
+    final seedIds = _itinerary.map((i) => i.id).toSet();
+    final pool = widget.allItems
+        .where((item) => !seedIds.contains(item.id))
+        .take(60)
+        .toList();
+
+    final candidates = pool.map((item) => <String, dynamic>{
+      'placeId': item.id,
+      'name': item.title,
+      'types': [item.category],
+      'tags': item.tags,
+      'rating': item.rating,
+      'userRatingCount': 0,
+      'lat': item.coordinate.latitude,
+      'lng': item.coordinate.longitude,
+    }).toList();
+
+    final result = await RecommendationService.recommendPlaces(
+      candidates: candidates,
+      context: 'similar',
+      limit: 6,
+      excludeSeen: false,
+    );
+
+    if (!mounted) return;
+
+    if (result != null && result.recommendations.isNotEmpty) {
+      final idToItem = {for (final item in pool) item.id: item};
+      final suggested = result.recommendations
+          .map((r) => idToItem[r.placeId])
+          .whereType<MapItem>()
+          .toList();
+      setState(() {
+        _suggestions = suggested;
+        _loadingSuggestions = false;
+      });
+    } else {
+      setState(() => _loadingSuggestions = false);
+    }
+  }
 
   void _searchPlaces(String query) {
     if (query.isEmpty) {
@@ -30,12 +134,21 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
               item.title.toLowerCase().contains(q) ||
               item.category.toLowerCase().contains(q))
           .where((item) => !_itinerary.any((i) => i.id == item.id))
-          .take(10)
+          .take(8)
           .toList();
     });
   }
 
-  /// Sort itinerary using nearest-neighbor from user's GPS then calculate total distance.
+  void _addToItinerary(MapItem item) {
+    setState(() {
+      _itinerary.add(item);
+      _searchResults = [];
+      _searchController.clear();
+      _suggestions.removeWhere((s) => s.id == item.id);
+    });
+    _refreshSuggestions();
+  }
+
   Future<List<MapItem>> _sortByNearestNeighbor(List<MapItem> stops) async {
     if (stops.length <= 1) return stops;
 
@@ -48,16 +161,13 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
 
     final remaining = List<MapItem>.from(stops);
     final sorted = <MapItem>[];
-    double totalDist = 0;
 
-    // Start from user location or first item
     double curLat = userPos?.latitude ?? remaining.first.coordinate.latitude;
     double curLng = userPos?.longitude ?? remaining.first.coordinate.longitude;
 
     while (remaining.isNotEmpty) {
       double minDist = double.infinity;
       int nearestIdx = 0;
-
       for (int i = 0; i < remaining.length; i++) {
         final d = Geolocator.distanceBetween(
           curLat, curLng,
@@ -69,34 +179,19 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
           nearestIdx = i;
         }
       }
-
       final nearest = remaining.removeAt(nearestIdx);
       sorted.add(nearest);
-      totalDist += minDist;
       curLat = nearest.coordinate.latitude;
       curLng = nearest.coordinate.longitude;
     }
-
-    _totalDistanceKm = totalDist / 1000;
     return sorted;
   }
 
   Future<void> _startTrip() async {
     if (_itinerary.isEmpty) return;
-
     setState(() => _isSorting = true);
-
     final sorted = await _sortByNearestNeighbor(_itinerary);
-
-    if (mounted) {
-      Navigator.pop(context, sorted);
-    }
-  }
-
-  String _formatDist(double km) {
-    if (km < 1) return '${(km * 1000).round()} m';
-    if (km < 10) return '${km.toStringAsFixed(1)} km';
-    return '${km.round()} km';
+    if (mounted) Navigator.pop(context, sorted);
   }
 
   @override
@@ -107,184 +202,450 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('Trip Planner', style: TextStyle(fontFamily: 'Marcellus')),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
-          if (_itinerary.isNotEmpty)
-            TextButton(
-              onPressed: _isSorting ? null : _startTrip,
-              child: _isSorting
-                  ? SizedBox(
-                      width: 18, height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: primary),
-                    )
-                  : Text(
-                      'Start Trip',
-                      style: TextStyle(color: primary, fontWeight: FontWeight.bold),
-                    ),
-            ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _searchPlaces,
-              decoration: InputDecoration(
-                hintText: 'Search places to add...',
-                prefixIcon: Icon(Icons.search, color: onSurface.withOpacity(0.4)),
-                filled: true,
-                fillColor: onSurface.withOpacity(isDark ? 0.08 : 0.04),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
+    final showSuggestions = _searchResults.isEmpty;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: surface,
+            // BottomSheet radius — not scaled per design convention
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border.all(color: onSurface.withValues(alpha: 0.06)),
           ),
-
-          // Search results
-          if (_searchResults.isNotEmpty)
-            Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                color: surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: onSurface.withOpacity(0.08)),
-              ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _searchResults.length,
-                itemBuilder: (context, index) {
-                  final item = _searchResults[index];
-                  return ListTile(
-                    dense: true,
-                    leading: Icon(Icons.add_circle_outline, color: primary, size: 20),
-                    title: Text(item.title, style: TextStyle(fontSize: 14, color: onSurface)),
-                    subtitle: Text(item.category.toUpperCase(),
-                        style: TextStyle(fontSize: 10, color: primary)),
-                    onTap: () {
-                      setState(() {
-                        _itinerary.add(item);
-                        _searchResults = [];
-                        _searchController.clear();
-                      });
-                    },
-                  );
-                },
-              ),
-            ),
-
-          // Info bar when items added
-          if (_itinerary.isNotEmpty)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: primary.withOpacity(isDark ? 0.12 : 0.08),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${_itinerary.length} stop${_itinerary.length > 1 ? "s" : ""} — route will be optimized by distance',
-                      style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w500),
+          child: Column(
+            children: [
+              // ── Handle + header ──────────────────────────────────────────
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 16.w, 0),
+                child: Column(
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: onSurface.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Itinerary list
-          Expanded(
-            child: _itinerary.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    SizedBox(height: 12.h),
+                    Row(
                       children: [
-                        Icon(Icons.route, size: 64, color: onSurface.withOpacity(0.2)),
-                        const SizedBox(height: 16),
+                        Icon(Icons.route_rounded, color: primary, size: 22.r),
+                        SizedBox(width: 10.w),
                         Text(
-                          'Plan your day in Egypt',
+                          'Trip Planner',
                           style: TextStyle(
-                            fontSize: 18,
-                            color: onSurface.withOpacity(0.5),
-                            fontWeight: FontWeight.w500,
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Marcellus',
+                            color: onSurface,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Search and add places to your trip.\nStops will be auto-sorted by shortest route.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: onSurface.withOpacity(0.35),
+                        const Spacer(),
+                        if (_itinerary.isNotEmpty)
+                          FilledButton.icon(
+                            onPressed: _isSorting ? null : _startTrip,
+                            icon: _isSorting
+                                ? SizedBox(
+                                    width: 14.r,
+                                    height: 14.r,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: theme.colorScheme.onPrimary,
+                                    ),
+                                  )
+                                : Icon(Icons.play_arrow_rounded, size: 18.r),
+                            label: Text(_isSorting ? 'Optimising...' : 'Start Trip'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 14.w, vertical: 8.h),
+                              textStyle: TextStyle(
+                                  fontSize: 13.sp, fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        ),
                       ],
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _itinerary.length,
+                    SizedBox(height: 12.h),
+                  ],
+                ),
+              ),
+              Divider(height: 1, color: onSurface.withValues(alpha: 0.10)),
+
+              // ── Search bar ───────────────────────────────────────────────
+              Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _searchPlaces,
+                  decoration: InputDecoration(
+                    hintText: 'Search places to add…',
+                    prefixIcon:
+                        Icon(Icons.search, color: onSurface.withValues(alpha: 0.4)),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.clear,
+                                color: onSurface.withValues(alpha: 0.4), size: 18.r),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchResults = []);
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: onSurface.withValues(alpha: isDark ? 0.08 : 0.04),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                ),
+              ),
+
+              // ── Search results dropdown ───────────────────────────────────
+              if (_searchResults.isNotEmpty)
+                Container(
+                  constraints: BoxConstraints(maxHeight: 220.h),
+                  margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: surface,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: onSurface.withValues(alpha: 0.08)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _searchResults.length,
                     itemBuilder: (context, index) {
-                      final item = _itinerary[index];
-                      return Dismissible(
-                        key: ValueKey(item.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 20),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(Icons.delete, color: Colors.red.withOpacity(0.7)),
-                        ),
-                        onDismissed: (_) => setState(() => _itinerary.removeAt(index)),
-                        child: Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          color: surface,
-                          elevation: isDark ? 0 : 1,
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: primary.withOpacity(0.15),
-                              child: Icon(Icons.place, color: primary, size: 20),
-                            ),
-                            title: Text(
-                              item.title,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: onSurface,
-                              ),
-                            ),
-                            subtitle: Text(
-                              item.category.toUpperCase(),
-                              style: TextStyle(fontSize: 11, color: primary),
-                            ),
-                          ),
-                        ),
+                      final item = _searchResults[index];
+                      return ListTile(
+                        dense: true,
+                        leading: Icon(Icons.add_location_alt_outlined,
+                            color: primary, size: 20.r),
+                        title: Text(item.title,
+                            style: TextStyle(fontSize: 14.sp, color: onSurface)),
+                        subtitle: Text(item.category.toUpperCase(),
+                            style: TextStyle(fontSize: 10.sp, color: primary)),
+                        onTap: () => _addToItinerary(item),
                       );
                     },
                   ),
+                ),
+
+              // ── Itinerary info chip ──────────────────────────────────────
+              if (_itinerary.isNotEmpty)
+                Container(
+                  margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: primary.withValues(alpha: isDark ? 0.12 : 0.08),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 15.r, color: primary),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          '${_itinerary.length} stop${_itinerary.length > 1 ? "s" : ""} — route will be optimised by shortest distance',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // ── Main scrollable area ─────────────────────────────────────
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 32.h),
+                  children: [
+                    if (_itinerary.isEmpty && showSuggestions) ...[
+                      Center(
+                        child: Column(
+                          children: [
+                            SizedBox(height: 8.h),
+                            Icon(Icons.route,
+                                size: 52.r,
+                                color: onSurface.withValues(alpha: 0.15)),
+                            SizedBox(height: 12.h),
+                            Text(
+                              'Plan your day in Egypt',
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                color: onSurface.withValues(alpha: 0.45),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(height: 4.h),
+                            Text(
+                              'Search above or pick from suggestions below',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: onSurface.withValues(alpha: 0.28),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      for (int i = 0; i < _itinerary.length; i++)
+                        _ItineraryTile(
+                          item: _itinerary[i],
+                          index: i,
+                          onSurface: onSurface,
+                          primary: primary,
+                          isDark: isDark,
+                          surface: surface,
+                          onRemove: () =>
+                              setState(() => _itinerary.removeAt(i)),
+                        ),
+                    ],
+
+                    // AI suggestions section
+                    if (showSuggestions && _suggestions.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      Row(
+                        children: [
+                          Container(
+                            width: 3.w,
+                            height: 14.h,
+                            decoration: BoxDecoration(
+                              color: primary,
+                              borderRadius: BorderRadius.circular(2.r),
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Icon(Icons.auto_awesome, size: 14.r, color: primary),
+                          SizedBox(width: 5.w),
+                          Text(
+                            _itinerary.isEmpty
+                                ? 'Suggested for you'
+                                : 'You might also enjoy',
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w700,
+                              color: onSurface.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10.h),
+                      for (final item in _suggestions)
+                        if (!_itinerary.any((i) => i.id == item.id))
+                          _SuggestionTile(
+                            item: item,
+                            onSurface: onSurface,
+                            primary: primary,
+                            isDark: isDark,
+                            onAdd: () => _addToItinerary(item),
+                          ),
+                    ] else if (showSuggestions && _loadingSuggestions) ...[
+                      SizedBox(height: 24.h),
+                      Center(
+                        child: SizedBox(
+                          width: 20.r,
+                          height: 20.r,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: primary),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        );
+      },
+    );
+  }
+}
+
+// ── Itinerary stop tile ────────────────────────────────────────────────────────
+
+class _ItineraryTile extends StatelessWidget {
+  final MapItem item;
+  final int index;
+  final Color onSurface;
+  final Color primary;
+  final bool isDark;
+  final Color surface;
+  final VoidCallback onRemove;
+
+  const _ItineraryTile({
+    required this.item,
+    required this.index,
+    required this.onSurface,
+    required this.primary,
+    required this.isDark,
+    required this.surface,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: ValueKey(item.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: 20.w),
+        margin: EdgeInsets.only(bottom: 8.h),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14.r),
+        ),
+        child: Icon(Icons.delete_outline,
+            color: Colors.red.withValues(alpha: 0.8)),
+      ),
+      onDismissed: (_) => onRemove(),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 8.h),
+        decoration: BoxDecoration(
+          color: isDark ? onSurface.withValues(alpha: 0.05) : surface,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: onSurface.withValues(alpha: 0.07)),
+        ),
+        child: ListTile(
+          leading: Container(
+            width: 34.r,
+            height: 34.r,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: primary.withValues(alpha: 0.12),
+            ),
+            child: Center(
+              child: Text(
+                '${index + 1}',
+                style: TextStyle(
+                  color: primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13.sp,
+                ),
+              ),
+            ),
+          ),
+          title: Text(
+            item.title,
+            style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
+          ),
+          subtitle: Text(
+            item.category.toUpperCase(),
+            style: TextStyle(fontSize: 11.sp, color: primary),
+          ),
+          trailing: Icon(Icons.drag_handle_rounded,
+              color: onSurface.withValues(alpha: 0.3)),
+        ),
+      ),
+    );
+  }
+}
+
+// ── AI suggestion tile ────────────────────────────────────────────────────────
+
+class _SuggestionTile extends StatelessWidget {
+  final MapItem item;
+  final Color onSurface;
+  final Color primary;
+  final bool isDark;
+  final VoidCallback onAdd;
+
+  const _SuggestionTile({
+    required this.item,
+    required this.onSurface,
+    required this.primary,
+    required this.isDark,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.h),
+      decoration: BoxDecoration(
+        color: primary.withValues(alpha: isDark ? 0.06 : 0.03),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: primary.withValues(alpha: 0.12)),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: Container(
+          width: 36.r,
+          height: 36.r,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.r),
+            color: onSurface.withValues(alpha: 0.06),
+            image: item.imagePaths.isNotEmpty
+                ? DecorationImage(
+                    image: NetworkImage(item.imagePaths.first),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+          child: item.imagePaths.isEmpty
+              ? Icon(Icons.place_outlined,
+                  color: primary.withValues(alpha: 0.5), size: 18.r)
+              : null,
+        ),
+        title: Text(
+          item.title,
+          style: TextStyle(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+            color: onSurface,
+          ),
+        ),
+        subtitle: Text(
+          item.category.toUpperCase(),
+          style: TextStyle(fontSize: 10.sp, color: primary),
+        ),
+        trailing: GestureDetector(
+          onTap: onAdd,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+            decoration: BoxDecoration(
+              color: primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add, size: 14.r, color: primary),
+                SizedBox(width: 3.w),
+                Text(
+                  'Add',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

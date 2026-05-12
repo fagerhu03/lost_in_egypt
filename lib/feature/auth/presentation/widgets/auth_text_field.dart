@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AuthTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -22,29 +23,28 @@ class AuthTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF7A8450).withOpacity(0.70),
-        borderRadius: BorderRadius.circular(10),
+        color: const Color(0xFF7A8450).withValues(alpha: 0.70),
+        borderRadius: BorderRadius.circular(10.r),
       ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 3,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 3.h),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
         onSubmitted: onSubmitted,
         focusNode: focusNode,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
           fontFamily: "Marcellus",
+          fontSize: 15.sp,
         ),
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: hintText,
-          hintStyle: const TextStyle(
+          hintStyle: TextStyle(
             color: Colors.white70,
             fontFamily: "Marcellus",
+            fontSize: 15.sp,
           ),
         ),
       ),

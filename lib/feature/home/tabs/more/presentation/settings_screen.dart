@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
@@ -39,27 +40,17 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _loadData();
-    }
+    if (state == AppLifecycleState.resumed) _loadData();
   }
 
   Future<void> _loadData() async {
     try {
       final user = await _repository.fetchCurrentUser();
       if (!mounted) return;
-
       setState(() {
         _currentUser = user;
         _isLoading = false;
       });
-
-      // IMPORTANT:
-      // Do NOT apply theme here.
-      // Theme is applied once in AuthGate (startup).
-      // Otherwise, opening settings can change the app theme unexpectedly.
-      //
-      // ThemeController.setDark(user?.isDarkMode ?? false);
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -69,11 +60,14 @@ class _SettingsScreenState extends State<SettingsScreen>
   void _onVersionTapped() {
     _versionTapCount++;
     if (_versionTapCount == 5) {
-      if (_currentUser != null && !_currentUser!.visitedLandmarks.contains('easter_egg_pharaoh')) {
-        final newLandmarks = List<String>.from(_currentUser!.visitedLandmarks)..add('easter_egg_pharaoh');
+      if (_currentUser != null &&
+          !_currentUser!.visitedLandmarks.contains('easter_egg_pharaoh')) {
+        final newLandmarks =
+            List<String>.from(_currentUser!.visitedLandmarks)
+              ..add('easter_egg_pharaoh');
         _updateSetting('visitedLandmarks', newLandmarks);
-        
-        final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == 'easter_egg_pharaoh');
+        final badge = BadgeConstants.allBadges
+            .firstWhere((b) => b.id == 'easter_egg_pharaoh');
         BadgeUnlockDialog.show(context, badge);
       }
       _versionTapCount = 0;
@@ -91,18 +85,30 @@ class _SettingsScreenState extends State<SettingsScreen>
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
+        // BottomSheet radius — not scaled per design convention
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => ListView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        children: _currencies.map((code) => ListTile(
-          title: Text(code, style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: theme.colorScheme.onSurface)),
-          trailing: code == current ? Icon(Icons.check, color: theme.colorScheme.primary) : null,
-          onTap: () {
-            Navigator.pop(context);
-            _updateSetting('currency', code);
-          },
-        )).toList(),
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        children: _currencies
+            .map((code) => ListTile(
+                  title: Text(
+                    code,
+                    style: TextStyle(
+                      fontFamily: 'Marcellus',
+                      fontSize: 16.sp,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  trailing: code == current
+                      ? Icon(Icons.check, color: theme.colorScheme.primary)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _updateSetting('currency', code);
+                  },
+                ))
+            .toList(),
       ),
     );
   }
@@ -120,6 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       notifCommunity: key == 'notif.community' ? value : null,
       notifReviews: key == 'notif.reviews' ? value : null,
       notifGuideUpdates: key == 'notif.guideUpdates' ? value : null,
+      notifDailyDiscovery: key == 'notif.dailyDiscovery' ? value : null,
     );
 
     if (key == 'currency') {
@@ -127,21 +134,14 @@ class _SettingsScreenState extends State<SettingsScreen>
       CurrencyService.instance.invalidateCache();
     }
 
-    if (mounted) {
-      setState(() {
-        _currentUser = updatedUser;
-      });
-    }
-
+    if (mounted) setState(() => _currentUser = updatedUser);
     await _repository.updateSetting(updatedUser, key, value);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final surface = theme.colorScheme.surface;
     final textColor = theme.colorScheme.onSurface;
-
     final isDark = theme.brightness == Brightness.dark;
     final patternOpacity = isDark ? 0.1 : 0.4;
 
@@ -165,44 +165,37 @@ class _SettingsScreenState extends State<SettingsScreen>
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 20,
-                          color: textColor,
-                        ),
+                        icon: Icon(Icons.arrow_back_ios_new,
+                            size: 20.r, color: textColor),
                       ),
                       Text(
                         "Settings",
                         style: TextStyle(
-                          fontSize: 30,
+                          fontSize: 30.sp,
                           fontFamily: "Marcellus",
-                          color: textColor.withOpacity(0.75),
+                          color: textColor.withValues(alpha: 0.75),
                         ),
                       ),
-                      const SizedBox(width: 24),
+                      SizedBox(width: 24.w),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
 
                 Expanded(
                   child: _isLoading
                       ? Center(
                           child: CircularProgressIndicator(
-                            color: theme.colorScheme.primary,
-                          ),
+                              color: theme.colorScheme.primary),
                         )
                       : ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
                           children: [
                             // Language
                             _buildTile(
@@ -216,12 +209,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                                     style: TextStyle(
                                       color: theme.colorScheme.primary,
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 14,
+                                      fontSize: 14.sp,
                                     ),
                                   ),
-                                  const SizedBox(width: 2),
+                                  SizedBox(width: 2.w),
                                   Icon(Icons.keyboard_arrow_down_rounded,
-                                      color: theme.colorScheme.primary, size: 20),
+                                      color: theme.colorScheme.primary,
+                                      size: 20.r),
                                 ],
                               ),
                               onTap: _currentUser == null
@@ -229,13 +223,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                                   : () {
                                       _updateSetting(
                                         'lang',
-                                        (_currentUser?.language ?? "English") == "English"
+                                        (_currentUser?.language ?? "English") ==
+                                                "English"
                                             ? "Arabic"
                                             : "English",
                                       );
                                     },
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
 
                             // Currency
                             _buildTile(
@@ -249,19 +244,22 @@ class _SettingsScreenState extends State<SettingsScreen>
                                     style: TextStyle(
                                       color: theme.colorScheme.primary,
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 14,
+                                      fontSize: 14.sp,
                                     ),
                                   ),
-                                  const SizedBox(width: 2),
+                                  SizedBox(width: 2.w),
                                   Icon(Icons.keyboard_arrow_down_rounded,
-                                      color: theme.colorScheme.primary, size: 20),
+                                      color: theme.colorScheme.primary,
+                                      size: 20.r),
                                 ],
                               ),
-                              onTap: _currentUser == null ? null : _showCurrencyPicker,
+                              onTap: _currentUser == null
+                                  ? null
+                                  : _showCurrencyPicker,
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
 
-                            // Theme
+                            // Theme toggle
                             _buildTile(
                               icon: Icons.palette_outlined,
                               title: "Theme",
@@ -273,7 +271,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                                     onTap: () async {
                                       final newValue = !isDarkNow;
                                       final now = DateTime.now();
-                                      if (now.difference(_lastThemeTap).inMilliseconds < 800) {
+                                      if (now
+                                              .difference(_lastThemeTap)
+                                              .inMilliseconds <
+                                          800) {
                                         _themeTapCount++;
                                         if (_themeTapCount >= 4) {
                                           _themeTapCount = 0;
@@ -289,35 +290,47 @@ class _SettingsScreenState extends State<SettingsScreen>
                                       }
                                     },
                                     child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 300),
-                                      width: 60,
-                                      height: 32,
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      width: 60.w,
+                                      height: 32.h,
                                       decoration: BoxDecoration(
                                         color: theme.colorScheme.primary,
-                                        borderRadius: BorderRadius.circular(20),
+                                        borderRadius:
+                                            BorderRadius.circular(20.r),
                                         border: Border.all(
-                                          color: theme.colorScheme.onSurface.withOpacity(0.4),
+                                          color: theme.colorScheme.onSurface
+                                              .withValues(alpha: 0.4),
                                         ),
                                       ),
                                       child: Stack(
                                         children: [
-                                          const Positioned(
-                                            left: 6, top: 6,
-                                            child: Icon(Icons.wb_sunny, size: 18, color: Colors.white),
+                                          Positioned(
+                                            left: 6.w,
+                                            top: 6.h,
+                                            child: Icon(Icons.wb_sunny,
+                                                size: 18.r,
+                                                color: Colors.white),
                                           ),
-                                          const Positioned(
-                                            right: 6, top: 6,
-                                            child: Icon(Icons.nightlight_round, size: 18, color: Colors.white),
+                                          Positioned(
+                                            right: 6.w,
+                                            top: 6.h,
+                                            child: Icon(
+                                                Icons.nightlight_round,
+                                                size: 18.r,
+                                                color: Colors.white),
                                           ),
                                           AnimatedAlign(
                                             alignment: isDarkNow
                                                 ? Alignment.centerRight
                                                 : Alignment.centerLeft,
-                                            duration: const Duration(milliseconds: 300),
+                                            duration: const Duration(
+                                                milliseconds: 300),
                                             child: Container(
-                                              margin: const EdgeInsets.symmetric(horizontal: 2),
-                                              width: 26,
-                                              height: 26,
+                                              margin: EdgeInsets.symmetric(
+                                                  horizontal: 2.w),
+                                              width: 26.r,
+                                              height: 26.r,
                                               decoration: const BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 color: Colors.white,
@@ -331,7 +344,23 @@ class _SettingsScreenState extends State<SettingsScreen>
                                 },
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            SizedBox(height: 32.h),
+
+                            // AI Discovery Notifications
+                            _buildTile(
+                              icon: Icons.notifications_outlined,
+                              title: 'AI Discovery Notifications',
+                              trailing: Switch(
+                                value:
+                                    _currentUser?.notifDailyDiscovery ?? true,
+                                activeThumbColor: theme.colorScheme.primary,
+                                onChanged: _currentUser == null
+                                    ? null
+                                    : (v) => _updateSetting(
+                                        'notif.dailyDiscovery', v),
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
 
                             // Debug Reset Button
                             _buildTile(
@@ -339,40 +368,44 @@ class _SettingsScreenState extends State<SettingsScreen>
                               title: "Reset Badges (Debug)",
                               trailing: const SizedBox.shrink(),
                               iconColor: Colors.red,
-                              iconBgColor: Colors.red.withOpacity(0.12),
-                              borderColor: Colors.red.withOpacity(0.25),
+                              iconBgColor: Colors.red.withValues(alpha: 0.12),
+                              borderColor:
+                                  Colors.red.withValues(alpha: 0.25),
                               onTap: _currentUser == null
                                   ? null
                                   : () {
-                                      _updateSetting('visitedLandmarks', <String>[]);
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      _updateSetting(
+                                          'visitedLandmarks', <String>[]);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         const SnackBar(
-                                          content: Text("Badges successfully reset!"),
+                                          content: Text(
+                                              "Badges successfully reset!"),
                                           backgroundColor: Colors.green,
                                         ),
                                       );
                                     },
                             ),
-                            const SizedBox(height: 32),
-                            
+                            SizedBox(height: 32.h),
+
                             // Version / Easter Egg Trigger
                             Center(
                               child: GestureDetector(
                                 onTap: _onVersionTapped,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
+                                  padding: EdgeInsets.all(16.r),
                                   child: Text(
                                     "Version 1.0.0",
                                     style: TextStyle(
                                       color: textColor.withValues(alpha: 0.5),
                                       fontFamily: "Marcellus",
-                                      fontSize: 14,
+                                      fontSize: 14.sp,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            SizedBox(height: 32.h),
                           ],
                         ),
                 ),
@@ -384,8 +417,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  /// Unified tile matching the app-wide icon + title + trailing design.
-  /// Pass [iconColor] / [iconBgColor] to override for special (e.g. red debug) tiles.
   Widget _buildTile({
     required IconData icon,
     required String title,
@@ -402,44 +433,44 @@ class _SettingsScreenState extends State<SettingsScreen>
     final surface = theme.colorScheme.surface;
 
     final resolvedIconColor = iconColor ?? primary;
-    final resolvedIconBg = iconBgColor ?? primary.withOpacity(isDark ? 0.2 : 0.12);
-    final resolvedBorder = borderColor ?? primary.withOpacity(isDark ? 0.2 : 0.15);
+    final resolvedIconBg =
+        iconBgColor ?? primary.withValues(alpha: isDark ? 0.2 : 0.12);
+    final resolvedBorder =
+        borderColor ?? primary.withValues(alpha: isDark ? 0.2 : 0.15);
 
     return Material(
       color: surface,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       clipBehavior: Clip.hardEdge,
       elevation: 0,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: Container(
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          height: 64.h,
+          padding: EdgeInsets.symmetric(horizontal: 14.w),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(color: resolvedBorder),
           ),
           child: Row(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 38.r,
+                height: 38.r,
                 decoration: BoxDecoration(
                   color: resolvedIconBg,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(icon, color: resolvedIconColor, size: 20),
+                child: Icon(icon, color: resolvedIconColor, size: 20.r),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: 14.w),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: iconColor != null
-                        ? iconColor
-                        : onSurface.withOpacity(0.88),
-                    fontSize: 16,
+                    color: iconColor ?? onSurface.withValues(alpha: 0.88),
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
                     fontFamily: 'Marcellus',
                   ),

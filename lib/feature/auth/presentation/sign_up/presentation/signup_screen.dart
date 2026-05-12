@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/login/presentation/login_screen.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
@@ -9,6 +9,7 @@ import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_fi
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
+import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
 class SignupScreen extends StatefulWidget {
   final bool isGuidePreselected;
@@ -19,52 +20,46 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  // 1. Controllers
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPassController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPassController = TextEditingController();
 
-  final FocusNode _firstNameFocus = FocusNode();
-  final FocusNode _lastNameFocus = FocusNode();
-  final FocusNode _emailFocus = FocusNode();
-  final FocusNode _phoneFocus = FocusNode();
-  final FocusNode _passwordFocus = FocusNode();
-  final FocusNode _confirmPassFocus = FocusNode();
+  final _firstNameFocus = FocusNode();
+  final _lastNameFocus = FocusNode();
+  final _emailFocus = FocusNode();
+  final _phoneFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  final _confirmPassFocus = FocusNode();
 
-  // 2. State Variables
-  bool obscure1 = true;
-  bool obscure2 = true;
+  bool _obscure1 = true;
+  bool _obscure2 = true;
   bool _isLoading = false;
 
   String? _selectedMonth;
   String? _selectedDay;
   String? _selectedYear;
 
-  final List<String> _months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+  static const _months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
   List<String> get _days {
-    return List<String>.generate(31, (i) => (i + 1).toString());
+    if (_selectedMonth == null || _selectedYear == null) {
+      return List.generate(31, (i) => '${i + 1}');
+    }
+    final monthIndex = _months.indexOf(_selectedMonth!) + 1;
+    final year = int.tryParse(_selectedYear!) ?? DateTime.now().year;
+    final daysInMonth = DateUtils.getDaysInMonth(year, monthIndex);
+    return List.generate(daysInMonth, (i) => '${i + 1}');
   }
 
   List<String> get _years {
-    final int currentYear = DateTime.now().year;
-    return List<String>.generate(100, (i) => (currentYear - i).toString());
+    final now = DateTime.now();
+    return List.generate(85, (i) => '${now.year - 16 - i}');
   }
 
   @override
@@ -75,145 +70,83 @@ class _SignupScreenState extends State<SignupScreen> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPassController.dispose();
-
     _firstNameFocus.dispose();
     _lastNameFocus.dispose();
     _emailFocus.dispose();
     _phoneFocus.dispose();
     _passwordFocus.dispose();
     _confirmPassFocus.dispose();
-
     super.dispose();
   }
 
-  int _calculateAge(DateTime birthDate) {
-    final now = DateTime.now();
-    int age = now.year - birthDate.year;
-
-    if (now.month < birthDate.month ||
-        (now.month == birthDate.month && now.day < birthDate.day)) {
-      age--;
-    }
-
-    return age;
-  }
-
-  // 3. Validation Logic
   bool _validateForm() {
-    // Name Regex: Letters and spaces only, min 2 chars
-    final nameRegex = RegExp(r"^[a-zA-Z\s]{2,}$");
+    final nameRegex = RegExp(r'^[a-zA-Z\s]{2,}$');
 
     if (!nameRegex.hasMatch(_firstNameController.text.trim())) {
-      _showError("First Name must contain valid letters (min 2).");
+      _showError('First name must contain valid letters (min 2).');
       return false;
     }
     if (!nameRegex.hasMatch(_lastNameController.text.trim())) {
-      _showError("Last Name must contain valid letters (min 2).");
+      _showError('Last name must contain valid letters (min 2).');
       return false;
     }
 
-    // Date Strict Check
-    if (_selectedMonth == null ||
-        _selectedDay == null ||
-        _selectedYear == null) {
-      _showError("Please select your full Date of Birth.");
+    if (_selectedMonth == null || _selectedDay == null || _selectedYear == null) {
+      _showError('Please select your date of birth.');
       return false;
     }
 
-    // Date validity and age check
-    try {
-      final int day = int.parse(_selectedDay!);
-      final int year = int.parse(_selectedYear!);
-      final int monthIndex = _months.indexOf(_selectedMonth!) + 1;
-
-      // Months that never have 31 days
-      const monthsWith30Days = ['April', 'June', 'September', 'November'];
-
-      // 1) February cannot have 30 or 31
-      if (_selectedMonth == 'February' && (day == 30 || day == 31)) {
-        _showError("February cannot have 30 or 31 days.");
-        return false;
-      }
-
-      // 2) Months that cannot have 31 days (April, June, September, November, February)
-      if (day == 31 &&
-          (monthsWith30Days.contains(_selectedMonth) ||
-              _selectedMonth == 'February')) {
-        _showError("The selected month cannot have 31 days.");
-        return false;
-      }
-
-      final DateTime dob = DateTime(year, monthIndex, day);
-
-      // Extra safety: ensure the constructed date matches the selected values
-      if (dob.year != year || dob.month != monthIndex || dob.day != day) {
-        _showError("Please select a valid Date of Birth.");
-        return false;
-      }
-
-      // Age must be at least 16
-      final int age = _calculateAge(dob);
-      if (age < 16) {
-        _showError("You must be at least 16 years old to sign up.");
-        return false;
-      }
-    } catch (_) {
-      _showError("Please select a valid Date of Birth.");
+    final year = int.tryParse(_selectedYear!);
+    final day = int.tryParse(_selectedDay!);
+    if (year == null || day == null) {
+      _showError('Invalid date of birth.');
       return false;
     }
 
-    // Email Regex - ✅ IMPROVED: More strict validation
-    final emailRegex = RegExp(
-      r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-    );
+    final now = DateTime.now();
+    final monthIndex = _months.indexOf(_selectedMonth!) + 1;
+    final dob = DateTime(year, monthIndex, day);
+    int age = now.year - dob.year;
+    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
+      age--;
+    }
+    if (age < 16) {
+      _showError('You must be at least 16 years old to sign up.');
+      return false;
+    }
+
+    final emailRegex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     if (!emailRegex.hasMatch(_emailController.text.trim())) {
-      _showError("Please enter a valid email address.");
+      _showError('Please enter a valid email address.');
       return false;
     }
 
-    // Password Regex: 8+ chars, 1 letter, 1 number
-    final passwordRegex = RegExp(
-      r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$",
-    );
+    final passwordRegex =
+        RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$');
     if (!passwordRegex.hasMatch(_passwordController.text)) {
-      _showError(
-        "Password must be 8+ chars, with at least 1 letter and 1 number.",
-      );
+      _showError('Password must be 8+ characters with at least 1 letter and 1 number.');
       return false;
     }
 
     if (_passwordController.text != _confirmPassController.text) {
-      _showError("Passwords do not match.");
+      _showError('Passwords do not match.');
       return false;
     }
 
-    // Phone: optional but if provided must be digits only, 7–15 chars
     final phone = _phoneController.text.trim();
-    if (phone.isNotEmpty) {
-      final phoneRegex = RegExp(r'^\+?[0-9]{7,15}$');
-      if (!phoneRegex.hasMatch(phone)) {
-        _showError("Please enter a valid phone number (digits only, 7–15 chars).");
-        return false;
-      }
+    if (phone.isNotEmpty && !RegExp(r'^\+?[0-9]{7,15}$').hasMatch(phone)) {
+      _showError('Please enter a valid phone number (7–15 digits).');
+      return false;
     }
 
     return true;
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+  void _showError(String message) => showErrorSnackBar(context, message);
 
-  // 4. Signup Action
   Future<void> _handleSignup() async {
     if (!_validateForm()) return;
-
     setState(() => _isLoading = true);
 
     try {
@@ -236,24 +169,25 @@ class _SignupScreenState extends State<SignupScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Account created! Please verify your email to continue."),
+            content: Text('Account created! Please verify your email to continue.'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 4),
           ),
         );
-        // Always route through AuthGate so email verification is enforced
-        // before the user (or guide) can access any protected screen.
         Navigator.of(context).pushAndRemoveUntil(
           FadePageRoute(page: AuthGate()),
           (route) => false,
         );
       }
     } on FirebaseAuthException catch (e) {
-      String msg = "Signup Failed";
-      if (e.code == 'email-already-in-use')
-        msg = "This email is already registered.";
-      if (e.code == 'weak-password') msg = "The password is too weak.";
-      if (mounted) _showError(msg);
+      if (!mounted) return;
+      if (e.code == 'email-already-in-use') {
+        _showError('This email is already registered.');
+      } else if (e.code == 'weak-password') {
+        _showError('The password is too weak.');
+      } else {
+        _showError(ErrorHandler.handleAuthError(e));
+      }
     } catch (e) {
       if (mounted) _showError(ErrorHandler.handleGenericError(e));
     } finally {
@@ -261,7 +195,83 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  // ========================== UI BUILD ==========================
+  Widget _monthDropdown() => _dobDropdown(
+        value: _selectedMonth,
+        hint: 'Month',
+        items: _months,
+        onChanged: (v) => setState(() {
+          _selectedMonth = v;
+          if (_selectedDay != null && !_days.contains(_selectedDay)) {
+            _selectedDay = null;
+          }
+        }),
+      );
+
+  Widget _dayDropdown() => _dobDropdown(
+        value: _selectedDay,
+        hint: 'Day',
+        items: _days,
+        onChanged: (v) => setState(() => _selectedDay = v),
+      );
+
+  Widget _yearDropdown() => _dobDropdown(
+        value: _selectedYear,
+        hint: 'Year',
+        items: _years,
+        onChanged: (v) => setState(() {
+          _selectedYear = v;
+          if (_selectedDay != null && !_days.contains(_selectedDay)) {
+            _selectedDay = null;
+          }
+        }),
+      );
+
+  Widget _dobDropdown({
+    required String? value,
+    required String hint,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: value != null
+              ? const Color(0xFFD6A00F)
+              : const Color(0xFF7A8450).withValues(alpha: 0.4),
+          width: value != null ? 1.5 : 1,
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          hint: Text(
+            hint,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontFamily: 'Marcellus',
+              color: const Color(0xFF7A8450),
+            ),
+          ),
+          isExpanded: true,
+          icon: Icon(Icons.keyboard_arrow_down_rounded,
+              color: const Color(0xFF7A8450), size: 20.r),
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontFamily: 'Marcellus',
+            color: const Color(0xff634700),
+          ),
+          dropdownColor: const Color(0xFFFCFBE8),
+          items: items
+              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +279,7 @@ class _SignupScreenState extends State<SignupScreen> {
       decoration: const BoxDecoration(
         color: Color(0xFFFCFBE8),
         image: DecorationImage(
-          image: AssetImage("assets/pattern_comp.png"),
+          image: AssetImage('assets/pattern_comp.png'),
           fit: BoxFit.cover,
           opacity: 0.4,
         ),
@@ -278,129 +288,116 @@ class _SignupScreenState extends State<SignupScreen> {
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
         body: Center(
-            child: SingleChildScrollView(
+          child: SingleChildScrollView(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              margin: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Column(
                 children: [
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
-                  // BACK BUTTON & LOGO
                   Align(
                     alignment: Alignment.centerLeft,
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Color(0xff634700)),
+                      icon: const Icon(Icons.arrow_back,
+                          color: Color(0xff634700)),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
 
                   Image.asset(
-                    "assets/logo/logo_colorful_comp.png",
-                    height: 140,
+                    'assets/logo/logo_colorful_comp.png',
+                    height: 130.h,
                   ),
 
-                  const SizedBox(height: 20),
-                  const Text(
-                    "New Account",
+                  SizedBox(height: 16.h),
+                  Text(
+                    'New Account',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: "Marcellus",
-                      color: Color(0xff634700),
+                      fontSize: 20.sp,
+                      fontFamily: 'Marcellus',
+                      color: const Color(0xff634700),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 14.h),
 
-                  // FIRST NAME
                   AuthTextField(
-                    hintText: "First Name", 
+                    hintText: 'First Name',
                     controller: _firstNameController,
                     textInputAction: TextInputAction.next,
                     focusNode: _firstNameFocus,
                     onSubmitted: (_) => _lastNameFocus.requestFocus(),
                   ),
+                  SizedBox(height: 10.h),
 
-                  const SizedBox(height: 10),
-
-                  // LAST NAME
                   AuthTextField(
-                    hintText: "Last Name", 
+                    hintText: 'Last Name',
                     controller: _lastNameController,
                     textInputAction: TextInputAction.next,
                     focusNode: _lastNameFocus,
-                    onSubmitted: (_) => _emailFocus.requestFocus(), // Skips DOB because it's a dropdown
+                    onSubmitted: (_) => _emailFocus.requestFocus(),
                   ),
+                  SizedBox(height: 14.h),
 
-                  const SizedBox(height: 10),
-
-                  const Align(
+                  Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Date of birth",
+                      'Date of birth',
                       style: TextStyle(
-                        color: Color(0xff634700),
-                        fontSize: 16,
-                        fontFamily: "Marcellus",
+                        color: const Color(0xff634700),
+                        fontSize: 15.sp,
+                        fontFamily: 'Marcellus',
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 10),
-
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
                       Expanded(child: _monthDropdown()),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       Expanded(child: _dayDropdown()),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       Expanded(child: _yearDropdown()),
                     ],
                   ),
+                  SizedBox(height: 14.h),
 
-                  const SizedBox(height: 20),
-
-                  // EMAIL
                   AuthTextField(
-                    hintText: "Email",
+                    hintText: 'Email',
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     focusNode: _emailFocus,
                     onSubmitted: (_) => _phoneFocus.requestFocus(),
                   ),
+                  SizedBox(height: 10.h),
 
-                  const SizedBox(height: 15),
-
-                  // PHONE (optional)
                   AuthTextField(
-                    hintText: "Phone Number (optional)",
+                    hintText: 'Phone Number (optional)',
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.next,
                     focusNode: _phoneFocus,
                     onSubmitted: (_) => _passwordFocus.requestFocus(),
                   ),
+                  SizedBox(height: 10.h),
 
-                  const SizedBox(height: 15),
-
-                  // PASSWORD
                   AuthPasswordField(
-                    hintText: "Enter your password",
-                    obscureText: obscure1,
+                    hintText: 'Enter your password',
+                    obscureText: _obscure1,
                     controller: _passwordController,
                     textInputAction: TextInputAction.next,
                     focusNode: _passwordFocus,
                     onSubmitted: (_) => _confirmPassFocus.requestFocus(),
-                    onVisibilityToggle: () => setState(() => obscure1 = !obscure1),
+                    onVisibilityToggle: () =>
+                        setState(() => _obscure1 = !_obscure1),
                   ),
+                  SizedBox(height: 10.h),
 
-                  const SizedBox(height: 15),
-
-                  // CONFIRM PASSWORD
                   AuthPasswordField(
-                    hintText: "Confirm your password",
-                    obscureText: obscure2,
+                    hintText: 'Confirm your password',
+                    obscureText: _obscure2,
                     controller: _confirmPassController,
                     textInputAction: TextInputAction.done,
                     focusNode: _confirmPassFocus,
@@ -408,166 +405,69 @@ class _SignupScreenState extends State<SignupScreen> {
                       FocusManager.instance.primaryFocus?.unfocus();
                       _handleSignup();
                     },
-                    onVisibilityToggle: () => setState(() => obscure2 = !obscure2),
+                    onVisibilityToggle: () =>
+                        setState(() => _obscure2 = !_obscure2),
                   ),
+                  SizedBox(height: 24.h),
 
-                  const SizedBox(height: 25),
-
-                  // SIGN UP BUTTON
                   GestureDetector(
                     onTap: _isLoading ? null : _handleSignup,
-
                     child: Container(
                       width: double.infinity,
-                      height: 55,
+                      height: 55.h,
                       decoration: BoxDecoration(
                         color: const Color(0xFFD6A00F),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Center(
                         child: _isLoading
                             ? const CircularProgressIndicator(
-                                color: Colors.black87,
-                              )
-                            : const Text(
-                                "Sign up",
+                                color: Colors.black87)
+                            : Text(
+                                'Sign Up',
                                 style: TextStyle(
                                   color: Colors.black87,
-                                  fontSize: 18,
-                                  fontFamily: "Marcellus",
+                                  fontSize: 18.sp,
+                                  fontFamily: 'Marcellus',
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                       ),
                     ),
                   ),
+                  SizedBox(height: 24.h),
 
-                  const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Already have an account?",
+                        'Already have an account?',
                         style: TextStyle(
                           color: Colors.black87,
-                          fontFamily: "Marcellus",
+                          fontFamily: 'Marcellus',
                         ),
                       ),
-                      const SizedBox(width: 5),
+                      SizedBox(width: 5.w),
                       GestureDetector(
-                        onTap: () {
-                            Navigator.of(context).pushNamed('/login');
-                        },
+                        onTap: () => Navigator.of(context).push(
+                          FadePageRoute(page: const LoginScreen()),
+                        ),
                         child: const Text(
-                          "Login",
+                          'Log In',
                           style: TextStyle(
                             color: Color(0xFFD6A00F),
                             fontWeight: FontWeight.w600,
-                            fontFamily: "Marcellus",
+                            fontFamily: 'Marcellus',
                           ),
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: 32.h),
                 ],
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  // ======================== WIDGETS ========================
-
-  Widget _monthDropdown() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF7A8450).withOpacity(0.70),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedMonth,
-          hint: const Text(
-            "Month",
-            style: TextStyle(color: Colors.white70, fontFamily: "Marcellus"),
-          ),
-          isExpanded: true,
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-          dropdownColor: const Color(0xFF7A8450),
-          style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedMonth = newValue;
-            });
-          },
-          items: _months.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _dayDropdown() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF7A8450).withOpacity(0.70),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedDay,
-          hint: const Text(
-            "Day",
-            style: TextStyle(color: Colors.white70, fontFamily: "Marcellus"),
-          ),
-          isExpanded: true,
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-          dropdownColor: const Color(0xFF7A8450),
-          style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedDay = newValue;
-            });
-          },
-          items: _days.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _yearDropdown() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF7A8450).withOpacity(0.70),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedYear,
-          hint: const Text(
-            "Year",
-            style: TextStyle(color: Colors.white70, fontFamily: "Marcellus"),
-          ),
-          isExpanded: true,
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-          dropdownColor: const Color(0xFF7A8450),
-          style: const TextStyle(color: Colors.white, fontFamily: "Marcellus"),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedYear = newValue;
-            });
-          },
-          items: _years.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
-          }).toList(),
         ),
       ),
     );

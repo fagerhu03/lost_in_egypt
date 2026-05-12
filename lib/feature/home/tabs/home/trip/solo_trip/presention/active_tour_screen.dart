@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
@@ -62,8 +63,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       _elapsed = DateTime.now().difference(_plan.startedAt!);
       _timer = Timer.periodic(const Duration(minutes: 1), (_) {
         if (mounted && _plan.startedAt != null) {
-          setState(
-              () => _elapsed = DateTime.now().difference(_plan.startedAt!));
+          setState(() => _elapsed = DateTime.now().difference(_plan.startedAt!));
         }
       });
     }
@@ -80,13 +80,10 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
     super.dispose();
   }
 
-  // ── Weather ───────────────────────────────────────────────────────────────
-
   Future<void> _loadWeather() async {
     double? lat;
     double? lng;
 
-    // Try GPS first
     try {
       final perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.whileInUse ||
@@ -100,7 +97,6 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       }
     } catch (_) {}
 
-    // Fall back to first stop with coords
     if (lat == null) {
       for (final day in _plan.days) {
         for (final stop in day.stops) {
@@ -121,8 +117,6 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       setState(() => _weather = weather);
     }
   }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
 
   Future<void> _showOnboardingIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
@@ -189,8 +183,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
     Navigator.of(context).popUntil((r) => r.isFirst);
   }
 
-  Future<void> _toggleStop(
-      int dayIndex, int stopIndex, bool completed) async {
+  Future<void> _toggleStop(int dayIndex, int stopIndex, bool completed) async {
     setState(() => _completing = true);
     try {
       await SoloPlanService.instance.markStopCompleted(
@@ -244,8 +237,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
               child: const Text('Cancel')),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('End Tour',
-                  style: TextStyle(color: Colors.red))),
+              child: const Text('End Tour', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -260,7 +252,8 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
           content: const Text('Tour ended. Find it under Completed in My Plans.'),
           backgroundColor: AppColors.lightPrimaryButton,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r)),
         ),
       );
       Navigator.pop(context);
@@ -294,16 +287,12 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
     );
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor =
-        isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final bgColor = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final textColor = isDark ? AppColors.darkText : AppColors.lightBox;
-    final cardColor =
-        isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
+    final cardColor = isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
     final gold = AppColors.lightPrimaryButton;
 
     return Scaffold(
@@ -312,7 +301,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
         backgroundColor: bgColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.chevron_left_rounded, color: textColor, size: 28),
+          icon: Icon(Icons.chevron_left_rounded, color: textColor, size: 28.r),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -320,7 +309,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
           style: TextStyle(
             fontFamily: 'Marcellus',
             color: textColor,
-            fontSize: 17,
+            fontSize: 17.sp,
           ),
         ),
         actions: [
@@ -333,17 +322,16 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       ),
       body: Column(
         children: [
-          // ── Weather banner ────────────────────────────────────────────────
           if (_weather != null)
             _WeatherBanner(weather: _weather!, gold: gold, textColor: textColor),
 
-          // ── Progress header ───────────────────────────────────────────────
+          // Progress header
           Container(
-            margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            padding: const EdgeInsets.all(16),
+            margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
+            padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
               color: gold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(18.r),
               border: Border.all(color: gold.withValues(alpha: 0.2)),
             ),
             child: Column(
@@ -353,8 +341,8 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                     AnimatedBuilder(
                       animation: _pulseCtrl,
                       builder: (_, _) => Container(
-                        width: 10,
-                        height: 10,
+                        width: 10.r,
+                        height: 10.r,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: gold.withValues(
@@ -362,13 +350,13 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
                       'Tour in Progress',
                       style: TextStyle(
                         color: gold,
                         fontWeight: FontWeight.w700,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
                     const Spacer(),
@@ -376,50 +364,51 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                       _elapsedLabel,
                       style: TextStyle(
                           color: textColor.withValues(alpha: 0.5),
-                          fontSize: 13),
+                          fontSize: 13.sp),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 Row(
                   children: [
                     Expanded(
                       child: AnimatedBuilder(
                         animation: _progressCtrl,
                         builder: (_, _) => ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(4.r),
                           child: LinearProgressIndicator(
                             value: _progressCtrl.value,
-                            minHeight: 8,
+                            minHeight: 8.h,
                             backgroundColor: gold.withValues(alpha: 0.15),
                             valueColor: AlwaysStoppedAnimation<Color>(gold),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Text(
                       '${_plan.completedStops}/${_plan.totalStops} stops',
                       style: TextStyle(
                         color: gold,
                         fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                       ),
                     ),
                   ],
                 ),
                 if (_plan.nextIncompleteStop != null) ...[
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Row(
                     children: [
                       Icon(Icons.arrow_forward_ios_rounded,
-                          size: 12, color: textColor.withValues(alpha: 0.5)),
-                      const SizedBox(width: 6),
+                          size: 12.r,
+                          color: textColor.withValues(alpha: 0.5)),
+                      SizedBox(width: 6.w),
                       Expanded(
                         child: Text(
                           'Next: ${_plan.nextIncompleteStop!.name}',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: textColor.withValues(alpha: 0.7),
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -430,22 +419,22 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                           onTap: () =>
                               _navigateToStop(_plan.nextIncompleteStop!),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10.w, vertical: 4.h),
                             decoration: BoxDecoration(
                               color: gold,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.navigation_rounded,
-                                    size: 12, color: Colors.white),
-                                SizedBox(width: 4),
+                                    size: 12.r, color: Colors.white),
+                                SizedBox(width: 4.w),
                                 Text(
                                   'Go',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -460,18 +449,15 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
-          // ── Stop list ─────────────────────────────────────────────────────
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 100.h),
               children: _plan.days.asMap().entries.expand((dayEntry) {
                 final dayIdx = dayEntry.key;
                 final day = dayEntry.value;
                 return [
-                  // Inter-city transit card (only when this day travels to a
-                  // different city than the previous one).
                   if (day.transit != null)
                     _TransitBanner(
                       transit: day.transit!,
@@ -480,13 +466,13 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                       cardColor: cardColor,
                     ),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 8, top: 4),
+                    padding: EdgeInsets.only(bottom: 8.h, top: 4.h),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 14.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: gold.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Text(
                         day.label,
@@ -494,7 +480,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                           fontFamily: 'Marcellus',
                           fontWeight: FontWeight.w700,
                           color: gold,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                         ),
                       ),
                     ),
@@ -528,27 +514,26 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
 
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(
-            20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+            20.w, 12.h, 20.w, MediaQuery.of(context).padding.bottom + 12.h),
         color: bgColor,
         child: ElevatedButton.icon(
           onPressed: _ending ? null : _endTour,
           icon: _ending
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
+              ? SizedBox(
+                  width: 16.r,
+                  height: 16.r,
+                  child: const CircularProgressIndicator(
                       strokeWidth: 2, color: Colors.white))
-              : const Icon(Icons.stop_circle_outlined,
-                  size: 18, color: Colors.white),
+              : Icon(Icons.stop_circle_outlined, size: 18.r, color: Colors.white),
           label: const Text(
             'End Tour',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red.shade700,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            padding: EdgeInsets.symmetric(vertical: 14.h),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r)),
             elevation: 0,
           ),
         ),
@@ -557,7 +542,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
   }
 }
 
-// ── Weather banner ────────────────────────────────────────────────────────────
+// ── Weather banner ─────────────────────────────────────────────────────────────
 
 class _WeatherBanner extends StatelessWidget {
   final WeatherContext weather;
@@ -574,17 +559,17 @@ class _WeatherBanner extends StatelessWidget {
         : const Color(0xFF2E7D32);
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      margin: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(weather.conditionIcon, color: color, size: 20),
-          const SizedBox(width: 10),
+          Icon(weather.conditionIcon, color: color, size: 20.r),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -592,17 +577,17 @@ class _WeatherBanner extends StatelessWidget {
                 Text(
                   '${weather.tempDisplay}  •  ${weather.conditionLabel}',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                     color: color,
                   ),
                 ),
                 if (weather.isOutdoorAdvisory) ...[
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     weather.advisoryText,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       color: color.withValues(alpha: 0.85),
                       height: 1.3,
                     ),
@@ -614,7 +599,7 @@ class _WeatherBanner extends StatelessWidget {
           Text(
             weather.feelsLikeDisplay,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: textColor.withValues(alpha: 0.5),
             ),
           ),
@@ -624,7 +609,7 @@ class _WeatherBanner extends StatelessWidget {
   }
 }
 
-// ── Stop tile (expandable with description + AI story) ────────────────────────
+// ── Stop tile ──────────────────────────────────────────────────────────────────
 
 class _StopTile extends StatefulWidget {
   final SavedPlanStop stop;
@@ -663,12 +648,12 @@ class _StopTileState extends State<_StopTile> {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: EdgeInsets.only(bottom: 10.h),
       decoration: BoxDecoration(
         color: stop.completed
             ? gold.withValues(alpha: 0.08)
             : widget.cardColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: stop.completed
             ? Border.all(color: gold.withValues(alpha: 0.3))
             : widget.isNextUp
@@ -687,24 +672,22 @@ class _StopTileState extends State<_StopTile> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Main row ──────────────────────────────────────────────────────
           InkWell(
             onTap: hasDetails ? () => setState(() => _expanded = !_expanded) : null,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+              padding: EdgeInsets.fromLTRB(14.w, 12.h, 10.w, 12.h),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Checkbox
                   GestureDetector(
                     onTap: widget.onToggle == null
                         ? null
                         : () => widget.onToggle!(!stop.completed),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
-                      width: 28,
-                      height: 28,
+                      width: 28.r,
+                      height: 28.r,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: stop.completed ? gold : Colors.transparent,
@@ -716,13 +699,12 @@ class _StopTileState extends State<_StopTile> {
                         ),
                       ),
                       child: stop.completed
-                          ? const Icon(Icons.check_rounded,
-                              size: 16, color: Colors.white)
+                          ? Icon(Icons.check_rounded,
+                              size: 16.r, color: Colors.white)
                           : null,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  // Name + duration
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,7 +715,7 @@ class _StopTileState extends State<_StopTile> {
                               child: Text(
                                 stop.name,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                   fontWeight: FontWeight.w600,
                                   color: stop.completed
                                       ? textColor.withValues(alpha: 0.45)
@@ -746,18 +728,18 @@ class _StopTileState extends State<_StopTile> {
                               ),
                             ),
                             if (widget.isNextUp && !stop.completed) ...[
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 2.h),
                                 decoration: BoxDecoration(
                                   color: gold,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(10.r),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Up next',
                                   style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 10.sp,
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.2,
@@ -767,67 +749,63 @@ class _StopTileState extends State<_StopTile> {
                             ],
                           ],
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                         Text(
                           stop.estimatedDuration,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: textColor.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  // Nav button
                   if (widget.onNavigate != null)
                     IconButton(
-                      icon: Icon(Icons.navigation_rounded, color: gold, size: 20),
+                      icon: Icon(Icons.navigation_rounded, color: gold, size: 20.r),
                       tooltip: 'Navigate here',
                       onPressed: widget.onNavigate,
                       constraints: const BoxConstraints(),
-                      padding: const EdgeInsets.all(6),
+                      padding: EdgeInsets.all(6.r),
                     ),
-                  // Expand chevron
                   if (hasDetails)
                     Icon(
                       _expanded
                           ? Icons.keyboard_arrow_up_rounded
                           : Icons.keyboard_arrow_down_rounded,
                       color: textColor.withValues(alpha: 0.4),
-                      size: 20,
+                      size: 20.r,
                     ),
                 ],
               ),
             ),
           ),
 
-          // ── Expandable details ────────────────────────────────────────────
           if (_expanded && hasDetails)
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Divider(color: textColor.withValues(alpha: 0.1), height: 1),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Text(
                     stop.notes!,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       color: textColor.withValues(alpha: 0.7),
                       height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  // AI Story button
+                  SizedBox(height: 12.h),
                   GestureDetector(
                     onTap: widget.onHearStory,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
                         color: gold.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(
                             color: gold.withValues(alpha: 0.3), width: 1),
                       ),
@@ -835,12 +813,12 @@ class _StopTileState extends State<_StopTile> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.auto_stories_outlined,
-                              size: 15, color: gold),
-                          const SizedBox(width: 6),
+                              size: 15.r, color: gold),
+                          SizedBox(width: 6.w),
                           Text(
                             'Hear the Story',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: gold,
                               fontWeight: FontWeight.w600,
                             ),
@@ -858,7 +836,7 @@ class _StopTileState extends State<_StopTile> {
   }
 }
 
-// ── First-time tour onboarding sheet ─────────────────────────────────────────
+// ── First-time tour onboarding sheet ──────────────────────────────────────────
 
 class _TourOnboardingSheet extends StatelessWidget {
   const _TourOnboardingSheet();
@@ -882,55 +860,56 @@ class _TourOnboardingSheet extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: surface,
+        // BottomSheet radius — not scaled per design convention
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.fromLTRB(
-          24, 20, 24, MediaQuery.of(context).padding.bottom + 28),
+          24.w, 20.h, 24.w, MediaQuery.of(context).padding.bottom + 28.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 36,
-            height: 4,
+            width: 36.w,
+            height: 4.h,
             decoration: BoxDecoration(
               color: textColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.r),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Text(
             '🗺️ Your Tour Has Started!',
             style: TextStyle(
               fontFamily: 'Marcellus',
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.w700,
               color: textColor,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             'Here\'s what you can do',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: textColor.withValues(alpha: 0.5),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           ...features.map((f) => Padding(
-                padding: const EdgeInsets.only(bottom: 18),
+                padding: EdgeInsets.only(bottom: 18.h),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 42,
-                      height: 42,
+                      width: 42.r,
+                      height: 42.r,
                       decoration: BoxDecoration(
                         color: gold.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                      child: Icon(f.$1, color: gold, size: 22),
+                      child: Icon(f.$1, color: gold, size: 22.r),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -938,17 +917,17 @@ class _TourOnboardingSheet extends StatelessWidget {
                           Text(
                             f.$2,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               color: textColor,
                               fontFamily: 'Marcellus',
                             ),
                           ),
-                          const SizedBox(height: 3),
+                          SizedBox(height: 3.h),
                           Text(
                             f.$3,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: textColor.withValues(alpha: 0.6),
                               height: 1.4,
                             ),
@@ -959,7 +938,7 @@ class _TourOnboardingSheet extends StatelessWidget {
                   ],
                 ),
               )),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -967,16 +946,16 @@ class _TourOnboardingSheet extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: gold,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14.r)),
                 elevation: 0,
               ),
-              child: const Text(
+              child: Text(
                 'Let\'s Go!',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   fontFamily: 'Marcellus',
                 ),
               ),
@@ -988,7 +967,7 @@ class _TourOnboardingSheet extends StatelessWidget {
   }
 }
 
-// ── Tour completion dialog ────────────────────────────────────────────────────
+// ── Tour completion dialog ─────────────────────────────────────────────────────
 
 class _TourCompleteDialog extends StatefulWidget {
   final String planTitle;
@@ -1050,7 +1029,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
         'limit': 3,
         'excludeSeen': true,
       });
-      final ranked = (result.data['ranked'] as List?) ?? [];
+      final ranked = (result.data['recommendations'] as List?) ?? [];
       final names = ranked
           .map((r) => r['name']?.toString() ?? '')
           .where((n) => n.isNotEmpty)
@@ -1081,10 +1060,10 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
         child: ScaleTransition(
           scale: _scale,
           child: Container(
-            padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
+            padding: EdgeInsets.fromLTRB(28.w, 32.h, 28.w, 24.h),
             decoration: BoxDecoration(
               color: surface,
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(28.r),
               boxShadow: [
                 BoxShadow(
                   color: gold.withValues(alpha: 0.25),
@@ -1096,10 +1075,9 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Glowing trophy icon
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 80.r,
+                  height: 80.r,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
@@ -1110,48 +1088,45 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                     ),
                     border: Border.all(color: gold, width: 2),
                   ),
-                  child: Icon(Icons.emoji_events_rounded,
-                      size: 40, color: gold),
+                  child: Icon(Icons.emoji_events_rounded, size: 40.r, color: gold),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
                 Text(
                   'Tour Complete!',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
                     fontFamily: 'Marcellus',
                     color: textColor,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   widget.planTitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     color: gold,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   decoration: BoxDecoration(
                     color: gold.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
-                    border:
-                        Border.all(color: gold.withValues(alpha: 0.2)),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(color: gold.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.place_rounded, size: 18, color: gold),
-                      const SizedBox(width: 8),
+                      Icon(Icons.place_rounded, size: 18.r, color: gold),
+                      SizedBox(width: 8.w),
                       Text(
                         '${widget.stopsCompleted} stops explored',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           color: gold,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1159,41 +1134,41 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   'You\'ve experienced the heart of Egypt.\nGreat exploring! 🌟',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: textColor.withValues(alpha: 0.6),
                     height: 1.5,
                   ),
                 ),
                 if (_suggestionNames.isNotEmpty) ...[
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'You might also love',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
                         color: textColor.withValues(alpha: 0.7),
                         letterSpacing: 0.3,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   ..._suggestionNames.map((name) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
+                    padding: EdgeInsets.only(bottom: 6.h),
                     child: Row(
                       children: [
-                        Icon(Icons.place_rounded, size: 14, color: gold),
-                        const SizedBox(width: 6),
+                        Icon(Icons.place_rounded, size: 14.r, color: gold),
+                        SizedBox(width: 6.w),
                         Expanded(
                           child: Text(
                             name,
-                            style: TextStyle(fontSize: 13, color: textColor),
+                            style: TextStyle(fontSize: 13.sp, color: textColor),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -1201,7 +1176,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                     ),
                   )),
                 ],
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -1209,15 +1184,15 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: gold,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
+                          borderRadius: BorderRadius.circular(16.r)),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Done',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.w700,
                         fontFamily: 'Marcellus',
                       ),
@@ -1233,7 +1208,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
   }
 }
 
-// ── Inter-city transit banner ────────────────────────────────────────────────
+// ── Inter-city transit banner ──────────────────────────────────────────────────
 
 class _TransitBanner extends StatelessWidget {
   final SavedPlanTransit transit;
@@ -1251,11 +1226,11 @@ class _TransitBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 12, bottom: 12),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      margin: EdgeInsets.symmetric(vertical: 12.h),
+      padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 14.h),
       decoration: BoxDecoration(
         color: gold.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: gold.withValues(alpha: 0.25)),
       ),
       child: Column(
@@ -1263,13 +1238,13 @@ class _TransitBanner extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.alt_route_rounded, size: 16, color: gold),
-              const SizedBox(width: 8),
+              Icon(Icons.alt_route_rounded, size: 16.r, color: gold),
+              SizedBox(width: 8.w),
               Expanded(
                 child: Text(
                   '${transit.from}  →  ${transit.to}',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                     color: gold,
                     fontFamily: 'Marcellus',
@@ -1279,16 +1254,16 @@ class _TransitBanner extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             transit.mode,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w600,
               color: textColor,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Wrap(
             spacing: 8,
             runSpacing: 6,
@@ -1308,18 +1283,18 @@ class _TransitBanner extends StatelessWidget {
             ],
           ),
           if (transit.tip.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.lightbulb_outline_rounded,
-                    size: 14, color: textColor.withValues(alpha: 0.55)),
-                const SizedBox(width: 6),
+                    size: 14.r, color: textColor.withValues(alpha: 0.55)),
+                SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
                     transit.tip,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       height: 1.4,
                       color: textColor.withValues(alpha: 0.7),
                     ),
@@ -1348,20 +1323,20 @@ class _TransitMiniChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: gold.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: gold),
-          const SizedBox(width: 4),
+          Icon(icon, size: 12.r, color: gold),
+          SizedBox(width: 4.w),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: gold,
               fontWeight: FontWeight.w600,
             ),
@@ -1372,7 +1347,7 @@ class _TransitMiniChip extends StatelessWidget {
   }
 }
 
-// ── AI Story bottom sheet ─────────────────────────────────────────────────────
+// ── AI Story bottom sheet ──────────────────────────────────────────────────────
 
 class _StorySheet extends StatefulWidget {
   final String stopName;
@@ -1459,7 +1434,9 @@ class _StorySheetState extends State<_StorySheet> {
       await file.writeAsBytes(bytes);
       _audioFilePath = file.path;
       await _audioPlayer.play(DeviceFileSource(_audioFilePath!));
-      if (mounted) setState(() { _isPlaying = true; _isPaused = false; _loadingAudio = false; });
+      if (mounted) {
+        setState(() { _isPlaying = true; _isPaused = false; _loadingAudio = false; });
+      }
     } catch (_) {
       if (mounted) setState(() => _loadingAudio = false);
     }
@@ -1479,34 +1456,34 @@ class _StorySheetState extends State<_StorySheet> {
       builder: (_, scrollController) => Container(
         decoration: BoxDecoration(
           color: surface,
+          // BottomSheet radius — not scaled per design convention
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: ListView(
           controller: scrollController,
           padding: EdgeInsets.fromLTRB(
-              24, 20, 24, MediaQuery.of(context).padding.bottom + 28),
+              24.w, 20.h, 24.w, MediaQuery.of(context).padding.bottom + 28.h),
           children: [
-            // Handle bar
             Center(
               child: Container(
-                width: 36,
-                height: 4,
+                width: 36.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: textColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Row(
               children: [
-                Icon(Icons.auto_stories_outlined, color: gold, size: 20),
-                const SizedBox(width: 8),
+                Icon(Icons.auto_stories_outlined, color: gold, size: 20.r),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     widget.stopName,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
                       fontFamily: 'Marcellus',
                       color: textColor,
@@ -1515,22 +1492,25 @@ class _StorySheetState extends State<_StorySheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             if (_loading)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
+                padding: EdgeInsets.symmetric(vertical: 32.h),
                 child: Center(
                   child: Column(
                     children: [
                       SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: gold),
+                        width: 28.r,
+                        height: 28.r,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: gold),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Text(
                         'Summoning the story…',
-                        style: TextStyle(fontSize: 13, color: textColor.withValues(alpha: 0.5)),
+                        style: TextStyle(
+                            fontSize: 13.sp,
+                            color: textColor.withValues(alpha: 0.5)),
                       ),
                     ],
                   ),
@@ -1538,14 +1518,16 @@ class _StorySheetState extends State<_StorySheet> {
               )
             else if (_error)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: EdgeInsets.symmetric(vertical: 24.h),
                 child: Column(
                   children: [
                     Text(
                       'The spirits of history are silent right now.',
-                      style: TextStyle(fontSize: 14, color: textColor.withValues(alpha: 0.6)),
+                      style: TextStyle(
+                          fontSize: 14.sp,
+                          color: textColor.withValues(alpha: 0.6)),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     TextButton(
                       onPressed: _fetchStory,
                       child: Text('Try again', style: TextStyle(color: gold)),
@@ -1557,13 +1539,12 @@ class _StorySheetState extends State<_StorySheet> {
               Text(
                 _story ?? '',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   color: textColor.withValues(alpha: 0.85),
                   height: 1.65,
                 ),
               ),
-              const SizedBox(height: 20),
-              // Audio controls
+              SizedBox(height: 20.h),
               Row(
                 children: [
                   Expanded(
@@ -1571,9 +1552,9 @@ class _StorySheetState extends State<_StorySheet> {
                       onPressed: _loadingAudio ? null : _handleAudioButton,
                       icon: _loadingAudio
                           ? SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
+                              width: 18.r,
+                              height: 18.r,
+                              child: const CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : Icon(
@@ -1583,7 +1564,7 @@ class _StorySheetState extends State<_StorySheet> {
                                       ? Icons.play_arrow_rounded
                                       : Icons.headphones_rounded,
                               color: Colors.white,
-                              size: 20,
+                              size: 20.r,
                             ),
                       label: Text(
                         _loadingAudio
@@ -1593,18 +1574,20 @@ class _StorySheetState extends State<_StorySheet> {
                                 : _isPaused
                                     ? 'Resume'
                                     : 'Listen',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w600),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: gold,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r)),
                         elevation: 0,
                       ),
                     ),
                   ),
                   if (_audioFilePath != null) ...[
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     IconButton.filled(
                       onPressed: _loadingAudio ? null : _handleReplay,
                       icon: const Icon(Icons.replay_rounded),
@@ -1612,7 +1595,7 @@ class _StorySheetState extends State<_StorySheet> {
                       style: IconButton.styleFrom(
                         backgroundColor: gold.withValues(alpha: 0.15),
                         foregroundColor: gold,
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12.r),
                       ),
                     ),
                   ],

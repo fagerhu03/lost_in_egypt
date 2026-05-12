@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
 import '../../../../theme/theme.dart';
@@ -12,7 +10,6 @@ import '../community/presentation/community_screen.dart';
 import '../home/home_screen.dart';
 import '../map/presentation/map_screen.dart';
 import '../more/presentation/more_screen.dart';
-import '../../../admin/presentation/pages/upcoming_bookings_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class HomeWrapper extends StatefulWidget {
@@ -29,7 +26,6 @@ class _HomeWrapperState extends State<HomeWrapper>
 
   int index = 0;
   bool _isNavBarVisible = true;
-  bool _isGuide = false;
 
   late List<Widget> _pages;
   late List<TabItem> _navItems;
@@ -95,8 +91,8 @@ class _HomeWrapperState extends State<HomeWrapper>
         : theme.colorScheme.primary;
 
     final inactive = isDark
-        ? AppColors.darkNavBar.withOpacity(0.50)
-        : theme.colorScheme.primary.withOpacity(0.50);
+        ? AppColors.darkNavBar.withValues(alpha: 0.50)
+        : theme.colorScheme.primary.withValues(alpha: 0.50);
 
     return PopScope(
       canPop: false,
@@ -153,9 +149,7 @@ class _HomeWrapperState extends State<HomeWrapper>
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: isDark
-                    ? Colors.black.withOpacity(0.10)
-                    : Colors.black.withOpacity(0.10),
+                color: Colors.black.withValues(alpha: 0.10),
                 blurRadius: 28,
                 spreadRadius: 6,
                 offset: const Offset(0, -10),
@@ -166,7 +160,7 @@ class _HomeWrapperState extends State<HomeWrapper>
             controller: _tabController,
             initialActiveIndex: index,
             style: TabStyle.react,
-            height: 55,
+            height: 55.h,
             curveSize: 90,
             backgroundColor: bg,
             activeColor: primary,

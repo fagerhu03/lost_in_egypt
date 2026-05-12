@@ -91,6 +91,7 @@ dependencies:
   pdf: ^3.11.1
   printing: ^5.13.1
   firebase_database: ^12.1.0
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   flutter_test:

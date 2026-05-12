@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/login/bloc/login_bloc.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/login/bloc/login_event.dart';
@@ -39,12 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _doLogin(BuildContext context) {
     if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please fill all fields"),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      showErrorSnackBar(context, 'Please fill in your email and password.');
       return;
     }
 
@@ -89,254 +85,243 @@ class _LoginScreenState extends State<LoginScreen> {
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
         body: BlocConsumer<LoginBloc, LoginState>(
-        listener: (context, state) {
-          if (state is LoginFailure) {
-            showErrorSnackBar(context, state.error);
-          } else if (state is LoginSuccess) {
-            // New social (Google/Facebook) user — no Firestore doc yet; collect DOB first
-            if (state.isNewSocialUser) {
-              _navigateToCompleteProfile();
-              return;
+          listener: (context, state) {
+            if (state is LoginFailure) {
+              showErrorSnackBar(context, state.error);
+            } else if (state is LoginSuccess) {
+              if (state.isNewSocialUser) {
+                _navigateToCompleteProfile();
+                return;
+              }
+
+              final user = state.user;
+              if (user != null && user.role == 'guide' && user.applicationStatus != 'approved') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Your guide application is pending approval.'),
+                    backgroundColor: Colors.orange,
+                    duration: Duration(seconds: 4),
+                  ),
+                );
+              }
+              _navigateToHome();
             }
+          },
+          builder: (context, state) {
+            final isLoading = state is LoginLoading;
 
-            final user = state.user;
-            if (user != null && user.role == 'guide' && user.applicationStatus != 'approved') {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Your guide application is pending approval.'),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 4),
-                ),
-              );
-            }
-            _navigateToHome();
-          }
-        },
-        builder: (context, state) {
-          final isLoading = state is LoginLoading;
+            return Center(
+              child: SingleChildScrollView(
+                child: Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.symmetric(horizontal: 10.w),
+                  padding: EdgeInsets.symmetric(horizontal: 40.w),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 60.h),
 
-          return Center(
-            child: SingleChildScrollView(
-                  child: Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 10),
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 60),
+                      Image.asset(
+                        "assets/logo/logo_colorful_comp.png",
+                        height: 140.h,
+                      ),
 
-                        // --- LOGO ---
-                        Image.asset(
-                          "assets/logo/logo_colorful_comp.png",
-                          height: 140,
+                      SizedBox(height: 25.h),
+
+                      Text(
+                        "Log in to unlock your journey.",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: const Color(0xff634700),
+                          fontFamily: "Marcellus",
                         ),
+                      ),
 
-                        const SizedBox(height: 25),
+                      SizedBox(height: 20.h),
 
-                        const Text(
-                          "Log in to unlock your journey.",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xff634700),
-                            fontFamily: "Marcellus",
-                          ),
-                        ),
+                      AuthTextField(
+                        controller: _emailController,
+                        hintText: "Enter your email",
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        focusNode: _emailFocus,
+                        onSubmitted: (_) => _passwordFocus.requestFocus(),
+                      ),
 
-                        const SizedBox(height: 20),
+                      SizedBox(height: 15.h),
 
-                        // --- EMAIL INPUT ---
-                        AuthTextField(
-                          controller: _emailController,
-                          hintText: "Enter your email",
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          focusNode: _emailFocus,
-                          onSubmitted: (_) => _passwordFocus.requestFocus(),
-                        ),
+                      AuthPasswordField(
+                        controller: _passwordController,
+                        hintText: "Enter your password",
+                        obscureText: obscure,
+                        textInputAction: TextInputAction.done,
+                        focusNode: _passwordFocus,
+                        onSubmitted: (_) => _doLogin(context),
+                        onVisibilityToggle: () {
+                          setState(() {
+                            obscure = !obscure;
+                          });
+                        },
+                      ),
 
-                        const SizedBox(height: 15),
+                      SizedBox(height: 25.h),
 
-                        // --- PASSWORD INPUT ---
-                        AuthPasswordField(
-                          controller: _passwordController,
-                          hintText: "Enter your password",
-                          obscureText: obscure,
-                          textInputAction: TextInputAction.done,
-                          focusNode: _passwordFocus,
-                          onSubmitted: (_) => _doLogin(context),
-                          onVisibilityToggle: () {
-                            setState(() {
-                              obscure = !obscure;
-                            });
-                          },
-                        ),
-
-                        const SizedBox(height: 25),
-
-                        // --- LOGIN BUTTON ---
-                        Material(
-                          color: const Color(0xFFD6A00F),
-                          borderRadius: BorderRadius.circular(10),
-                          clipBehavior: Clip.hardEdge,
-                          child: InkWell(
-                            onTap: isLoading ? null : () => _doLogin(context),
-                            borderRadius: BorderRadius.circular(10),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: Center(
-                                child: isLoading
-                                    ? const CircularProgressIndicator(
+                      Material(
+                        color: const Color(0xFFD6A00F),
+                        borderRadius: BorderRadius.circular(10.r),
+                        clipBehavior: Clip.hardEdge,
+                        child: InkWell(
+                          onTap: isLoading ? null : () => _doLogin(context),
+                          borderRadius: BorderRadius.circular(10.r),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 50.h,
+                            child: Center(
+                              child: isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.black87,
+                                    )
+                                  : Text(
+                                      "Log In",
+                                      style: TextStyle(
                                         color: Colors.black87,
-                                      )
-                                    : const Text(
-                                        "Log In",
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700,
-                                          fontFamily: "Marcellus",
-                                        ),
+                                        fontSize: 18.sp,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: "Marcellus",
                                       ),
-                              ),
+                                    ),
                             ),
                           ),
                         ),
+                      ),
 
-                        const SizedBox(height: 15),
+                      SizedBox(height: 15.h),
 
-                        // --- FORGOT PASSWORD LINK ---
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              FadePageRoute(page: const ForgetPasswordScreen()),
-                            );
-                          },
-                          child: const Text(
-                            "Forgot Password?",
-                            style: TextStyle(
-                              color: Color(0xff634700),
-                              fontSize: 16,
-                              fontFamily: "Marcellus",
-                              decoration: TextDecoration.underline,
-                            ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            FadePageRoute(page: const ForgetPasswordScreen()),
+                          );
+                        },
+                        child: Text(
+                          "Forgot Password?",
+                          style: TextStyle(
+                            color: const Color(0xff634700),
+                            fontSize: 16.sp,
+                            fontFamily: "Marcellus",
+                            decoration: TextDecoration.underline,
                           ),
                         ),
+                      ),
 
-                        const SizedBox(height: 30),
+                      SizedBox(height: 30.h),
 
-                        // --- DIVIDER ---
-                        Row(
-                          children: const [
-                            Expanded(
-                              child: Divider(color: Colors.black54, thickness: 1),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                "OR SIGN IN WITH",
-                                style: TextStyle(
-                                  color: Color(0xff634700),
-                                  fontSize: 14,
-                                  fontFamily: "Marcellus",
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Divider(color: Colors.black54, thickness: 1),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // --- SOCIAL BUTTONS ---
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Google
-                            GestureDetector(
-                              onTap: isLoading
-                                  ? null
-                                  : () => context
-                                      .read<LoginBloc>()
-                                      .add(LoginWithGoogleSubmitted()),
-                              child: Image.asset(
-                                "assets/social/google.png",
-                                height: 40,
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-
-                            // Apple
-                            GestureDetector(
-                              onTap: isLoading
-                                  ? null
-                                  : () => context
-                                      .read<LoginBloc>()
-                                      .add(LoginWithAppleSubmitted()),
-                              child: Image.asset(
-                                "assets/social/apple.png",
-                                height: 40,
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-
-                            // Facebook
-                            GestureDetector(
-                              onTap: isLoading
-                                  ? null
-                                  : () => context
-                                      .read<LoginBloc>()
-                                      .add(LoginWithFacebookSubmitted()),
-                              child: Image.asset(
-                                "assets/social/facebook.png",
-                                height: 40,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 25),
-
-                        // --- CREATE ACCOUNT LINK ---
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Don't have an account?",
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Divider(color: Colors.black54, thickness: 1),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w),
+                            child: Text(
+                              'OR SIGN IN WITH',
                               style: TextStyle(
-                                color: Colors.black87,
+                                color: const Color(0xff634700),
+                                fontSize: 14.sp,
+                                fontFamily: 'Marcellus',
+                              ),
+                            ),
+                          ),
+                          const Expanded(
+                            child: Divider(color: Colors.black54, thickness: 1),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: 20.h),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                            onTap: isLoading
+                                ? null
+                                : () => context
+                                    .read<LoginBloc>()
+                                    .add(LoginWithGoogleSubmitted()),
+                            child: Image.asset(
+                              "assets/social/google.png",
+                              height: 40.h,
+                            ),
+                          ),
+                          SizedBox(width: 20.w),
+
+                          GestureDetector(
+                            onTap: isLoading
+                                ? null
+                                : () => context
+                                    .read<LoginBloc>()
+                                    .add(LoginWithAppleSubmitted()),
+                            child: Image.asset(
+                              "assets/social/apple.png",
+                              height: 40.h,
+                            ),
+                          ),
+                          SizedBox(width: 20.w),
+
+                          GestureDetector(
+                            onTap: isLoading
+                                ? null
+                                : () => context
+                                    .read<LoginBloc>()
+                                    .add(LoginWithFacebookSubmitted()),
+                            child: Image.asset(
+                              "assets/social/facebook.png",
+                              height: 40.h,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: 25.h),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Don't have an account?",
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontFamily: "Marcellus",
+                            ),
+                          ),
+                          SizedBox(width: 5.w),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                FadePageRoute(page: const RoleSelectionScreen()),
+                              );
+                            },
+                            child: const Text(
+                              "Create Account",
+                              style: TextStyle(
+                                color: Color(0xFFD6A00F),
+                                fontWeight: FontWeight.w600,
                                 fontFamily: "Marcellus",
                               ),
                             ),
-                            const SizedBox(width: 5),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  FadePageRoute(page: const RoleSelectionScreen()),
-                                );
-                              },
-                              child: const Text(
-                                "Create Account",
-                                style: TextStyle(
-                                  color: Color(0xFFD6A00F),
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: "Marcellus",
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
 
-                        const SizedBox(height: 40),
-                      ],
-                    ),
+                      SizedBox(height: 40.h),
+                    ],
                   ),
-            ),
-          );
-        },
+                ),
+              ),
+            );
+          },
+        ),
       ),
-    ));
+    );
   }
 }

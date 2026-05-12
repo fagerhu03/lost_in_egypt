@@ -37,6 +37,7 @@ class UserEntity extends Equatable {
   final bool notifCommunity;
   final bool notifReviews;
   final bool notifGuideUpdates;
+  final bool notifDailyDiscovery;
 
   // Timestamps
   final DateTime createdAt;
@@ -80,6 +81,7 @@ class UserEntity extends Equatable {
     this.notifCommunity = true,
     this.notifReviews = true,
     this.notifGuideUpdates = true,
+    this.notifDailyDiscovery = true,
     required this.createdAt,
     this.applicationStatus = 'none',
     this.motaLicenseNumber = '',
@@ -120,6 +122,7 @@ class UserEntity extends Equatable {
     notifCommunity,
     notifReviews,
     notifGuideUpdates,
+    notifDailyDiscovery,
     createdAt,
     applicationStatus,
     motaLicenseNumber,

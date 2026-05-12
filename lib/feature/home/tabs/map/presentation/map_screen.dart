@@ -31,6 +31,9 @@ import 'package:lost_in_egypt/feature/home/tabs/map/widgets/route_steps_sheet.da
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_bar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_results.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/sandstorm_overlay.dart';
+import 'package:lost_in_egypt/core/models/weather_context.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_bloc.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_event.dart';
@@ -102,12 +105,19 @@ class _MapScreenViewState extends State<MapScreenView>
   List<MapItem> _cachedPopularPlaces = [];
   int _cachedPopularSourceHash = 0;
 
+  // Weather — sandstorm overlay shown once per sandstorm event
+  bool _sandstormShown = false;
+
+  // Map type — normal / satellite toggle
+  MapType _mapType = MapType.normal;
+
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
+    WeatherController.weather.addListener(_onWeatherChanged);
     _initializeMapServices();
     _fetchSavedPlaceIds();
     _fetchVisitedLandmarks();
@@ -126,6 +136,19 @@ class _MapScreenViewState extends State<MapScreenView>
   Future<void> _initializeMapServices() async {
     await _markerService.loadCustomMarkerIcons();
     await _checkLocationPermission();
+    // Refresh weather with actual GPS once permission is confirmed
+    Future.microtask(() async {
+      try {
+        final perm = await Geolocator.checkPermission();
+        if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+          final pos = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.low,
+            timeLimit: const Duration(seconds: 6),
+          );
+          WeatherController.refresh(pos.latitude, pos.longitude);
+        }
+      } catch (_) {}
+    });
 
     MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequested);
     MapFocusService.instance.pendingTripNotifier.addListener(_onPendingTrip);
@@ -206,8 +229,22 @@ class _MapScreenViewState extends State<MapScreenView>
     }
   }
 
+  void _onWeatherChanged() {
+    final weather = WeatherController.weather.value;
+    if (weather == null) return;
+    if (weather.isSandstorm && !_sandstormShown) {
+      _sandstormShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) SandstormOverlay.show(context);
+      });
+    } else if (!weather.isSandstorm) {
+      _sandstormShown = false;
+    }
+  }
+
   @override
   void dispose() {
+    WeatherController.weather.removeListener(_onWeatherChanged);
     _positionStream?.cancel();
     MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
     MapFocusService.instance.pendingTripNotifier.removeListener(_onPendingTrip);
@@ -793,6 +830,7 @@ class _MapScreenViewState extends State<MapScreenView>
                 initialCameraPosition: MapConfig.initialPosition,
                 markers: _markers,
                 polylines: _polylines,
+                mapType: _mapType,
                 myLocationEnabled: state.isLocationPermissionGranted,
                 myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
@@ -1041,7 +1079,49 @@ class _MapScreenViewState extends State<MapScreenView>
                 ),
 
 
-              if (!state.isSearchActive && !state.isNavigationMode)
+              // ── Weather chip ──────────────────────────────────────────────
+              if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
+                Positioned(
+                  top: 110,
+                  right: 76,
+                  child: ValueListenableBuilder<WeatherContext?>(
+                    valueListenable: WeatherController.weather,
+                    builder: (_, weather, _) {
+                      if (weather == null) return const SizedBox.shrink();
+                      return GestureDetector(
+                        onTap: () => WeatherForecastSheet.show(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: chipBg(),
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
+                            border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(weather.conditionIcon, color: weather.severityColor, size: 17),
+                              const SizedBox(width: 5),
+                              Text(
+                                weather.tempDisplay,
+                                style: TextStyle(
+                                  color: weather.isOutdoorAdvisory
+                                      ? weather.severityColor
+                                      : onSurface.withValues(alpha: 0.9),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+              if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
                 Positioned(
                   top: 110,
                   right: 20,
@@ -1097,7 +1177,7 @@ class _MapScreenViewState extends State<MapScreenView>
                   ),
                 ),
 
-              if (!state.isSearchActive)
+              if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
                 Positioned(
                   top: 110,
                   left: 20,
@@ -1112,6 +1192,19 @@ class _MapScreenViewState extends State<MapScreenView>
                         child: Icon(
                           Icons.my_location,
                           color: state.isLocationPermissionGranted ? primary : onSurface.withOpacity(0.9),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      FloatingActionButton.small(
+                        heroTag: "satellite_btn",
+                        backgroundColor: _mapType == MapType.satellite ? primary : chipBg(),
+                        onPressed: () => setState(() {
+                          _mapType = _mapType == MapType.normal ? MapType.satellite : MapType.normal;
+                        }),
+                        child: Icon(
+                          Icons.satellite_alt_rounded,
+                          color: _mapType == MapType.satellite ? Colors.white : primary,
                           size: 20,
                         ),
                       ),
@@ -1151,11 +1244,11 @@ class _MapScreenViewState extends State<MapScreenView>
                                         chipBg: chipBg(),
                                         onTap: () async {
                                           setState(() => _isFabExpanded = false);
-                                          final itinerary = await Navigator.push<List<MapItem>>(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => TripPlannerSheet(allItems: state.allItemsCache),
-                                            ),
+                                          final itinerary = await showModalBottomSheet<List<MapItem>>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (_) => TripPlannerSheet(allItems: state.allItemsCache),
                                           );
                                           if (itinerary != null && itinerary.isNotEmpty && mounted) {
                                             setState(() {
@@ -1205,11 +1298,11 @@ class _MapScreenViewState extends State<MapScreenView>
                                         chipBg: chipBg(),
                                         onTap: () async {
                                           setState(() => _isFabExpanded = false);
-                                          final selectedPlace = await Navigator.push<MapItem>(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => SavedPlacesScreen(allItems: state.allItemsCache),
-                                            ),
+                                          final selectedPlace = await showModalBottomSheet<MapItem>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (_) => SavedPlacesSheet(allItems: state.allItemsCache),
                                           );
                                           if (selectedPlace != null && mounted) {
                                             context.read<MapBloc>().add(MapPlaceSelected(selectedPlace));
@@ -1242,7 +1335,7 @@ class _MapScreenViewState extends State<MapScreenView>
               // Trip progress bar
               if (_isTripActive)
                 Positioned(
-                  top: MediaQuery.of(context).padding.top + 75,
+                  top: MediaQuery.of(context).padding.top + 12,
                   left: 16,
                   right: 16,
                   child: Container(
@@ -1442,6 +1535,7 @@ class _MapScreenViewState extends State<MapScreenView>
               if (state.selectedPlace != null && !state.isNavigationMode)
                 PlaceDetailSheet(
                   place: state.selectedPlace!,
+                  allItems: state.allItemsCache,
                   onClose: () {
                     context.read<MapBloc>().add(const MapPlaceSelected(null));
                     setState(() => _sheetExtent = 0.55); // Reset
@@ -1668,34 +1762,6 @@ class _MapScreenViewState extends State<MapScreenView>
                   ),
                 ),
 
-              if (state.isLoading)
-                Positioned(
-                  left: 0, right: 0, top: 0,
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: chipBg(strong: true),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [BoxShadow(color: shadowColor, blurRadius: 16, offset: const Offset(0, 6))],
-                            border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: primary)),
-                              const SizedBox(width: 10),
-                              Text("Loading...", style: TextStyle(color: onSurface.withOpacity(0.9))),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
 
               if (state.isSearchActive)
                 Positioned.fill(
@@ -1709,7 +1775,7 @@ class _MapScreenViewState extends State<MapScreenView>
                   ),
                 ),
 
-              if (!state.isLiveNavigating)
+              if (!state.isLiveNavigating && !_isTripActive)
               Positioned(
                 top: 50, left: 0, right: 0,
                 child: IgnorePointer(

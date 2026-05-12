@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// Shared error display used across all screens.
-/// Shows an icon, a [message], and an optional [onRetry] button.
 class AppErrorWidget extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
@@ -22,36 +21,36 @@ class AppErrorWidget extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: onSurface.withOpacity(0.25)),
-            const SizedBox(height: 16),
+            Icon(icon, size: 56.r, color: onSurface.withValues(alpha: 0.25)),
+            SizedBox(height: 16.h),
             Text(
               message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: onSurface.withOpacity(0.65),
+                color: onSurface.withValues(alpha: 0.65),
                 fontFamily: 'Marcellus',
-                fontSize: 14,
+                fontSize: 14.sp,
                 height: 1.5,
               ),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               OutlinedButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 18),
+                icon: Icon(Icons.refresh_rounded, size: 18.r),
                 label: const Text(
                   'Try again',
                   style: TextStyle(fontFamily: 'Marcellus'),
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: primary,
-                  side: BorderSide(color: primary.withOpacity(0.5)),
+                  side: BorderSide(color: primary.withValues(alpha: 0.5)),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
               ),

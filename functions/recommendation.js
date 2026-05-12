@@ -72,7 +72,11 @@
 
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+
+// Secret used by sendDailyDiscovery (Groq fact generation)
+const groqApiKey = defineSecret("GROQ_API_KEY");
 
 // Lazy-init admin — index.js calls initializeApp() before requiring this module,
 // so we access Firestore through a getter instead of module-level assignment.
@@ -377,6 +381,13 @@ function cosineSim(a, b) {
  * @param {boolean} params.hasEnoughSignals - true once user has ≥5 non-quiz signals
  * @returns {{ score: number, breakdown: object, reasons: string[] }}
  */
+// Place types considered outdoor or semi-outdoor for weather scoring.
+const OUTDOOR_TYPES = new Set([
+  "park", "beach", "archaeological_site", "monument", "historical_landmark",
+  "zoo", "stadium", "amusement_park", "tourist_attraction", "national_park",
+]);
+const SEMI_OUTDOOR_TYPES = new Set(["market", "street_market", "bazaar"]);
+
 function scoreCandidate({
   candidate,
   tasteVector,
@@ -385,6 +396,7 @@ function scoreCandidate({
   neighbors,
   countryPrior,
   hasEnoughSignals,
+  weatherContext = null,
 }) {
   // Combine types and tags into a single list of canonical keys for this place
   const keys = [...normalizeKeys(candidate.types), ...normalizeKeys(candidate.tags)];
@@ -407,13 +419,14 @@ function scoreCandidate({
   const ratingScore = clamp((rating - 3.5) / 1.5, -1, 1);
 
   // ── Component 3: Proximity ────────────────────────────────────────────────
-  // Soft inverse-distance decay — closer places score higher
+  // Exponential decay — drops sharply beyond ~50 km so distant places can't
+  // beat local ones on taste alone. Half-score at ~70 km, near-zero at ~400 km.
   let proximity = 0;
   let distanceKm = null;
   if (typeof userLat === "number" && typeof userLng === "number" &&
       typeof candidate.lat === "number" && typeof candidate.lng === "number") {
     distanceKm = haversineKm(userLat, userLng, candidate.lat, candidate.lng);
-    proximity = 1 / (1 + distanceKm / 5); // half-score at 5 km
+    proximity = Math.exp(-distanceKm / 100); // 0 km→1.0, 100 km→0.37, 400 km→0.018
   }
 
   // ── Component 4: Popularity ───────────────────────────────────────────────
@@ -451,8 +464,9 @@ function scoreCandidate({
     w = { ...w, collab: 0.30, taste: 0.30 };
   }
   if (context === "home") {
-    // Home feed carousel — slightly more discovery-oriented than solo planning
-    w = { ...w, popularity: 0.15, proximity: 0.15 };
+    // Home feed — proximity is the dominant signal; taste breaks ties among nearby places.
+    // This prevents distant places from winning solely on taste match.
+    w = { taste: 0.25, rating: 0.10, proximity: 0.45, popularity: 0.05, collab: 0.15 };
   }
 
   // Cold-start adjustment: reduce personal taste weight, let country prior fill the gap
@@ -506,15 +520,41 @@ function scoreCandidate({
     },
   ];
   const reasons = contributions
-    .filter((c) => c.text && c.value > 0) // only show positive contributors with text
-    .sort((a, b) => b.value - a.value)    // sort by contribution strength
-    .slice(0, 2)                           // take top 2
+    .filter((c) => c.text && c.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 2)
     .map((c) => c.text);
 
+  // ── Weather penalty (outdoor places scored down in bad conditions) ────────
+  // Applied after reasons are built so the weather warning can prepend itself.
+  let weatherPenalty = 0;
+  if (weatherContext) {
+    const allTypes = [...(candidate.types || []), ...(candidate.tags || [])];
+    const isOutdoor = allTypes.some((t) => OUTDOOR_TYPES.has(t));
+    const isSemi   = !isOutdoor && allTypes.some((t) => SEMI_OUTDOOR_TYPES.has(t));
+    if (isOutdoor || isSemi) {
+      const m = isSemi ? 0.5 : 1.0;
+      if (weatherContext.isSandstorm) {
+        weatherPenalty = 0.80 * m;
+        reasons.unshift("⚠ Sandstorm warning — avoid outdoors");
+      } else if (weatherContext.isExtremeHeat) {
+        weatherPenalty = 0.45 * m;
+        reasons.unshift(`⚠ Extreme heat (${(weatherContext.feelsLikeC || 0).toFixed(0)}°C) — best before 9am`);
+      } else if (weatherContext.isVeryHot) {
+        weatherPenalty = 0.20 * m;
+        reasons.unshift(`Stay hydrated — feels ${(weatherContext.feelsLikeC || 0).toFixed(0)}°C`);
+      } else if (weatherContext.isExtremeUV) {
+        weatherPenalty = 0.15 * m;
+        reasons.unshift(`UV index ${(weatherContext.uvIndex || 0).toFixed(0)} — wear sunscreen`);
+      }
+    }
+  }
+  const finalScore = score - weatherPenalty;
+
   return {
-    score,
-    breakdown: { tasteMatch, ratingScore, proximity, popularity, collab, priorScore, distanceKm },
-    reasons,
+    score: finalScore,
+    breakdown: { tasteMatch, ratingScore, proximity, popularity, collab, priorScore, distanceKm, weatherPenalty },
+    reasons: reasons.slice(0, 3),
   };
 }
 
@@ -596,6 +636,7 @@ function rankCandidates({
   candidates, tasteVector, userLat, userLng, context,
   neighbors = {}, countryPrior = null, hasEnoughSignals = false,
   seenSet = new Set(), limit = 10, epsilon = 0.15, rng = Math.random,
+  weatherContext = null,
 }) {
   // Filter out places the user has already seen in this surface
   const fresh = candidates.filter((c) => c.placeId && !seenSet.has(c.placeId));
@@ -605,7 +646,7 @@ function rankCandidates({
     candidate: c,
     ...scoreCandidate({
       candidate: c, tasteVector, userLat, userLng, context,
-      neighbors, countryPrior, hasEnoughSignals,
+      neighbors, countryPrior, hasEnoughSignals, weatherContext,
     }),
   }));
 
@@ -858,6 +899,7 @@ exports.recommendPlaces = onCall(async (request) => {
   const {
     candidates, userLat, userLng,
     context = "solo", limit = 10, excludeSeen = true,
+    weatherContext = null,
   } = request.data || {};
 
   if (!Array.isArray(candidates) || candidates.length === 0) {
@@ -939,6 +981,7 @@ exports.recommendPlaces = onCall(async (request) => {
   const recommendations = rankCandidates({
     candidates, tasteVector, userLat, userLng, context,
     neighbors, countryPrior, hasEnoughSignals, seenSet, limit,
+    weatherContext,
   });
 
   return {
@@ -1384,12 +1427,14 @@ exports.sendDailyDiscovery = onSchedule(
       .limit(500)
       .get();
 
+    const APP_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/lost-in-egypt-elasly.firebasestorage.app/o/logo_colorful_comp.png?alt=media&token=ab162f0f-4b26-406a-9943-f5165c972b4e";
+
     const tasks = usersSnap.docs.map(async (userDoc) => {
       try {
         const { fcmToken, tasteVector = {}, notificationPreferences = {} } = userDoc.data();
         if (!fcmToken) return;
-        // Check user hasn't disabled community-style notifications (reuse 'community' pref or default true)
-        if (notificationPreferences.community === false) return;
+        // Respect the dedicated dailyDiscovery preference (defaults true)
+        if (notificationPreferences.dailyDiscovery === false) return;
 
         // Pick the pool entry whose types best overlap the user's taste vector
         let bestMatch = DISCOVERY_POOL[Math.floor(Math.random() * DISCOVERY_POOL.length)];
@@ -1419,11 +1464,36 @@ exports.sendDailyDiscovery = onSchedule(
         const groqData = await groqRes.json();
         const fact = groqData.choices?.[0]?.message?.content?.trim() || `Discover ${bestMatch.name} today`;
 
+        const title = `📍 ${bestMatch.name}`;
+
+        // Write in-app notification document so it appears in the notification centre
+        await db().collection("users").doc(userDoc.id)
+          .collection("notifications").add({
+            recipientId: userDoc.id,
+            senderId: "system",
+            senderName: "Lost in Egypt",
+            senderAvatar: APP_LOGO_URL,
+            title,
+            message: fact,
+            type: "daily_discovery",
+            deepLinkTargetId: "",
+            isRead: false,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+        // Send FCM push
         await admin.messaging().send({
           token: fcmToken,
-          notification: { title: `📍 ${bestMatch.name}`, body: fact },
+          notification: { title, body: fact },
           data: { type: "daily_discovery", landmark: bestMatch.name },
-          android: { priority: "normal" },
+          android: {
+            notification: {
+              channelId: "high_importance_channel",
+              priority: "high",
+              color: "#D6A00F",
+              imageUrl: APP_LOGO_URL,
+            },
+          },
           apns: { payload: { aps: { contentAvailable: true } } },
         });
       } catch (_) { /* skip individual user errors */ }

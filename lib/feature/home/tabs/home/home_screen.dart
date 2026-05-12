@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:lost_in_egypt/core/models/weather_context.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/weather_banner.dart';
+import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/guides_body.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/solo_trip_page.dart';
 import 'package:lost_in_egypt/feature/tours/domain/entities/tour_entity.dart';
@@ -17,7 +24,7 @@ import './data/datasources/local_places_service.dart';
 import './data/models/map_item_models.dart';
 import './presentation/category_places_screen.dart';
 import './presentation/all_events_screen.dart';
-import './presentation/place_details_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _firstName;
   late Future<QuerySnapshot> _eventsFuture;
   List<PlaceModel> _popularPlaces = [];
+  List<PlaceModel> _forYouPlaces = [];
 
   final PageController _pageController = PageController();
   Timer? _autoSlideTimer;
@@ -56,8 +64,64 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadPopularPlaces() async {
     final places = await LocalPlacesService.getTopRatedPlaces(limit: 20);
-    places.shuffle();
-    if (mounted) setState(() => _popularPlaces = places.take(10).toList());
+    if (mounted) {
+      final shuffled = List<PlaceModel>.from(places)..shuffle();
+      setState(() => _popularPlaces = shuffled.take(10).toList());
+      unawaited(_loadForYou(places));
+    }
+  }
+
+  Future<Position?> _getUserPosition() async {
+    try {
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        return null;
+      }
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.low,
+      ).timeout(const Duration(seconds: 6));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _loadForYou(List<PlaceModel> pool) async {
+    if (pool.isEmpty) return;
+    final candidates = pool.map((p) => <String, dynamic>{
+      'placeId': p.id,
+      'name': p.title,
+      'types': [p.category],
+      'tags': p.tags,
+      'rating': p.rating,
+      'userRatingCount': p.userRatingCount,
+      'lat': p.coordinate.latitude,
+      'lng': p.coordinate.longitude,
+    }).toList();
+
+    final position = await _getUserPosition();
+
+    final result = await RecommendationService.recommendPlaces(
+      candidates: candidates,
+      context: 'home',
+      limit: 8,
+      weather: WeatherController.weather.value,
+      userLat: position?.latitude,
+      userLng: position?.longitude,
+    );
+
+    if (result == null || result.recommendations.isEmpty || !mounted) return;
+
+    final idToPlace = {for (final p in pool) p.id: p};
+    final forYou = result.recommendations
+        .map((r) => idToPlace[r.placeId])
+        .whereType<PlaceModel>()
+        .toList();
+
+    if (mounted && forYou.isNotEmpty) setState(() => _forYouPlaces = forYou);
   }
 
   @override
@@ -124,12 +188,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final primary = isDark ? AppColors.darkNavBar : theme.colorScheme.primary;
 
     final textColor = isDark ? AppColors.darkText : AppColors.lightText;
-    final secondaryTextColor = textColor.withOpacity(0.65);
+    final secondaryTextColor = textColor.withValues(alpha: 0.65);
 
     final cardShadow = BoxShadow(
       color: isDark
-          ? Colors.white.withOpacity(0.02)
-          : Colors.black.withOpacity(0.10),
+          ? Colors.white.withValues(alpha: 0.02)
+          : Colors.black.withValues(alpha: 0.10),
       blurRadius: 14,
       spreadRadius: 1,
       offset: const Offset(0, 8),
@@ -144,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Stack(
               children: [
                 SizedBox(
-                  height: 300,
+                  height: 300.h,
                   width: double.infinity,
                   child: PageView.builder(
                     controller: _pageController,
@@ -163,15 +227,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Container(
-                  height: 260,
+                  height: 260.h,
                   width: double.infinity,
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                 ),
                 Padding(
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).padding.top + 8,
-                    left: 16,
-                    right: 16,
+                    left: 16.w,
+                    right: 16.w,
                   ),
                   child: Row(
                     children: [
@@ -188,12 +252,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    height: 20,
+                    height: 20.h,
                     decoration: BoxDecoration(
                       color: bg,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(24.r),
+                        topRight: Radius.circular(24.r),
                       ),
                     ),
                   ),
@@ -201,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             Padding(
-              padding: const EdgeInsetsDirectional.only(start: 50, end: 50),
+              padding: EdgeInsetsDirectional.only(start: 50.w, end: 50.w),
               child: Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -210,111 +274,129 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      height: 8,
-                      width: isActive ? 22 : 8,
+                      margin: EdgeInsets.symmetric(horizontal: 4.w),
+                      height: 8.h,
+                      width: isActive ? 22.w : 8.w,
                       decoration: BoxDecoration(
                         color: isActive
                             ? primary
-                            : primary.withOpacity(0.25),
-                        borderRadius: BorderRadius.circular(20),
+                            : primary.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(20.r),
                       ),
                     );
                   }),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 12.h),
+            // ── Weather advisory banner ──
+            ValueListenableBuilder<WeatherContext?>(
+              valueListenable: WeatherController.weather,
+              builder: (_, weather, _) {
+                if (weather == null || !WeatherBanner.shouldShow(weather)) {
+                  return const SizedBox.shrink();
+                }
+                return WeatherBanner(
+                  weather: weather,
+                  onTap: () => WeatherForecastSheet.show(context),
+                );
+              },
+            ),
+            SizedBox(height: 4.h),
             // ── Greeting ──
             if (_firstName != null && _firstName!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Text(
                   "${_greetingForTimeOfDay()}, $_firstName 👋",
                   style: TextStyle(
                     color: primary,
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                     fontFamily: "Marcellus",
                   ),
                 ),
               ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Text(
                 "Where do you want to go?",
                 style: TextStyle(
-                  color: textColor.withOpacity(0.9),
-                  fontSize: 22,
+                  color: textColor.withValues(alpha: 0.9),
+                  fontSize: 22.sp,
                   fontFamily: "Marcellus",
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  ...LocalMockData.categories.map((category) {
-                    return _categoryCard(
-                      icon: category.iconPath,
-                      title: category.title,
-                      surface: surface,
-                      textColor: textColor,
-                      shadow: cardShadow,
-                      isDark: isDark,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CategoryPlacesScreen(
-                              categoryId: category.id,
-                              categoryTitle: category.title,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }),
-                ],
+            SizedBox(height: 12.h),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 1.15,
+                crossAxisSpacing: 12.w,
+                mainAxisSpacing: 12.h,
               ),
+              itemCount: LocalMockData.categories.length.clamp(0, 6),
+              itemBuilder: (context, index) {
+                final category = LocalMockData.categories[index];
+                return _categoryCard(
+                  icon: category.iconPath,
+                  title: category.title,
+                  surface: surface,
+                  textColor: textColor,
+                  shadow: cardShadow,
+                  isDark: isDark,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CategoryPlacesScreen(
+                          categoryId: category.id,
+                          categoryTitle: category.title,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-            const SizedBox(height: 25),
+            SizedBox(height: 25.h),
             // ── Popular Places ──
             if (_popularPlaces.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Row(
                   children: [
                     Container(
-                      width: 4,
-                      height: 22,
+                      width: 4.w,
+                      height: 22.h,
                       decoration: BoxDecoration(
                         color: primary,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(2.r),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
                       "Popular Places",
                       style: TextStyle(
-                        color: textColor.withOpacity(0.9),
-                        fontSize: 22,
+                        color: textColor.withValues(alpha: 0.9),
+                        fontSize: 22.sp,
                         fontFamily: "Marcellus",
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               SizedBox(
-                height: 200,
+                height: 200.h,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(left: 16),
+                  padding: EdgeInsets.only(left: 16.w),
                   itemCount: _popularPlaces.length,
                   itemBuilder: (context, index) {
                     final place = _popularPlaces[index];
@@ -328,30 +410,78 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 25),
+              SizedBox(height: 25.h),
+            ],
+            // ── For You ──
+            if (_forYouPlaces.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4.w,
+                      height: 22.h,
+                      decoration: BoxDecoration(
+                        color: primary,
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      "For You",
+                      style: TextStyle(
+                        color: textColor.withValues(alpha: 0.9),
+                        fontSize: 22.sp,
+                        fontFamily: "Marcellus",
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Icon(Icons.auto_awesome, size: 16.r, color: primary),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12.h),
+              SizedBox(
+                height: 200.h,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.only(left: 16.w),
+                  itemCount: _forYouPlaces.length,
+                  itemBuilder: (context, index) {
+                    return _popularPlaceCard(
+                      place: _forYouPlaces[index],
+                      primary: primary,
+                      textColor: textColor,
+                      shadow: cardShadow,
+                      isDark: isDark,
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 25.h),
             ],
             // ── Events ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
                       Container(
-                        width: 4,
-                        height: 22,
+                        width: 4.w,
+                        height: 22.h,
                         decoration: BoxDecoration(
                           color: primary,
-                          borderRadius: BorderRadius.circular(2),
+                          borderRadius: BorderRadius.circular(2.r),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Text(
                         "Events",
                         style: TextStyle(
-                          color: textColor.withOpacity(0.9),
-                          fontSize: 22,
+                          color: textColor.withValues(alpha: 0.9),
+                          fontSize: 22.sp,
                           fontFamily: "Marcellus",
                         ),
                       ),
@@ -376,9 +506,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             SizedBox(
-              height: 160,
+              height: 160.h,
               child: FutureBuilder<QuerySnapshot>(
                 future: _eventsFuture,
                 builder: (context, snapshot) {
@@ -402,12 +532,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   return ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.only(left: 16),
+                    padding: EdgeInsets.only(left: 16.w),
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
                       final data = docs[index].data() as Map<String, dynamic>;
                       final event = EventModel.fromMap(data, docs[index].id);
-                      // Firestore schema stores images as a list; fall back to first item
                       final imageUrl = event.imagePath.isNotEmpty
                           ? event.imagePath
                           : ((data['images'] as List?)?.firstOrNull?.toString() ?? '');
@@ -424,7 +553,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 25),
+            SizedBox(height: 25.h),
             // ── Popular Tours ──
             _popularToursSection(
               primary: primary,
@@ -436,23 +565,23 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             // ── Plan your trip ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
                 children: [
                   Container(
-                    width: 4,
-                    height: 22,
+                    width: 4.w,
+                    height: 22.h,
                     decoration: BoxDecoration(
                       color: primary,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
                     "Plan your trip",
                     style: TextStyle(
-                      color: textColor.withOpacity(0.9),
-                      fontSize: 22,
+                      color: textColor.withValues(alpha: 0.9),
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
                       fontFamily: "Marcellus",
                     ),
@@ -460,9 +589,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
                 children: [
                   Expanded(
@@ -482,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: _tripCard(
                       title: "Solo trip",
@@ -494,7 +623,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => SoloTripPage(profileImageUrl: _profileImageUrl, onSignOut: _handleSignOut,),),
+                            builder: (_) => SoloTripPage(
+                              profileImageUrl: _profileImageUrl,
+                              onSignOut: _handleSignOut,
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -502,7 +635,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 120),
+            SizedBox(height: 120.h),
           ],
         ),
       ),
@@ -519,43 +652,40 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      width: 120,
-      height: 100,
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         boxShadow: [shadow],
         border: Border.all(
-          color:
-          (Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black)
-              .withOpacity(0.06),
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black)
+              .withValues(alpha: 0.06),
         ),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         clipBehavior: Clip.hardEdge,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
                 icon,
-                width: 40,
+                width: 40.r,
                 color: isDark
                     ? AppColors.darkNavBar
                     : Theme.of(context).colorScheme.primary,
                 colorBlendMode: BlendMode.srcIn,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 title,
                 style: TextStyle(
-                  color: textColor.withOpacity(0.9),
+                  color: textColor.withValues(alpha: 0.9),
                   fontWeight: FontWeight.w600,
                   fontFamily: "Marcellus",
                 ),
@@ -575,86 +705,79 @@ class _HomeScreenState extends State<HomeScreen> {
     required BoxShadow shadow,
   }) {
     return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 12),
+      width: 200.w,
+      margin: EdgeInsets.only(right: 12.w),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [shadow],
         border: Border.all(
-          color:
-          (Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black)
-              .withOpacity(0.06),
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black)
+              .withValues(alpha: 0.06),
         ),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         clipBehavior: Clip.hardEdge,
         child: InkWell(
           onTap: () {},
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16.r),
+                  topRight: Radius.circular(16.r),
                 ),
                 child: Stack(
                   children: [
                     SizedBox(
-                      height: 117,
+                      height: 117.h,
                       width: double.infinity,
                       child: imagePath.startsWith('http')
                           ? CachedNetworkImage(
-                        imageUrl: imagePath,
-                        fit: BoxFit.contain,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey.shade300,
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.grey.shade300,
-                          child: const Icon(
-                            Icons.broken_image,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      )
+                              imageUrl: imagePath,
+                              fit: BoxFit.contain,
+                              placeholder: (context, url) => Container(
+                                color: Colors.grey.shade300,
+                                child: const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: Colors.grey.shade300,
+                                child: const Icon(Icons.broken_image, color: Colors.grey),
+                              ),
+                            )
                           : Image.asset(
-                        imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(
-                              color: Colors.grey.shade300,
-                              child: const Icon(Icons.image_not_supported),
+                              imagePath,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: Colors.grey.shade300,
+                                child: const Icon(Icons.image_not_supported),
+                              ),
                             ),
-                      ),
                     ),
                     Positioned(
-                      top: 10,
-                      right: 10,
+                      top: 10.h,
+                      right: 10.w,
                       child: Material(
-                        color: Colors.white.withOpacity(0.35),
+                        color: Colors.white.withValues(alpha: 0.35),
                         shape: const CircleBorder(),
                         clipBehavior: Clip.hardEdge,
                         child: InkWell(
                           onTap: () {},
                           customBorder: const CircleBorder(),
                           child: SizedBox(
-                            width: 32,
-                            height: 32,
+                            width: 32.r,
+                            height: 32.r,
                             child: Icon(
                               Icons.favorite_border,
-                              size: 18,
+                              size: 18.r,
                               color: Colors.red.shade400,
                             ),
                           ),
@@ -665,13 +788,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: textColor.withOpacity(0.9),
-                    fontSize: 14,
+                    color: textColor.withValues(alpha: 0.9),
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
                     fontFamily: "Marcellus",
                   ),
@@ -695,26 +817,25 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      height: 145,
+      height: 145.h,
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [shadow],
         border: Border.all(
-          color:
-          (Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black)
-              .withOpacity(0.06),
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black)
+              .withValues(alpha: 0.06),
         ),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         clipBehavior: Clip.hardEdge,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -722,18 +843,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 title == "Guides"
                     ? "assets/icons/guide.png"
                     : "assets/icons/solo_trip.png",
-                width: 80,
+                width: 80.r,
                 color: isDark
-                    ? AppColors.darkNavBar.withOpacity(0.9)
-                    : Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                    ? AppColors.darkNavBar.withValues(alpha: 0.9)
+                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                 colorBlendMode: BlendMode.srcIn,
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               Text(
                 title,
                 style: TextStyle(
-                  color: textColor.withOpacity(0.9),
-                  fontSize: 16,
+                  color: textColor.withValues(alpha: 0.9),
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
                   fontFamily: "Marcellus",
                 ),
@@ -760,34 +881,28 @@ class _HomeScreenState extends State<HomeScreen> {
     required bool isDark,
   }) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => PlaceDetailsScreen(place: place)),
-        );
-      },
+      onTap: () => MapFocusService.instance.triggerFocus(place),
       child: Container(
-        width: 170,
-        margin: const EdgeInsets.only(right: 12),
+        width: 170.w,
+        margin: EdgeInsets.only(right: 12.w),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [shadow],
         ),
         clipBehavior: Clip.hardEdge,
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Image
             place.imagePath.startsWith('http')
                 ? CachedNetworkImage(
                     imageUrl: place.imagePath,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(
-                      color: primary.withOpacity(0.08),
+                    placeholder: (_, _) => Container(
+                      color: primary.withValues(alpha: 0.08),
                       child: Center(
                         child: SizedBox(
-                          width: 20,
-                          height: 20,
+                          width: 20.r,
+                          height: 20.r,
                           child: CircularProgressIndicator(
                             color: primary,
                             strokeWidth: 2,
@@ -795,10 +910,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    errorWidget: (_, __, ___) => Container(
-                      color: primary.withOpacity(0.06),
+                    errorWidget: (_, _, _) => Container(
+                      color: primary.withValues(alpha: 0.06),
                       child: Icon(Icons.image_not_supported_outlined,
-                          color: primary.withOpacity(0.3), size: 32),
+                          color: primary.withValues(alpha: 0.3), size: 32.r),
                     ),
                   )
                 : Image.asset(place.imagePath, fit: BoxFit.cover),
@@ -811,7 +926,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.65),
+                      Colors.black.withValues(alpha: 0.65),
                     ],
                     stops: const [0.4, 1.0],
                   ),
@@ -820,24 +935,24 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             // Rating pill
             Positioned(
-              top: 8,
-              right: 8,
+              top: 8.h,
+              right: 8.w,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: Colors.amber.shade700,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star_rounded, size: 12, color: Colors.white),
-                    const SizedBox(width: 2),
+                    Icon(Icons.star_rounded, size: 12.r, color: Colors.white),
+                    SizedBox(width: 2.w),
                     Text(
                       place.rating.toStringAsFixed(1),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -847,17 +962,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             // Title + City
             Positioned(
-              bottom: 10,
-              left: 10,
-              right: 10,
+              bottom: 10.h,
+              left: 10.w,
+              right: 10.w,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     place.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                       fontFamily: "Marcellus",
                       height: 1.2,
@@ -866,17 +981,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (place.locationAddress.isNotEmpty) ...[
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3.h),
                     Row(
                       children: [
-                        Icon(Icons.location_on_rounded, size: 11, color: Colors.white.withOpacity(0.8)),
-                        const SizedBox(width: 2),
+                        Icon(Icons.location_on_rounded,
+                            size: 11.r, color: Colors.white.withValues(alpha: 0.8)),
+                        SizedBox(width: 2.w),
                         Expanded(
                           child: Text(
                             place.locationAddress,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 11.sp,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -920,35 +1036,35 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
                 children: [
                   Container(
-                    width: 4,
-                    height: 22,
+                    width: 4.w,
+                    height: 22.h,
                     decoration: BoxDecoration(
                       color: primary,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
                     "Popular Tours",
                     style: TextStyle(
-                      color: textColor.withOpacity(0.9),
-                      fontSize: 22,
+                      color: textColor.withValues(alpha: 0.9),
+                      fontSize: 22.sp,
                       fontFamily: "Marcellus",
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             SizedBox(
-              height: 200,
+              height: 200.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 16),
+                padding: EdgeInsets.only(left: 16.w),
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
                   final data = docs[index].data() as Map<String, dynamic>;
@@ -987,72 +1103,75 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                     child: Container(
-                      width: 220,
-                      margin: const EdgeInsets.only(right: 12),
+                      width: 220.w,
+                      margin: EdgeInsets.only(right: 12.w),
                       decoration: BoxDecoration(
                         color: surface,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [cardShadow],
                         border: Border.all(
-                          color: (isDark ? Colors.white : Colors.black).withOpacity(0.06),
+                          color: (isDark ? Colors.white : Colors.black)
+                              .withValues(alpha: 0.06),
                         ),
                       ),
                       clipBehavior: Clip.hardEdge,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Tour image
                           SizedBox(
-                            height: 120,
+                            height: 120.h,
                             width: double.infinity,
                             child: hasImage
                                 ? CachedNetworkImage(
                                     imageUrl: tour.images.first,
                                     fit: BoxFit.cover,
-                                    placeholder: (_, __) => Container(
-                                      color: primary.withOpacity(0.08),
+                                    placeholder: (_, _) => Container(
+                                      color: primary.withValues(alpha: 0.08),
                                     ),
-                                    errorWidget: (_, __, ___) => Container(
-                                      color: primary.withOpacity(0.06),
-                                      child: Icon(Icons.tour, color: primary.withOpacity(0.3)),
+                                    errorWidget: (_, _, _) => Container(
+                                      color: primary.withValues(alpha: 0.06),
+                                      child: Icon(Icons.tour,
+                                          color: primary.withValues(alpha: 0.3)),
                                     ),
                                   )
                                 : Container(
-                                    color: primary.withOpacity(0.06),
-                                    child: Icon(Icons.tour, color: primary.withOpacity(0.3), size: 40),
+                                    color: primary.withValues(alpha: 0.06),
+                                    child: Icon(Icons.tour,
+                                        color: primary.withValues(alpha: 0.3), size: 40.r),
                                   ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                            padding: EdgeInsets.fromLTRB(10.w, 8.h, 10.w, 8.h),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   tour.title,
                                   style: TextStyle(
-                                    color: textColor.withOpacity(0.9),
-                                    fontSize: 14,
+                                    color: textColor.withValues(alpha: 0.9),
+                                    fontSize: 14.sp,
                                     fontWeight: FontWeight.bold,
                                     fontFamily: "Marcellus",
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4.h),
                                 Row(
                                   children: [
                                     if (tour.rating > 0) ...[
-                                      Icon(Icons.star_rounded, size: 14, color: Colors.amber.shade700),
-                                      const SizedBox(width: 2),
+                                      Icon(Icons.star_rounded,
+                                          size: 14.r, color: Colors.amber.shade700),
+                                      SizedBox(width: 2.w),
                                       Text(
                                         tour.rating.toStringAsFixed(1),
                                         style: TextStyle(
                                           color: secondaryTextColor,
-                                          fontSize: 12,
+                                          fontSize: 12.sp,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+                                      SizedBox(width: 8.w),
                                     ],
                                     ValueListenableBuilder<String>(
                                       valueListenable: CurrencyController.currency,
@@ -1068,7 +1187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               label,
                                               style: TextStyle(
                                                 color: primary,
-                                                fontSize: 12,
+                                                fontSize: 12.sp,
                                                 fontWeight: FontWeight.w700,
                                               ),
                                             );
@@ -1088,7 +1207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 25),
+            SizedBox(height: 25.h),
           ],
         );
       },

@@ -2,9 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
@@ -34,7 +38,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
   bool isPlaying = false;
   bool isPaused = false;
   bool showFullDescription = false;
-  String? _audioFilePath; // cache the fetched audio so replay doesn't re-fetch
+  String? _audioFilePath;
 
   final AudioPlayer _audioPlayer = AudioPlayer();
 
@@ -54,20 +58,15 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
 
   Future<void> _handleAudioButton() async {
     if (isPlaying) {
-      // Pause
       await _audioPlayer.pause();
       if (mounted) setState(() { isPlaying = false; isPaused = true; });
       return;
     }
-
     if (isPaused) {
-      // Resume
       await _audioPlayer.resume();
       if (mounted) setState(() { isPlaying = true; isPaused = false; });
       return;
     }
-
-    // Fresh play (or replay after completion)
     await _startPlayback();
   }
 
@@ -80,7 +79,6 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
   Future<void> _startPlayback() async {
     if (story == null) return;
 
-    // Re-use cached file if available
     if (_audioFilePath != null) {
       await _audioPlayer.play(DeviceFileSource(_audioFilePath!));
       if (mounted) setState(() { isPlaying = true; isPaused = false; });
@@ -119,16 +117,21 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final onSurface = theme.colorScheme.onSurface;
+    final surface = theme.colorScheme.surface;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       minChildSize: 0.4,
       maxChildSize: 0.9,
       builder: (_, scrollController) => Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: surface,
+          // BottomSheet radius — not scaled per design convention
           borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         ),
         child: ListView(
@@ -136,20 +139,18 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
           padding: EdgeInsets.zero,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(30),
-              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
               child: SizedBox(
-                height: 220,
+                height: 220.h,
                 width: double.infinity,
                 child: CachedNetworkImage(
                   imageUrl: widget.place.imagePath,
                   fit: BoxFit.cover,
-                  placeholder: (c, url) => Container(
+                  placeholder: (_, _) => Container(
                     color: Colors.grey[300],
                     child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                   ),
-                  errorWidget: (c, url, e) => Container(
+                  errorWidget: (_, _, _) => Container(
                     color: Colors.grey[300],
                     child: const Icon(Icons.broken_image),
                   ),
@@ -157,40 +158,71 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     widget.place.title,
                     style: TextStyle(
-                      fontFamily: "Marcellus",
-                      fontSize: 26,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontFamily: 'Marcellus',
+                      fontSize: 26.sp,
+                      color: onSurface,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Row(
                     children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
+                      Icon(Icons.check_circle, color: primary, size: 20.r),
+                      SizedBox(width: 8.w),
                       Text(
-                        "Landmark Identified",
+                        'Landmark Identified',
                         style: TextStyle(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.7),
+                          color: onSurface.withValues(alpha: 0.7),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  // Weather advisory for this landmark
+                  ValueListenableBuilder<WeatherContext?>(
+                    valueListenable: WeatherController.weather,
+                    builder: (_, weather, _) {
+                      if (weather == null || !weather.isOutdoorAdvisory) {
+                        return const SizedBox.shrink();
+                      }
+                      final color = weather.severityColor;
+                      return GestureDetector(
+                        onTap: () => WeatherForecastSheet.show(context),
+                        child: Container(
+                          margin: EdgeInsets.only(top: 10.h),
+                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.10),
+                            border: Border.all(color: color.withValues(alpha: 0.30)),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(weather.conditionIcon, color: color, size: 15.r),
+                              SizedBox(width: 6.w),
+                              Expanded(
+                                child: Text(
+                                  '${weather.conditionLabel} · Tap for forecast',
+                                  style: TextStyle(
+                                    color: color,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: 10.h),
 
                   // Description with Read More
                   if (story == null) ...[
@@ -200,55 +232,34 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                           : widget.place.description.length > 100
                               ? '${widget.place.description.substring(0, 100)}...'
                               : widget.place.description,
-                      style: TextStyle(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.6)),
+                      style: TextStyle(color: onSurface.withValues(alpha: 0.6)),
                     ),
                     if (widget.place.description.length > 100)
                       TextButton(
-                        onPressed: () {
-                          setState(() {
-                            showFullDescription = !showFullDescription;
-                          });
-                        },
+                        onPressed: () => setState(() => showFullDescription = !showFullDescription),
                         child: Text(
                           showFullDescription ? 'Read Less' : 'Read More',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(color: primary, fontWeight: FontWeight.bold),
                         ),
                       ),
                   ] else
                     Container(
-                      height: 150,
-                      padding: const EdgeInsets.all(12),
+                      height: 150.h,
+                      padding: EdgeInsets.all(12.r),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.3),
-                        ),
+                        color: primary.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: primary.withValues(alpha: 0.30)),
                       ),
                       child: SingleChildScrollView(
                         child: Text(
                           story!,
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          style: TextStyle(fontStyle: FontStyle.italic, color: onSurface),
                         ),
                       ),
                     ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
+
                   if (story == null)
                     SizedBox(
                       width: double.infinity,
@@ -276,32 +287,21 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                               },
                         icon: isLoadingStory
                             ? SizedBox(
-                                width: 20,
-                                height: 20,
+                                width: 20.r,
+                                height: 20.r,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimary,
+                                  color: theme.colorScheme.onPrimary,
                                 ),
                               )
-                            : Icon(
-                                Icons.auto_awesome,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                        label: Text(
-                          isLoadingStory
-                              ? "Consulting history..."
-                              : "Tell me a story",
-                        ),
+                            : Icon(Icons.auto_awesome, color: theme.colorScheme.onPrimary),
+                        label: Text(isLoadingStory ? 'Consulting history...' : 'Tell me a story'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(16.r),
                           ),
                         ),
                       ),
@@ -309,17 +309,16 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                   else
                     Row(
                       children: [
-                        // Play / Pause / Resume
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: isLoadingAudio ? null : _handleAudioButton,
                             icon: isLoadingAudio
                                 ? SizedBox(
-                                    width: 20,
-                                    height: 20,
+                                    width: 20.r,
+                                    height: 20.r,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Theme.of(context).colorScheme.onPrimary,
+                                      color: theme.colorScheme.onPrimary,
                                     ),
                                   )
                                 : Icon(
@@ -328,92 +327,79 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                         : isPaused
                                             ? Icons.play_arrow
                                             : Icons.headphones,
-                                    color: Theme.of(context).colorScheme.onPrimary,
+                                    color: theme.colorScheme.onPrimary,
                                   ),
                             label: Text(
                               isLoadingAudio
-                                  ? "Generating..."
+                                  ? 'Generating...'
                                   : isPlaying
-                                      ? "Pause"
+                                      ? 'Pause'
                                       : isPaused
-                                          ? "Resume"
-                                          : "Listen",
+                                          ? 'Resume'
+                                          : 'Listen',
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              backgroundColor: primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              padding: EdgeInsets.symmetric(vertical: 12.h),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(16.r),
                               ),
                             ),
                           ),
                         ),
-                        // Replay — only visible once audio is loaded
                         if (_audioFilePath != null) ...[
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10.w),
                           IconButton.filled(
                             onPressed: isLoadingAudio ? null : _handleReplay,
                             icon: const Icon(Icons.replay),
-                            tooltip: "Replay from start",
+                            tooltip: 'Replay from start',
                             style: IconButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                              foregroundColor: Theme.of(context).colorScheme.primary,
-                              padding: const EdgeInsets.all(12),
+                              backgroundColor: primary.withValues(alpha: 0.15),
+                              foregroundColor: primary,
+                              padding: EdgeInsets.all(12.r),
                             ),
                           ),
                         ],
                       ],
                     ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
                             Navigator.pop(context);
-                            MapFocusService.instance.tabSwitchNotifier.value =
-                                2;
+                            MapFocusService.instance.tabSwitchNotifier.value = 2;
                             MapFocusService.instance.triggerFocus(widget.place);
                           },
-                          icon: Icon(
-                            Icons.map_outlined,
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
+                          icon: Icon(Icons.map_outlined, color: theme.colorScheme.secondary),
                           label: Text(
-                            "Show on Map",
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary),
+                            'Show on Map',
+                            style: TextStyle(color: theme.colorScheme.secondary),
                           ),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: BorderSide(
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            side: BorderSide(color: theme.colorScheme.secondary),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16.r),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () => Navigator.pop(context),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.secondary,
-                            foregroundColor:
-                                Theme.of(context).colorScheme.onSecondary,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: theme.colorScheme.secondary,
+                            foregroundColor: theme.colorScheme.onSecondary,
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16.r),
                             ),
                           ),
-                          child: const Text(
-                            "Done",
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          child: const Text('Done', style: TextStyle(color: Colors.white)),
                         ),
                       ),
                     ],

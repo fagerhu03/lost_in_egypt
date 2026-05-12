@@ -14,6 +14,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/theme/app_theme.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -155,37 +156,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: ThemeController.mode,
-      builder: (context, mode, _) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Lost in Egypt',
+    return ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: ThemeController.mode,
+        builder: (context, mode, _) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Lost in Egypt',
 
-          theme: AppTheme.light.copyWith(
-            textTheme:
-                ThemeData.light().textTheme.apply(fontFamily: 'Marcellus'),
-          ),
-          darkTheme: AppTheme.dark.copyWith(
-            textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Marcellus'),
-          ),
+            theme: AppTheme.light.copyWith(
+              textTheme:
+                  ThemeData.light().textTheme.apply(fontFamily: 'Marcellus'),
+            ),
+            darkTheme: AppTheme.dark.copyWith(
+              textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Marcellus'),
+            ),
 
-          themeMode: mode,
+            themeMode: mode,
 
-          home: AuthGate(),
+            home: AuthGate(),
 
-          routes: {
-            '/onboarding': (context) => const OnboardingScreen(),
-            '/login': (context) => BlocProvider<LoginBloc>(
-                  create: (_) => di.sl<LoginBloc>(),
-                  child: const LoginScreen(),
-                ),
-            '/signup': (context) => const SignupScreen(),
-            '/home': (context) => const HomeWrapper(),
-            '/map_picker': (context) => const MapPickerScreen(),
-          },
-        );
-      },
+            routes: {
+              '/onboarding': (context) => const OnboardingScreen(),
+              '/login': (context) => BlocProvider<LoginBloc>(
+                    create: (_) => di.sl<LoginBloc>(),
+                    child: const LoginScreen(),
+                  ),
+              '/signup': (context) => const SignupScreen(),
+              '/home': (context) => const HomeWrapper(),
+              '/map_picker': (context) => const MapPickerScreen(),
+            },
+          );
+        },
+      ),
     );
   }
 }

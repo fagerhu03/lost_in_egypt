@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lost_in_egypt/core/constants/curated_trips.dart';
 import 'package:lost_in_egypt/core/models/curated_trip.dart';
@@ -49,7 +50,6 @@ class _SoloTripPageState extends State<SoloTripPage> {
     }
 
     try {
-      // Fetch taste vector and user location in parallel
       final futures = await Future.wait([
         FirebaseFirestore.instance.collection('users').doc(uid).get(),
         _getUserPosition(),
@@ -75,8 +75,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
       if (!mounted) return;
       setState(() {
         _trips = scored.map((e) => e.trip).toList();
-        _bestMatchId =
-            scored.first.score > 0 ? scored.first.trip.id : null;
+        _bestMatchId = scored.first.score > 0 ? scored.first.trip.id : null;
         _loadingPersonalization = false;
       });
     } catch (_) {
@@ -84,8 +83,6 @@ class _SoloTripPageState extends State<SoloTripPage> {
     }
   }
 
-  /// Returns GPS position, requesting permission if not yet granted.
-  /// Returns null silently if denied or unavailable.
   Future<Position?> _getUserPosition() async {
     try {
       var perm = await Geolocator.checkPermission();
@@ -105,7 +102,6 @@ class _SoloTripPageState extends State<SoloTripPage> {
     }
   }
 
-  /// Haversine distance in km between two lat/lng points.
   double _haversineKm(double lat1, double lng1, double lat2, double lng2) {
     const r = 6371.0;
     final dLat = (lat2 - lat1) * math.pi / 180;
@@ -118,31 +114,23 @@ class _SoloTripPageState extends State<SoloTripPage> {
     return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   }
 
-  /// Returns a score bonus/penalty based on user proximity to the trip's area.
-  ///
-  /// < 50 km   → +2.0 strong boost (user is right there)
-  /// 50–150 km → +1.0 moderate boost (within day-trip range)
-  /// 150–300 km→ +0.2 slight boost
-  /// > 300 km  → −0.5 mild penalty (far away)
+  /// Score bonus/penalty based on proximity to trip's area.
+  /// Scale competes with scoreAgainst() (typically 5–20 for strong taste match).
   double _locationBonus(CuratedTrip trip, Position? pos) {
     if (pos == null) return 0;
     final km = _haversineKm(
         pos.latitude, pos.longitude, trip.centerLat, trip.centerLng);
-    if (km < 50) return 2.0;
-    if (km < 150) return 1.0;
-    if (km < 300) return 0.2;
-    return -0.5;
+    if (km < 50) return 8.0;
+    if (km < 200) return 2.0;
+    if (km < 400) return -4.0;
+    return -10.0;
   }
-
-  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor =
-        isDark ? AppColors.darkBackground : AppColors.lightBackground;
-    final sectionColor =
-        isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
+    final bgColor = isDark ? AppColors.darkBackground : AppColors.lightBackground;
+    final sectionColor = isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
     final titleColor = isDark ? AppColors.darkText : AppColors.lightBox;
     final patternOpacity = isDark ? 0.1 : 0.4;
     final gold = AppColors.lightPrimaryButton;
@@ -167,10 +155,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                   child: Row(
                     children: [
                       IconButton(
@@ -178,22 +163,21 @@ class _SoloTripPageState extends State<SoloTripPage> {
                         icon: Icon(
                           Icons.chevron_left_rounded,
                           color: titleColor,
-                          size: 30,
+                          size: 30.r,
                         ),
                       ),
                       Expanded(
                         child: Text(
                           'Solo Trip',
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 22.sp,
                             fontWeight: FontWeight.w500,
                             color: titleColor,
                             fontFamily: 'Marcellus',
                           ),
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      // My Plans button with live count badge
+                      SizedBox(width: 4.w),
                       StreamBuilder<List<SavedPlan>>(
                         stream: SoloPlanService.instance.streamPlans(),
                         builder: (context, snap) {
@@ -213,15 +197,15 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                 ),
                                 tooltip: 'My Plans',
                                 icon: Icon(Icons.bookmark_outlined,
-                                    color: gold, size: 24),
+                                    color: gold, size: 24.r),
                               ),
                               if (count > 0)
                                 Positioned(
                                   right: 6,
                                   top: 6,
                                   child: Container(
-                                    width: 16,
-                                    height: 16,
+                                    width: 16.r,
+                                    height: 16.r,
                                     decoration: BoxDecoration(
                                       color: gold,
                                       shape: BoxShape.circle,
@@ -229,8 +213,8 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                     child: Center(
                                       child: Text(
                                         count > 9 ? '9+' : '$count',
-                                        style: const TextStyle(
-                                          fontSize: 9,
+                                        style: TextStyle(
+                                          fontSize: 9.sp,
                                           color: Colors.white,
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -251,31 +235,29 @@ class _SoloTripPageState extends State<SoloTripPage> {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w),
                     child: Column(
                       children: [
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
                         const CustomizePlanCard(),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20.h),
                         Container(
                           width: double.infinity,
-                          padding:
-                              const EdgeInsets.fromLTRB(14, 18, 14, 18),
+                          padding: EdgeInsets.fromLTRB(14.w, 18.h, 14.w, 18.h),
                           decoration: BoxDecoration(
                             color: sectionColor,
-                            borderRadius: BorderRadius.circular(28),
+                            borderRadius: BorderRadius.circular(28.r),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     'Recommended Plans',
                                     style: TextStyle(
-                                      fontSize: 24,
+                                      fontSize: 24.sp,
                                       fontWeight: FontWeight.w500,
                                       color: titleColor,
                                       fontFamily: 'Marcellus',
@@ -283,59 +265,53 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                   ),
                                   if (_loadingPersonalization)
                                     SizedBox(
-                                      width: 16,
-                                      height: 16,
+                                      width: 16.r,
+                                      height: 16.r,
                                       child: CircularProgressIndicator(
                                           strokeWidth: 1.5, color: gold),
                                     ),
                                 ],
                               ),
                               if (_bestMatchId != null) ...[
-                                const SizedBox(height: 6),
+                                SizedBox(height: 6.h),
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
                                     'Personalised based on your travel history',
                                     style: TextStyle(
-                                      fontSize: 13,
-                                      color:
-                                          titleColor.withValues(alpha: 0.55),
+                                      fontSize: 13.sp,
+                                      color: titleColor.withValues(alpha: 0.55),
                                     ),
                                   ),
                                 ),
                               ],
-                              const SizedBox(height: 18),
+                              SizedBox(height: 18.h),
                               StreamBuilder<List<SavedPlan>>(
-                                stream:
-                                    SoloPlanService.instance.streamPlans(),
+                                stream: SoloPlanService.instance.streamPlans(),
                                 builder: (context, snap) {
                                   final savedTripIds = (snap.data ?? [])
                                       .where((p) =>
                                           p.curatedTripId != null &&
-                                          p.status !=
-                                              SoloPlanStatus.completed)
+                                          p.status != SoloPlanStatus.completed)
                                       .map((p) => p.curatedTripId!)
                                       .toSet();
                                   return Column(
-                                    children: _trips
-                                        .asMap()
-                                        .entries
-                                        .map((entry) {
+                                    children: _trips.asMap().entries.map((entry) {
                                       final trip = entry.value;
-                                      final isLast =
-                                          entry.key == _trips.length - 1;
+                                      final isLast = entry.key == _trips.length - 1;
                                       final heroTag = 'trip-${trip.id}';
                                       return Dismissible(
                                         key: ValueKey(trip.id),
                                         direction: DismissDirection.endToStart,
                                         background: Container(
                                           alignment: Alignment.centerRight,
-                                          padding: const EdgeInsets.only(right: 20),
+                                          padding: EdgeInsets.only(right: 20.w),
                                           decoration: BoxDecoration(
                                             color: Colors.red.shade400,
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(20.r),
                                           ),
-                                          child: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                                          child: Icon(Icons.close_rounded,
+                                              color: Colors.white, size: 28.r),
                                         ),
                                         onDismissed: (_) {
                                           for (final key in trip.scoringKeys) {
@@ -350,16 +326,14 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                         },
                                         child: Padding(
                                           padding: EdgeInsets.only(
-                                              bottom: isLast ? 0 : 16),
+                                              bottom: isLast ? 0 : 16.h),
                                           child: PlanCard(
                                             title: trip.title,
                                             location: trip.primaryArea,
                                             rating: trip.rating.round(),
                                             image: trip.imagePath,
-                                            isBestMatch:
-                                                trip.id == _bestMatchId,
-                                            isSaved: savedTripIds
-                                                .contains(trip.id),
+                                            isBestMatch: trip.id == _bestMatchId,
+                                            isSaved: savedTripIds.contains(trip.id),
                                             tagline: trip.tagline,
                                             durationLabel: trip.durationLabel,
                                             heroTag: heroTag,
@@ -384,7 +358,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20.h),
                       ],
                     ),
                   ),
