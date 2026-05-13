@@ -9,6 +9,7 @@ import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 
 class PlaceDetailSheet extends StatefulWidget {
@@ -45,6 +46,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   int? _crowdCount;
   int _communityPostCount = 0;
   List<_SimilarPlace> _similarPlaces = [];
+  bool _loadingSimilar = false;
 
   @override
   void initState() {
@@ -53,7 +55,10 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     _calculateDistance();
     _loadCrowdLevel();
     _loadCommunityPostCount();
-    if (widget.allItems.length > 1) _loadSimilarPlaces();
+    if (widget.allItems.length > 1) {
+      _loadingSimilar = true;
+      _loadSimilarPlaces();
+    }
   }
 
   Future<void> _loadSimilarPlaces() async {
@@ -91,7 +96,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
       excludeSeen: false,
     );
 
-    if (result == null || result.recommendations.isEmpty || !mounted) return;
+    if (!mounted) return;
+
+    if (result == null || result.recommendations.isEmpty) {
+      setState(() => _loadingSimilar = false);
+      return;
+    }
 
     final idToItem = {for (final item in pool) item.id: item};
     final similar = result.recommendations
@@ -103,7 +113,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
         .whereType<_SimilarPlace>()
         .toList();
 
-    if (mounted && similar.isNotEmpty) setState(() => _similarPlaces = similar);
+    if (mounted) {
+      setState(() {
+        if (similar.isNotEmpty) _similarPlaces = similar;
+        _loadingSimilar = false;
+      });
+    }
   }
 
   Future<void> _loadCrowdLevel() async {
@@ -142,6 +157,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
         _currentImageIndex = 0;
         _distanceKm = null;
         _similarPlaces = [];
+        _loadingSimilar = widget.allItems.length > 1;
       });
       _checkIfSaved();
       _calculateDistance();
@@ -682,7 +698,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     ],
 
                     // ── Similar Places ────────────────────────────────────
-                    if (_similarPlaces.isNotEmpty) ...[
+                    if (_loadingSimilar || _similarPlaces.isNotEmpty) ...[
                       SizedBox(height: 16.h),
                       Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
                       SizedBox(height: 16.h),
@@ -701,8 +717,22 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ],
                       ),
                       SizedBox(height: 12.h),
+                      if (_loadingSimilar)
+                        SizedBox(
+                          height: 148.h,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: 3,
+                            itemBuilder: (_, _) => Container(
+                              width: 150.w,
+                              margin: EdgeInsets.only(right: 10.w),
+                              child: ShimmerLoadingWidget.rectangular(height: 148.h),
+                            ),
+                          ),
+                        )
+                      else
                       SizedBox(
-                        height: 130.h,
+                        height: 148.h,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: _similarPlaces.length,
@@ -718,6 +748,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                                   signalType: 'visit',
                                   source: 'similar_places',
                                 );
+                                widget.onClose();
+                                MapFocusService.instance.triggerFocus(sp.item);
                               },
                               child: Container(
                                 width: 150.w,
@@ -779,7 +811,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                                                 fontSize: 10.sp,
                                                 color: primary.withValues(alpha: 0.8),
                                               ),
-                                              maxLines: 1,
+                                              maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                         ],

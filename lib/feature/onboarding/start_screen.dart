@@ -18,6 +18,7 @@ class _StartScreenState extends State<StartScreen> {
       ResizeImage(const AssetImage(_bgImage), width: 1080),
       context,
     );
+    precacheImage(const AssetImage('assets/logo/logo_light_comp.png'), context);
   }
 
   @override
@@ -34,8 +35,12 @@ class _StartScreenState extends State<StartScreen> {
               color: Colors.black.withValues(alpha: 0.5),
               colorBlendMode: BlendMode.darken,
               frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                if (wasSynchronouslyLoaded || frame != null) return child;
-                return const ColoredBox(color: Color(0xFF0B1D26));
+                if (wasSynchronouslyLoaded) return child;
+                return AnimatedOpacity(
+                  opacity: frame != null ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 400),
+                  child: child,
+                );
               },
             ),
           ),
@@ -47,6 +52,14 @@ class _StartScreenState extends State<StartScreen> {
             child: Image.asset(
               "assets/logo/logo_light_comp.png",
               height: 200.h,
+              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                if (wasSynchronouslyLoaded) return child;
+                return AnimatedOpacity(
+                  opacity: frame != null ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 400),
+                  child: child,
+                );
+              },
             ),
           ),
 

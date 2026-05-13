@@ -346,22 +346,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                             ),
                             SizedBox(height: 32.h),
 
-                            // AI Discovery Notifications
-                            _buildTile(
-                              icon: Icons.notifications_outlined,
-                              title: 'AI Discovery Notifications',
-                              trailing: Switch(
-                                value:
-                                    _currentUser?.notifDailyDiscovery ?? true,
-                                activeThumbColor: theme.colorScheme.primary,
-                                onChanged: _currentUser == null
-                                    ? null
-                                    : (v) => _updateSetting(
-                                        'notif.dailyDiscovery', v),
-                              ),
-                            ),
-                            SizedBox(height: 16.h),
-
                             // Debug Reset Button
                             _buildTile(
                               icon: Icons.warning_amber_rounded,

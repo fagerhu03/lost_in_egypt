@@ -32,6 +32,7 @@ class _SheetBodyState extends State<_SheetBody> {
   bool _communityEnabled = true;
   bool _reviewsEnabled = true;
   bool _guideUpdatesEnabled = true;
+  bool _dailyDiscoveryEnabled = true;
 
   @override
   void initState() {
@@ -56,6 +57,7 @@ class _SheetBodyState extends State<_SheetBody> {
           _communityEnabled = prefs['community'] ?? true;
           _reviewsEnabled = prefs['reviews'] ?? true;
           _guideUpdatesEnabled = prefs['guideUpdates'] ?? true;
+          _dailyDiscoveryEnabled = prefs['dailyDiscovery'] ?? true;
           _isLoading = false;
         });
       } else {
@@ -77,6 +79,7 @@ class _SheetBodyState extends State<_SheetBody> {
           'community': _communityEnabled,
           'reviews': _reviewsEnabled,
           'guideUpdates': _guideUpdatesEnabled,
+          'dailyDiscovery': _dailyDiscoveryEnabled,
         },
       }, SetOptions(merge: true));
     } catch (e) {
@@ -192,6 +195,18 @@ class _SheetBodyState extends State<_SheetBody> {
                       enabled: _masterEnabled,
                       onChanged: (v) {
                         setState(() => _guideUpdatesEnabled = v);
+                        _save();
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _ToggleTile(
+                      icon: Icons.auto_awesome_rounded,
+                      title: "AI Discovery",
+                      subtitle: "Daily 'Did you know?' fact about Egypt",
+                      value: _dailyDiscoveryEnabled,
+                      enabled: _masterEnabled,
+                      onChanged: (v) {
+                        setState(() => _dailyDiscoveryEnabled = v);
                         _save();
                       },
                     ),

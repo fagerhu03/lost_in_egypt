@@ -41,6 +41,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     for (final page in _pages) {
       precacheImage(AssetImage(page.image), context);
     }
+    // Warm the decode cache for StartScreen's background so it's ready
+    // before the user taps "Get Started" — prevents the image pop-in.
+    precacheImage(
+      ResizeImage(const AssetImage('assets/onboarding/start_screen.png'), width: 1080),
+      context,
+    );
+    precacheImage(const AssetImage('assets/logo/logo_light_comp.png'), context);
   }
 
   void _goNext() {

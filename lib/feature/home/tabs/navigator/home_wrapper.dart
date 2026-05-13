@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
@@ -95,21 +94,16 @@ class _HomeWrapperState extends State<HomeWrapper>
         : theme.colorScheme.primary.withValues(alpha: 0.50);
 
     return PopScope(
-      canPop: false,
+      // Only intercept when not on home tab. Sub-routes (PostDetailScreen,
+      // SoloTripPage, etc.) have their own PopScope handling and pop normally
+      // because Flutter only consults the CURRENT route's PopScopes.
+      canPop: index == 0,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-          return;
-        }
-
         if (index != 0) {
           setState(() => index = 0);
           _tabController.animateTo(0);
           _pageController.jumpToPage(0);
-        } else {
-          SystemNavigator.pop();
         }
       },
       child: Scaffold(
@@ -129,9 +123,7 @@ class _HomeWrapperState extends State<HomeWrapper>
         },
         child: PageView(
           controller: _pageController,
-          physics: (index == 2 || index == 3)
-              ? const NeverScrollableScrollPhysics()
-              : const BouncingScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           onPageChanged: (i) {
             setState(() {
               index = i;
@@ -142,41 +134,43 @@ class _HomeWrapperState extends State<HomeWrapper>
           children: _pages,
         ),
       ),
-      bottomNavigationBar: AnimatedSlide(
+      bottomNavigationBar: AnimatedSize(
         duration: const Duration(milliseconds: 200),
-        offset: _isNavBarVisible ? Offset.zero : const Offset(0, 1),
-        child: Container(
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.10),
-                blurRadius: 28,
-                spreadRadius: 6,
-                offset: const Offset(0, -10),
-              ),
-            ],
-          ),
-          child: ConvexAppBar(
-            controller: _tabController,
-            initialActiveIndex: index,
-            style: TabStyle.react,
-            height: 55.h,
-            curveSize: 90,
-            backgroundColor: bg,
-            activeColor: primary,
-            color: inactive,
-            elevation: 0,
-            items: _navItems,
-            onTap: (i) {
-              setState(() {
-                index = i;
-                _isNavBarVisible = true;
-              });
-              _tabController.animateTo(i);
-              _pageController.jumpToPage(i);
-            },
-          ),
-        ),
+        curve: Curves.easeInOut,
+        child: _isNavBarVisible
+            ? Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.10),
+                      blurRadius: 28,
+                      spreadRadius: 6,
+                      offset: const Offset(0, -10),
+                    ),
+                  ],
+                ),
+                child: ConvexAppBar(
+                  controller: _tabController,
+                  initialActiveIndex: index,
+                  style: TabStyle.react,
+                  height: 55.h,
+                  curveSize: 90,
+                  backgroundColor: bg,
+                  activeColor: primary,
+                  color: inactive,
+                  elevation: 0,
+                  items: _navItems,
+                  onTap: (i) {
+                    setState(() {
+                      index = i;
+                      _isNavBarVisible = true;
+                    });
+                    _tabController.animateTo(i);
+                    _pageController.jumpToPage(i);
+                  },
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
     ),
   );

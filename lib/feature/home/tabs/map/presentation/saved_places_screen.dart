@@ -38,6 +38,9 @@ class _SavedPlacesSheetState extends State<SavedPlacesSheet> {
           .get();
       if (doc.exists) {
         final savedIds = List<String>.from(doc.data()?['savedPlaces'] ?? []);
+        // If the user has saves but allItems hasn't loaded yet, keep the
+        // spinner — showing "no saved places" would be a false empty state.
+        if (savedIds.isNotEmpty && widget.allItems.isEmpty) return;
         final reversedIds = savedIds.reversed.toList();
         final matchingPlaces = <MapItem>[];
         for (final id in reversedIds) {

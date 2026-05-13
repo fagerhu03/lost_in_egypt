@@ -432,7 +432,22 @@ class _CommunityScreenState extends State<CommunityScreen>
       spreadRadius: 1,
     );
 
-    return Scaffold(
+    return PopScope<Object?>(
+      // Intercept back when a filter or search is active — clear it instead of navigating away
+      canPop: _activeHashtag == null && !_searchExpanded,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          setState(() {
+            if (_searchExpanded) {
+              _searchExpanded = false;
+              _searchQuery = '';
+            } else {
+              _activeHashtag = null;
+            }
+          });
+        }
+      },
+      child: Scaffold(
       backgroundColor: bg,
       resizeToAvoidBottomInset: false,
       body: Stack(
@@ -593,7 +608,7 @@ class _CommunityScreenState extends State<CommunityScreen>
           ),
         ],
       ),
-    );
+    ));
   }
 
   // ─── HEADER ───────────────────────────────────────────────────────────────

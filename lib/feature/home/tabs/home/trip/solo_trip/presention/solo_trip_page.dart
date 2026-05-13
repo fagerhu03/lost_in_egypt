@@ -65,17 +65,42 @@ class _SoloTripPageState extends State<SoloTripPage> {
           ? Map<String, dynamic>.from(raw)
           : <String, dynamic>{};
 
+      // Tiered ranking: location dominates, taste vector tie-breaks within tier.
+      // This guarantees local trips ALWAYS rank above distant trips regardless
+      // of how heavily the user's taste vector favours pharaonic / Alex sites.
+      //
+      // CRITICAL: when GPS is unavailable, we KEEP the curator's static order
+      // and do NOT fall back to taste-only sorting. A pharaonic-heavy taste
+      // vector would otherwise wrongly elevate Greco-Roman Alexandria above
+      // Islamic Cairo for a Cairo-based user — exactly the bug we just fixed.
+      if (position == null) {
+        if (!mounted) return;
+        setState(() {
+          _trips = CuratedTrips.all;
+          _bestMatchId = null;
+          _loadingPersonalization = false;
+        });
+        return;
+      }
+
       final scored = CuratedTrips.all.map((trip) {
         final taste = trip.scoreAgainst(tasteVector);
-        final location = _locationBonus(trip, position);
-        return (trip: trip, score: taste + location);
+        final tier = _locationTier(trip, position);
+        return (trip: trip, taste: taste, tier: tier);
       }).toList()
-        ..sort((a, b) => b.score.compareTo(a.score));
+        ..sort((a, b) {
+          if (a.tier != b.tier) return a.tier.compareTo(b.tier);
+          return b.taste.compareTo(a.taste);
+        });
 
       if (!mounted) return;
       setState(() {
         _trips = scored.map((e) => e.trip).toList();
-        _bestMatchId = scored.first.score > 0 ? scored.first.trip.id : null;
+        // Best match: top-tier-0 trip, or top-tier-1 with strong taste signal.
+        _bestMatchId =
+            scored.first.tier == 0 || scored.first.taste > 5.0
+                ? scored.first.trip.id
+                : null;
         _loadingPersonalization = false;
       });
     } catch (_) {
@@ -85,6 +110,12 @@ class _SoloTripPageState extends State<SoloTripPage> {
 
   Future<Position?> _getUserPosition() async {
     try {
+      // 1. Location services must be enabled at the OS level.
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        return null;
+      }
+
+      // 2. App-level permission.
       var perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
@@ -93,10 +124,32 @@ class _SoloTripPageState extends State<SoloTripPage> {
           perm == LocationPermission.deniedForever) {
         return null;
       }
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low,
-        timeLimit: const Duration(seconds: 5),
-      );
+
+      // 3. Try last-known first — it's instant and usually available even on
+      // cold start. A user can't realistically travel between Egyptian cities
+      // in 10 minutes, so this is safe for tier-based trip ranking.
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) {
+        final age = DateTime.now().difference(lastKnown.timestamp);
+        if (age < const Duration(minutes: 10)) {
+          return lastKnown;
+        }
+      }
+
+      // 4. Get a fresh fix. Medium accuracy is the reliability sweet-spot —
+      // low (cell/wifi only) frequently times out in weaker signal areas,
+      // high (GPS-only) is slow to acquire indoors. 10s timeout accounts for
+      // first-acquire cold-start latency.
+      try {
+        return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 10),
+        );
+      } catch (_) {
+        // Fresh fix failed — fall back to whatever last-known we have,
+        // even if it's >10 min old. Better than nothing.
+        return lastKnown;
+      }
     } catch (_) {
       return null;
     }
@@ -114,16 +167,24 @@ class _SoloTripPageState extends State<SoloTripPage> {
     return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   }
 
-  /// Score bonus/penalty based on proximity to trip's area.
-  /// Scale competes with scoreAgainst() (typically 5–20 for strong taste match).
-  double _locationBonus(CuratedTrip trip, Position? pos) {
-    if (pos == null) return 0;
+  /// Proximity tier for sorting (lower = closer = higher priority).
+  /// Trips are bucketed by distance, then taste vector tie-breaks within a tier.
+  /// This guarantees a Cairo user sees Cairo trips before Alexandria trips
+  /// regardless of taste-vector skew.
+  ///   tier 0: <50 km   (local — same city)
+  ///   tier 1: <250 km  (regional — same governorate cluster)
+  ///   tier 2: <600 km  (national — domestic flight territory)
+  ///   tier 3: ≥600 km  (far — multi-day trip)
+  /// When position is unknown, all trips collapse to tier 1 so taste vector
+  /// alone decides the order.
+  int _locationTier(CuratedTrip trip, Position? pos) {
+    if (pos == null) return 1;
     final km = _haversineKm(
         pos.latitude, pos.longitude, trip.centerLat, trip.centerLng);
-    if (km < 50) return 8.0;
-    if (km < 200) return 2.0;
-    if (km < 400) return -4.0;
-    return -10.0;
+    if (km < 50) return 0;
+    if (km < 250) return 1;
+    if (km < 600) return 2;
+    return 3;
   }
 
   @override

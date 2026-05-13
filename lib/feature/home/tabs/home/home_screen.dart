@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/weather_banner.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
@@ -33,46 +34,69 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with AutomaticKeepAliveClientMixin<HomeScreen> {
+  @override
+  bool get wantKeepAlive => true;
   String? _profileImageUrl;
   String? _firstName;
   late Future<QuerySnapshot> _eventsFuture;
   List<PlaceModel> _popularPlaces = [];
   List<PlaceModel> _forYouPlaces = [];
+  bool _loadingForYou = true;
 
-  final PageController _pageController = PageController();
-  Timer? _autoSlideTimer;
-  int _currentHeroIndex = 0;
-
-  final List<String> _heroImages = [
-    "assets/images/event1.jpg",
-    "assets/images/event3.jpg",
-    "assets/images/home_bridge.png",
-  ];
+  // Session-level caches — avoids re-fetching on hot rebuilds / tab switches / back-nav
+  static List<PlaceModel>? _cachedAllPlaces;
+  static List<PlaceModel>? _cachedPopular;
+  static List<PlaceModel>? _cachedForYou;
+  static DateTime? _forYouCacheTime;
 
   @override
   void initState() {
     super.initState();
+
+    // Sync-init from static cache so the first build never shows shimmer/blank sections
+    // when navigating back from a sub-screen (e.g. SoloTripPage).
+    if (_cachedPopular != null) _popularPlaces = _cachedPopular!;
+    if (_cachedForYou != null) {
+      _forYouPlaces = _cachedForYou!;
+      _loadingForYou = false;
+    }
 
     _eventsFuture =
         FirebaseFirestore.instance.collection('events').orderBy('date').limit(5).get();
 
     _fetchUserProfile();
     _loadPopularPlaces();
-    _startAutoSlide();
   }
 
   Future<void> _loadPopularPlaces() async {
-    final places = await LocalPlacesService.getTopRatedPlaces(limit: 20);
-    if (mounted) {
-      final shuffled = List<PlaceModel>.from(places)..shuffle();
-      setState(() => _popularPlaces = shuffled.take(10).toList());
-      unawaited(_loadForYou(places));
+    if (_cachedAllPlaces != null) {
+      // Already loaded — just refresh For You if needed (cache check is inside _loadForYou)
+      unawaited(_loadForYou(_cachedAllPlaces!));
+      return;
     }
+
+    // Load every place across all categories for the recommendation pool
+    final allPlaces = await LocalPlacesService.getTopRatedPlaces(limit: 99999);
+    if (!mounted) return;
+
+    _cachedAllPlaces = allPlaces;
+
+    // Popular section: top-20 shuffled to 10 cards
+    final shuffled = List<PlaceModel>.from(allPlaces.take(20))..shuffle();
+    _cachedPopular = shuffled.take(10).toList();
+
+    setState(() => _popularPlaces = _cachedPopular!);
+    unawaited(_loadForYou(allPlaces));
   }
 
   Future<Position?> _getUserPosition() async {
     try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        return null;
+      }
+
       var perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
@@ -81,17 +105,73 @@ class _HomeScreenState extends State<HomeScreen> {
           perm == LocationPermission.deniedForever) {
         return null;
       }
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low,
-      ).timeout(const Duration(seconds: 6));
+
+      // Last-known is instant and usually available — only treat it as stale
+      // after 10 min (a user can't switch Egyptian cities in that window).
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) {
+        final age = DateTime.now().difference(lastKnown.timestamp);
+        if (age < const Duration(minutes: 10)) {
+          return lastKnown;
+        }
+      }
+
+      try {
+        return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 10),
+        );
+      } catch (_) {
+        return lastKnown;
+      }
     } catch (_) {
       return null;
     }
   }
 
   Future<void> _loadForYou(List<PlaceModel> pool) async {
-    if (pool.isEmpty) return;
-    final candidates = pool.map((p) => <String, dynamic>{
+    if (pool.isEmpty) {
+      if (mounted) setState(() => _loadingForYou = false);
+      return;
+    }
+
+    final now = DateTime.now();
+    if (_cachedForYou != null &&
+        _forYouCacheTime != null &&
+        now.difference(_forYouCacheTime!).inMinutes < 5) {
+      if (mounted) setState(() { _forYouPlaces = _cachedForYou!; _loadingForYou = false; });
+      return;
+    }
+
+    final position = await _getUserPosition();
+    // Fall back to Cairo centre so distant places still get a proximity penalty.
+    final lat = position?.latitude ?? 30.0444;
+    final lng = position?.longitude ?? 31.2357;
+
+    // Mixed candidate pool: nearest 100 by distance + top-rated 50 from the rest.
+    // This ensures local places always appear while still letting 1-2 high-taste-match
+    // distant places (e.g. Dahab beach for a beach lover in Cairo) surface in For You.
+    final List<PlaceModel> sorted;
+    if (pool.length > 100) {
+      final byDistance = List<PlaceModel>.from(pool)
+        ..sort((a, b) {
+          final dA = Geolocator.distanceBetween(
+              lat, lng, a.coordinate.latitude, a.coordinate.longitude);
+          final dB = Geolocator.distanceBetween(
+              lat, lng, b.coordinate.latitude, b.coordinate.longitude);
+          return dA.compareTo(dB);
+        });
+      final nearest100 = byDistance.take(100).toSet();
+      final topRated50 = (byDistance.skip(100).toList()
+            ..sort((a, b) => b.rating.compareTo(a.rating)))
+          .take(50)
+          .toList();
+      sorted = [...nearest100, ...topRated50];
+    } else {
+      sorted = pool;
+    }
+
+    final candidates = sorted.map((p) => <String, dynamic>{
       'placeId': p.id,
       'name': p.title,
       'types': [p.category],
@@ -102,52 +182,32 @@ class _HomeScreenState extends State<HomeScreen> {
       'lng': p.coordinate.longitude,
     }).toList();
 
-    final position = await _getUserPosition();
-
     final result = await RecommendationService.recommendPlaces(
       candidates: candidates,
       context: 'home',
       limit: 8,
       weather: WeatherController.weather.value,
-      userLat: position?.latitude,
-      userLng: position?.longitude,
+      userLat: lat,
+      userLng: lng,
     );
 
-    if (result == null || result.recommendations.isEmpty || !mounted) return;
+    if (!mounted) return;
 
-    final idToPlace = {for (final p in pool) p.id: p};
-    final forYou = result.recommendations
-        .map((r) => idToPlace[r.placeId])
-        .whereType<PlaceModel>()
-        .toList();
-
-    if (mounted && forYou.isNotEmpty) setState(() => _forYouPlaces = forYou);
-  }
-
-  @override
-  void dispose() {
-    _autoSlideTimer?.cancel();
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void _startAutoSlide() {
-    _autoSlideTimer?.cancel();
-
-    _autoSlideTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (!_pageController.hasClients || _heroImages.isEmpty) return;
-
-      int nextPage = _currentHeroIndex + 1;
-      if (nextPage >= _heroImages.length) {
-        nextPage = 0;
+    if (result != null && result.recommendations.isNotEmpty) {
+      final idToPlace = {for (final p in sorted) p.id: p};
+      final forYou = result.recommendations
+          .map((r) => idToPlace[r.placeId])
+          .whereType<PlaceModel>()
+          .toList();
+      if (forYou.isNotEmpty) {
+        _cachedForYou = forYou;
+        _forYouCacheTime = DateTime.now();
+        setState(() { _forYouPlaces = forYou; _loadingForYou = false; });
+        return;
       }
+    }
 
-      _pageController.animateToPage(
-        nextPage,
-        duration: const Duration(milliseconds: 450),
-        curve: Curves.easeInOut,
-      );
-    });
+    setState(() => _loadingForYou = false);
   }
 
   Future<void> _fetchUserProfile() async {
@@ -180,6 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -202,91 +263,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: bg,
       body: SingleChildScrollView(
+        key: const PageStorageKey<String>('home_scroll'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                SizedBox(
-                  height: 300.h,
-                  width: double.infinity,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _heroImages.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentHeroIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      return Image.asset(
-                        _heroImages[index],
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  ),
-                ),
-                Container(
-                  height: 260.h,
-                  width: double.infinity,
-                  color: Colors.black.withValues(alpha: 0.08),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + 8,
-                    left: 16.w,
-                    right: 16.w,
-                  ),
-                  child: Row(
-                    children: [
-                      const Spacer(),
-                      AccountMenuButton(
-                        profileImageUrl: _profileImageUrl,
-                        onSignOut: _handleSignOut,
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: 20.h,
-                    decoration: BoxDecoration(
-                      color: bg,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(24.r),
-                        topRight: Radius.circular(24.r),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: EdgeInsetsDirectional.only(start: 50.w, end: 50.w),
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(_heroImages.length, (index) {
-                    final bool isActive = index == _currentHeroIndex;
-
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      margin: EdgeInsets.symmetric(horizontal: 4.w),
-                      height: 8.h,
-                      width: isActive ? 22.w : 8.w,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? primary
-                            : primary.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                    );
-                  }),
-                ),
-              ),
+            _HeroBanner(
+              profileImageUrl: _profileImageUrl,
+              onSignOut: _handleSignOut,
             ),
             SizedBox(height: 12.h),
             // ── Weather advisory banner ──
@@ -413,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 25.h),
             ],
             // ── For You ──
-            if (_forYouPlaces.isNotEmpty) ...[
+            if (_loadingForYou || _forYouPlaces.isNotEmpty) ...[
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Row(
@@ -441,23 +424,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(height: 12.h),
-              SizedBox(
-                height: 200.h,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.only(left: 16.w),
-                  itemCount: _forYouPlaces.length,
-                  itemBuilder: (context, index) {
-                    return _popularPlaceCard(
-                      place: _forYouPlaces[index],
-                      primary: primary,
-                      textColor: textColor,
-                      shadow: cardShadow,
-                      isDark: isDark,
-                    );
-                  },
+              if (_loadingForYou)
+                SizedBox(
+                  height: 200.h,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.only(left: 16.w),
+                    itemCount: 4,
+                    itemBuilder: (_, _) => ShimmerLoadingWidget.rectangular(
+                      width: 170.w,
+                      height: 200.h,
+                    ),
+                  ),
+                )
+              else
+                SizedBox(
+                  height: 200.h,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.only(left: 16.w),
+                    itemCount: _forYouPlaces.length,
+                    itemBuilder: (context, index) {
+                      return _popularPlaceCard(
+                        place: _forYouPlaces[index],
+                        primary: primary,
+                        textColor: textColor,
+                        shadow: cardShadow,
+                        isDark: isDark,
+                      );
+                    },
+                  ),
                 ),
-              ),
               SizedBox(height: 25.h),
             ],
             // ── Events ──
@@ -620,13 +617,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       shadow: cardShadow,
                       isDark: isDark,
                       onTap: () {
+                        // Fade-through transition feels smoother than the
+                        // default slide — and the slide was what made the
+                        // pop-back to home look like a jarring "refresh".
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => SoloTripPage(
+                          PageRouteBuilder(
+                            transitionDuration:
+                                const Duration(milliseconds: 280),
+                            reverseTransitionDuration:
+                                const Duration(milliseconds: 220),
+                            pageBuilder: (_, _, _) => SoloTripPage(
                               profileImageUrl: _profileImageUrl,
                               onSignOut: _handleSignOut,
                             ),
+                            transitionsBuilder: (_, animation, _, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
                           ),
                         );
                       },
@@ -1211,6 +1221,135 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+// ── Hero banner extracted so its 3-second timer setState only rebuilds
+// this subtree instead of the full 1000-line HomeScreen build method. ──────
+class _HeroBanner extends StatefulWidget {
+  final String? profileImageUrl;
+  final VoidCallback onSignOut;
+
+  const _HeroBanner({required this.profileImageUrl, required this.onSignOut});
+
+  @override
+  State<_HeroBanner> createState() => _HeroBannerState();
+}
+
+class _HeroBannerState extends State<_HeroBanner> {
+  static const _images = [
+    'assets/images/event1.jpg',
+    'assets/images/event3.jpg',
+    'assets/images/home_bridge.png',
+  ];
+
+  final PageController _pageController = PageController();
+  Timer? _timer;
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!_pageController.hasClients) return;
+      final next = (_index + 1) % _images.length;
+      _pageController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bg = theme.scaffoldBackgroundColor;
+    final primary = isDark ? AppColors.darkNavBar : theme.colorScheme.primary;
+
+    return Column(
+      children: [
+        Stack(
+          children: [
+            SizedBox(
+              height: 300.h,
+              width: double.infinity,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _images.length,
+                onPageChanged: (i) => setState(() => _index = i),
+                itemBuilder: (_, i) => Image.asset(_images[i], fit: BoxFit.cover),
+              ),
+            ),
+            Container(
+              height: 260.h,
+              width: double.infinity,
+              color: Colors.black.withValues(alpha: 0.08),
+            ),
+            Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 16.w,
+                right: 16.w,
+              ),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  AccountMenuButton(
+                    profileImageUrl: widget.profileImageUrl,
+                    onSignOut: widget.onSignOut,
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 20.h,
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24.r),
+                    topRight: Radius.circular(24.r),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Padding(
+          padding: EdgeInsetsDirectional.only(start: 50.w, end: 50.w),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(_images.length, (i) {
+                final active = i == _index;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                  height: 8.h,
+                  width: active ? 22.w : 8.w,
+                  decoration: BoxDecoration(
+                    color: active ? primary : primary.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
