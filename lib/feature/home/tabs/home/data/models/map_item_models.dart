@@ -221,19 +221,49 @@ class PlaceModel implements MapItem {
   factory PlaceModel.fromPlacesApi(Map<String, dynamic> json, String apiKey) {
     final placeId = json['id'] as String? ?? '';
 
-    // displayName is { "text": "...", "languageCode": "en" }
-    final displayName = json['displayName'] as Map<String, dynamic>? ?? {};
-    final title = displayName['text'] as String? ?? 'Unknown Place';
+    // Title: Places API uses `displayName.text`; offline bundled asset uses
+    // plain `title`. We accept both so the offline fallback path renders.
+    final displayName = json['displayName'] as Map<String, dynamic>?;
+    String title;
+    if (displayName != null && displayName['text'] is String) {
+      title = displayName['text'] as String;
+    } else {
+      title = json['title'] as String? ?? 'Unknown Place';
+    }
 
-    // location is { "latitude": ..., "longitude": ... }
-    final location = json['location'] as Map<String, dynamic>? ?? {};
-    final lat = (location['latitude'] ?? 30.0444).toDouble();
-    final lng = (location['longitude'] ?? 31.2357).toDouble();
+    // Coordinates: Places API → top-level `location.{lat,lng}`. Offline
+    // bundled asset → nested `coordinate.{latitude,longitude}`. Falling back
+    // to Cairo center for an entry that has coords in the other shape was
+    // the cause of the "NAC place fired to Giza" bug — every offline pin
+    // ended up at Cairo Downtown via the default values.
+    double lat;
+    double lng;
+    final location = json['location'] as Map<String, dynamic>?;
+    final coordinate = json['coordinate'] as Map<String, dynamic>?;
+    if (location != null && location['latitude'] != null) {
+      lat = (location['latitude'] as num).toDouble();
+      lng = (location['longitude'] as num).toDouble();
+    } else if (coordinate != null && coordinate['latitude'] != null) {
+      lat = (coordinate['latitude'] as num).toDouble();
+      lng = (coordinate['longitude'] as num).toDouble();
+    } else {
+      lat = 30.0444;
+      lng = 31.2357;
+    }
 
-    // Map primaryType → app category
+    // Map primaryType → app category. Offline asset stores `category` directly
+    // (in the app's canonical form e.g. "religious") — prefer that when this
+    // isn't a Places API response.
     final primaryType = json['primaryType'] as String? ?? '';
     final types = (json['types'] as List<dynamic>?)?.cast<String>() ?? [];
-    final category = _resolveCategory(primaryType, types);
+    String category;
+    final offlineCategory = json['category'] as String?;
+    if (offlineCategory != null && offlineCategory.isNotEmpty &&
+        displayName == null) {
+      category = offlineCategory;
+    } else {
+      category = _resolveCategory(primaryType, types);
+    }
 
     // Rating & reviews
     final rating = (json['rating'] ?? 0).toDouble();
@@ -257,8 +287,9 @@ class PlaceModel implements MapItem {
       importance = (importance + 1).clamp(1, 10);
     }
 
-    // Address
-    final address = json['formattedAddress'] as String? ?? '';
+    // Address: Places API → `formattedAddress`; offline asset → `locationAddress`.
+    final address = (json['formattedAddress'] as String?)
+        ?? (json['locationAddress'] as String?) ?? '';
 
     // Photo URLs (Parse up to 5 for the carousel, using maxWidth=500 for speed)
     String imagePath = '';
@@ -276,10 +307,19 @@ class PlaceModel implements MapItem {
         }
       }
     }
+    // Offline asset fallback: a single static asset path.
+    if (imagePath.isEmpty) {
+      final offlineImage = json['imagePath'] as String? ?? '';
+      if (offlineImage.isNotEmpty) {
+        imagePath = offlineImage;
+        imagePaths = [offlineImage];
+      }
+    }
 
-    // Editorial summary
+    // Editorial summary: Places API nests it; offline asset uses plain `description`.
     final editorialSummary = json['editorialSummary'] as Map<String, dynamic>?;
-    final description = editorialSummary?['text'] as String? ?? '';
+    final description = (editorialSummary?['text'] as String?)
+        ?? (json['description'] as String?) ?? '';
 
     // Price level → numeric price hint
     final priceLevelStr = json['priceLevel'] as String? ?? '';

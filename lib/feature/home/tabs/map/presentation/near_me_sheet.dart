@@ -232,20 +232,52 @@ class _NearMeSheetState extends State<NearMeSheet> {
                                     color: onSurface,
                                   ),
                                 ),
-                                subtitle: topReason != null
-                                    ? Text(
-                                        topReason,
-                                        style: TextStyle(
-                                          fontSize: 11.sp,
-                                          color: primary.withValues(alpha: isDark ? 0.8 : 0.7),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      np.item.category.toUpperCase(),
+                                      style: TextStyle(
+                                          fontSize: 11.sp, color: primary),
+                                    ),
+                                    if (topReason != null) ...[
+                                      SizedBox(height: 4.h),
+                                      // Small AI-reason chip — visually distinct so
+                                      // users see this list is personalised, not just sorted by distance.
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 6.w, vertical: 2.h),
+                                        decoration: BoxDecoration(
+                                          color: primary.withValues(
+                                              alpha: isDark ? 0.18 : 0.10),
+                                          borderRadius: BorderRadius.circular(8.r),
+                                          border: Border.all(
+                                              color: primary.withValues(alpha: 0.25)),
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      )
-                                    : Text(
-                                        np.item.category.toUpperCase(),
-                                        style: TextStyle(fontSize: 11.sp, color: primary),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.auto_awesome,
+                                                size: 10.r, color: primary),
+                                            SizedBox(width: 4.w),
+                                            Flexible(
+                                              child: Text(
+                                                topReason,
+                                                style: TextStyle(
+                                                  fontSize: 10.sp,
+                                                  color: primary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                    ],
+                                  ],
+                                ),
                                 trailing: Container(
                                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                                   decoration: BoxDecoration(

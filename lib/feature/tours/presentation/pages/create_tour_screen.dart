@@ -641,12 +641,12 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(
                                   width: 80, height: 80,
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: Colors.grey.withValues(alpha: 0.2),
                                   child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                                 ),
                                 errorWidget: (context, url, error) => Container(
                                   width: 80, height: 80,
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: Colors.grey.withValues(alpha: 0.2),
                                   child: const Icon(Icons.error, size: 20),
                                 ),
                               ),

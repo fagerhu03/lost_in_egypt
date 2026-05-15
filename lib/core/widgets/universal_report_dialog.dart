@@ -11,12 +11,12 @@ class UniversalReportDialog extends StatefulWidget {
   final ReportsRepository repository; // Pass the repository or use GetIt
   
   const UniversalReportDialog({
-    Key? key,
+    super.key,
     required this.reportType,
     required this.reportedItemId,
     this.reportedItemOwnerId,
     required this.repository,
-  }) : super(key: key);
+  });
 
   static Future<void> show(
     BuildContext context, {
@@ -182,7 +182,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                         visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                         activeColor: const Color(0xFFC79A00), // App primary color roughly
                       );
-                    }).toList(),
+                    }),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _descriptionController,

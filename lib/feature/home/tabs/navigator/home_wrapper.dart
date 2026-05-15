@@ -63,7 +63,11 @@ class _HomeWrapperState extends State<HomeWrapper>
     });
 
     _tabController.animateTo(i);
-    _pageController.jumpToPage(i);
+    _pageController.animateToPage(
+      i,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -93,20 +97,17 @@ class _HomeWrapperState extends State<HomeWrapper>
         ? AppColors.darkNavBar.withValues(alpha: 0.50)
         : theme.colorScheme.primary.withValues(alpha: 0.50);
 
-    return PopScope(
-      // Only intercept when not on home tab. Sub-routes (PostDetailScreen,
-      // SoloTripPage, etc.) have their own PopScope handling and pop normally
-      // because Flutter only consults the CURRENT route's PopScopes.
-      canPop: index == 0,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
-        if (index != 0) {
-          setState(() => index = 0);
-          _tabController.animateTo(0);
-          _pageController.jumpToPage(0);
-        }
-      },
-      child: Scaffold(
+    // NO PopScope. Every previous attempt to intercept the system back here
+    // ("back from non-home tab → switch to Home") has resurfaced the bug
+    // where pressing back from any pushed sub-route (Settings, Translator,
+    // Tours, Guides, etc.) jumps to Home with a hard reload. Behaviour now:
+    //   • Press back on a sub-route → pops the sub-route (Flutter default).
+    //   • Press back on any tab when HomeWrapper is topmost → exits the app
+    //     (Android default).
+    // Switching back to Home tab can still happen via the navbar or via a
+    // deep-link calling MapFocusService.instance.tabSwitchNotifier. No
+    // automatic "back jumps to home tab" — that's what kept breaking.
+    return Scaffold(
       extendBody: true,
       body: NotificationListener<UserScrollNotification>(
         onNotification: (notification) {
@@ -166,13 +167,18 @@ class _HomeWrapperState extends State<HomeWrapper>
                       _isNavBarVisible = true;
                     });
                     _tabController.animateTo(i);
-                    _pageController.jumpToPage(i);
+                    // Smooth slide between tabs — kills the hard-snap visual
+                    // ("ugly refresh") people kept complaining about.
+                    _pageController.animateToPage(
+                      i,
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOut,
+                    );
                   },
                 ),
               )
             : const SizedBox.shrink(),
       ),
-    ),
-  );
+    );
   }
 }

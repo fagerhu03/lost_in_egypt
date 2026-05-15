@@ -8,7 +8,7 @@ import 'admin_reports_screen.dart';
 import '../../domain/usecases/admin_usecases.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
-  const AdminDashboardScreen({Key? key}) : super(key: key);
+  const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

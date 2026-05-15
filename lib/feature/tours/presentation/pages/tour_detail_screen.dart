@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import 'package:lost_in_egypt/core/utils/map_style_helper.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
@@ -21,12 +20,14 @@ import 'package:lost_in_egypt/feature/home/tabs/account/presentation/account_scr
 import 'package:uuid/uuid.dart';
 import '../../../../feature/reviews/data/datasources/reviews_data_source.dart';
 import '../../../../feature/reviews/data/models/review_model.dart';
+import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/widgets/shimmer_loading_widget.dart';
 
 class TourDetailScreen extends StatefulWidget {
   final TourEntity tour;
 
-  const TourDetailScreen({Key? key, required this.tour}) : super(key: key);
+  const TourDetailScreen({super.key, required this.tour});
 
   @override
   State<TourDetailScreen> createState() => _TourDetailScreenState();
@@ -35,6 +36,112 @@ class TourDetailScreen extends StatefulWidget {
 class _TourDetailScreenState extends State<TourDetailScreen> {
   TourEntity get tour => widget.tour;
   GoogleMapController? _meetingMapController;
+
+  // "You might also enjoy" — fetched from sibling tours the first time the
+  // screen builds. Empty list while loading or if engine returns nothing.
+  List<TourEntity> _similarTours = [];
+  bool _loadingSimilar = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Record a 'visit' signal — opening a tour detail screen reads as intent
+    // (user is considering booking). Matches the place-detail pattern.
+    final inferred = RecommendationMappings.inferKeysFromText(
+      '${tour.title} ${tour.destinations.join(' ')} ${tour.description}',
+    );
+    RecommendationService.recordSignal(
+      placeId: tour.id,
+      placeName: tour.title,
+      types: inferred['types']!,
+      tags: inferred['tags']!,
+      signalType: 'visit',
+      source: 'tour_detail',
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSimilarTours());
+  }
+
+  Future<void> _loadSimilarTours() async {
+    try {
+      // Fetch up to 30 sibling tours from Firestore. Filter out the current one
+      // and any archived. This is the candidate pool the engine ranks against.
+      final snap = await FirebaseFirestore.instance
+          .collection('tours')
+          .where('isArchived', isEqualTo: false)
+          .limit(30)
+          .get();
+      final siblings = snap.docs
+          .where((d) => d.id != tour.id)
+          .map((d) {
+            final m = d.data();
+            return TourEntity(
+              id: d.id,
+              guideId: m['guideId'] as String? ?? '',
+              title: m['title'] as String? ?? '',
+              description: m['description'] as String? ?? '',
+              destinations: List<String>.from(m['destinations'] ?? []),
+              price: (m['price'] as num?)?.toDouble() ?? 0,
+              meetingLatitude: (m['meetingLatitude'] as num?)?.toDouble() ?? 0,
+              meetingLongitude: (m['meetingLongitude'] as num?)?.toDouble() ?? 0,
+              meetingTime: (m['meetingTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+              frequency: m['frequency'] as String? ?? '',
+              meetingLocationName: m['meetingLocationName'] as String? ?? '',
+              images: List<String>.from(m['images'] ?? []),
+              maxAttendees: (m['maxAttendees'] as num?)?.toInt() ?? 0,
+              rating: (m['rating'] as num?)?.toDouble() ?? 0,
+              reviewCount: (m['reviewCount'] as num?)?.toInt() ?? 0,
+              createdAt: (m['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            );
+          })
+          .toList();
+      if (siblings.isEmpty) {
+        if (mounted) setState(() => _loadingSimilar = false);
+        return;
+      }
+
+      final candidates = siblings.map((t) {
+        final m = RecommendationMappings.inferKeysFromText(
+          '${t.title} ${t.destinations.join(' ')} ${t.description}',
+        );
+        return <String, dynamic>{
+          'placeId': t.id,
+          'name': t.title,
+          'types': m['types']!,
+          'tags': m['tags']!,
+          'rating': t.rating,
+          'userRatingCount': t.reviewCount,
+          'lat': t.meetingLatitude,
+          'lng': t.meetingLongitude,
+        };
+      }).toList();
+
+      final result = await RecommendationService.recommendPlaces(
+        candidates: candidates,
+        context: 'similar',
+        limit: 4,
+        // Small tour pool — don't exclude previously seen, or once the user
+        // has opened a few tour details the "You might also enjoy" row
+        // empties out and the section disappears entirely.
+        excludeSeen: false,
+      );
+      if (!mounted) return;
+      if (result == null || result.recommendations.isEmpty) {
+        setState(() => _loadingSimilar = false);
+        return;
+      }
+      final idToTour = {for (final t in siblings) t.id: t};
+      final ordered = result.recommendations
+          .map((r) => idToTour[r.placeId])
+          .whereType<TourEntity>()
+          .toList();
+      setState(() {
+        _similarTours = ordered;
+        _loadingSimilar = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingSimilar = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -113,7 +220,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  Colors.black.withOpacity(0.7),
+                                  Colors.black.withValues(alpha: 0.7),
                                 ],
                                 stops: const [0.6, 1.0],
                               ),
@@ -182,7 +289,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                      border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       children: [
@@ -200,7 +307,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   const SizedBox(height: 8),
                   Text(
                     tour.description,
-                    style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurface.withOpacity(0.8), height: 1.5),
+                    style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.8), height: 1.5),
                   ),
 
                   const SizedBox(height: 24),
@@ -211,7 +318,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     runSpacing: 8,
                     children: tour.destinations.map((dest) => Chip(
                       label: Text(dest),
-                      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                     )).toList(),
                   ),
 
@@ -223,7 +330,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     height: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+                      border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
                     ),
                     clipBehavior: Clip.hardEdge,
                     child: Stack(
@@ -267,7 +374,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.surface.withOpacity(0.9),
+                              color: theme.colorScheme.surface.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Row(
@@ -333,6 +440,49 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   const SizedBox(height: 16),
                   _ReviewsSection(tour: tour),
 
+                  // ── You might also enjoy ─────────────────────────────────
+                  if (_loadingSimilar || _similarTours.isNotEmpty) ...[
+                    const SizedBox(height: 32),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Icon(Icons.auto_awesome,
+                            size: 18, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'You might also enjoy',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 180,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _loadingSimilar ? 3 : _similarTours.length,
+                        itemBuilder: (_, i) {
+                          if (_loadingSimilar) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: const ShimmerLoadingWidget.rectangular(
+                                    width: 220, height: 180),
+                              ),
+                            );
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: _SimilarTourCard(tour: _similarTours[i]),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 100), // padding for bottom bar
                 ],
               ),
@@ -351,7 +501,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: theme.colorScheme.surfaceVariant,
+                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   foregroundColor: theme.colorScheme.onSurfaceVariant,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
@@ -385,7 +535,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: theme.colorScheme.primary),
@@ -395,7 +545,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+              Text(title, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
               Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -406,7 +556,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
 
   Widget _buildScheduleRow(BuildContext context, String frequency) {
     if (frequency == 'One-Time') {
-      return Text('This is a one-time tour.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8)));
+      return Text('This is a one-time tour.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)));
     }
     
     final days = frequency.split(', ');
@@ -427,7 +577,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
             side: BorderSide(
-              color: isSelected ? Colors.transparent : Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+              color: isSelected ? Colors.transparent : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
             ),
           ),
         );
@@ -578,7 +728,7 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
       return ListTile(
         contentPadding: EdgeInsets.zero,
         leading: CircleAvatar(
-          backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
           child: const Icon(Icons.person),
         ),
         title: const Text('Guide not found'),
@@ -590,7 +740,7 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
         radius: 24,
-        backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
+        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
         backgroundImage: guide.profileImageUrl.isNotEmpty ? CachedNetworkImageProvider(guide.profileImageUrl) : null,
         child: guide.profileImageUrl.isEmpty ? const Icon(Icons.person) : null,
       ),
@@ -600,10 +750,10 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
               children: [
                 const Icon(Icons.star, color: Colors.amber, size: 14),
                 const SizedBox(width: 2),
-                Text('${guide.rating.toStringAsFixed(1)} (${guide.reviewCount} reviews)', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                Text('${guide.rating.toStringAsFixed(1)} (${guide.reviewCount} reviews)', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
               ],
             )
-          : Text('Verified Guide', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+          : Text('Verified Guide', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
         Navigator.push(
@@ -679,7 +829,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
               return Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Center(
@@ -718,7 +868,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                         onTap: () => _navigateToReviewerProfile(context, userId),
                         child: CircleAvatar(
                           radius: 20,
-                          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                           backgroundImage: userImage != null && userImage.isNotEmpty ? CachedNetworkImageProvider(userImage) : null,
                           child: userImage == null || userImage.isEmpty ? const Icon(Icons.person, size: 20) : null,
                         ),
@@ -754,7 +904,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                             ),
                             if (text.isNotEmpty) ...[
                               const SizedBox(height: 4),
-                              Text(text, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8), fontSize: 14)),
+                              Text(text, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 14)),
                             ],
                           ],
                         ),
@@ -780,7 +930,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
 
   Widget _buildReviewActionMenu(BuildContext context, String reviewDocId, Map<String, dynamic> data, bool isOwnReview) {
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, size: 18, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+      icon: Icon(Icons.more_vert, size: 18, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(),
       onSelected: (value) {
@@ -1088,6 +1238,121 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
           },
         );
       },
+    );
+  }
+}
+
+// ── Compact card for the "You might also enjoy" row at the bottom of the
+// tour detail screen. Smaller and simpler than TourCard — image + title +
+// rating only. Pushes a fresh TourDetailScreen on tap.
+
+class _SimilarTourCard extends StatelessWidget {
+  final TourEntity tour;
+  const _SimilarTourCard({required this.tour});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
+      ),
+      child: Container(
+        width: 220,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: theme.colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (tour.images.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: tour.images.first,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.06),
+                  child: Icon(Icons.tour,
+                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                      size: 36),
+                ),
+              )
+            else
+              Container(
+                color: theme.colorScheme.primary.withValues(alpha: 0.06),
+                child: Icon(Icons.tour,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    size: 36),
+              ),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Color(0xCC000000)],
+                  stops: [0.45, 1.0],
+                ),
+              ),
+            ),
+            if (tour.rating > 0)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade700,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star_rounded, size: 12, color: Colors.white),
+                      const SizedBox(width: 2),
+                      Text(
+                        tour.rating.toStringAsFixed(1),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            Positioned(
+              bottom: 10,
+              left: 10,
+              right: 10,
+              child: Text(
+                tour.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Marcellus',
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

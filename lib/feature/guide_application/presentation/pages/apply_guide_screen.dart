@@ -11,9 +11,9 @@ class ApplyGuideScreen extends StatefulWidget {
   final bool isFromSignup;
   
   const ApplyGuideScreen({
-    Key? key,
+    super.key,
     this.isFromSignup = false,
-  }) : super(key: key);
+  });
 
   @override
   State<ApplyGuideScreen> createState() => _ApplyGuideScreenState();

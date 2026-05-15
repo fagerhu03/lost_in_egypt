@@ -103,7 +103,7 @@ class _SheetBodyState extends State<_SheetBody> {
               width: 46,
               height: 5,
               decoration: BoxDecoration(
-                color: onSurface.withOpacity(0.25),
+                color: onSurface.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
@@ -121,7 +121,7 @@ class _SheetBodyState extends State<_SheetBody> {
             Text(
               "Choose what you want to be notified about.",
               style: TextStyle(
-                color: onSurface.withOpacity(0.65),
+                color: onSurface.withValues(alpha: 0.65),
                 fontFamily: "Marcellus",
                 fontSize: 12,
               ),
@@ -145,7 +145,7 @@ class _SheetBodyState extends State<_SheetBody> {
                 },
               ),
               const SizedBox(height: 8),
-              Divider(color: onSurface.withOpacity(0.10), height: 1),
+              Divider(color: onSurface.withValues(alpha: 0.10), height: 1),
               const SizedBox(height: 8),
               Opacity(
                 opacity: _masterEnabled ? 1.0 : 0.4,
@@ -270,7 +270,7 @@ class _ToggleTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: primary.withOpacity(0.18)),
+        border: Border.all(color: primary.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [
@@ -278,7 +278,7 @@ class _ToggleTile extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: primary.withOpacity(0.12),
+              color: primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: primary, size: 18),
@@ -297,7 +297,7 @@ class _ToggleTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(subtitle,
                     style: TextStyle(
-                        color: onSurface.withOpacity(0.60),
+                        color: onSurface.withValues(alpha: 0.60),
                         fontFamily: "Marcellus",
                         fontSize: 11)),
               ],
@@ -305,7 +305,7 @@ class _ToggleTile extends StatelessWidget {
           ),
           Switch(
             value: value,
-            activeColor: primary,
+            activeThumbColor: primary,
             onChanged: enabled ? onChanged : null,
           ),
         ],

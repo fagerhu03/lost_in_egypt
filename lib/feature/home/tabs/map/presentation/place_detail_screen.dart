@@ -5,12 +5,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
+import 'package:lost_in_egypt/core/widgets/weather_banner.dart';
+import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
+
+// Mirrors OUTDOOR_TYPES + SEMI_OUTDOOR_TYPES in functions/recommendation.js.
+// Used to gate the weather advisory banner — indoor places never show it.
+const _outdoorOrSemiOutdoor = {
+  'park', 'beach', 'archaeological_site', 'monument', 'historical_landmark',
+  'zoo', 'stadium', 'amusement_park', 'tourist_attraction', 'national_park',
+  'market', 'street_market', 'bazaar',
+};
 
 class PlaceDetailSheet extends StatefulWidget {
   final MapItem place;
@@ -519,6 +531,27 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                       ],
                     ),
+
+                    // Weather advisory — only for outdoor / semi-outdoor places
+                    if (_outdoorOrSemiOutdoor
+                        .contains(widget.place.category.toLowerCase()))
+                      ValueListenableBuilder<WeatherContext?>(
+                        valueListenable: WeatherController.weather,
+                        builder: (_, weather, _) {
+                          if (weather == null ||
+                              !WeatherBanner.shouldShow(weather)) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: EdgeInsets.only(top: 14.h),
+                            child: WeatherBanner(
+                              weather: weather,
+                              onTap: () =>
+                                  WeatherForecastSheet.show(context),
+                            ),
+                          );
+                        },
+                      ),
                     SizedBox(height: 24.h),
 
                     // Action buttons

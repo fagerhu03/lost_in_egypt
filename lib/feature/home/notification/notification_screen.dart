@@ -15,6 +15,7 @@ import 'package:lost_in_egypt/feature/tours/data/models/tour_model.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/tour_detail_screen.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/booking_history_screen.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/guide_dashboard_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/my_plans_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/bloc/guide_tours_cubit.dart';
 import 'package:lost_in_egypt/feature/tours/domain/usecases/get_guide_tours_usecase.dart';
@@ -89,6 +90,31 @@ class _NotificationScreenState extends State<NotificationScreen> {
             child: const GuideDashboardScreen(),
           ),
         ));
+        return;
+      }
+
+      // ── Weather alert for active solo plan ──────────────────────────
+      if (notif.type == 'weather_alert') {
+        if (!mounted) return;
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const MyPlansScreen()));
+        return;
+      }
+
+      // ── Weekly AI-picked recommendations → Home tab (For You carousel) ─
+      if (notif.type == 'weekly_recommendations') {
+        if (!mounted) return;
+        // Pop back to HomeWrapper, then switch to Home tab where For You lives.
+        Navigator.of(context).popUntil((r) => r.isFirst);
+        MapFocusService.instance.tabSwitchNotifier.value = 0;
+        return;
+      }
+
+      // ── Daily discovery push → Home tab (same surface as weekly) ───────
+      if (notif.type == 'daily_discovery') {
+        if (!mounted) return;
+        Navigator.of(context).popUntil((r) => r.isFirst);
+        MapFocusService.instance.tabSwitchNotifier.value = 0;
         return;
       }
 
@@ -175,7 +201,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   Align(
                     alignment: Alignment.center,
                     child: Material(
-                      color: primary.withOpacity(0.18),
+                      color: primary.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(14),
                       clipBehavior: Clip.hardEdge,
                       child: InkWell(
@@ -187,7 +213,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(14),
                             border:
-                                Border.all(color: primary.withOpacity(0.25)),
+                                Border.all(color: primary.withValues(alpha: 0.25)),
                           ),
                           child: Text(
                             "Customize your notifications!",
@@ -255,7 +281,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                         const EdgeInsets.only(right: 18),
                                     decoration: BoxDecoration(
                                       color:
-                                          Colors.red.withOpacity(0.85),
+                                          Colors.red.withValues(alpha: 0.85),
                                       borderRadius:
                                           BorderRadius.circular(16),
                                     ),
@@ -293,7 +319,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               child: Text(
                                 "Marking notifications?",
                                 style: TextStyle(
-                                  color: onSurface.withOpacity(0.75),
+                                  color: onSurface.withValues(alpha: 0.75),
                                   fontFamily: "Marcellus",
                                   fontSize: 12,
                                 ),

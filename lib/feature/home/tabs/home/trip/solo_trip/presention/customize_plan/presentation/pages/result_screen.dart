@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:lost_in_egypt/core/models/solo_plan.dart';
+import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/active_tour_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
@@ -944,7 +946,28 @@ class _PlanViewState extends State<_PlanView> {
                             gold: gold),
                     ],
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
+
+                  // Per-day forecast strip — only when forecast is loaded and
+                  // we know the trip start date. Each chip aligns to
+                  // entity.fromDate + (day.day - 1) days.
+                  ValueListenableBuilder<WeatherContext?>(
+                    valueListenable: WeatherController.weather,
+                    builder: (_, weather, _) {
+                      if (weather == null || weather.forecast.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return _DailyForecastStrip(
+                        days: plan.days,
+                        forecast: weather.forecast,
+                        tripStart: entity.fromDate,
+                        textColor: textColor,
+                        cardColor: cardColor,
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 8),
 
                   // Day sections — interleave a transit card above any day
                   // that travels to a different city than the previous one.
@@ -1030,6 +1053,165 @@ class _PlanViewState extends State<_PlanView> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Daily forecast strip ─────────────────────────────────────────────────────
+//
+// Compact horizontal row of chips, one per trip day. Each chip shows the day
+// label, weather condition icon, max feels-like temp, and a coloured top border
+// indicating severity. Only days within the 7-day Open-Meteo forecast window
+// can be matched — days beyond render as "—".
+
+class _DailyForecastStrip extends StatelessWidget {
+  final List<_Day> days;
+  final List<DayForecast> forecast;
+  final DateTime? tripStart;
+  final Color textColor;
+  final Color cardColor;
+
+  const _DailyForecastStrip({
+    required this.days,
+    required this.forecast,
+    required this.tripStart,
+    required this.textColor,
+    required this.cardColor,
+  });
+
+  DayForecast? _forecastFor(_Day day) {
+    if (tripStart == null) {
+      // Fallback: assume day 1 is today, day 2 is tomorrow, etc.
+      final idx = day.day - 1;
+      if (idx < 0 || idx >= forecast.length) return null;
+      return forecast[idx];
+    }
+    final dayDate = DateTime(tripStart!.year, tripStart!.month, tripStart!.day)
+        .add(Duration(days: day.day - 1));
+    for (final f in forecast) {
+      final fd = DateTime(f.date.year, f.date.month, f.date.day);
+      if (fd == dayDate) return f;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasAnyMatch = days.any((d) => _forecastFor(d) != null);
+    if (!hasAnyMatch) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 92,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: days.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (_, i) {
+          final day = days[i];
+          final f = _forecastFor(day);
+          return _ForecastChip(
+            day: day,
+            forecast: f,
+            textColor: textColor,
+            cardColor: cardColor,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ForecastChip extends StatelessWidget {
+  final _Day day;
+  final DayForecast? forecast;
+  final Color textColor;
+  final Color cardColor;
+
+  const _ForecastChip({
+    required this.day,
+    required this.forecast,
+    required this.textColor,
+    required this.cardColor,
+  });
+
+  IconData _iconFor(DayForecast f) {
+    if (f.isSandstorm || f.isDustHaze) return Icons.air;
+    if (f.isExtremeHeat || f.isVeryHot) return Icons.thermostat;
+    if (f.isExtremeUV) return Icons.wb_sunny;
+    return Icons.wb_sunny_outlined;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final f = forecast;
+    final accent = f?.severityColor ?? textColor.withValues(alpha: 0.3);
+
+    return Container(
+      width: 92,
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border(top: BorderSide(color: accent, width: 3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Day ${day.day}',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Marcellus',
+              color: textColor.withValues(alpha: 0.85),
+            ),
+          ),
+          const SizedBox(height: 2),
+          if (f == null)
+            Text(
+              '—',
+              style: TextStyle(
+                fontSize: 16,
+                color: textColor.withValues(alpha: 0.4),
+              ),
+            )
+          else ...[
+            Row(
+              children: [
+                Icon(_iconFor(f), size: 16, color: accent),
+                const SizedBox(width: 4),
+                Text(
+                  '${f.maxFeelsLikeC.toStringAsFixed(0)}°',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              f.conditionLabel,
+              style: TextStyle(
+                fontSize: 10,
+                color: accent,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ],
       ),
     );

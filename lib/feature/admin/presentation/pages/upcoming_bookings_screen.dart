@@ -29,7 +29,7 @@ class UpcomingBookingsScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_available, size: 80, color: theme.colorScheme.primary.withOpacity(0.5)),
+            Icon(Icons.event_available, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             const Text(
               'No Upcoming Bookings',

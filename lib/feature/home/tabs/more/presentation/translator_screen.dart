@@ -267,7 +267,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? primary.withOpacity(0.15)
+                            ? primary.withValues(alpha: 0.15)
                             : const Color(0xFFFFF3CD),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
@@ -307,7 +307,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(isDark ? 0.15 : 0.2),
+                        color: Colors.green.withValues(alpha: isDark ? 0.15 : 0.2),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.green, width: 1),
                       ),
@@ -342,7 +342,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -381,7 +381,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             decoration: InputDecoration(
                               hintText: "Enter text",
                               hintStyle: TextStyle(
-                                color: textColor.withOpacity(0.4),
+                                color: textColor.withValues(alpha: 0.4),
                                 fontFamily: "Marcellus",
                               ),
                               border: OutlineInputBorder(
@@ -399,7 +399,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                                   Icons.mic,
                                   color: _isListening
                                       ? Colors.red
-                                      : textColor.withOpacity(0.6),
+                                      : textColor.withValues(alpha: 0.6),
                                   size: 20,
                                 ),
                               ),
@@ -422,7 +422,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             shape: const CircleBorder(),
                             clipBehavior: Clip.hardEdge,
                             elevation: 4,
-                            shadowColor: Colors.black.withOpacity(0.1),
+                            shadowColor: Colors.black.withValues(alpha: 0.1),
                             child: InkWell(
                               onTap: _swapLanguages,
                               customBorder: const CircleBorder(),
@@ -469,7 +469,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             decoration: InputDecoration(
                               hintText: "Translation",
                               hintStyle: TextStyle(
-                                color: textColor.withOpacity(0.4),
+                                color: textColor.withValues(alpha: 0.4),
                                 fontFamily: "Marcellus",
                               ),
                               border: OutlineInputBorder(
@@ -484,7 +484,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                                     _speak(_translatedText, _targetLanguage),
                                 icon: Icon(
                                   Icons.volume_up,
-                                  color: textColor.withOpacity(0.9),
+                                  color: textColor.withValues(alpha: 0.9),
                                   size: 20,
                                 ),
                               ),
@@ -511,7 +511,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         onPressed: _isTranslating ? null : _translate,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primary,
-                          disabledBackgroundColor: primary.withOpacity(0.6),
+                          disabledBackgroundColor: primary.withValues(alpha: 0.6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -561,7 +561,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/map_bloc.dart';
-import '../bloc/map_event.dart';
 import '../bloc/map_state.dart';
 
 class LiveNavigationOverlay extends StatelessWidget {
@@ -31,8 +28,8 @@ class LiveNavigationOverlay extends StatelessWidget {
     final primary = theme.colorScheme.primary;
 
     final shadowColor = theme.brightness == Brightness.dark
-        ? Colors.white.withOpacity(0.18)
-        : Colors.black.withOpacity(0.18);
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.18);
 
     final currentStep = (state.currentStepIndex < state.currentRoute!.steps.length)
         ? state.currentRoute!.steps[state.currentStepIndex]
@@ -56,7 +53,7 @@ class LiveNavigationOverlay extends StatelessWidget {
                   BoxShadow(
                       color: shadowColor, blurRadius: 16, spreadRadius: 1)
                 ],
-                border: Border.all(color: primary.withOpacity(0.3)),
+                border: Border.all(color: primary.withValues(alpha: 0.3)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -68,7 +65,7 @@ class LiveNavigationOverlay extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: primary.withOpacity(0.15),
+                            color: primary.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(Icons.navigation_rounded,
@@ -93,7 +90,7 @@ class LiveNavigationOverlay extends StatelessWidget {
                               Text(
                                 '${currentStep.distance} · ${currentStep.duration}',
                                 style: TextStyle(
-                                  color: onSurface.withOpacity(0.5),
+                                  color: onSurface.withValues(alpha: 0.5),
                                   fontSize: 13,
                                 ),
                               ),
@@ -113,7 +110,7 @@ class LiveNavigationOverlay extends StatelessWidget {
                           Text(
                             '${state.currentRoute!.distance} · ${state.currentRoute!.duration} total',
                             style: TextStyle(
-                              color: onSurface.withOpacity(0.6),
+                              color: onSurface.withValues(alpha: 0.6),
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -128,14 +125,14 @@ class LiveNavigationOverlay extends StatelessWidget {
                         Text(
                           'Step ${state.currentStepIndex + 1}/${state.currentRoute!.steps.length}',
                           style: TextStyle(
-                              color: onSurface.withOpacity(0.5), fontSize: 12),
+                              color: onSurface.withValues(alpha: 0.5), fontSize: 12),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: LinearProgressIndicator(
                             value: (state.currentStepIndex + 1) /
                                 state.currentRoute!.steps.length,
-                            backgroundColor: onSurface.withOpacity(0.1),
+                            backgroundColor: onSurface.withValues(alpha: 0.1),
                             valueColor: AlwaysStoppedAnimation(primary),
                             minHeight: 4,
                             borderRadius: BorderRadius.circular(2),
@@ -147,7 +144,7 @@ class LiveNavigationOverlay extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
+                              color: Colors.red.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(Icons.stop_rounded,

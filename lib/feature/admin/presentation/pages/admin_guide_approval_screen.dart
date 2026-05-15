@@ -6,7 +6,7 @@ import '../bloc/admin_guide_state.dart';
 import 'admin_guide_details_screen.dart';
 
 class AdminGuideApprovalScreen extends StatefulWidget {
-  const AdminGuideApprovalScreen({Key? key}) : super(key: key);
+  const AdminGuideApprovalScreen({super.key});
 
   @override
   State<AdminGuideApprovalScreen> createState() => _AdminGuideApprovalScreenState();

@@ -17,17 +17,17 @@ class GuideTripTypeTab extends StatelessWidget {
     final bool isDark = theme.brightness == Brightness.dark;
 
     // ✅ Selected background changes with theme
-    final activeColor = isDark ? AppColors.darkBox : AppColors.lightBox.withOpacity(0.5);
+    final activeColor = isDark ? AppColors.darkBox : AppColors.lightBox.withValues(alpha: 0.5);
 
     // ✅ Unselected background also theme-aware + lighter
     final inactiveBg = isDark
-        ? AppColors.darkBox.withOpacity(0.18)
-        : AppColors.lightPatternOverlay.withOpacity(0.40);
+        ? AppColors.darkBox.withValues(alpha: 0.18)
+        : AppColors.lightPatternOverlay.withValues(alpha: 0.40);
 
     // ✅ Text colors
     final inactiveText = isDark
-        ? AppColors.darkText.withOpacity(0.65)
-        : const Color(0xFF7A4B1D).withOpacity(0.80);
+        ? AppColors.darkText.withValues(alpha: 0.65)
+        : const Color(0xFF7A4B1D).withValues(alpha: 0.80);
 
     final selectedTextColor = isDark
         ? AppColors.darkText
@@ -43,8 +43,8 @@ class GuideTripTypeTab extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isDark
-                ? AppColors.darkText.withOpacity(0.08)
-                : Colors.black.withOpacity(0.06),
+                ? AppColors.darkText.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
           ),
         ),
         alignment: Alignment.center,

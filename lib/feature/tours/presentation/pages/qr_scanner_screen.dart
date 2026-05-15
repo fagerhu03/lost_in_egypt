@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/utils/error_handler.dart';
 
 class QrScannerScreen extends StatefulWidget {
-  const QrScannerScreen({Key? key}) : super(key: key);
+  const QrScannerScreen({super.key});
 
   @override
   State<QrScannerScreen> createState() => _QrScannerScreenState();
@@ -154,7 +154,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     decoration: BoxDecoration(
-                      color: (isValid ? Colors.green : Colors.red).withOpacity(0.12),
+                      color: (isValid ? Colors.green : Colors.red).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Row(
@@ -206,7 +206,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                           Text(
                             '@$username',
                             style: TextStyle(
-                                fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                fontSize: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                       ],
                     ),
@@ -238,7 +238,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         'Check in how many?',
                         style: TextStyle(
                           fontSize: 14,
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
                       const Spacer(),
@@ -381,7 +381,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               margin: const EdgeInsets.only(bottom: 48),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Text(
@@ -469,7 +469,7 @@ class _SheetRow extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 10),
-          Text('$label: ', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.55), fontSize: 13)),
+          Text('$label: ', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.55), fontSize: 13)),
           Expanded(
             child: Text(value,
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),

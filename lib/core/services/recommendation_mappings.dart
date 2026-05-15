@@ -224,4 +224,118 @@ class RecommendationMappings {
   /// These receive a softer weather penalty than fully outdoor places.
   static bool isSemiOutdoor(List<String> types) =>
       types.any(_semiOutdoorTypes.contains) && !isOutdoor(types);
+
+  /// Infers canonical types + tags from free-form text — used for tour
+  /// destinations, tour titles, and any other surface where the engine needs
+  /// canonical keys but only has a human-readable string. Lowercase substring
+  /// match against [_tourKeywordMap]. Returns de-duplicated lists.
+  ///
+  /// Example:
+  ///   inferKeysFromText("Pyramids of Giza & Egyptian Museum")
+  ///     → {'types': ['monument','historical_landmark','museum'],
+  ///        'tags':  ['ancient','pharaonic','historical','cultural']}
+  static Map<String, List<String>> inferKeysFromText(String text) {
+    final lower = text.toLowerCase();
+    final types = <String>{};
+    final tags = <String>{};
+    for (final entry in _tourKeywordMap.entries) {
+      if (lower.contains(entry.key)) {
+        types.addAll(entry.value['types'] ?? const []);
+        tags.addAll(entry.value['tags'] ?? const []);
+      }
+    }
+    // Fallback so tours with no keyword hit still get *some* taste signal.
+    if (types.isEmpty && tags.isEmpty) {
+      types.add('tourist_attraction');
+      tags.add('cultural');
+    }
+    return {'types': types.toList(), 'tags': tags.toList()};
+  }
+
+  /// Convenience: union of [inferKeysFromText] over a list of strings.
+  static Map<String, List<String>> inferKeysFromTexts(List<String> texts) {
+    final types = <String>{};
+    final tags = <String>{};
+    for (final t in texts) {
+      final m = inferKeysFromText(t);
+      types.addAll(m['types']!);
+      tags.addAll(m['tags']!);
+    }
+    if (types.isEmpty && tags.isEmpty) {
+      types.add('tourist_attraction');
+      tags.add('cultural');
+    }
+    return {'types': types.toList(), 'tags': tags.toList()};
+  }
 }
+
+// ── Free-text → canonical keys (used by tours / search / events) ─────────────
+// Keyword-to-canonical-keys map. Each key is a lowercase substring;
+// matching is a simple `String.contains`. Order doesn't matter — all matches
+// contribute. Keep keywords broad enough to catch variations (e.g. "pyramid"
+// matches both "Pyramid" and "Pyramids of Giza").
+
+const Map<String, Map<String, List<String>>> _tourKeywordMap = {
+  // Pharaonic / ancient
+  'pyramid':       {'types': ['monument', 'historical_landmark'], 'tags': ['ancient', 'pharaonic', 'historical']},
+  'sphinx':        {'types': ['monument', 'historical_landmark'], 'tags': ['ancient', 'pharaonic', 'historical']},
+  'tomb':          {'types': ['archaeological_site'], 'tags': ['ancient', 'pharaonic', 'historical']},
+  'temple':        {'types': ['archaeological_site', 'monument'], 'tags': ['ancient', 'pharaonic', 'historical']},
+  'karnak':        {'types': ['archaeological_site'], 'tags': ['ancient', 'pharaonic', 'historical']},
+  'luxor':         {'types': ['archaeological_site'], 'tags': ['ancient', 'pharaonic', 'historical']},
+  'valley of the kings': {'types': ['archaeological_site'], 'tags': ['ancient', 'pharaonic', 'historical']},
+  'abu simbel':    {'types': ['archaeological_site', 'monument'], 'tags': ['ancient', 'pharaonic', 'historical']},
+  // Museums / culture
+  'museum':        {'types': ['museum'], 'tags': ['cultural', 'historical']},
+  'library':       {'types': ['museum'], 'tags': ['cultural', 'modern']},
+  'gallery':       {'types': ['art_gallery'], 'tags': ['cultural']},
+  'opera':         {'types': ['art_gallery'], 'tags': ['cultural', 'modern', 'entertainment']},
+  // Islamic
+  'mosque':        {'types': ['mosque'], 'tags': ['islamic', 'religious', 'historical']},
+  'citadel':       {'types': ['historical_landmark', 'monument'], 'tags': ['islamic', 'historical']},
+  'islamic':       {'types': ['mosque', 'historical_landmark'], 'tags': ['islamic', 'historical', 'religious']},
+  'al-azhar':      {'types': ['mosque', 'park'], 'tags': ['islamic', 'religious']},
+  // Coptic
+  'coptic':        {'types': ['church'], 'tags': ['coptic', 'religious', 'historical']},
+  'church':        {'types': ['church'], 'tags': ['coptic', 'religious']},
+  'monastery':     {'types': ['church'], 'tags': ['coptic', 'religious', 'historical']},
+  // Shopping / markets
+  'khan el-khalili': {'types': ['market'], 'tags': ['islamic', 'shopping', 'cultural', 'historical']},
+  'bazaar':        {'types': ['market'], 'tags': ['shopping', 'cultural']},
+  'souk':          {'types': ['market'], 'tags': ['shopping', 'cultural']},
+  'market':        {'types': ['market'], 'tags': ['shopping', 'cultural']},
+  'mall':          {'types': ['shopping_mall'], 'tags': ['shopping', 'modern']},
+  // Beach / sea / diving
+  'beach':         {'types': ['beach'], 'tags': ['natural', 'relaxation']},
+  'dive':          {'types': ['beach'], 'tags': ['natural', 'adventure']},
+  'snorkel':       {'types': ['beach'], 'tags': ['natural', 'adventure']},
+  'red sea':       {'types': ['beach'], 'tags': ['natural', 'adventure', 'relaxation']},
+  'nile':          {'types': ['park'], 'tags': ['natural', 'relaxation']},
+  'cruise':        {'types': ['park'], 'tags': ['relaxation', 'luxury']},
+  'corniche':      {'types': ['park'], 'tags': ['natural', 'relaxation']},
+  // Nature / desert / oasis
+  'desert':        {'types': ['park'], 'tags': ['natural', 'adventure']},
+  'oasis':         {'types': ['park'], 'tags': ['natural', 'adventure', 'relaxation']},
+  'safari':        {'types': ['park'], 'tags': ['natural', 'adventure']},
+  'siwa':          {'types': ['park'], 'tags': ['natural', 'adventure', 'relaxation']},
+  'white desert':  {'types': ['park'], 'tags': ['natural', 'adventure']},
+  'fayoum':        {'types': ['park'], 'tags': ['natural', 'relaxation']},
+  'park':          {'types': ['park'], 'tags': ['natural', 'relaxation']},
+  // Food / nightlife
+  'food':          {'types': ['restaurant'], 'tags': ['food', 'cultural']},
+  'culinary':      {'types': ['restaurant'], 'tags': ['food', 'cultural']},
+  'restaurant':    {'types': ['restaurant'], 'tags': ['food']},
+  'cafe':          {'types': ['cafe'], 'tags': ['food', 'cultural']},
+  'nightlife':     {'types': ['night_club', 'restaurant'], 'tags': ['entertainment', 'modern']},
+  'club':          {'types': ['night_club'], 'tags': ['entertainment', 'modern']},
+  // Family / entertainment
+  'zoo':           {'types': ['zoo'], 'tags': ['family', 'entertainment']},
+  'aquarium':      {'types': ['aquarium'], 'tags': ['family', 'natural']},
+  'park ride':     {'types': ['amusement_park'], 'tags': ['family', 'entertainment']},
+  'spa':           {'types': ['spa'], 'tags': ['relaxation', 'luxury']},
+  // Generic
+  'historical':    {'types': ['historical_landmark'], 'tags': ['historical']},
+  'monument':      {'types': ['monument'], 'tags': ['historical']},
+  'cultural':      {'types': ['tourist_attraction'], 'tags': ['cultural']},
+  'adventure':     {'types': ['tourist_attraction'], 'tags': ['adventure']},
+};

@@ -375,7 +375,7 @@ function cosineSim(a, b) {
  * @param {object} params.tasteVector - Map<string, number> from users/{uid}.tasteVector
  * @param {number|undefined} params.userLat - User's current latitude (optional)
  * @param {number|undefined} params.userLng - User's current longitude (optional)
- * @param {string} params.context - 'solo'|'nearby'|'similar'|'home' — shifts weight distribution
+ * @param {string} params.context - 'solo'|'nearby'|'similar'|'home'|'tours' — shifts weight distribution
  * @param {object} params.neighbors - Map<placeId, similarity> for collaborative filtering
  * @param {object|null} params.countryPrior - Country-level average tasteVector (null if unavailable)
  * @param {boolean} params.hasEnoughSignals - true once user has ≥5 non-quiz signals
@@ -467,6 +467,12 @@ function scoreCandidate({
     // Home feed — proximity is the dominant signal; taste breaks ties among nearby places.
     // This prevents distant places from winning solely on taste match.
     w = { taste: 0.25, rating: 0.10, proximity: 0.45, popularity: 0.05, collab: 0.15 };
+  }
+  if (context === "tours") {
+    // Tours are intentional, planned activities — taste dominates. Rating + collab
+    // still matter because a guided tour's quality is a real signal. Proximity is
+    // reduced because tours have set meeting points and users will travel to them.
+    w = { taste: 0.40, rating: 0.20, proximity: 0.10, popularity: 0.15, collab: 0.15 };
   }
 
   // Cold-start adjustment: reduce personal taste weight, let country prior fill the gap
@@ -622,7 +628,7 @@ function interestReason(keys, tasteVector) {
  * @param {object} params.tasteVector - user's taste vector
  * @param {number|undefined} params.userLat
  * @param {number|undefined} params.userLng
- * @param {string} params.context - 'solo'|'nearby'|'similar'|'home'
+ * @param {string} params.context - 'solo'|'nearby'|'similar'|'home'|'tours'
  * @param {object} params.neighbors - collaborative filtering neighbor map
  * @param {object|null} params.countryPrior
  * @param {boolean} params.hasEnoughSignals
@@ -1168,6 +1174,30 @@ exports.applyQuizAnswers = onCall(async (request) => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
+// 10b. CLOUD FUNCTION: resetTasteVector (HTTPS Callable, debug-only)
+// ══════════════════════════════════════════════════════════════════════════════
+//
+// Clears all personalisation state for the calling user. Used by the
+// "Reset Taste Signals (Debug)" tile in Settings to recover from a corrupted
+// taste vector (e.g. a few accidental dismiss signals heavily skewing
+// recommendations). Per-user only — never affects other accounts.
+
+exports.resetTasteVector = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Login required.");
+  }
+  const uid = request.auth.uid;
+  await db().collection("users").doc(uid).set({
+    tasteVector: {},
+    signalCount: 0,
+    warmStartedAt: admin.firestore.FieldValue.delete(),
+    tasteVectorUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    quizCompletedAt: admin.firestore.FieldValue.delete(),
+  }, { merge: true });
+  return { status: "ok" };
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
 // 11. SCHEDULED: decayTasteVectors (nightly 3:00 AM UTC)
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -1501,6 +1531,249 @@ exports.sendDailyDiscovery = onSchedule(
 
     await Promise.allSettled(tasks);
     console.log(`sendDailyDiscovery: processed ${usersSnap.docs.length} users`);
+  }
+);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 13a. SCHEDULED: sendWeeklyRecommendations (Sundays 10:00 UTC)
+// ══════════════════════════════════════════════════════════════════════════════
+//
+// Weekly "here are 3 places you'd love" push notification. Sundays at 10:00 UTC
+// = 12:00 Cairo local, the natural weekend-planning hour.
+//
+// For each user with notifications=true AND signalCount >= 1 (i.e. has at least
+// some taste data) AND weeklyRecommendations pref != false, score the curated
+// WEEKLY_REC_POOL against the user's tasteVector (simple dot product over
+// matching types/tags), pick the top 3, and send a combined push + in-app
+// notification.
+//
+// Why a curated pool rather than Places API? Same reasoning as sendDailyDiscovery:
+// keeps the function self-contained (no extra API key/cost), and the 20-item
+// pool is broad enough to surface meaningful variety for any taste profile.
+
+// Curated 20-landmark pool — broad coverage across Egypt's main regions and
+// taste profiles. Each entry has the canonical types + tags it embodies, so
+// scoring is a simple dot product over the user's tasteVector.
+const WEEKLY_REC_POOL = [
+  { name: "Pyramids of Giza",             types: ["monument", "historical_landmark"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Grand Egyptian Museum",        types: ["museum"], tags: ["ancient", "pharaonic", "historical", "cultural", "modern"] },
+  { name: "Khan el-Khalili",              types: ["market"], tags: ["islamic", "shopping", "cultural", "historical"] },
+  { name: "Al-Azhar Park",                types: ["park"], tags: ["relaxation", "natural", "family"] },
+  { name: "Citadel of Saladin",           types: ["historical_landmark", "monument"], tags: ["islamic", "historical"] },
+  { name: "Coptic Cairo",                 types: ["church", "tourist_attraction"], tags: ["coptic", "religious", "historical"] },
+  { name: "Karnak Temple",                types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Valley of the Kings",          types: ["archaeological_site"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Luxor Temple",                 types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Abu Simbel",                   types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Philae Temple",                types: ["archaeological_site"], tags: ["ancient", "pharaonic", "religious"] },
+  { name: "Siwa Oasis",                   types: ["park", "tourist_attraction"], tags: ["natural", "adventure", "relaxation"] },
+  { name: "White Desert",                 types: ["park", "tourist_attraction"], tags: ["natural", "adventure"] },
+  { name: "Dahab Blue Hole",              types: ["beach"], tags: ["natural", "adventure"] },
+  { name: "Ras Muhammad National Park",   types: ["park", "beach"], tags: ["natural", "adventure"] },
+  { name: "Hurghada Marina",              types: ["restaurant", "shopping_mall"], tags: ["modern", "relaxation", "entertainment", "luxury"] },
+  { name: "Bibliotheca Alexandrina",      types: ["museum", "art_gallery"], tags: ["modern", "cultural"] },
+  { name: "Citadel of Qaitbay",           types: ["historical_landmark", "monument"], tags: ["historical", "islamic"] },
+  { name: "El Sahel North Coast",         types: ["beach"], tags: ["luxury", "relaxation", "modern"] },
+  { name: "Cairo Opera House",            types: ["art_gallery", "stadium"], tags: ["cultural", "modern", "entertainment"] },
+];
+
+exports.sendWeeklyRecommendations = onSchedule(
+  { schedule: "0 10 * * 0", region: "europe-west1" },
+  async () => {
+    const usersSnap = await db().collection("users")
+      .where("notifications", "==", true)
+      .where("signalCount", ">=", 1)
+      .select("fcmToken", "notificationPreferences")
+      .limit(1000)
+      .get();
+
+    const APP_LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/lost-in-egypt-elasly.firebasestorage.app/o/logo_colorful_comp.png?alt=media&token=ab162f0f-4b26-406a-9943-f5165c972b4e";
+
+    let sent = 0;
+    const tasks = usersSnap.docs.map(async (userDoc) => {
+      try {
+        const { fcmToken, notificationPreferences = {} } = userDoc.data();
+        if (!fcmToken) return;
+        // Per-user opt-out — default true (opt-in by default)
+        if (notificationPreferences.weeklyRecommendations === false) return;
+
+        // Pull the full tasteVector — we only selected a subset of fields above
+        const fullDoc = await userDoc.ref.get();
+        const tasteVector = fullDoc.data()?.tasteVector || {};
+
+        // Score each pool entry as the dot product of its keys against the
+        // user's tasteVector. Higher = better match.
+        const scored = WEEKLY_REC_POOL.map((place) => {
+          let score = 0;
+          for (const k of place.types) score += tasteVector[k] || 0;
+          for (const k of place.tags) score += tasteVector[k] || 0;
+          return { place, score };
+        }).sort((a, b) => b.score - a.score);
+
+        // Require at least one positive-score match — if everything's 0 or
+        // negative the user has no actionable preference yet; skip to avoid
+        // spamming with random picks.
+        if (scored[0].score <= 0) return;
+
+        const top3 = scored.slice(0, 3).map((s) => s.place.name);
+        const title = "✨ This week's picks for you";
+        const body = `${top3.join(" · ")} — handpicked from what you love`;
+
+        await userDoc.ref.collection("notifications").add({
+          recipientId: userDoc.id,
+          senderId: "system",
+          senderName: "Lost in Egypt",
+          senderAvatar: APP_LOGO_URL,
+          title,
+          message: body,
+          type: "weekly_recommendations",
+          deepLinkTargetId: "",
+          isRead: false,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        await admin.messaging().send({
+          token: fcmToken,
+          notification: { title, body },
+          data: { type: "weekly_recommendations", targetId: "" },
+          android: {
+            notification: {
+              channelId: "high_importance_channel",
+              priority: "high",
+              color: "#D6A00F",
+              imageUrl: APP_LOGO_URL,
+            },
+          },
+          apns: { payload: { aps: { contentAvailable: true } } },
+        });
+        sent++;
+      } catch (_) { /* skip individual errors */ }
+    });
+
+    await Promise.allSettled(tasks);
+    console.log(`sendWeeklyRecommendations: processed ${usersSnap.docs.length} users, sent ${sent} pushes`);
+  }
+);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 13b. SCHEDULED: sendWeatherAlertForSavedPlans (nightly 18:00 UTC)
+// ══════════════════════════════════════════════════════════════════════════════
+//
+// For every user with an ACTIVE solo plan, fetch tomorrow's forecast at the
+// plan's next incomplete stop. If the forecast indicates a sandstorm,
+// extreme heat (feels-like ≥ 38°C), or extreme UV (UV ≥ 10), send a
+// `weather_alert` push notification + write an in-app notification.
+//
+// Saved (not-yet-started) plans are skipped — they have no concrete trip date,
+// so an alert would be premature.
+//
+// Run at 18:00 UTC = 20:00 Cairo local time, so the alert hits during the
+// natural evening planning window.
+
+const SANDSTORM_WMO = new Set([30, 31, 32, 33, 34, 35, 98]);
+
+exports.sendWeatherAlertForSavedPlans = onSchedule(
+  { schedule: "0 18 * * *", region: "europe-west1" },
+  async () => {
+    const usersSnap = await db().collection("users")
+      .where("notifications", "==", true)
+      .select("fcmToken", "notificationPreferences")
+      .limit(500)
+      .get();
+
+    let alertsSent = 0;
+
+    const tasks = usersSnap.docs.map(async (userDoc) => {
+      try {
+        const { fcmToken, notificationPreferences = {} } = userDoc.data();
+        if (!fcmToken) return;
+        if (notificationPreferences.weatherAlert === false) return;
+
+        // Active plans only — saved plans have no trip date yet
+        const plansSnap = await userDoc.ref.collection("solo_plans")
+          .where("status", "==", "active")
+          .limit(1)
+          .get();
+        if (plansSnap.empty) return;
+        const plan = plansSnap.docs[0];
+        const planData = plan.data();
+
+        // Find the first incomplete stop with coords across all days
+        let target = null;
+        for (const day of planData.days || []) {
+          for (const stop of day.stops || []) {
+            if (stop.completed) continue;
+            if (stop.lat != null && stop.lng != null) {
+              target = stop;
+              break;
+            }
+          }
+          if (target) break;
+        }
+        if (!target) return;
+
+        // Open-Meteo — free, no key, no rate limit. Daily forecast for tomorrow.
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${target.lat}&longitude=${target.lng}` +
+          "&daily=weather_code,apparent_temperature_max,uv_index_max" +
+          "&forecast_days=2&timezone=auto";
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const data = await res.json();
+        const daily = data.daily || {};
+        // index 0 = today, index 1 = tomorrow
+        const wmoCode = daily.weather_code?.[1];
+        const feels   = daily.apparent_temperature_max?.[1];
+        const uv      = daily.uv_index_max?.[1];
+        if (wmoCode == null && feels == null && uv == null) return;
+
+        let condition = null;
+        let body = null;
+        if (wmoCode != null && SANDSTORM_WMO.has(wmoCode)) {
+          condition = "Sandstorm";
+          body = `Sandstorm forecast tomorrow near ${target.name}. Consider rescheduling outdoor stops.`;
+        } else if (feels != null && feels >= 38) {
+          condition = "Extreme Heat";
+          body = `Feels like ${Math.round(feels)}°C tomorrow at ${target.name}. Start before 9am or shift to indoor stops.`;
+        } else if (uv != null && uv >= 10) {
+          condition = "Extreme UV";
+          body = `UV ${Math.round(uv)} forecast tomorrow at ${target.name}. Bring SPF 50+, hat, and water.`;
+        }
+        if (!condition) return; // No advisory — skip
+
+        const title = `⚠ ${condition} — Tomorrow's Tour`;
+
+        await userDoc.ref.collection("notifications").add({
+          recipientId: userDoc.id,
+          senderId: "system",
+          senderName: "Lost in Egypt",
+          senderAvatar: "",
+          title,
+          message: body,
+          type: "weather_alert",
+          deepLinkTargetId: plan.id,
+          isRead: false,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        await admin.messaging().send({
+          token: fcmToken,
+          notification: { title, body },
+          data: { type: "weather_alert", targetId: plan.id },
+          android: {
+            notification: {
+              channelId: "high_importance_channel",
+              priority: "high",
+              color: "#D6A00F",
+            },
+          },
+          apns: { payload: { aps: { badge: 1, sound: "default" } } },
+        });
+        alertsSent++;
+      } catch (_) { /* skip individual user errors */ }
+    });
+
+    await Promise.allSettled(tasks);
+    console.log(`sendWeatherAlertForSavedPlans: processed ${usersSnap.docs.length} users, sent ${alertsSent} alerts`);
   }
 );
 

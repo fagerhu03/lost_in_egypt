@@ -64,11 +64,11 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
           surfaceTintColor: Colors.transparent,
           title: Text("Delete Post", style: TextStyle(color: onSurface)),
           content: Text("Are you sure? This cannot be undone.",
-              style: TextStyle(color: onSurface.withOpacity(0.8))),
+              style: TextStyle(color: onSurface.withValues(alpha: 0.8))),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text("Cancel", style: TextStyle(color: onSurface.withOpacity(0.7))),
+              child: Text("Cancel", style: TextStyle(color: onSurface.withValues(alpha: 0.7))),
             ),
             TextButton(
               onPressed: () async {
@@ -142,7 +142,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text("Cancel", style: TextStyle(color: onSurface.withOpacity(0.7))),
+              child: Text("Cancel", style: TextStyle(color: onSurface.withValues(alpha: 0.7))),
             ),
             TextButton(
               onPressed: () async {
@@ -221,7 +221,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFFD6A00F).withOpacity(0.18)
+                            ? const Color(0xFFD6A00F).withValues(alpha: 0.18)
                             : Colors.transparent,
                         shape: BoxShape.circle,
                         border: isSelected
@@ -240,7 +240,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                     Navigator.pop(ctx);
                     _repo.reactToPost(widget.post.id, widget.post.myReaction!);
                   },
-                  child: Text('Remove reaction', style: TextStyle(color: onSurface.withOpacity(0.5), fontSize: 13)),
+                  child: Text('Remove reaction', style: TextStyle(color: onSurface.withValues(alpha: 0.5), fontSize: 13)),
                 ),
               ],
             ],
@@ -362,11 +362,11 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: isMyReaction
-                    ? primary.withOpacity(0.15)
-                    : onSurface.withOpacity(0.07),
+                    ? primary.withValues(alpha: 0.15)
+                    : onSurface.withValues(alpha: 0.07),
                 borderRadius: BorderRadius.circular(20),
                 border: isMyReaction
-                    ? Border.all(color: primary.withOpacity(0.4))
+                    ? Border.all(color: primary.withValues(alpha: 0.4))
                     : null,
               ),
               child: Row(
@@ -379,7 +379,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: isMyReaction ? primary : onSurface.withOpacity(0.7),
+                      color: isMyReaction ? primary : onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -418,12 +418,12 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
     final primary = theme.colorScheme.primary;
 
     final cardShadow = BoxShadow(
-      color: isDark ? Colors.white.withOpacity(0.14) : Colors.black.withOpacity(0.14),
+      color: isDark ? Colors.white.withValues(alpha: 0.14) : Colors.black.withValues(alpha: 0.14),
       blurRadius: 18,
       spreadRadius: 2,
       offset: const Offset(0, 10),
     );
-    final borderColor = (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+    final borderColor = (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
     final String currentUid = FirebaseAuth.instance.currentUser?.uid ?? "";
     final bool isOwner = widget.post.userId.isNotEmpty && (widget.post.userId == currentUid);
@@ -439,7 +439,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: widget.post.isPinned
-                  ? const Color(0xFFD6A00F).withOpacity(0.4)
+                  ? const Color(0xFFD6A00F).withValues(alpha: 0.4)
                   : borderColor,
               width: widget.post.isPinned ? 1.5 : 1.0,
             ),
@@ -457,9 +457,9 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD6A00F).withOpacity(0.12),
+                      color: const Color(0xFFD6A00F).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFD6A00F).withOpacity(0.35)),
+                      border: Border.all(color: const Color(0xFFD6A00F).withValues(alpha: 0.35)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -493,16 +493,16 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                                 fit: BoxFit.cover,
                                 memCacheHeight: 150,
                                 memCacheWidth: 150,
-                                placeholder: (_, __) => Container(width: 34, height: 34, color: onSurface.withOpacity(0.08)),
+                                placeholder: (_, __) => Container(width: 34, height: 34, color: onSurface.withValues(alpha: 0.08)),
                                 errorWidget: (_, __, ___) => Container(
                                   width: 34, height: 34,
-                                  color: onSurface.withOpacity(0.08),
+                                  color: onSurface.withValues(alpha: 0.08),
                                   child: Icon(Icons.person, size: 20, color: primary),
                                 ),
                               )
                             : Container(
                                 width: 34, height: 34,
-                                decoration: BoxDecoration(color: onSurface.withOpacity(0.08), shape: BoxShape.circle),
+                                decoration: BoxDecoration(color: onSurface.withValues(alpha: 0.08), shape: BoxShape.circle),
                                 child: Icon(Icons.person, size: 20, color: primary),
                               ),
                       ),
@@ -535,9 +535,9 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFD6A00F).withOpacity(0.15),
+                                    color: const Color(0xFFD6A00F).withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: const Color(0xFFD6A00F).withOpacity(0.4)),
+                                    border: Border.all(color: const Color(0xFFD6A00F).withValues(alpha: 0.4)),
                                   ),
                                   child: const Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -560,14 +560,14 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                           ],
                           const SizedBox(height: 2),
                           Text(widget.post.timeAgo,
-                              style: TextStyle(color: onSurface.withOpacity(0.65), fontSize: 12)),
+                              style: TextStyle(color: onSurface.withValues(alpha: 0.65), fontSize: 12)),
                         ],
                       ),
                     ),
 
                     // ── More menu ──────────────────────────────────────
                     IconButton(
-                      icon: Icon(Icons.more_horiz_rounded, color: onSurface.withOpacity(0.6)),
+                      icon: Icon(Icons.more_horiz_rounded, color: onSurface.withValues(alpha: 0.6)),
                       onPressed: () {
                         showModalBottomSheet(
                           context: context,
@@ -588,7 +588,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                                   children: [
                                     if (isOwner) ...[
                                       ListTile(
-                                        leading: Icon(Icons.edit, color: o.withOpacity(0.8)),
+                                        leading: Icon(Icons.edit, color: o.withValues(alpha: 0.8)),
                                         title: Text("Edit Post", style: TextStyle(color: o)),
                                         onTap: () {
                                           Navigator.pop(ctx);
@@ -688,9 +688,9 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: primary.withOpacity(0.10),
+                              color: primary.withValues(alpha: 0.10),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: primary.withOpacity(0.18)),
+                              border: Border.all(color: primary.withValues(alpha: 0.18)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -701,7 +701,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                                     style: TextStyle(color: primary, fontWeight: FontWeight.bold, fontSize: 12)),
                                 if (widget.post.locationLat != null) ...[
                                   const SizedBox(width: 4),
-                                  Icon(Icons.open_in_new_rounded, size: 11, color: primary.withOpacity(0.7)),
+                                  Icon(Icons.open_in_new_rounded, size: 11, color: primary.withValues(alpha: 0.7)),
                                 ],
                               ],
                             ),
@@ -741,7 +741,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                                     height: 6,
                                     width: _currentImageIndex == i ? 12 : 6,
                                     decoration: BoxDecoration(
-                                      color: _currentImageIndex == i ? primary : onSurface.withOpacity(0.20),
+                                      color: _currentImageIndex == i ? primary : onSurface.withValues(alpha: 0.20),
                                       borderRadius: BorderRadius.circular(3),
                                     ),
                                   );
@@ -766,7 +766,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                     _ActionButton(
                       icon: widget.post.isLikedByMe ? Icons.favorite : Icons.favorite_border_rounded,
                       value: widget.post.likes,
-                      color: widget.post.isLikedByMe ? Colors.red.shade400 : onSurface.withOpacity(0.65),
+                      color: widget.post.isLikedByMe ? Colors.red.shade400 : onSurface.withValues(alpha: 0.65),
                       onTap: () {
                         if (!widget.post.isLikedByMe && widget.post.locationId != null) {
                           RecommendationService.recordSignal(
@@ -784,7 +784,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                     _ActionButton(
                       icon: Icons.chat_bubble_outline_rounded,
                       value: widget.post.comments,
-                      color: onSurface.withOpacity(0.65),
+                      color: onSurface.withValues(alpha: 0.65),
                       onTap: widget.onCommentTap,
                     ),
                     const SizedBox(width: 12),
@@ -795,11 +795,11 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: widget.post.myReaction != null
-                              ? primary.withOpacity(0.12)
-                              : onSurface.withOpacity(0.06),
+                              ? primary.withValues(alpha: 0.12)
+                              : onSurface.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(20),
                           border: widget.post.myReaction != null
-                              ? Border.all(color: primary.withOpacity(0.3))
+                              ? Border.all(color: primary.withValues(alpha: 0.3))
                               : null,
                         ),
                         child: Row(
@@ -815,7 +815,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                               size: 13,
                               color: widget.post.myReaction != null
                                   ? primary
-                                  : onSurface.withOpacity(0.5),
+                                  : onSurface.withValues(alpha: 0.5),
                             ),
                           ],
                         ),
@@ -828,7 +828,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                        child: Icon(Icons.ios_share_rounded, size: 19, color: onSurface.withOpacity(0.6)),
+                        child: Icon(Icons.ios_share_rounded, size: 19, color: onSurface.withValues(alpha: 0.6)),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -837,7 +837,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                       onTap: () => _repo.toggleSavePost(widget.post.id, widget.post.isSavedByMe),
                       child: Icon(
                         widget.post.isSavedByMe ? Icons.bookmark : Icons.bookmark_border,
-                        color: widget.post.isSavedByMe ? primary : onSurface.withOpacity(0.65),
+                        color: widget.post.isSavedByMe ? primary : onSurface.withValues(alpha: 0.65),
                       ),
                     ),
                   ],
@@ -857,7 +857,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
               decoration: BoxDecoration(
                 color: const Color(0xFFD6A00F),
                 borderRadius: BorderRadius.circular(8),
-                boxShadow: [BoxShadow(color: const Color(0xFFD6A00F).withOpacity(0.4), blurRadius: 6, offset: const Offset(0, 2))],
+                boxShadow: [BoxShadow(color: const Color(0xFFD6A00F).withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))],
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,

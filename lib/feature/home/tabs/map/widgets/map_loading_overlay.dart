@@ -16,11 +16,11 @@ class MapLoadingOverlay extends StatelessWidget {
     final primary = theme.colorScheme.primary;
 
     final shadowColor = isDark
-        ? Colors.white.withOpacity(0.18)
-        : Colors.black.withOpacity(0.18);
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.18);
 
     Color chipBg({bool strong = false}) =>
-        surface.withOpacity(strong ? (isDark ? 0.92 : 0.95) : 0.92);
+        surface.withValues(alpha: strong ? (isDark ? 0.92 : 0.95) : 0.92);
 
     return Positioned(
       left: 0,
@@ -43,7 +43,7 @@ class MapLoadingOverlay extends StatelessWidget {
                 ],
                 border: Border.all(
                     color: (isDark ? Colors.white : Colors.black)
-                        .withOpacity(0.08)),
+                        .withValues(alpha: 0.08)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -55,7 +55,7 @@ class MapLoadingOverlay extends StatelessWidget {
                           strokeWidth: 2, color: primary)),
                   const SizedBox(width: 10),
                   Text("Loading...",
-                      style: TextStyle(color: onSurface.withOpacity(0.9))),
+                      style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
                 ],
               ),
             ),

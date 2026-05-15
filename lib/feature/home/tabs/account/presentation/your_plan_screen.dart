@@ -36,10 +36,10 @@ class YourPlanScreen extends StatelessWidget {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: primary.withOpacity(0.4), width: 1.5),
+              border: Border.all(color: primary.withValues(alpha: 0.4), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: primary.withOpacity(0.15),
+                  color: primary.withValues(alpha: 0.15),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -65,7 +65,7 @@ class YourPlanScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.15),
+                        color: Colors.green.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
@@ -78,7 +78,7 @@ class YourPlanScreen extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   "Your current plan — enjoy all the core features of Lost in Egypt at no cost.",
-                  style: TextStyle(fontSize: 13, color: onSurface.withOpacity(0.65), height: 1.5),
+                  style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.65), height: 1.5),
                 ),
               ],
             ),
@@ -118,7 +118,7 @@ class YourPlanScreen extends StatelessWidget {
               )),
 
           const SizedBox(height: 28),
-          Divider(color: onSurface.withOpacity(0.1)),
+          Divider(color: onSurface.withValues(alpha: 0.1)),
           const SizedBox(height: 20),
 
           Container(
@@ -128,7 +128,7 @@ class YourPlanScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.06),
+                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.06),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -159,7 +159,7 @@ class YourPlanScreen extends StatelessWidget {
                   "Stay tuned — and the core app will always remain free.",
                   style: TextStyle(
                     fontSize: 13,
-                    color: onSurface.withOpacity(0.65),
+                    color: onSurface.withValues(alpha: 0.65),
                     height: 1.55,
                   ),
                 ),
@@ -202,7 +202,7 @@ class _FeatureRow extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: primary.withOpacity(0.12),
+              color: primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: primary, size: 18),
@@ -216,7 +216,7 @@ class _FeatureRow extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600, color: onSurface)),
                 Text(subtitle,
-                    style: TextStyle(fontSize: 12, color: onSurface.withOpacity(0.6), height: 1.4)),
+                    style: TextStyle(fontSize: 12, color: onSurface.withValues(alpha: 0.6), height: 1.4)),
               ],
             ),
           ),

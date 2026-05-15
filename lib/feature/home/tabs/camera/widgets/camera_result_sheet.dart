@@ -9,6 +9,8 @@ import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/data/datasources/local_places_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
@@ -40,6 +42,10 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
   bool showFullDescription = false;
   String? _audioFilePath;
 
+  // Nearby suggestions surfaced under the landmark — populated once on mount.
+  List<PlaceModel> _nearbySuggestions = [];
+  bool _loadingNearby = true;
+
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
@@ -48,6 +54,62 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
     _audioPlayer.onPlayerComplete.listen((_) {
       if (mounted) setState(() { isPlaying = false; isPaused = false; });
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadNearbySuggestions());
+  }
+
+  Future<void> _loadNearbySuggestions() async {
+    try {
+      final pool = await LocalPlacesService.getTopRatedPlaces(limit: 100);
+      if (!mounted) return;
+      // Filter to within 3 km of the identified landmark
+      final lat = widget.place.coordinate.latitude;
+      final lng = widget.place.coordinate.longitude;
+      final nearby = pool.where((p) {
+        if (p.id == widget.place.id) return false;
+        final d = Geolocator.distanceBetween(
+            lat, lng, p.coordinate.latitude, p.coordinate.longitude);
+        return d <= 3000;
+      }).toList();
+      if (nearby.isEmpty) {
+        setState(() => _loadingNearby = false);
+        return;
+      }
+
+      final candidates = nearby.map((p) => <String, dynamic>{
+            'placeId': p.id,
+            'name': p.title,
+            'types': [p.category],
+            'tags': p.tags,
+            'rating': p.rating,
+            'userRatingCount': p.userRatingCount,
+            'lat': p.coordinate.latitude,
+            'lng': p.coordinate.longitude,
+          }).toList();
+
+      final result = await RecommendationService.recommendPlaces(
+        candidates: candidates,
+        context: 'similar',
+        limit: 3,
+        userLat: lat,
+        userLng: lng,
+      );
+      if (!mounted) return;
+      if (result == null || result.recommendations.isEmpty) {
+        setState(() => _loadingNearby = false);
+        return;
+      }
+      final idToPlace = {for (final p in nearby) p.id: p};
+      final ordered = result.recommendations
+          .map((r) => idToPlace[r.placeId])
+          .whereType<PlaceModel>()
+          .toList();
+      setState(() {
+        _nearbySuggestions = ordered;
+        _loadingNearby = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingNearby = false);
+    }
   }
 
   @override
@@ -404,6 +466,103 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                       ),
                     ],
                   ),
+
+                  // ── You might also like nearby ─────────────────────────
+                  if (_loadingNearby || _nearbySuggestions.isNotEmpty) ...[
+                    SizedBox(height: 24.h),
+                    Row(
+                      children: [
+                        Icon(Icons.auto_awesome, size: 16.r, color: primary),
+                        SizedBox(width: 6.w),
+                        Text(
+                          'You might also like nearby',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            color: onSurface,
+                            fontFamily: 'Marcellus',
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10.h),
+                    SizedBox(
+                      height: 130.h,
+                      child: _loadingNearby
+                          ? ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 3,
+                              itemBuilder: (_, _) => Container(
+                                width: 150.w,
+                                margin: EdgeInsets.only(right: 10.w),
+                                decoration: BoxDecoration(
+                                  color: onSurface.withValues(alpha: 0.06),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _nearbySuggestions.length,
+                              itemBuilder: (_, i) {
+                                final p = _nearbySuggestions[i];
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    MapFocusService.instance.triggerFocus(p);
+                                  },
+                                  child: Container(
+                                    width: 150.w,
+                                    margin: EdgeInsets.only(right: 10.w),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      color: onSurface.withValues(alpha: 0.05),
+                                      border: Border.all(
+                                          color: onSurface.withValues(alpha: 0.08)),
+                                    ),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 80.h,
+                                          width: double.infinity,
+                                          child: p.imagePath.startsWith('http')
+                                              ? CachedNetworkImage(
+                                                  imageUrl: p.imagePath,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (_, _) => Container(
+                                                      color: primary
+                                                          .withValues(alpha: 0.08)),
+                                                  errorWidget: (_, _, _) => Container(
+                                                      color: primary
+                                                          .withValues(alpha: 0.06)),
+                                                )
+                                              : Image.asset(p.imagePath,
+                                                  fit: BoxFit.cover),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.fromLTRB(
+                                              8.w, 4.h, 8.w, 4.h),
+                                          child: Text(
+                                            p.title,
+                                            style: TextStyle(
+                                              fontSize: 12.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: onSurface,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ],
               ),
             ),

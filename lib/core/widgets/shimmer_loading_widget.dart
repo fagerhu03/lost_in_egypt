@@ -7,18 +7,17 @@ class ShimmerLoadingWidget extends StatelessWidget {
   final ShapeBorder shapeBorder;
 
   const ShimmerLoadingWidget.rectangular({
-    Key? key,
+    super.key,
     this.width = double.infinity,
     required this.height,
-  })  : shapeBorder = const RoundedRectangleBorder(),
-        super(key: key);
+  })  : shapeBorder = const RoundedRectangleBorder();
 
   const ShimmerLoadingWidget.circular({
-    Key? key,
+    super.key,
     required this.width,
     required this.height,
     this.shapeBorder = const CircleBorder(),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -93,6 +93,7 @@ dependencies:
   firebase_database: ^12.1.0
   flutter_screenutil: ^5.9.3
 
+  path: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

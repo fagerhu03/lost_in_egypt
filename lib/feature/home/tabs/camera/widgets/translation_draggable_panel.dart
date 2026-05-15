@@ -31,11 +31,11 @@ class TranslationDraggablePanel extends StatelessWidget {
             color: Theme.of(context)
                 .colorScheme
                 .surface
-                .withOpacity(0.95), // Theme surface color
+                .withValues(alpha: 0.95), // Theme surface color
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, -2),
               ),
@@ -52,7 +52,7 @@ class TranslationDraggablePanel extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.5),
+                    color: Colors.grey.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

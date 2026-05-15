@@ -18,13 +18,11 @@ import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/a
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/marker_filter_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_marker_service.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 import './place_detail_screen.dart';
 import './saved_places_screen.dart';
 import './near_me_sheet.dart';
 import './trip_planner_sheet.dart';
 import './map_config.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_filter_sheet.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/navigation_info_bar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/route_steps_sheet.dart';
@@ -32,6 +30,7 @@ import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_bar.dart'
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_results.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/sandstorm_overlay.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 
@@ -76,6 +75,18 @@ class _MapScreenViewState extends State<MapScreenView>
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+
+  // ── Nearby-place nudge (Phase 7H.2) ───────────────────────────────────────
+  // Separate position stream that runs whenever the map tab is visible — NOT
+  // the live-navigation stream (_positionStream). Surfaces a non-intrusive
+  // floating card when the user passes near a high-scoring place they haven't
+  // been nudged about before.
+  StreamSubscription<Position>? _nudgeStream;
+  _NearbyNudgeData? _activeNudge;
+  Timer? _nudgeDismissTimer;
+  final Set<String> _nudgedPlaceIds = {};
+  DateTime? _lastNudgeEval;
+  bool _evaluatingNudge = false;
   
   double _sheetExtent = 0.55;
 
@@ -155,6 +166,8 @@ class _MapScreenViewState extends State<MapScreenView>
     MapFocusService.instance.cameraOnlyNotifier.addListener(_onCameraFocusRequested);
     MapFocusService.instance.tourStopNotifier.addListener(_onTourStopRequested);
     MapFocusService.instance.viewRouteNotifier.addListener(_onViewRouteRequested);
+
+    _startNudgeMonitor();
 
     // Rebuild markers now that custom icons are loaded
     if (mounted) {
@@ -242,10 +255,122 @@ class _MapScreenViewState extends State<MapScreenView>
     }
   }
 
+  /// Background position stream that fires every ~200 m and asks the
+  /// recommendation engine if any nearby place is a strong taste match worth
+  /// surfacing as a floating nudge card. Independent of the live-navigation
+  /// stream (`_positionStream`) which only runs when navigation is active.
+  void _startNudgeMonitor() {
+    _nudgeStream?.cancel();
+    _nudgeStream = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.medium,
+        distanceFilter: 200,
+      ),
+    ).listen((pos) => _evaluateNudge(pos), onError: (_) {});
+  }
+
+  Future<void> _evaluateNudge(Position pos) async {
+    if (!mounted || _evaluatingNudge) return;
+    // Extra throttle: at most one engine call per 60 s even if the position
+    // stream fires rapidly (rare, but happens on indoor → outdoor transitions).
+    final now = DateTime.now();
+    if (_lastNudgeEval != null &&
+        now.difference(_lastNudgeEval!) < const Duration(seconds: 60)) {
+      return;
+    }
+    _evaluatingNudge = true;
+    _lastNudgeEval = now;
+    try {
+      final allItems = context.read<MapBloc>().state.allItemsCache;
+      if (allItems.isEmpty) return;
+
+      // Pre-filter to items within 2 km of current position
+      final nearby = <MapItem>[];
+      for (final item in allItems) {
+        if (_nudgedPlaceIds.contains(item.id)) continue;
+        final d = Geolocator.distanceBetween(
+          pos.latitude, pos.longitude,
+          item.coordinate.latitude, item.coordinate.longitude,
+        );
+        if (d <= 2000) nearby.add(item);
+      }
+      if (nearby.isEmpty) return;
+
+      // Cap at 30 closest by distance for the engine call
+      nearby.sort((a, b) {
+        final da = Geolocator.distanceBetween(pos.latitude, pos.longitude,
+            a.coordinate.latitude, a.coordinate.longitude);
+        final db = Geolocator.distanceBetween(pos.latitude, pos.longitude,
+            b.coordinate.latitude, b.coordinate.longitude);
+        return da.compareTo(db);
+      });
+      final pool = nearby.take(30).toList();
+
+      final candidates = pool.map((i) {
+        // userRatingCount lives on PlaceModel concretely — pull it where
+        // available, default to 0 otherwise. Popularity is a minor weight.
+        final urc = (i is PlaceModel) ? i.userRatingCount : 0;
+        return <String, dynamic>{
+          'placeId': i.id,
+          'name': i.title,
+          'types': [i.category],
+          'tags': i.tags,
+          'rating': i.rating,
+          'userRatingCount': urc,
+          'lat': i.coordinate.latitude,
+          'lng': i.coordinate.longitude,
+        };
+      }).toList();
+
+      final result = await RecommendationService.recommendPlaces(
+        candidates: candidates,
+        context: 'nearby',
+        limit: 1,
+        userLat: pos.latitude,
+        userLng: pos.longitude,
+      );
+      if (!mounted || result == null || result.recommendations.isEmpty) return;
+
+      final top = result.recommendations.first;
+      if (top.score <= 0.65) return;
+
+      final item = pool.firstWhere((i) => i.id == top.placeId,
+          orElse: () => pool.first);
+      final distanceM = Geolocator.distanceBetween(
+        pos.latitude, pos.longitude,
+        item.coordinate.latitude, item.coordinate.longitude,
+      );
+      if (distanceM > 800) return;
+      if (_nudgedPlaceIds.contains(item.id)) return;
+
+      _nudgedPlaceIds.add(item.id);
+      _nudgeDismissTimer?.cancel();
+      _nudgeDismissTimer = Timer(const Duration(seconds: 8), () {
+        if (mounted) setState(() => _activeNudge = null);
+      });
+      setState(() {
+        _activeNudge = _NearbyNudgeData(
+          item: item,
+          distanceM: distanceM,
+          reason: top.reasons.isNotEmpty ? top.reasons.first : null,
+        );
+      });
+    } finally {
+      _evaluatingNudge = false;
+    }
+  }
+
+  void _dismissNudge() {
+    _nudgeDismissTimer?.cancel();
+    if (mounted) setState(() => _activeNudge = null);
+  }
+
   @override
   void dispose() {
     WeatherController.weather.removeListener(_onWeatherChanged);
     _positionStream?.cancel();
+    _nudgeStream?.cancel();
+    _nudgeDismissTimer?.cancel();
     MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
     MapFocusService.instance.pendingTripNotifier.removeListener(_onPendingTrip);
     MapFocusService.instance.cameraOnlyNotifier.removeListener(_onCameraFocusRequested);
@@ -767,10 +892,10 @@ class _MapScreenViewState extends State<MapScreenView>
     final primary = theme.colorScheme.primary;
 
     final shadowColor = isDark
-        ? Colors.white.withOpacity(0.18)
-        : Colors.black.withOpacity(0.18);
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.18);
 
-    Color chipBg({bool strong = false}) => surface.withOpacity(strong ? (isDark ? 0.92 : 0.95) : 0.92);
+    Color chipBg({bool strong = false}) => surface.withValues(alpha: strong ? (isDark ? 0.92 : 0.95) : 0.92);
 
     return BlocConsumer<MapBloc, MapState>(
       listenWhen: (previous, current) {
@@ -874,7 +999,7 @@ class _MapScreenViewState extends State<MapScreenView>
               if (state.isLoading && state.allItems.isEmpty)
                 Positioned.fill(
                   child: Container(
-                    color: surface.withOpacity(0.85),
+                    color: surface.withValues(alpha: 0.85),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -889,14 +1014,14 @@ class _MapScreenViewState extends State<MapScreenView>
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: onSurface.withOpacity(0.7),
+                              color: onSurface.withValues(alpha: 0.7),
                               fontFamily: 'Marcellus',
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             'Loading places near you',
-                            style: TextStyle(fontSize: 13, color: onSurface.withOpacity(0.4)),
+                            style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.4)),
                           ),
                         ],
                       ),
@@ -945,7 +1070,7 @@ class _MapScreenViewState extends State<MapScreenView>
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: onSurface.withOpacity(0.6),
+                                color: onSurface.withValues(alpha: 0.6),
                                 letterSpacing: 0.3,
                               ),
                             ),
@@ -972,7 +1097,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       borderRadius: BorderRadius.circular(16),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.15),
+                                          color: Colors.black.withValues(alpha: 0.15),
                                           blurRadius: 12,
                                           offset: const Offset(0, 5),
                                         ),
@@ -986,7 +1111,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                           item.imagePaths.first,
                                           fit: BoxFit.cover,
                                           errorBuilder: (_, __, ___) => Container(
-                                            color: onSurface.withOpacity(0.1),
+                                            color: onSurface.withValues(alpha: 0.1),
                                             child: Icon(Icons.place, color: primary, size: 28),
                                           ),
                                         ),
@@ -998,7 +1123,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                               end: Alignment.bottomCenter,
                                               colors: [
                                                 Colors.transparent,
-                                                Colors.black.withOpacity(0.75),
+                                                Colors.black.withValues(alpha: 0.75),
                                               ],
                                               stops: const [0.3, 1.0],
                                             ),
@@ -1011,7 +1136,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                           child: Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                                             decoration: BoxDecoration(
-                                              color: Colors.black.withOpacity(0.45),
+                                              color: Colors.black.withValues(alpha: 0.45),
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Text(
@@ -1126,7 +1251,7 @@ class _MapScreenViewState extends State<MapScreenView>
                   top: 110,
                   right: 20,
                   child: Material(
-                    color: state.selectedUiCategoryId == 'all' ? chipBg() : primary.withOpacity(isDark ? 0.90 : 0.95),
+                    color: state.selectedUiCategoryId == 'all' ? chipBg() : primary.withValues(alpha: isDark ? 0.90 : 0.95),
                     borderRadius: BorderRadius.circular(30),
                     clipBehavior: Clip.hardEdge,
                     child: InkWell(
@@ -1153,14 +1278,14 @@ class _MapScreenViewState extends State<MapScreenView>
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
-                          border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
+                          border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.tune,
-                              color: state.selectedUiCategoryId == 'all' ? onSurface.withOpacity(0.9) : Colors.white,
+                              color: state.selectedUiCategoryId == 'all' ? onSurface.withValues(alpha: 0.9) : Colors.white,
                               size: 20,
                             ),
                             if (state.selectedUiCategoryId != 'all') ...[
@@ -1173,6 +1298,29 @@ class _MapScreenViewState extends State<MapScreenView>
                           ],
                         ),
                       ),
+                    ),
+                  ),
+                ),
+
+              // Nearby place nudge — surfaces when user passes a high-scoring
+              // taste-matched place. Hidden during navigation/trip flows.
+              if (_activeNudge != null &&
+                  !state.isSearchActive &&
+                  !state.isNavigationMode &&
+                  !_isTripActive)
+                Positioned(
+                  top: 110,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: _NearbyNudgeCard(
+                      data: _activeNudge!,
+                      onTap: () {
+                        final item = _activeNudge!.item;
+                        _dismissNudge();
+                        MapFocusService.instance.triggerFocus(item);
+                      },
+                      onDismiss: _dismissNudge,
                     ),
                   ),
                 ),
@@ -1191,7 +1339,7 @@ class _MapScreenViewState extends State<MapScreenView>
                         onPressed: () => _goToUserLocation(state.isLocationPermissionGranted),
                         child: Icon(
                           Icons.my_location,
-                          color: state.isLocationPermissionGranted ? primary : onSurface.withOpacity(0.9),
+                          color: state.isLocationPermissionGranted ? primary : onSurface.withValues(alpha: 0.9),
                           size: 20,
                         ),
                       ),
@@ -1328,8 +1476,8 @@ class _MapScreenViewState extends State<MapScreenView>
                     heroTag: "reset_filter_btn",
                     backgroundColor: chipBg(),
                     onPressed: () => context.read<MapBloc>().add(const MapCategoryChanged('all')),
-                    icon: Icon(Icons.close, color: onSurface.withOpacity(0.9), size: 18),
-                    label: Text('Reset', style: TextStyle(color: onSurface.withOpacity(0.9))),
+                    icon: Icon(Icons.close, color: onSurface.withValues(alpha: 0.9), size: 18),
+                    label: Text('Reset', style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
                   ),
                 ),
               // Trip progress bar
@@ -1345,7 +1493,7 @@ class _MapScreenViewState extends State<MapScreenView>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1380,7 +1528,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 'Stop ${_tripCurrentIndex + 1} of ${_tripItinerary.length}',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: onSurface.withOpacity(0.5),
+                                  color: onSurface.withValues(alpha: 0.5),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1465,7 +1613,7 @@ class _MapScreenViewState extends State<MapScreenView>
                             context.read<MapBloc>().add(MapNavigationCleared());
                             context.read<MapBloc>().add(const MapPlaceSelected(null));
                           },
-                          child: Icon(Icons.close, size: 20, color: onSurface.withOpacity(0.5)),
+                          child: Icon(Icons.close, size: 20, color: onSurface.withValues(alpha: 0.5)),
                         ),
                       ],
                     ),
@@ -1587,17 +1735,17 @@ class _MapScreenViewState extends State<MapScreenView>
                                 color: surface,
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [BoxShadow(color: shadowColor, blurRadius: 20, spreadRadius: 2, offset: const Offset(0, -4))],
-                                border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
+                                border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: primary)),
                                   const SizedBox(width: 14),
-                                  Text('Finding route...', style: TextStyle(color: onSurface.withOpacity(0.7), fontSize: 15, fontWeight: FontWeight.w500)),
+                                  Text('Finding route...', style: TextStyle(color: onSurface.withValues(alpha: 0.7), fontSize: 15, fontWeight: FontWeight.w500)),
                                   const Spacer(),
                                   Material(
-                                    color: onSurface.withOpacity(0.08),
+                                    color: onSurface.withValues(alpha: 0.08),
                                     shape: const CircleBorder(),
                                     clipBehavior: Clip.hardEdge,
                                     child: InkWell(
@@ -1606,7 +1754,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       child: SizedBox(
                                         width: 36,
                                         height: 36,
-                                        child: Icon(Icons.close_rounded, color: onSurface.withOpacity(0.6), size: 20),
+                                        child: Icon(Icons.close_rounded, color: onSurface.withValues(alpha: 0.6), size: 20),
                                       ),
                                     ),
                                   ),
@@ -1628,7 +1776,7 @@ class _MapScreenViewState extends State<MapScreenView>
                         color: surface,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [BoxShadow(color: shadowColor, blurRadius: 16, spreadRadius: 1)],
-                        border: Border.all(color: primary.withOpacity(0.3)),
+                        border: Border.all(color: primary.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -1640,7 +1788,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: primary.withOpacity(0.15),
+                                    color: primary.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Icon(Icons.navigation_rounded, color: primary, size: 22),
@@ -1664,7 +1812,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       Text(
                                         '${state.currentRoute!.steps[state.currentStepIndex].distance} · ${state.currentRoute!.steps[state.currentStepIndex].duration}',
                                         style: TextStyle(
-                                          color: onSurface.withOpacity(0.5),
+                                          color: onSurface.withValues(alpha: 0.5),
                                           fontSize: 13,
                                         ),
                                       ),
@@ -1683,7 +1831,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                   Text(
                                     '${state.currentRoute!.distance} · ${state.currentRoute!.duration} total',
                                     style: TextStyle(
-                                      color: onSurface.withOpacity(0.6),
+                                      color: onSurface.withValues(alpha: 0.6),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -1697,13 +1845,13 @@ class _MapScreenViewState extends State<MapScreenView>
                               children: [
                                 Text(
                                   'Step ${state.currentStepIndex + 1}/${state.currentRoute!.steps.length}',
-                                  style: TextStyle(color: onSurface.withOpacity(0.5), fontSize: 12),
+                                  style: TextStyle(color: onSurface.withValues(alpha: 0.5), fontSize: 12),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: LinearProgressIndicator(
                                     value: (state.currentStepIndex + 1) / state.currentRoute!.steps.length,
-                                    backgroundColor: onSurface.withOpacity(0.1),
+                                    backgroundColor: onSurface.withValues(alpha: 0.1),
                                     valueColor: AlwaysStoppedAnimation(primary),
                                     minHeight: 4,
                                     borderRadius: BorderRadius.circular(2),
@@ -1711,7 +1859,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 ),
                                 const SizedBox(width: 8),
                                 Material(
-                                  color: Colors.red.withOpacity(0.1),
+                                  color: Colors.red.withValues(alpha: 0.1),
                                   shape: const CircleBorder(),
                                   clipBehavior: Clip.hardEdge,
                                   child: InkWell(
@@ -1771,7 +1919,7 @@ class _MapScreenViewState extends State<MapScreenView>
                       _searchFocusNode.unfocus();
                     },
                     behavior: HitTestBehavior.translucent,
-                    child: Container(color: Colors.black.withOpacity(0.25)),
+                    child: Container(color: Colors.black.withValues(alpha: 0.25)),
                   ),
                 ),
 
@@ -1843,7 +1991,7 @@ class _MapScreenViewState extends State<MapScreenView>
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 6,
                 offset: const Offset(2, 2),
               ),
@@ -1859,6 +2007,124 @@ class _MapScreenViewState extends State<MapScreenView>
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Nearby place nudge ───────────────────────────────────────────────────────
+//
+// Tiny floating pill card surfaced when the user walks within 800 m of a
+// high-scoring (taste-matched) place. One nudge per place per session.
+
+class _NearbyNudgeData {
+  final MapItem item;
+  final double distanceM;
+  final String? reason;
+  const _NearbyNudgeData({
+    required this.item,
+    required this.distanceM,
+    this.reason,
+  });
+}
+
+class _NearbyNudgeCard extends StatelessWidget {
+  final _NearbyNudgeData data;
+  final VoidCallback onTap;
+  final VoidCallback onDismiss;
+
+  const _NearbyNudgeCard({
+    required this.data,
+    required this.onTap,
+    required this.onDismiss,
+  });
+
+  String get _distanceLabel {
+    final m = data.distanceM;
+    if (m < 100) return '${m.round()} m away';
+    if (m < 1000) return '${(m / 10).round() * 10} m away';
+    return '${(m / 1000).toStringAsFixed(1)} km away';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+
+    return Material(
+      color: Colors.transparent,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: primary.withValues(alpha: 0.4)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.auto_awesome, size: 16, color: primary),
+              ),
+              const SizedBox(width: 10),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 220),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data.item.title,
+                      style: TextStyle(
+                        color: onSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Marcellus',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      data.reason != null
+                          ? '${data.reason} · $_distanceLabel'
+                          : _distanceLabel,
+                      style: TextStyle(
+                        color: onSurface.withValues(alpha: 0.65),
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, size: 16, color: onSurface.withValues(alpha: 0.5)),
+                padding: const EdgeInsets.only(left: 4),
+                constraints: const BoxConstraints(),
+                tooltip: 'Dismiss',
+                onPressed: onDismiss,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

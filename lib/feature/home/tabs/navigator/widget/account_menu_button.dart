@@ -53,8 +53,8 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
-    final avatarBg = primary.withOpacity(isDark ? 0.25 : 0.18);
-    final borderColor = (isDark ? Colors.white : Colors.black).withOpacity(0.12);
+    final avatarBg = primary.withValues(alpha: isDark ? 0.25 : 0.18);
+    final borderColor = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.12);
 
     return StreamBuilder<int>(
       stream: _unreadStream,
@@ -105,7 +105,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                         : null,
                   ),
                   child: (widget.profileImageUrl == null || widget.profileImageUrl!.isEmpty)
-                      ? Icon(Icons.person, size: 26, color: onSurface.withOpacity(0.9))
+                      ? Icon(Icons.person, size: 26, color: onSurface.withValues(alpha: 0.9))
                       : null,
                 ),
 
@@ -174,10 +174,10 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
           itemBuilder: (BuildContext context) {
             final textStyle = TextStyle(
               fontFamily: "Marcellus",
-              color: onSurface.withOpacity(0.9),
+              color: onSurface.withValues(alpha: 0.9),
             );
 
-            final iconColor = onSurface.withOpacity(0.75);
+            final iconColor = onSurface.withValues(alpha: 0.75);
 
             return [
               PopupMenuItem<String>(
@@ -193,7 +193,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                   ],
                 ),
               ),
-              PopupMenuDivider(height: 1, color: onSurface.withOpacity(0.12)),
+              PopupMenuDivider(height: 1, color: onSurface.withValues(alpha: 0.12)),
 
               if (isGuide) ...[
                 PopupMenuItem<String>(
@@ -209,7 +209,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                     ],
                   ),
                 ),
-                PopupMenuDivider(height: 1, color: onSurface.withOpacity(0.12)),
+                PopupMenuDivider(height: 1, color: onSurface.withValues(alpha: 0.12)),
               ],
 
               if (isAdmin) ...[
@@ -226,7 +226,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                     ],
                   ),
                 ),
-                PopupMenuDivider(height: 1, color: onSurface.withOpacity(0.12)),
+                PopupMenuDivider(height: 1, color: onSurface.withValues(alpha: 0.12)),
               ],
 
               PopupMenuItem<String>(

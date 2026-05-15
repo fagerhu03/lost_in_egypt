@@ -29,7 +29,7 @@ class NotifCard extends StatelessWidget {
     final primary = theme.colorScheme.primary;
 
     final unreadBorderColor =
-        isDark ? primary.withOpacity(0.35) : const Color(0xFFC79A00).withOpacity(0.35);
+        isDark ? primary.withValues(alpha: 0.35) : const Color(0xFFC79A00).withValues(alpha: 0.35);
 
     return Material(
       color: surface,
@@ -43,7 +43,7 @@ class NotifCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: (isDark ? Colors.white : Colors.black).withOpacity(0.05),
+                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -64,13 +64,13 @@ class NotifCard extends StatelessWidget {
                   height: 34,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: primary.withOpacity(0.12),
+                    color: primary.withValues(alpha: 0.12),
                   ),
                   child: ClipOval(
                     child: avatarUrl != null
                         ? Image.network(avatarUrl!, fit: BoxFit.cover)
                         : Icon(Icons.person,
-                            color: onSurface.withOpacity(0.65)),
+                            color: onSurface.withValues(alpha: 0.65)),
                   ),
                 ),
               ),
@@ -85,7 +85,7 @@ class NotifCard extends StatelessWidget {
                         fontFamily: "Marcellus",
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
-                        color: onSurface.withOpacity(0.87),
+                        color: onSurface.withValues(alpha: 0.87),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -94,7 +94,7 @@ class NotifCard extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: "Marcellus",
                         fontSize: 12,
-                        color: onSurface.withOpacity(0.65),
+                        color: onSurface.withValues(alpha: 0.65),
                         height: 1.25,
                       ),
                     ),
@@ -106,7 +106,7 @@ class NotifCard extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: "Marcellus",
                             fontSize: 11,
-                            color: onSurface.withOpacity(0.50),
+                            color: onSurface.withValues(alpha: 0.50),
                           ),
                         ),
                         const Spacer(),

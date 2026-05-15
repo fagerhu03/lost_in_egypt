@@ -30,9 +30,6 @@ import 'feature/onboarding/onboarding_screen.dart';
 import 'feature/home/notification/domain/services/local_notification_service.dart';
 
 // ✅ add these imports for saved theme
-import 'feature/home/tabs/more/data/settings_repository.dart';
-import 'feature/auth/data/models/user.dart';
-import 'feature/auth/presentation/email_verification_screen.dart';
 import 'feature/tours/presentation/pages/map_picker_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 

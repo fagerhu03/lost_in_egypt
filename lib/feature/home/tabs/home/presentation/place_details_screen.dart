@@ -174,7 +174,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                                 imageUrl: widget.place.imagePaths[index],
                                 fit: BoxFit.cover,
                                 placeholder: (_, __) => const ShimmerLoadingWidget.rectangular(height: 280),
-                                errorWidget: (_, __, ___) => Container(color: Colors.grey.withOpacity(0.15)),
+                                errorWidget: (_, __, ___) => Container(color: Colors.grey.withValues(alpha: 0.15)),
                               ),
                             );
                           },
@@ -184,9 +184,9 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                               imageUrl: widget.place.imagePath,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => const ShimmerLoadingWidget.rectangular(height: 280),
-                              errorWidget: (_, __, ___) => Container(color: Colors.grey.withOpacity(0.15)),
+                              errorWidget: (_, __, ___) => Container(color: Colors.grey.withValues(alpha: 0.15)),
                             )
-                          : Container(color: primary.withOpacity(isDark ? 0.15 : 0.08)),
+                          : Container(color: primary.withValues(alpha: isDark ? 0.15 : 0.08)),
                   
                   Positioned.fill(
                     child: IgnorePointer(
@@ -196,7 +196,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black.withOpacity(0.4),
+                              Colors.black.withValues(alpha: 0.4),
                               Colors.transparent,
                               Colors.transparent,
                               surface,
@@ -224,7 +224,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                             decoration: BoxDecoration(
                               color: _currentImageIndex == index
                                   ? Colors.white
-                                  : Colors.white.withOpacity(0.5),
+                                  : Colors.white.withValues(alpha: 0.5),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -259,7 +259,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                         Text(
                           " ${widget.place.rating}",
                           style: TextStyle(
-                            color: onSurface.withOpacity(0.65),
+                            color: onSurface.withValues(alpha: 0.65),
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -268,7 +268,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                            Text(
                              " (${widget.place.reviews.length}+ reviews)",
                              style: TextStyle(
-                               color: onSurface.withOpacity(0.5),
+                               color: onSurface.withValues(alpha: 0.5),
                                fontSize: 12,
                              ),
                            ),
@@ -319,7 +319,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                       ],
                     ),
 
-                    Divider(height: 40, thickness: 1, color: onSurface.withOpacity(0.10)),
+                    Divider(height: 40, thickness: 1, color: onSurface.withValues(alpha: 0.10)),
 
                     Text(
                       "About",
@@ -336,7 +336,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                           : "Explore the ancient wonders and hidden gems of Egypt. This location offers a unique glimpse into the rich history and culture of the region.",
                       style: TextStyle(
                         height: 1.6,
-                        color: onSurface.withOpacity(0.85),
+                        color: onSurface.withValues(alpha: 0.85),
                         fontSize: 16,
                       ),
                     ),
@@ -384,7 +384,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
 
                     if (widget.place.reviews.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      Divider(thickness: 1, color: onSurface.withOpacity(0.10)),
+                      Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
                       const SizedBox(height: 16),
                       Text(
                         "What Travelers Say",
@@ -416,10 +416,10 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: onSurface.withOpacity(isDark ? 0.05 : 0.03),
+        color: onSurface.withValues(alpha: isDark ? 0.05 : 0.03),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: onSurface.withOpacity(isDark ? 0.10 : 0.06),
+          color: onSurface.withValues(alpha: isDark ? 0.10 : 0.06),
         ),
       ),
       child: Column(
@@ -429,7 +429,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: primary.withOpacity(0.15),
+                backgroundColor: primary.withValues(alpha: 0.15),
                 child: Text(
                   review.authorName.isNotEmpty ? review.authorName[0].toUpperCase() : '?',
                   style: TextStyle(
@@ -465,7 +465,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                           review.relativeTime,
                           style: TextStyle(
                             fontSize: 12,
-                            color: onSurface.withOpacity(0.6),
+                            color: onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ],
@@ -482,7 +482,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
               style: TextStyle(
                 fontSize: 14,
                 height: 1.5,
-                color: onSurface.withOpacity(0.85),
+                color: onSurface.withValues(alpha: 0.85),
               ),
             ),
           ],
@@ -509,7 +509,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
               text,
               style: TextStyle(
                 fontSize: 16,
-                color: onSurface.withOpacity(0.85),
+                color: onSurface.withValues(alpha: 0.85),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -531,10 +531,10 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
   }) {
     final bg = isPrimary ? primary : Colors.transparent;
     final border = Border.all(
-      color: isPrimary ? Colors.transparent : onSurface.withOpacity(isDark ? 0.18 : 0.20),
+      color: isPrimary ? Colors.transparent : onSurface.withValues(alpha: isDark ? 0.18 : 0.20),
     );
     final buttonShadow = isPrimary
-        ? [BoxShadow(color: (isDark ? Colors.white : Colors.black).withOpacity(0.14), blurRadius: 10, offset: const Offset(0, 6))]
+        ? [BoxShadow(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.14), blurRadius: 10, offset: const Offset(0, 6))]
         : <BoxShadow>[];
 
     return GestureDetector(
@@ -560,7 +560,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
           Text(
             label,
             style: TextStyle(
-              color: isPrimary ? primary : onSurface.withOpacity(0.75),
+              color: isPrimary ? primary : onSurface.withValues(alpha: 0.75),
               fontWeight: FontWeight.bold,
               fontSize: 13,
             ),

@@ -100,7 +100,7 @@ class CommunityPostModel extends CommunityPost {
   static Map<String, int> _parseReactionCounts(dynamic raw) {
     if (raw is! Map) return {};
     final result = <String, int>{};
-    for (final entry in (raw as Map).entries) {
+    for (final entry in (raw).entries) {
       if (entry.value is List) {
         final count = (entry.value as List).length;
         if (count > 0) result[entry.key as String] = count;
@@ -111,7 +111,7 @@ class CommunityPostModel extends CommunityPost {
 
   static String? _findMyReaction(dynamic raw, String uid) {
     if (raw is! Map || uid.isEmpty) return null;
-    for (final entry in (raw as Map).entries) {
+    for (final entry in (raw).entries) {
       if (entry.value is List && (entry.value as List).contains(uid)) {
         return entry.key as String;
       }

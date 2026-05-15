@@ -305,7 +305,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                           const SizedBox(height: 4),
                           Text(
                             '${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                           ),
                         ],
                       ),

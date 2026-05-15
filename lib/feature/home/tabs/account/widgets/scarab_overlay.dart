@@ -95,7 +95,7 @@ class _ScarabOverlayState extends State<ScarabOverlay> with SingleTickerProvider
                     fontSize: scarab.size,
                     shadows: [
                       Shadow(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       )

@@ -144,10 +144,16 @@ class MapRepository {
       _cache['all'] = items;
       return items;
     } catch (e) {
-      debugPrint('❌ MapRepo API Error: $e — falling back to bundled asset');
+      debugPrint('❌ MapRepo API Error: $e — falling back to bundled asset (OFFLINE PATH ONLY)');
     }
 
-    // 4. Bundled asset fallback (cold-start offline)
+    // 4. OFFLINE-ONLY bundled-asset fallback.
+    //
+    // We only get here when the live Places API call AND every disk-cached
+    // snapshot from prior API calls both failed — i.e. the device is offline
+    // on first launch (no API, no warm cache). This branch must NEVER be the
+    // primary data path: the user explicitly required Places API as the only
+    // online source. Do not call into this asset from any feature code.
     try {
       final jsonString = await rootBundle.loadString('assets/final_places_clean_v2.json');
       final List<dynamic> decoded = jsonDecode(jsonString);

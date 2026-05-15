@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:lost_in_egypt/theme/theme.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 
 class AdminLanguageRequestsScreen extends StatelessWidget {
-  const AdminLanguageRequestsScreen({Key? key}) : super(key: key);
+  const AdminLanguageRequestsScreen({super.key});
 
   Future<void> _handleRequest(
       BuildContext context, DocumentSnapshot doc, bool isApproved) async {
