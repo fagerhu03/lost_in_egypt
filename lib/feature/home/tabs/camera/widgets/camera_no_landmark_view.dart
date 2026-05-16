@@ -32,7 +32,7 @@ class CameraNoLandmarkView extends StatelessWidget {
               margin: const EdgeInsets.all(24),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(

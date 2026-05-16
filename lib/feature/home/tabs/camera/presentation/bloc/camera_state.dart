@@ -27,6 +27,12 @@ class CameraReady extends CameraState {
   
   // For showing gallery image with translation overlay
   final String? galleryImagePath;
+  
+  // Camera specific features
+  final FlashMode flashMode;
+  final double currentZoom;
+  final double minZoom;
+  final double maxZoom;
 
   const CameraReady({
     this.controller,
@@ -37,6 +43,10 @@ class CameraReady extends CameraState {
     this.sourceLang = 'English',
     this.targetLang = 'Arabic',
     this.galleryImagePath,
+    this.flashMode = FlashMode.auto,
+    this.currentZoom = 1.0,
+    this.minZoom = 1.0,
+    this.maxZoom = 1.0,
   });
 
   /// Check if we're showing a gallery image (not live camera)
@@ -53,6 +63,10 @@ class CameraReady extends CameraState {
     String? galleryImagePath,
     bool clearRecognizedText = false,
     bool clearGalleryImage = false,
+    FlashMode? flashMode,
+    double? currentZoom,
+    double? minZoom,
+    double? maxZoom,
   }) {
     return CameraReady(
       controller: controller ?? this.controller,
@@ -63,6 +77,10 @@ class CameraReady extends CameraState {
       sourceLang: sourceLang ?? this.sourceLang,
       targetLang: targetLang ?? this.targetLang,
       galleryImagePath: clearGalleryImage ? null : (galleryImagePath ?? this.galleryImagePath),
+      flashMode: flashMode ?? this.flashMode,
+      currentZoom: currentZoom ?? this.currentZoom,
+      minZoom: minZoom ?? this.minZoom,
+      maxZoom: maxZoom ?? this.maxZoom,
     );
   }
 }
@@ -70,16 +88,24 @@ class CameraReady extends CameraState {
 /// Currently analyzing an image
 class CameraAnalyzing extends CameraState {
   final bool isGalleryImage;
-  
-  const CameraAnalyzing({this.isGalleryImage = false});
+  /// Path to the captured/gallery image to display as a still preview during analysis.
+  final String? capturedImagePath;
+  final String message;
+
+  const CameraAnalyzing({
+    this.isGalleryImage = false, 
+    this.capturedImagePath,
+    this.message = 'Identifying landmark…',
+  });
 }
 
 /// Successfully identified a landmark
 class CameraLandmarkIdentified extends CameraState {
   final PlaceModel place;
   final BadgeModel? newlyUnlockedBadge;
+  final bool fromGallery;
 
-  const CameraLandmarkIdentified(this.place, {this.newlyUnlockedBadge});
+  const CameraLandmarkIdentified(this.place, {this.newlyUnlockedBadge, this.fromGallery = false});
 }
 
 /// No landmark found in the image - needs user action to dismiss

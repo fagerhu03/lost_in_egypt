@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class NearMeSheet extends StatefulWidget {
@@ -14,6 +17,7 @@ class NearMeSheet extends StatefulWidget {
 class _NearMeSheetState extends State<NearMeSheet> {
   bool _isLoading = true;
   List<_NearbyPlace> _nearbyPlaces = [];
+  bool _isPersonalized = false;
 
   @override
   void initState() {
@@ -23,16 +27,13 @@ class _NearMeSheetState extends State<NearMeSheet> {
 
   Future<void> _loadNearbyPlaces() async {
     try {
-      // Check location permission first
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
+        if (mounted) setState(() => _isLoading = false);
         return;
       }
 
@@ -40,24 +41,65 @@ class _NearMeSheetState extends State<NearMeSheet> {
         desiredAccuracy: LocationAccuracy.medium,
       ).timeout(const Duration(seconds: 10));
 
-      final sorted = <_NearbyPlace>[];
+      final withDistance = <_NearbyPlace>[];
       for (final item in widget.allItems) {
         try {
           final dist = Geolocator.distanceBetween(
             pos.latitude, pos.longitude,
             item.coordinate.latitude, item.coordinate.longitude,
           );
-          sorted.add(_NearbyPlace(item: item, distanceMeters: dist));
-        } catch (_) {
-          // Skip items with invalid coordinates
-        }
+          withDistance.add(_NearbyPlace(item: item, distanceMeters: dist));
+        } catch (_) {}
       }
+      withDistance.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
+      final pool = withDistance.take(50).toList();
 
-      sorted.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
+      final candidates = pool.map((np) => <String, dynamic>{
+        'placeId': np.item.id,
+        'name': np.item.title,
+        'types': [np.item.category],
+        'tags': np.item.tags,
+        'rating': np.item.rating,
+        'userRatingCount': 0,
+        'lat': np.item.coordinate.latitude,
+        'lng': np.item.coordinate.longitude,
+      }).toList();
 
-      if (mounted) {
+      final result = await RecommendationService.recommendPlaces(
+        candidates: candidates,
+        context: 'nearby',
+        userLat: pos.latitude,
+        userLng: pos.longitude,
+        limit: 20,
+        weather: WeatherController.weather.value,
+      );
+
+      if (!mounted) return;
+
+      if (result != null && result.recommendations.isNotEmpty) {
+        final idToNp = {for (final np in pool) np.item.id: np};
+        final ranked = result.recommendations
+            .map((r) {
+              final np = idToNp[r.placeId];
+              if (np == null) return null;
+              return _NearbyPlace(
+                item: np.item,
+                distanceMeters: np.distanceMeters,
+                reasons: r.reasons.take(2).toList(),
+              );
+            })
+            .whereType<_NearbyPlace>()
+            .toList();
+
         setState(() {
-          _nearbyPlaces = sorted.take(20).toList();
+          _nearbyPlaces = ranked;
+          _isPersonalized = true;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _nearbyPlaces = pool.take(20).toList();
+          _isPersonalized = false;
           _isLoading = false;
         });
       }
@@ -77,10 +119,10 @@ class _NearMeSheetState extends State<NearMeSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
+    final surface = theme.colorScheme.surface;
+    final isDark = theme.brightness == Brightness.dark;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.65,
@@ -91,37 +133,64 @@ class _NearMeSheetState extends State<NearMeSheet> {
         return Container(
           decoration: BoxDecoration(
             color: surface,
+            // BottomSheet radius — not scaled per design convention
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border: Border.all(color: onSurface.withOpacity(0.06)),
+            border: Border.all(color: onSurface.withValues(alpha: 0.06)),
           ),
           child: Column(
             children: [
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40, height: 4,
+                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
-                  color: onSurface.withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(2),
+                  color: onSurface.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 child: Row(
                   children: [
-                    Icon(Icons.near_me, color: primary, size: 22),
-                    const SizedBox(width: 10),
+                    Icon(Icons.near_me, color: primary, size: 22.r),
+                    SizedBox(width: 10.w),
                     Text(
                       "Nearest Places",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,
                       ),
                     ),
+                    if (_isPersonalized) ...[
+                      SizedBox(width: 8.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
+                        decoration: BoxDecoration(
+                          color: primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.auto_awesome, size: 11.r, color: primary),
+                            SizedBox(width: 3.w),
+                            Text(
+                              'For You',
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.bold,
+                                color: primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              Divider(height: 1, color: onSurface.withOpacity(0.10)),
+              Divider(height: 1, color: onSurface.withValues(alpha: 0.10)),
               Expanded(
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
@@ -129,7 +198,7 @@ class _NearMeSheetState extends State<NearMeSheet> {
                         ? Center(
                             child: Text(
                               'Could not determine your location.',
-                              style: TextStyle(color: onSurface.withOpacity(0.5)),
+                              style: TextStyle(color: onSurface.withValues(alpha: 0.5)),
                             ),
                           )
                         : ListView.builder(
@@ -137,12 +206,14 @@ class _NearMeSheetState extends State<NearMeSheet> {
                             itemCount: _nearbyPlaces.length,
                             itemBuilder: (context, index) {
                               final np = _nearbyPlaces[index];
+                              final topReason = np.reasons.isNotEmpty ? np.reasons.first : null;
                               return ListTile(
                                 leading: Container(
-                                  width: 48, height: 48,
+                                  width: 48.r,
+                                  height: 48.r,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: onSurface.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    color: onSurface.withValues(alpha: 0.05),
                                     image: np.item.imagePaths.isNotEmpty
                                         ? DecorationImage(
                                             image: NetworkImage(np.item.imagePaths.first),
@@ -151,7 +222,7 @@ class _NearMeSheetState extends State<NearMeSheet> {
                                         : null,
                                   ),
                                   child: np.item.imagePaths.isEmpty
-                                      ? Icon(Icons.place, color: primary.withOpacity(0.5))
+                                      ? Icon(Icons.place, color: primary.withValues(alpha: 0.5))
                                       : null,
                                 ),
                                 title: Text(
@@ -161,20 +232,62 @@ class _NearMeSheetState extends State<NearMeSheet> {
                                     color: onSurface,
                                   ),
                                 ),
-                                subtitle: Text(
-                                  np.item.category.toUpperCase(),
-                                  style: TextStyle(fontSize: 11, color: primary),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      np.item.category.toUpperCase(),
+                                      style: TextStyle(
+                                          fontSize: 11.sp, color: primary),
+                                    ),
+                                    if (topReason != null) ...[
+                                      SizedBox(height: 4.h),
+                                      // Small AI-reason chip — visually distinct so
+                                      // users see this list is personalised, not just sorted by distance.
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 6.w, vertical: 2.h),
+                                        decoration: BoxDecoration(
+                                          color: primary.withValues(
+                                              alpha: isDark ? 0.18 : 0.10),
+                                          borderRadius: BorderRadius.circular(8.r),
+                                          border: Border.all(
+                                              color: primary.withValues(alpha: 0.25)),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.auto_awesome,
+                                                size: 10.r, color: primary),
+                                            SizedBox(width: 4.w),
+                                            Flexible(
+                                              child: Text(
+                                                topReason,
+                                                style: TextStyle(
+                                                  fontSize: 10.sp,
+                                                  color: primary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                                 trailing: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                                   decoration: BoxDecoration(
-                                    color: primary.withOpacity(isDark ? 0.15 : 0.10),
-                                    borderRadius: BorderRadius.circular(12),
+                                    color: primary.withValues(alpha: isDark ? 0.15 : 0.10),
+                                    borderRadius: BorderRadius.circular(12.r),
                                   ),
                                   child: Text(
                                     _formatDistance(np.distanceMeters),
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 12.sp,
                                       fontWeight: FontWeight.bold,
                                       color: primary,
                                     ),
@@ -196,5 +309,11 @@ class _NearMeSheetState extends State<NearMeSheet> {
 class _NearbyPlace {
   final MapItem item;
   final double distanceMeters;
-  const _NearbyPlace({required this.item, required this.distanceMeters});
+  final List<String> reasons;
+
+  const _NearbyPlace({
+    required this.item,
+    required this.distanceMeters,
+    this.reasons = const [],
+  });
 }

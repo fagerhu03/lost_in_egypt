@@ -10,7 +10,7 @@ import '../../../../core/widgets/shimmer_loading_widget.dart';
 class TourCard extends StatelessWidget {
   final TourEntity tour;
 
-  const TourCard({Key? key, required this.tour}) : super(key: key);
+  const TourCard({super.key, required this.tour});
 
   @override
   Widget build(BuildContext context) {
@@ -21,14 +21,14 @@ class TourCard extends StatelessWidget {
       color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(20),
       elevation: 0,
-      shadowColor: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+      shadowColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
       child: Ink(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
               blurRadius: 15,
               offset: const Offset(0, 8),
             )
@@ -96,7 +96,9 @@ class TourCard extends StatelessWidget {
                             builder: (context, snap) {
                               final label = snap.hasData
                                   ? CurrencyService.format(snap.data!, currency)
-                                  : 'EGP ${tour.price.toStringAsFixed(0)}';
+                                  : snap.hasError
+                                      ? 'EGP ${tour.price.toStringAsFixed(0)} ΓÜá'
+                                      : 'EGP ${tour.price.toStringAsFixed(0)}';
                               return Text(
                                 label,
                                 style: TextStyle(
@@ -116,18 +118,18 @@ class TourCard extends StatelessWidget {
                   // Metadata row
                   Row(
                     children: [
-                      Icon(Icons.calendar_month, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                      Icon(Icons.calendar_month, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 4),
                       Text(
                         DateFormat('MMM d, yyyy').format(tour.meetingTime),
-                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                       const SizedBox(width: 16),
-                      Icon(Icons.people, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                      Icon(Icons.people, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 4),
                       Text(
                         'Up to ${tour.maxAttendees}',
-                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                     ],
                   ),
@@ -140,9 +142,9 @@ class TourCard extends StatelessWidget {
                     children: tour.destinations.take(3).map((dest) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
+                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         dest,
@@ -172,7 +174,7 @@ class TourCard extends StatelessWidget {
           const Icon(Icons.star, color: Colors.amber, size: 16),
           const SizedBox(width: 2),
           Text(
-            '${tour.rating.toStringAsFixed(1)}',
+            tour.rating.toStringAsFixed(1),
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
@@ -183,7 +185,7 @@ class TourCard extends StatelessWidget {
             ' (${tour.reviewCount})',
             style: TextStyle(
               fontSize: 11,
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -192,7 +194,7 @@ class TourCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: theme.colorScheme.tertiary.withOpacity(0.15),
+        color: theme.colorScheme.tertiary.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -208,7 +210,7 @@ class TourCard extends StatelessWidget {
 
   Widget _buildPlaceholderImage() {
     return Container(
-      color: Colors.grey.withOpacity(0.2),
+      color: Colors.grey.withValues(alpha: 0.2),
       child: const Center(
         child: Icon(Icons.landscape, size: 48, color: Colors.grey),
       ),

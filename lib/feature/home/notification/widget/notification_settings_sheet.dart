@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 class NotificationSettingsSheet {
   static void open(BuildContext context) {
     final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: theme.colorScheme.surface,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
@@ -24,61 +26,66 @@ class _SheetBody extends StatefulWidget {
 
 class _SheetBodyState extends State<_SheetBody> {
   bool _isLoading = true;
-  bool _commentsEnabled = true;
-  bool _likesEnabled = true;
-  bool _mentionsEnabled = false;
+
+  bool _masterEnabled = true;
+  bool _bookingsEnabled = true;
+  bool _communityEnabled = true;
+  bool _reviewsEnabled = true;
+  bool _guideUpdatesEnabled = true;
+  bool _dailyDiscoveryEnabled = true;
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
+    _load();
   }
 
-  Future<void> _loadPreferences() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+  Future<void> _load() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
-    
     try {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      if (doc.exists && doc.data() != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists && mounted) {
         final data = doc.data()!;
-        final Map<String, dynamic> prefs = data['notificationPreferences'] ?? {};
-        if (mounted) {
-          setState(() {
-            _commentsEnabled = prefs['comments'] ?? true;
-            _likesEnabled = prefs['likes'] ?? true;
-            _mentionsEnabled = prefs['mentions'] ?? false;
-            _isLoading = false;
-          });
-        }
+        final prefs = (data['notificationPreferences'] as Map<String, dynamic>?) ?? {};
+        setState(() {
+          _masterEnabled = ((data['preferences'] as Map<String, dynamic>?)?['notifications']) ?? true;
+          _bookingsEnabled = prefs['bookings'] ?? true;
+          _communityEnabled = prefs['community'] ?? true;
+          _reviewsEnabled = prefs['reviews'] ?? true;
+          _guideUpdatesEnabled = prefs['guideUpdates'] ?? true;
+          _dailyDiscoveryEnabled = prefs['dailyDiscovery'] ?? true;
+          _isLoading = false;
+        });
       } else {
         if (mounted) setState(() => _isLoading = false);
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _savePreferences() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
+  Future<void> _save() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
     try {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'preferences': {'notifications': _masterEnabled},
         'notificationPreferences': {
-          'comments': _commentsEnabled,
-          'likes': _likesEnabled,
-          'mentions': _mentionsEnabled,
-        }
+          'bookings': _bookingsEnabled,
+          'community': _communityEnabled,
+          'reviews': _reviewsEnabled,
+          'guideUpdates': _guideUpdatesEnabled,
+          'dailyDiscovery': _dailyDiscoveryEnabled,
+        },
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint("Error saving preferences: $e");
+      debugPrint('Error saving notification preferences: $e');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +95,7 @@ class _SheetBodyState extends State<_SheetBody> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -96,13 +103,13 @@ class _SheetBodyState extends State<_SheetBody> {
               width: 46,
               height: 5,
               decoration: BoxDecoration(
-                color: onSurface.withOpacity(0.25),
+                color: onSurface.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
             const SizedBox(height: 14),
             Text(
-              "Notification Settings",
+              "Notification Preferences",
               style: TextStyle(
                 color: onSurface,
                 fontFamily: "Marcellus",
@@ -110,54 +117,103 @@ class _SheetBodyState extends State<_SheetBody> {
                 fontSize: 16,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
-              "Customize what you want to receive.",
+              "Choose what you want to be notified about.",
               style: TextStyle(
-                color: onSurface.withOpacity(0.7),
+                color: onSurface.withValues(alpha: 0.65),
                 fontFamily: "Marcellus",
                 fontSize: 12,
               ),
             ),
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 18),
             if (_isLoading)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 40),
+                padding: EdgeInsets.symmetric(vertical: 32),
                 child: Center(child: CircularProgressIndicator()),
               )
             else ...[
-              _SettingToggleTile(
-                title: "Comments",
-                subtitle: "Get notified when someone comments.",
-                initialValue: _commentsEnabled,
+              _ToggleTile(
+                icon: Icons.notifications_rounded,
+                title: "All Notifications",
+                subtitle: "Master switch for all push alerts",
+                value: _masterEnabled,
+                enabled: true,
                 onChanged: (v) {
-                  _commentsEnabled = v;
-                  _savePreferences();
+                  setState(() => _masterEnabled = v);
+                  _save();
                 },
               ),
-              const SizedBox(height: 10),
-              _SettingToggleTile(
-                title: "Likes",
-                subtitle: "Get notified when someone likes your post.",
-                initialValue: _likesEnabled,
-                onChanged: (v) {
-                  _likesEnabled = v;
-                  _savePreferences();
-                },
+              const SizedBox(height: 8),
+              Divider(color: onSurface.withValues(alpha: 0.10), height: 1),
+              const SizedBox(height: 8),
+              Opacity(
+                opacity: _masterEnabled ? 1.0 : 0.4,
+                child: Column(
+                  children: [
+                    _ToggleTile(
+                      icon: Icons.confirmation_number_rounded,
+                      title: "Bookings & Tours",
+                      subtitle: "Confirmations, cancellations, updates",
+                      value: _bookingsEnabled,
+                      enabled: _masterEnabled,
+                      onChanged: (v) {
+                        setState(() => _bookingsEnabled = v);
+                        _save();
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _ToggleTile(
+                      icon: Icons.people_alt_rounded,
+                      title: "Community",
+                      subtitle: "Likes, comments, mentions, replies",
+                      value: _communityEnabled,
+                      enabled: _masterEnabled,
+                      onChanged: (v) {
+                        setState(() => _communityEnabled = v);
+                        _save();
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _ToggleTile(
+                      icon: Icons.star_rounded,
+                      title: "Reviews",
+                      subtitle: "When someone reviews your tour",
+                      value: _reviewsEnabled,
+                      enabled: _masterEnabled,
+                      onChanged: (v) {
+                        setState(() => _reviewsEnabled = v);
+                        _save();
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _ToggleTile(
+                      icon: Icons.verified_user_rounded,
+                      title: "Guide Updates",
+                      subtitle: "Application & language certification results",
+                      value: _guideUpdatesEnabled,
+                      enabled: _masterEnabled,
+                      onChanged: (v) {
+                        setState(() => _guideUpdatesEnabled = v);
+                        _save();
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _ToggleTile(
+                      icon: Icons.auto_awesome_rounded,
+                      title: "AI Discovery",
+                      subtitle: "Daily 'Did you know?' fact about Egypt",
+                      value: _dailyDiscoveryEnabled,
+                      enabled: _masterEnabled,
+                      onChanged: (v) {
+                        setState(() => _dailyDiscoveryEnabled = v);
+                        _save();
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              _SettingToggleTile(
-                title: "Mentions",
-                subtitle: "Get notified when someone mentions you.",
-                initialValue: _mentionsEnabled,
-                onChanged: (v) {
-                  _mentionsEnabled = v;
-                  _savePreferences();
-                },
-              ),
-              const SizedBox(height: 14),
-
+              const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
                 height: 46,
@@ -167,16 +223,13 @@ class _SheetBodyState extends State<_SheetBody> {
                     backgroundColor: primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 6,
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 4,
                   ),
                   child: const Text(
                     "Done",
                     style: TextStyle(
-                      fontFamily: "Marcellus",
-                      fontWeight: FontWeight.w600,
-                    ),
+                        fontFamily: "Marcellus", fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -188,25 +241,22 @@ class _SheetBodyState extends State<_SheetBody> {
   }
 }
 
-class _SettingToggleTile extends StatefulWidget {
+class _ToggleTile extends StatelessWidget {
+  final IconData icon;
   final String title;
   final String subtitle;
-  final bool initialValue;
+  final bool value;
+  final bool enabled;
   final ValueChanged<bool> onChanged;
 
-  const _SettingToggleTile({
+  const _ToggleTile({
+    required this.icon,
     required this.title,
     required this.subtitle,
-    required this.initialValue,
+    required this.value,
+    required this.enabled,
     required this.onChanged,
   });
-
-  @override
-  State<_SettingToggleTile> createState() => _SettingToggleTileState();
-}
-
-class _SettingToggleTileState extends State<_SettingToggleTile> {
-  late bool _value = widget.initialValue;
 
   @override
   Widget build(BuildContext context) {
@@ -220,42 +270,43 @@ class _SettingToggleTileState extends State<_SettingToggleTile> {
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: primary.withOpacity(0.18)),
+        border: Border.all(color: primary.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: primary, size: 18),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.title,
-                  style: TextStyle(
-                    color: onSurface,
-                    fontFamily: "Marcellus",
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                ),
+                Text(title,
+                    style: TextStyle(
+                        color: onSurface,
+                        fontFamily: "Marcellus",
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13)),
                 const SizedBox(height: 2),
-                Text(
-                  widget.subtitle,
-                  style: TextStyle(
-                    color: onSurface.withOpacity(0.65),
-                    fontFamily: "Marcellus",
-                    fontSize: 11,
-                  ),
-                ),
+                Text(subtitle,
+                    style: TextStyle(
+                        color: onSurface.withValues(alpha: 0.60),
+                        fontFamily: "Marcellus",
+                        fontSize: 11)),
               ],
             ),
           ),
           Switch(
-            value: _value,
-            activeColor: primary,
-            onChanged: (v) {
-              setState(() => _value = v);
-              widget.onChanged(v);
-            },
+            value: value,
+            activeThumbColor: primary,
+            onChanged: enabled ? onChanged : null,
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../../domain/entities/review_entity.dart';
 import '../../domain/repositories/reviews_repository.dart';
 import '../datasources/reviews_data_source.dart';
@@ -36,7 +37,7 @@ class ReviewsRepositoryImpl implements ReviewsRepository {
       await dataSource.submitReview(model);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 }

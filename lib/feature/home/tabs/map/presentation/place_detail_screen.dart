@@ -1,13 +1,28 @@
-import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'package:lost_in_egypt/core/models/weather_context.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
+import 'package:lost_in_egypt/core/widgets/weather_banner.dart';
+import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
+import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
+
+// Mirrors OUTDOOR_TYPES + SEMI_OUTDOOR_TYPES in functions/recommendation.js.
+// Used to gate the weather advisory banner — indoor places never show it.
+const _outdoorOrSemiOutdoor = {
+  'park', 'beach', 'archaeological_site', 'monument', 'historical_landmark',
+  'zoo', 'stadium', 'amusement_park', 'tourist_attraction', 'national_park',
+  'market', 'street_market', 'bazaar',
+};
 
 class PlaceDetailSheet extends StatefulWidget {
   final MapItem place;
@@ -16,6 +31,7 @@ class PlaceDetailSheet extends StatefulWidget {
   final VoidCallback onDirections;
   final ValueChanged<double>? onScrollExtentChanged;
   final VoidCallback? onSavedToggled;
+  final List<MapItem> allItems;
 
   const PlaceDetailSheet({
     super.key,
@@ -25,6 +41,7 @@ class PlaceDetailSheet extends StatefulWidget {
     required this.onDirections,
     this.onScrollExtentChanged,
     this.onSavedToggled,
+    this.allItems = const [],
   });
 
   @override
@@ -38,12 +55,126 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   bool _isSaved = false;
   String? _userId;
   double? _distanceKm;
+  int? _crowdCount;
+  int _communityPostCount = 0;
+  List<_SimilarPlace> _similarPlaces = [];
+  bool _loadingSimilar = false;
 
   @override
   void initState() {
     super.initState();
     _checkIfSaved();
     _calculateDistance();
+    _loadCrowdLevel();
+    _loadCommunityPostCount();
+    if (widget.allItems.length > 1) {
+      _loadingSimilar = true;
+      _loadSimilarPlaces();
+    }
+  }
+
+  Future<void> _loadSimilarPlaces() async {
+    final pool = widget.allItems.where((i) => i.id != widget.place.id).toList();
+    if (pool.isEmpty) return;
+
+    final lat = widget.place.coordinate.latitude;
+    final lng = widget.place.coordinate.longitude;
+    pool.sort((a, b) {
+      final da = Geolocator.distanceBetween(
+          lat, lng, a.coordinate.latitude, a.coordinate.longitude);
+      final db = Geolocator.distanceBetween(
+          lat, lng, b.coordinate.latitude, b.coordinate.longitude);
+      return da.compareTo(db);
+    });
+    final nearby = pool.take(50).toList();
+
+    final candidates = nearby.map((item) => <String, dynamic>{
+      'placeId': item.id,
+      'name': item.title,
+      'types': [item.category],
+      'tags': item.tags,
+      'rating': item.rating,
+      'userRatingCount': 0,
+      'lat': item.coordinate.latitude,
+      'lng': item.coordinate.longitude,
+    }).toList();
+
+    final result = await RecommendationService.recommendPlaces(
+      candidates: candidates,
+      context: 'similar',
+      userLat: lat,
+      userLng: lng,
+      limit: 5,
+      excludeSeen: false,
+    );
+
+    if (!mounted) return;
+
+    if (result == null || result.recommendations.isEmpty) {
+      setState(() => _loadingSimilar = false);
+      return;
+    }
+
+    final idToItem = {for (final item in pool) item.id: item};
+    final similar = result.recommendations
+        .map((r) {
+          final item = idToItem[r.placeId];
+          if (item == null) return null;
+          return _SimilarPlace(item: item, reasons: r.reasons.take(1).toList());
+        })
+        .whereType<_SimilarPlace>()
+        .toList();
+
+    if (mounted) {
+      setState(() {
+        if (similar.isNotEmpty) _similarPlaces = similar;
+        _loadingSimilar = false;
+      });
+    }
+  }
+
+  Future<void> _loadCrowdLevel() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('place_affinity')
+          .doc(widget.place.id)
+          .get();
+      if (!mounted || !doc.exists) return;
+      final data = doc.data()!;
+      final buckets = (data['crowdBuckets'] as Map<String, dynamic>?) ?? {};
+      final h = DateTime.now().hour;
+      final current = (buckets['h$h'] as num? ?? 0).toInt();
+      final prev = (buckets['h${(h - 1 + 24) % 24}'] as num? ?? 0).toInt();
+      if (mounted) setState(() => _crowdCount = current + prev);
+    } catch (_) {}
+  }
+
+  Future<void> _loadCommunityPostCount() async {
+    try {
+      final q = await FirebaseFirestore.instance
+          .collection('community_posts')
+          .where('locationId', isEqualTo: widget.place.id)
+          .count()
+          .get();
+      if (mounted) setState(() => _communityPostCount = q.count ?? 0);
+    } catch (_) {}
+  }
+
+  @override
+  void didUpdateWidget(PlaceDetailSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.place.id != widget.place.id) {
+      setState(() {
+        _isSaved = false;
+        _currentImageIndex = 0;
+        _distanceKm = null;
+        _similarPlaces = [];
+        _loadingSimilar = widget.allItems.length > 1;
+      });
+      _checkIfSaved();
+      _calculateDistance();
+      if (widget.allItems.length > 1) _loadSimilarPlaces();
+    }
   }
 
   Future<void> _checkIfSaved() async {
@@ -92,6 +223,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
         await FirebaseFirestore.instance.collection('users').doc(_userId).update({
           'savedPlaces': FieldValue.arrayUnion([widget.place.id])
         });
+        RecommendationService.recordSignal(
+          placeId: widget.place.id,
+          placeName: widget.place.title,
+          types: [widget.place.category],
+          tags: widget.place.tags,
+          signalType: 'save',
+          source: 'map',
+        );
       } else {
         await FirebaseFirestore.instance.collection('users').doc(_userId).update({
           'savedPlaces': FieldValue.arrayRemove([widget.place.id])
@@ -104,7 +243,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           _isSaved = !_isSaved;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update favorite: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     }
@@ -117,7 +256,6 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   }
 
   String _estimateFare(double km) {
-    // Egyptian taxi fare: ~10 EGP base + ~5 EGP/km
     final fare = (10 + km * 5).round();
     final fareHigh = (fare * 1.5).round();
     return '~$fare–$fareHigh EGP by taxi';
@@ -154,20 +292,20 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
 
     final sheetShadow = isDark
         ? BoxShadow(
-            color: Colors.white.withOpacity(0.18),
+            color: Colors.white.withValues(alpha: 0.18),
             blurRadius: 26,
             spreadRadius: 2,
             offset: const Offset(0, -10),
           )
         : BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 26,
             spreadRadius: 2,
             offset: const Offset(0, -10),
           );
 
     final borderColor = (isDark ? Colors.white : Colors.black)
-        .withOpacity(isDark ? 0.10 : 0.06);
+        .withValues(alpha: isDark ? 0.10 : 0.06);
 
     return NotificationListener<DraggableScrollableNotification>(
       onNotification: (notification) {
@@ -185,8 +323,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
         return Container(
           decoration: BoxDecoration(
             color: surface,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(24)),
+            // BottomSheet radius — not scaled per design convention
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border.all(color: borderColor),
             boxShadow: [sheetShadow],
           ),
@@ -197,12 +335,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
               // Drag handle
               Center(
                 child: Container(
-                  margin: const EdgeInsets.only(top: 12, bottom: 8),
-                  width: 40,
-                  height: 5,
+                  margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                  width: 40.w,
+                  height: 5.h,
                   decoration: BoxDecoration(
-                    color: onSurface.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(2.5),
+                    color: onSurface.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(2.5.r),
                   ),
                 ),
               ),
@@ -211,7 +349,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
               Stack(
                 children: [
                   SizedBox(
-                    height: 220,
+                    height: 220.h,
                     width: double.infinity,
                     child: widget.place.imagePaths.isNotEmpty
                         ? PageView.builder(
@@ -234,20 +372,20 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                                 child: CachedNetworkImage(
                                   imageUrl: widget.place.imagePaths[index],
                                   fit: BoxFit.cover,
-                                  placeholder: (_, __) => const ShimmerLoadingWidget.rectangular(height: 220),
-                                  errorWidget: (_, __, ___) => Container(
-                                    color: Colors.grey.withOpacity(0.15),
+                                  placeholder: (_, _) => ShimmerLoadingWidget.rectangular(height: 220.h),
+                                  errorWidget: (_, _, _) => Container(
+                                    color: Colors.grey.withValues(alpha: 0.15),
                                     child: Center(
                                       child: Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Icon(Icons.image_not_supported_outlined,
-                                              color: Colors.grey.withOpacity(0.5), size: 50),
-                                          const SizedBox(height: 8),
+                                              color: Colors.grey.withValues(alpha: 0.5), size: 50.r),
+                                          SizedBox(height: 8.h),
                                           Text('Photo not available',
                                               style: TextStyle(
-                                                  color: Colors.grey.withOpacity(0.6),
-                                                  fontSize: 12)),
+                                                  color: Colors.grey.withValues(alpha: 0.6),
+                                                  fontSize: 12.sp)),
                                         ],
                                       ),
                                     ),
@@ -260,17 +398,17 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             ? CachedNetworkImage(
                                 imageUrl: widget.place.imagePath,
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => const ShimmerLoadingWidget.rectangular(height: 220),
-                                errorWidget: (_, __, ___) => Container(
-                                  color: Colors.grey.withOpacity(0.15),
+                                placeholder: (_, _) => ShimmerLoadingWidget.rectangular(height: 220.h),
+                                errorWidget: (_, _, _) => Container(
+                                  color: Colors.grey.withValues(alpha: 0.15),
                                   child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
                                 ),
                               )
                             : Container(
-                                color: primary.withOpacity(isDark ? 0.15 : 0.08),
+                                color: primary.withValues(alpha: isDark ? 0.15 : 0.08),
                                 child: Center(
                                   child: Icon(Icons.place,
-                                      color: primary.withOpacity(0.4), size: 64),
+                                      color: primary.withValues(alpha: 0.4), size: 64.r),
                                 ),
                               ),
                   ),
@@ -282,7 +420,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             begin: Alignment.topCenter,
                             end: Alignment.center,
                             colors: [
-                              Colors.black.withOpacity(0.25),
+                              Colors.black.withValues(alpha: 0.25),
                               Colors.transparent,
                             ],
                           ),
@@ -291,22 +429,35 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     ),
                   ),
                   Positioned(
-                    top: 10,
-                    right: 10,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black.withOpacity(0.55),
-                      radius: 18,
-                      child: IconButton(
-                        icon: const Icon(Icons.close,
-                            size: 20, color: Colors.white),
-                        onPressed: widget.onClose,
-                        padding: EdgeInsets.zero,
+                    top: 10.h,
+                    right: 10.w,
+                    child: GestureDetector(
+                      onTap: widget.onClose,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.keyboard_arrow_down_rounded,
+                                size: 18.r, color: Colors.white),
+                            SizedBox(width: 2.w),
+                            Text('Close',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   if (widget.place.imagePaths.length > 1)
                     Positioned(
-                      bottom: 12,
+                      bottom: 12.h,
                       left: 0,
                       right: 0,
                       child: Row(
@@ -314,13 +465,13 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         children: List.generate(
                           widget.place.imagePaths.length,
                           (index) => Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            width: _currentImageIndex == index ? 8 : 6,
-                            height: _currentImageIndex == index ? 8 : 6,
+                            margin: EdgeInsets.symmetric(horizontal: 3.w),
+                            width: _currentImageIndex == index ? 8.r : 6.r,
+                            height: _currentImageIndex == index ? 8.r : 6.r,
                             decoration: BoxDecoration(
                               color: _currentImageIndex == index
                                   ? Colors.white
-                                  : Colors.white.withOpacity(0.5),
+                                  : Colors.white.withValues(alpha: 0.5),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -332,7 +483,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
 
               // Content
               Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.r),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -341,49 +492,67 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       widget.place.title,
                       style: TextStyle(
                         fontFamily: "Marcellus",
-                        fontSize: 26,
+                        fontSize: 26.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6.h),
 
                     // Category + rating
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color:
-                                primary.withOpacity(isDark ? 0.18 : 0.12),
-                            borderRadius: BorderRadius.circular(6),
+                            color: primary.withValues(alpha: isDark ? 0.18 : 0.12),
+                            borderRadius: BorderRadius.circular(6.r),
                             border: Border.all(
-                              color: primary.withOpacity(0.25),
+                              color: primary.withValues(alpha: 0.25),
                             ),
                           ),
                           child: Text(
                             widget.place.category.toUpperCase(),
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.bold,
                               color: primary,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        const Icon(Icons.star,
-                            size: 16, color: Colors.amber),
+                        SizedBox(width: 10.w),
+                        Icon(Icons.star, size: 16.r, color: Colors.amber),
                         Text(
                           " ${widget.place.rating}",
                           style: TextStyle(
-                            color: onSurface.withOpacity(0.65),
-                            fontSize: 13,
+                            color: onSurface.withValues(alpha: 0.65),
+                            fontSize: 13.sp,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+
+                    // Weather advisory — only for outdoor / semi-outdoor places
+                    if (_outdoorOrSemiOutdoor
+                        .contains(widget.place.category.toLowerCase()))
+                      ValueListenableBuilder<WeatherContext?>(
+                        valueListenable: WeatherController.weather,
+                        builder: (_, weather, _) {
+                          if (weather == null ||
+                              !WeatherBanner.shouldShow(weather)) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: EdgeInsets.only(top: 14.h),
+                            child: WeatherBanner(
+                              weather: weather,
+                              onTap: () =>
+                                  WeatherForecastSheet.show(context),
+                            ),
+                          );
+                        },
+                      ),
+                    SizedBox(height: 24.h),
 
                     // Action buttons
                     Row(
@@ -399,8 +568,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           onTap: () {
                             _sheetController.animateTo(
                               0.2,
-                              duration:
-                                  const Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.easeOut,
                             );
                             widget.onShowOnMap();
@@ -438,21 +606,21 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     ),
 
                     Divider(
-                      height: 40,
+                      height: 40.h,
                       thickness: 1,
-                      color: onSurface.withOpacity(0.10),
+                      color: onSurface.withValues(alpha: 0.10),
                     ),
 
                     // About
                     Text(
                       "About",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Text(
                       widget.place.description.isNotEmpty
                           ? widget.place.description
@@ -461,11 +629,11 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                               "history and culture of the region.",
                       style: TextStyle(
                         height: 1.6,
-                        color: onSurface.withOpacity(0.85),
-                        fontSize: 15,
+                        color: onSurface.withValues(alpha: 0.85),
+                        fontSize: 15.sp,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // Info tiles
                     if (widget.place.locationAddress.isNotEmpty)
@@ -476,7 +644,6 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         onSurface: onSurface,
                       ),
 
-                    // Distance from user
                     if (_distanceKm != null)
                       _buildInfoTile(
                         icon: Icons.near_me_outlined,
@@ -485,7 +652,6 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         onSurface: onSurface,
                       ),
 
-                    // Real opening hours
                     if (_getOpeningStatus().isNotEmpty)
                       _buildInfoTile(
                         icon: Icons.access_time,
@@ -497,13 +663,11 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     if (widget.place.price > 0)
                       _buildInfoTile(
                         icon: Icons.confirmation_number_outlined,
-                        text:
-                            "${widget.place.price.toStringAsFixed(0)} EGP Entry Fee",
+                        text: "${widget.place.price.toStringAsFixed(0)} EGP Entry Fee",
                         iconColor: Colors.green,
                         onSurface: onSurface,
                       ),
 
-                    // Estimated taxi fare
                     if (_distanceKm != null && _distanceKm! > 1)
                       _buildInfoTile(
                         icon: Icons.local_taxi_outlined,
@@ -512,29 +676,191 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         onSurface: onSurface,
                       ),
 
-                    // Reviews section
+                    // ── Crowd level ─────────────────────────────────────────
+                    if (_crowdCount != null) ...[
+                      SizedBox(height: 20.h),
+                      _buildCrowdBadge(_crowdCount!, primary, onSurface, isDark),
+                    ],
+
                     if (widget.place.reviews.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Divider(
-                        thickness: 1,
-                        color: onSurface.withOpacity(0.10),
-                      ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
+                      Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
+                      SizedBox(height: 16.h),
                       Text(
                         "What Travelers Say",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                           color: onSurface,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       ...widget.place.reviews.take(3).map((review) =>
                         _buildReviewCard(review, onSurface, primary, isDark),
                       ),
                     ],
 
-                    const SizedBox(height: 100),
+                    // ── Community posts from this place ──────────────────────
+                    if (_communityPostCount > 0) ...[
+                      SizedBox(height: 16.h),
+                      Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
+                      SizedBox(height: 16.h),
+                      Row(
+                        children: [
+                          Icon(Icons.people_outline_rounded, color: primary, size: 20.r),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              '$_communityPostCount traveler${_communityPostCount == 1 ? '' : 's'} posted from here',
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                color: onSurface,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => _openCommunityPosts(context),
+                            child: Text(
+                              'See Posts',
+                              style: TextStyle(color: primary, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
+                    // ── Similar Places ────────────────────────────────────
+                    if (_loadingSimilar || _similarPlaces.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
+                      SizedBox(height: 16.h),
+                      Row(
+                        children: [
+                          Icon(Icons.auto_awesome, size: 16.r, color: primary),
+                          SizedBox(width: 8.w),
+                          Text(
+                            "Similar Places",
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                              color: onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      if (_loadingSimilar)
+                        SizedBox(
+                          height: 148.h,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: 3,
+                            itemBuilder: (_, _) => Container(
+                              width: 150.w,
+                              margin: EdgeInsets.only(right: 10.w),
+                              child: ShimmerLoadingWidget.rectangular(height: 148.h),
+                            ),
+                          ),
+                        )
+                      else
+                      SizedBox(
+                        height: 148.h,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _similarPlaces.length,
+                          itemBuilder: (context, index) {
+                            final sp = _similarPlaces[index];
+                            return GestureDetector(
+                              onTap: () {
+                                RecommendationService.recordSignal(
+                                  placeId: sp.item.id,
+                                  placeName: sp.item.title,
+                                  types: [sp.item.category],
+                                  tags: sp.item.tags,
+                                  signalType: 'visit',
+                                  source: 'similar_places',
+                                );
+                                widget.onClose();
+                                MapFocusService.instance.triggerFocus(sp.item);
+                              },
+                              child: Container(
+                                width: 150.w,
+                                margin: EdgeInsets.only(
+                                  right: index < _similarPlaces.length - 1 ? 10.w : 0,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(14.r),
+                                  color: onSurface.withValues(alpha: 0.05),
+                                  border: Border.all(
+                                    color: onSurface.withValues(alpha: 0.08),
+                                  ),
+                                ),
+                                clipBehavior: Clip.hardEdge,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      height: 80.h,
+                                      width: double.infinity,
+                                      child: sp.item.imagePaths.isNotEmpty
+                                          ? CachedNetworkImage(
+                                              imageUrl: sp.item.imagePaths.first,
+                                              fit: BoxFit.cover,
+                                              placeholder: (ctx, url) => Container(
+                                                color: primary.withValues(alpha: 0.08),
+                                              ),
+                                              errorWidget: (ctx, url, err) => Container(
+                                                color: primary.withValues(alpha: 0.06),
+                                                child: Icon(Icons.place,
+                                                    color: primary.withValues(alpha: 0.3)),
+                                              ),
+                                            )
+                                          : Container(
+                                              color: primary.withValues(alpha: 0.06),
+                                              child: Icon(Icons.place,
+                                                  color: primary.withValues(alpha: 0.3), size: 32.r),
+                                            ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 4.h),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            sp.item.title,
+                                            style: TextStyle(
+                                              fontSize: 12.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: onSurface,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (sp.reasons.isNotEmpty)
+                                            Text(
+                                              sp.reasons.first,
+                                              style: TextStyle(
+                                                fontSize: 10.sp,
+                                                color: primary.withValues(alpha: 0.8),
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                    ],
+
+                    SizedBox(height: 100.h),
                   ],
                 ),
               ),
@@ -547,13 +873,13 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
 
   Widget _buildReviewCard(PlaceReview review, Color onSurface, Color primary, bool isDark) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(14.r),
       decoration: BoxDecoration(
-        color: onSurface.withOpacity(isDark ? 0.06 : 0.03),
-        borderRadius: BorderRadius.circular(12),
+        color: onSurface.withValues(alpha: isDark ? 0.06 : 0.03),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: onSurface.withOpacity(isDark ? 0.10 : 0.06),
+          color: onSurface.withValues(alpha: isDark ? 0.10 : 0.06),
         ),
       ),
       child: Column(
@@ -562,18 +888,18 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
           Row(
             children: [
               CircleAvatar(
-                radius: 14,
-                backgroundColor: primary.withOpacity(0.15),
+                radius: 14.r,
+                backgroundColor: primary.withValues(alpha: 0.15),
                 child: Text(
                   review.authorName.isNotEmpty ? review.authorName[0].toUpperCase() : '?',
                   style: TextStyle(
                     color: primary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,7 +908,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       review.authorName,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         color: onSurface,
                       ),
                     ),
@@ -590,15 +916,15 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       children: [
                         ...List.generate(5, (i) => Icon(
                           i < review.rating.round() ? Icons.star : Icons.star_border,
-                          size: 12,
+                          size: 12.r,
                           color: Colors.amber,
                         )),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6.w),
                         Text(
                           review.relativeTime,
                           style: TextStyle(
-                            fontSize: 11,
-                            color: onSurface.withOpacity(0.5),
+                            fontSize: 11.sp,
+                            color: onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
@@ -609,17 +935,72 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             ],
           ),
           if (review.text.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               review.text.length > 200 ? '${review.text.substring(0, 200)}...' : review.text,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 height: 1.5,
-                color: onSurface.withOpacity(0.8),
+                color: onSurface.withValues(alpha: 0.8),
               ),
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildCrowdBadge(int count, Color primary, Color onSurface, bool isDark) {
+    final Color dotColor;
+    final String label;
+    if (count <= 2) {
+      dotColor = Colors.green.shade500;
+      label = 'Quiet right now';
+    } else if (count <= 8) {
+      dotColor = Colors.amber.shade600;
+      label = 'Moderately busy';
+    } else {
+      dotColor = Colors.red.shade500;
+      label = 'Very busy';
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: dotColor.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: dotColor.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8.r,
+            height: 8.r,
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+          ),
+          SizedBox(width: 8.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: dotColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openCommunityPosts(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CommunityPostsSheet(
+        placeId: widget.place.id,
+        placeName: widget.place.title,
       ),
     );
   }
@@ -631,18 +1012,18 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     required Color onSurface,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: EdgeInsets.symmetric(vertical: 10.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: iconColor, size: 22),
-          const SizedBox(width: 16),
+          Icon(icon, color: iconColor, size: 22.r),
+          SizedBox(width: 16.w),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 15,
-                color: onSurface.withOpacity(0.85),
+                fontSize: 15.sp,
+                color: onSurface.withValues(alpha: 0.85),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -667,14 +1048,14 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     final border = Border.all(
       color: isPrimary
           ? Colors.transparent
-          : onSurface.withOpacity(isDark ? 0.18 : 0.20),
+          : onSurface.withValues(alpha: isDark ? 0.18 : 0.20),
     );
 
     final buttonShadow = isPrimary
         ? [
             BoxShadow(
               color: (isDark ? Colors.white : Colors.black)
-                  .withOpacity(0.14),
+                  .withValues(alpha: 0.14),
               blurRadius: 10,
               spreadRadius: 1,
               offset: const Offset(0, 6),
@@ -687,8 +1068,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
       child: Column(
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: 50.r,
+            height: 50.r,
             decoration: BoxDecoration(
               color: bg,
               shape: BoxShape.circle,
@@ -698,19 +1079,149 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
             child: Icon(
               icon,
               color: iconColor ?? (isPrimary ? Colors.white : primary),
-              size: 24,
+              size: 24.r,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             label,
             style: TextStyle(
-              color: isPrimary ? primary : onSurface.withOpacity(0.70),
+              color: isPrimary ? primary : onSurface.withValues(alpha: 0.70),
               fontWeight: FontWeight.w600,
-              fontSize: 12,
+              fontSize: 12.sp,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Similar place data holder ─────────────────────────────────────────────────
+
+class _SimilarPlace {
+  final MapItem item;
+  final List<String> reasons;
+  const _SimilarPlace({required this.item, this.reasons = const []});
+}
+
+// ── Community posts bottom sheet ──────────────────────────────────────────────
+
+class _CommunityPostsSheet extends StatelessWidget {
+  final String placeId;
+  final String placeName;
+
+  const _CommunityPostsSheet({required this.placeId, required this.placeName});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? const Color(0xFF1A2E3A) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final primary = Theme.of(context).colorScheme.primary;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      builder: (_, controller) => Container(
+        decoration: BoxDecoration(
+          color: surface,
+          // BottomSheet radius — not scaled per design convention
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 12.h),
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: onSurface.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 4.h),
+              child: Row(
+                children: [
+                  Icon(Icons.people_outline_rounded, color: primary, size: 20.r),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Posts from $placeName',
+                      style: TextStyle(
+                        fontFamily: 'Marcellus',
+                        fontSize: 18.sp,
+                        color: textColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('community_posts')
+                    .where('locationId', isEqualTo: placeId)
+                    .orderBy('timestamp', descending: true)
+                    .limit(20)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final docs = snapshot.data?.docs ?? [];
+                  if (docs.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No posts yet from this place.\nBe the first to share!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: onSurface.withValues(alpha: 0.5)),
+                      ),
+                    );
+                  }
+                  return ListView.separated(
+                    controller: controller,
+                    padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
+                    itemCount: docs.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (context, i) {
+                      final data = docs[i].data() as Map<String, dynamic>;
+                      final content = data['content'] as String? ?? '';
+                      final userName = data['userName'] as String? ?? 'Traveler';
+                      final avatar = data['userAvatar'] as String? ?? '';
+                      return ListTile(
+                        contentPadding: EdgeInsets.symmetric(vertical: 8.h),
+                        leading: CircleAvatar(
+                          radius: 18.r,
+                          backgroundColor: primary.withValues(alpha: 0.15),
+                          child: avatar.isNotEmpty
+                              ? ClipOval(child: CachedNetworkImage(
+                                  imageUrl: avatar, width: 36.r, height: 36.r,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (ctx, url, err) => Icon(Icons.person, size: 16.r, color: primary),
+                                ))
+                              : Icon(Icons.person, size: 16.r, color: primary),
+                        ),
+                        title: Text(userName,
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp, color: textColor)),
+                        subtitle: Text(
+                          content.length > 120 ? '${content.substring(0, 117)}…' : content,
+                          style: TextStyle(fontSize: 13.sp, color: onSurface.withValues(alpha: 0.75), height: 1.4),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

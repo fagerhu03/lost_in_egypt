@@ -417,8 +417,8 @@ class FirebaseCommunityRepository {
     if (postOwnerId != user.uid) {
       final isReply = replyToId != null;
       final msg = isReply
-          ? 'replied in your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"'
-          : 'commented on your post: "${text.length > 30 ? text.substring(0, 30) + "..." : text}"';
+          ? 'replied in your post: "${text.length > 30 ? "${text.substring(0, 30)}..." : text}"'
+          : 'commented on your post: "${text.length > 30 ? "${text.substring(0, 30)}..." : text}"';
       final commentSenderDisplay = (userDetails['username'] as String).isNotEmpty
           ? '@${userDetails['username']}'
           : userDetails['name'] as String;
@@ -508,7 +508,7 @@ class FirebaseCommunityRepository {
                 'senderName': likeNotifDisplay,
                 'senderAvatar': userDetails['avatar'],
                 'title': 'New Like',
-                'deepLinkTargetId': '${postId}_${commentId}',
+                'deepLinkTargetId': '${postId}_$commentId',
                 'type': 'like_comment', 
                 'message': 'liked your comment.',
                 'isRead': false,

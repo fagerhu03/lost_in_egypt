@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_model.dart';
@@ -23,12 +24,12 @@ class PublicProfileScreen extends StatelessWidget {
 
     final patternOpacity = isDark ? 0.20 : 0.40;
     final borderColor =
-    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+    (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
     final String displayName = "${user.firstName} ${user.lastName}".trim();
     final String profileUrl = user.profileImageUrl;
 
-    final Color cardColor = isDark ? surface.withOpacity(0.5) : const Color(0xFFF3F2E4);
+    final Color cardColor = isDark ? surface.withValues(alpha: 0.5) : const Color(0xFFF3F2E4);
 
     final secretBadgeIds = BadgeConstants.allBadges.where((b) => b.isSecret).map((b) => b.id).toList();
     final int trueVisitedCount = user.visitedLandmarks.where((id) => !secretBadgeIds.contains(id)).length;
@@ -107,7 +108,7 @@ class PublicProfileScreen extends StatelessWidget {
                                 border: isDark ? Border.all(color: borderColor) : null,
                                 boxShadow: isDark ? [] : [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withValues(alpha: 0.05),
                                     blurRadius: 10,
                                     offset: const Offset(0, 5),
                                   )
@@ -132,7 +133,7 @@ class PublicProfileScreen extends StatelessWidget {
                                         user.bio,
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: onSurface.withOpacity(0.7),
+                                          color: onSurface.withValues(alpha: 0.7),
                                           fontSize: 14,
                                         ),
                                       ),
@@ -143,7 +144,7 @@ class PublicProfileScreen extends StatelessWidget {
                                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                                     margin: const EdgeInsets.symmetric(horizontal: 16),
                                     decoration: BoxDecoration(
-                                      color: isDark ? Colors.black26 : Colors.white.withOpacity(0.6),
+                                      color: isDark ? Colors.black26 : Colors.white.withValues(alpha: 0.6),
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Row(
@@ -157,7 +158,7 @@ class PublicProfileScreen extends StatelessWidget {
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
-                                            color: onSurface.withOpacity(0.8),
+                                            color: onSurface.withValues(alpha: 0.8),
                                           ),
                                         ),
                                       ],
@@ -197,20 +198,15 @@ class PublicProfileScreen extends StatelessWidget {
                             Container(
                               width: 100,
                               height: 100,
+                              clipBehavior: Clip.antiAlias,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: surface,
                                 border: Border.all(color: cardColor, width: 4),
-                                image: profileUrl.isNotEmpty 
-                                  ? DecorationImage(
-                                      image: NetworkImage(profileUrl),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
                               ),
-                              child: profileUrl.isEmpty
-                                  ? Icon(Icons.person, size: 60, color: onSurface.withOpacity(0.5))
-                                  : null,
+                              child: profileUrl.isNotEmpty
+                                  ? CachedNetworkImage(imageUrl: profileUrl, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5)))
+                                  : Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5)),
                             ),
                           ],
                         ),
@@ -236,10 +232,10 @@ class PublicProfileScreen extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isUnlocked
-                ? Colors.amber.withOpacity(0.15)
-                : Colors.grey.withOpacity(0.1),
+                ? Colors.amber.withValues(alpha: 0.15)
+                : Colors.grey.withValues(alpha: 0.1),
             border: Border.all(
-              color: isUnlocked ? Colors.amber : Colors.grey.withOpacity(0.3),
+              color: isUnlocked ? Colors.amber : Colors.grey.withValues(alpha: 0.3),
               width: 2,
             ),
           ),
@@ -256,7 +252,7 @@ class PublicProfileScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
-              color: isUnlocked ? onSurface : onSurface.withOpacity(0.5),
+              color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
             ),
           ),
         ),

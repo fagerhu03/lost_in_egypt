@@ -30,11 +30,11 @@ class MapTopOverlays extends StatelessWidget {
     final primary = theme.colorScheme.primary;
 
     final shadowColor = isDark
-        ? Colors.white.withOpacity(0.18)
-        : Colors.black.withOpacity(0.18);
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.18);
 
     Color chipBg({bool strong = false}) =>
-        surface.withOpacity(strong ? (isDark ? 0.92 : 0.95) : 0.92);
+        surface.withValues(alpha: strong ? (isDark ? 0.92 : 0.95) : 0.92);
 
     return Stack(
       children: [
@@ -52,7 +52,7 @@ class MapTopOverlays extends StatelessWidget {
                     color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))
               ],
               border: Border.all(
-                  color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
+                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +63,7 @@ class MapTopOverlays extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: onSurface.withOpacity(0.9)),
+                      color: onSurface.withValues(alpha: 0.9)),
                 ),
                 if (state.selectedUiCategoryId != 'all')
                   Text(
@@ -110,14 +110,14 @@ class MapTopOverlays extends StatelessWidget {
               decoration: BoxDecoration(
                 color: state.selectedUiCategoryId == 'all'
                     ? chipBg()
-                    : primary.withOpacity(isDark ? 0.90 : 0.95),
+                    : primary.withValues(alpha: isDark ? 0.90 : 0.95),
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
                       color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))
                 ],
                 border: Border.all(
-                    color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
+                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -125,7 +125,7 @@ class MapTopOverlays extends StatelessWidget {
                   Icon(
                     Icons.tune,
                     color: state.selectedUiCategoryId == 'all'
-                        ? onSurface.withOpacity(0.9)
+                        ? onSurface.withValues(alpha: 0.9)
                         : Colors.white,
                     size: 20,
                   ),

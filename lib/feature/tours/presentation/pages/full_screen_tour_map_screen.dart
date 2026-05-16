@@ -11,7 +11,7 @@ import '../../../home/tabs/map/data/places_api_service.dart';
 class FullScreenTourMapScreen extends StatefulWidget {
   final TourEntity tour;
 
-  const FullScreenTourMapScreen({Key? key, required this.tour}) : super(key: key);
+  const FullScreenTourMapScreen({super.key, required this.tour});
 
   @override
   State<FullScreenTourMapScreen> createState() => _FullScreenTourMapScreenState();
@@ -75,7 +75,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
             fontFamily: 'Marcellus',
           ),
         ),
-        backgroundColor: theme.colorScheme.surface.withOpacity(0.85),
+        backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.85),
         elevation: 0,
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black87),
         toolbarHeight: 60,
@@ -144,7 +144,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
                     blurRadius: 20,
                     spreadRadius: 5,
                     offset: const Offset(0, 5),
@@ -160,7 +160,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withOpacity(0.1),
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.location_on, color: theme.colorScheme.primary),
@@ -172,7 +172,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                           children: [
                             Text(
                               'Meeting Point',
-                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.bold),
                             ),
                             Text(
                               widget.tour.meetingLocationName,
@@ -189,7 +189,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                   ),
                   Text(
                     'Destinations You Will Visit:',
-                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   Wrap(
@@ -198,9 +198,9 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                     children: widget.tour.destinations.map((dest) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
+                        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.05)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,

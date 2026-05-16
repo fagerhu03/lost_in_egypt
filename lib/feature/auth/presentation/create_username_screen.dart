@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../home/tabs/navigator/home_wrapper.dart';
 
@@ -36,7 +37,6 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
   }
 
   void _onChanged(String raw) {
-    // Sanitise to lowercase + allowed chars only
     final sanitised = raw.toLowerCase().replaceAll(RegExp(r'[^a-z0-9_]'), '');
     if (sanitised != raw) {
       _controller.value = _controller.value.copyWith(
@@ -45,7 +45,6 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
       );
     }
 
-    // Reset state while user is typing
     setState(() {
       _isAvailable = null;
       _errorMessage = null;
@@ -56,14 +55,12 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
 
     if (sanitised.isEmpty) return;
 
-    // Inline format validation (no async needed)
     final formatError = _formatError(sanitised);
     if (formatError != null) {
       setState(() => _errorMessage = formatError);
       return;
     }
 
-    // Debounce Firestore check
     setState(() => _isChecking = true);
     _debounce = Timer(const Duration(milliseconds: 500), () => _checkAvailability(sanitised));
   }
@@ -120,8 +117,6 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
       final claimRef = db.collection('usernames').doc(username);
       final userRef = db.collection('users').doc(uid);
 
-      // Atomic claim: create the username doc only if it doesn't exist yet.
-      // This prevents two users who both saw "available" from both succeeding.
       await db.runTransaction((tx) async {
         final claimSnap = await tx.get(claimRef);
         if (claimSnap.exists) {
@@ -184,42 +179,41 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
+            padding: EdgeInsets.symmetric(horizontal: 28.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 60),
+                SizedBox(height: 60.h),
 
-                // Heading
                 Text(
                   "Choose your\nusername",
                   style: TextStyle(
-                    fontSize: 34,
+                    fontSize: 34.sp,
                     fontFamily: "Marcellus",
                     color: onSurface,
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   "This is how others will find you in the community. You can change it later in your profile.",
                   style: TextStyle(
-                    fontSize: 15,
-                    color: onSurface.withOpacity(0.6),
+                    fontSize: 15.sp,
+                    color: onSurface.withValues(alpha: 0.6),
                   ),
                 ),
-                const SizedBox(height: 48),
+                SizedBox(height: 48.h),
 
-                // Input
+                // Input field
                 Container(
                   decoration: BoxDecoration(
                     color: surface,
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(25.r),
                     boxShadow: [
                       BoxShadow(
                         color: isDark
-                            ? Colors.white.withOpacity(0.10)
-                            : Colors.black.withOpacity(0.10),
+                            ? Colors.white.withValues(alpha: 0.10)
+                            : Colors.black.withValues(alpha: 0.10),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -236,12 +230,12 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
                   child: Row(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 20),
+                        padding: EdgeInsets.only(left: 20.w),
                         child: Text(
                           "@",
                           style: TextStyle(
                             color: primary,
-                            fontSize: 20,
+                            fontSize: 20.sp,
                             fontFamily: "Marcellus",
                             fontWeight: FontWeight.bold,
                           ),
@@ -256,33 +250,32 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
                           enableSuggestions: false,
                           style: TextStyle(
                             color: onSurface,
-                            fontSize: 18,
+                            fontSize: 18.sp,
                             fontFamily: "Marcellus",
                           ),
                           onChanged: _onChanged,
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 18),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10.w, vertical: 18.h),
                             hintText: "your_handle",
                             hintStyle: TextStyle(
-                              color: onSurface.withOpacity(0.35),
-                              fontSize: 18,
+                              color: onSurface.withValues(alpha: 0.35),
+                              fontSize: 18.sp,
                             ),
                           ),
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 16),
+                        padding: EdgeInsets.only(right: 16.w),
                         child: _buildStatusIcon(),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
-                // Feedback row
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child: _buildFeedback(onSurface),
@@ -290,40 +283,39 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
 
                 const Spacer(),
 
-                // Confirm button
                 SizedBox(
                   width: double.infinity,
-                  height: 54,
+                  height: 54.h,
                   child: ElevatedButton(
                     onPressed: canConfirm ? _confirm : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primary,
-                      disabledBackgroundColor: primary.withOpacity(0.35),
+                      disabledBackgroundColor: primary.withValues(alpha: 0.35),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14.r),
                       ),
                     ),
                     child: _isSaving
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
+                        ? SizedBox(
+                            width: 24.r,
+                            height: 24.r,
+                            child: const CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2.5,
                             ),
                           )
-                        : const Text(
+                        : Text(
                             "Continue",
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontFamily: "Marcellus",
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
               ],
             ),
           ),
@@ -335,8 +327,8 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
   Widget _buildStatusIcon() {
     if (_isChecking) {
       return SizedBox(
-        width: 18,
-        height: 18,
+        width: 18.r,
+        height: 18.r,
         child: CircularProgressIndicator(
           strokeWidth: 2,
           color: Theme.of(context).colorScheme.primary,
@@ -344,10 +336,10 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
       );
     }
     if (_isAvailable == true) {
-      return const Icon(Icons.check_circle, color: Colors.green, size: 22);
+      return Icon(Icons.check_circle, color: Colors.green, size: 22.r);
     }
     if (_errorMessage != null) {
-      return const Icon(Icons.cancel, color: Colors.red, size: 22);
+      return Icon(Icons.cancel, color: Colors.red, size: 22.r);
     }
     return const SizedBox.shrink();
   }
@@ -357,10 +349,10 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
       return Row(
         key: const ValueKey('error'),
         children: [
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Text(
             _errorMessage!,
-            style: const TextStyle(color: Colors.red, fontSize: 13),
+            style: TextStyle(color: Colors.red, fontSize: 13.sp),
           ),
         ],
       );
@@ -369,10 +361,10 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
       return Row(
         key: const ValueKey('ok'),
         children: [
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Text(
             "@${_controller.text} is available!",
-            style: const TextStyle(color: Colors.green, fontSize: 13),
+            style: TextStyle(color: Colors.green, fontSize: 13.sp),
           ),
         ],
       );
@@ -380,12 +372,12 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
     if (_controller.text.isEmpty) {
       return Padding(
         key: const ValueKey('hint'),
-        padding: const EdgeInsets.only(left: 8),
+        padding: EdgeInsets.only(left: 8.w),
         child: Text(
           "3–20 characters · letters, numbers, underscores only",
           style: TextStyle(
-            color: onSurface.withOpacity(0.45),
-            fontSize: 13,
+            color: onSurface.withValues(alpha: 0.45),
+            fontSize: 13.sp,
           ),
         ),
       );

@@ -2,7 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
+import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
@@ -32,15 +35,57 @@ class _SearchScreenState extends State<SearchScreen> {
   List<MapItem> _placeResults = [];
   List<TourEntity> _tourResults = [];
   bool _loading = false;
+  String? _error;
 
   // Cached full place list (loaded once)
   List<MapItem>? _allPlaces;
+
+  // User's taste vector — loaded once on screen open. Empty when missing/cold-start.
+  Map<String, num> _tasteVector = {};
+  // True when current results have been re-ranked through the taste vector.
+  bool _personalised = false;
 
   @override
   void initState() {
     super.initState();
     _focusNode.requestFocus();
     _loadPlaces();
+    _loadTasteVector();
+  }
+
+  Future<void> _loadTasteVector() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (!mounted) return;
+      final raw = doc.data()?['tasteVector'];
+      if (raw is Map) {
+        final cast = <String, num>{};
+        for (final e in raw.entries) {
+          if (e.value is num) cast[e.key.toString()] = e.value as num;
+        }
+        setState(() => _tasteVector = cast);
+      }
+    } catch (_) {}
+  }
+
+  /// Dot-product score of inferred canonical keys against the user's taste
+  /// vector. Returns 0 when the vector is empty (cold-start users).
+  double _tasteScore(String text) {
+    if (_tasteVector.isEmpty) return 0;
+    final keys = RecommendationMappings.inferKeysFromText(text);
+    double s = 0;
+    for (final k in keys['types']!) {
+      s += (_tasteVector[k] ?? 0).toDouble();
+    }
+    for (final k in keys['tags']!) {
+      s += (_tasteVector[k] ?? 0).toDouble();
+    }
+    return s;
   }
 
   @override
@@ -55,9 +100,10 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       final repo = GetIt.instance<MapRepository>();
       final places = await repo.fetchAllMapItemsLimited();
-      if (mounted) setState(() => _allPlaces = places);
+      if (mounted) setState(() { _allPlaces = places; _error = null; });
     } catch (e) {
       debugPrint('Search: failed to load places: $e');
+      if (mounted) setState(() => _error = 'Could not load places.\nCheck your connection.');
     }
   }
 
@@ -98,7 +144,19 @@ class _SearchScreenState extends State<SearchScreen> {
           p.description.toLowerCase().contains(_query);
     }).take(30).toList();
 
-    results.sort((a, b) => b.importance.compareTo(a.importance));
+    if (_tasteVector.isNotEmpty) {
+      // Composite ordering: taste score dominates, importance breaks ties.
+      results.sort((a, b) {
+        final ta = _tasteScore('${a.title} ${a.category} ${a.tags.join(' ')}');
+        final tb = _tasteScore('${b.title} ${b.category} ${b.tags.join(' ')}');
+        if (tb != ta) return tb.compareTo(ta);
+        return b.importance.compareTo(a.importance);
+      });
+      _personalised = true;
+    } else {
+      results.sort((a, b) => b.importance.compareTo(a.importance));
+      _personalised = false;
+    }
 
     if (mounted) setState(() => _placeResults = results);
   }
@@ -143,9 +201,20 @@ class _SearchScreenState extends State<SearchScreen> {
             t.destinations.any((d) => d.toLowerCase().contains(_query));
       }).take(20).toList();
 
-      if (mounted) setState(() => _tourResults = all);
+      if (_tasteVector.isNotEmpty) {
+        all.sort((a, b) {
+          final ta = _tasteScore(
+              '${a.title} ${a.destinations.join(' ')} ${a.description}');
+          final tb = _tasteScore(
+              '${b.title} ${b.destinations.join(' ')} ${b.description}');
+          return tb.compareTo(ta);
+        });
+      }
+
+      if (mounted) setState(() { _tourResults = all; _error = null; });
     } catch (e) {
       debugPrint('Search tours error: $e');
+      if (mounted) setState(() => _error = 'Could not load tours.\nCheck your connection.');
     }
   }
 
@@ -196,14 +265,14 @@ class _SearchScreenState extends State<SearchScreen> {
           decoration: InputDecoration(
             hintText: 'Search landmarks, tours, destinations…',
             hintStyle: TextStyle(
-              color: onSurface.withOpacity(0.45),
+              color: onSurface.withValues(alpha: 0.45),
               fontFamily: 'Marcellus',
               fontSize: 15,
             ),
             border: InputBorder.none,
             suffixIcon: _controller.text.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.clear, color: onSurface.withOpacity(0.5)),
+                    icon: Icon(Icons.clear, color: onSurface.withValues(alpha: 0.5)),
                     onPressed: () {
                       _controller.clear();
                       _onQueryChanged('');
@@ -227,32 +296,63 @@ class _SearchScreenState extends State<SearchScreen> {
           ? _EmptyPrompt(primary: primary, onSurface: onSurface)
           : _loading
               ? Center(child: CircularProgressIndicator(color: primary))
-              : totalCount == 0
+              : _error != null && totalCount == 0
+                  ? AppErrorWidget(
+                      message: _error!,
+                      onRetry: () { setState(() => _error = null); _runSearch(); },
+                    )
+                  : totalCount == 0
                   ? _NoResults(query: _query, onSurface: onSurface)
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: placeList.length + tourList.length,
-                      itemBuilder: (context, i) {
-                        if (i < placeList.length) {
-                          return _PlaceResultTile(
-                            place: placeList[i],
-                            isDark: isDark,
-                            surface: surface,
-                            onSurface: onSurface,
-                            primary: primary,
-                            onTap: () => _onPlaceTap(placeList[i]),
-                          );
-                        }
-                        final tour = tourList[i - placeList.length];
-                        return _TourResultTile(
-                          tour: tour,
-                          isDark: isDark,
-                          surface: surface,
-                          onSurface: onSurface,
-                          primary: primary,
-                          onTap: () => _onTourTap(tour),
-                        );
-                      },
+                  : Column(
+                      children: [
+                        if (_personalised)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.auto_awesome,
+                                    size: 14, color: primary),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Personalised by your taste',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Marcellus',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: placeList.length + tourList.length,
+                            itemBuilder: (context, i) {
+                              if (i < placeList.length) {
+                                return _PlaceResultTile(
+                                  place: placeList[i],
+                                  isDark: isDark,
+                                  surface: surface,
+                                  onSurface: onSurface,
+                                  primary: primary,
+                                  onTap: () => _onPlaceTap(placeList[i]),
+                                );
+                              }
+                              final tour = tourList[i - placeList.length];
+                              return _TourResultTile(
+                                tour: tour,
+                                isDark: isDark,
+                                surface: surface,
+                                onSurface: onSurface,
+                                primary: primary,
+                                onTap: () => _onTourTap(tour),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
     );
   }
@@ -299,13 +399,13 @@ class _TabBar extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: active ? primary : primary.withOpacity(0.1),
+          color: active ? primary : primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: active ? Colors.white : onSurface.withOpacity(0.7),
+            color: active ? Colors.white : onSurface.withValues(alpha: 0.7),
             fontWeight: FontWeight.w600,
             fontFamily: 'Marcellus',
             fontSize: 13,
@@ -355,7 +455,7 @@ class _PlaceResultTile extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: place.imagePath,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: onSurface.withOpacity(0.08)),
+                          placeholder: (_, __) => Container(color: onSurface.withValues(alpha: 0.08)),
                           errorWidget: (_, __, ___) => _PlaceholderIcon(primary: primary),
                         )
                       : place.imagePath.isNotEmpty
@@ -392,7 +492,7 @@ class _PlaceResultTile extends StatelessWidget {
                       Text(
                         place.locationAddress,
                         style: TextStyle(
-                          color: onSurface.withOpacity(0.55),
+                          color: onSurface.withValues(alpha: 0.55),
                           fontSize: 12,
                         ),
                         maxLines: 1,
@@ -406,17 +506,17 @@ class _PlaceResultTile extends StatelessWidget {
                         Text(
                           place.rating.toStringAsFixed(1),
                           style: TextStyle(
-                            color: onSurface.withOpacity(0.7),
+                            color: onSurface.withValues(alpha: 0.7),
                             fontSize: 12,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(Icons.map_outlined, color: primary.withOpacity(0.7), size: 13),
+                        Icon(Icons.map_outlined, color: primary.withValues(alpha: 0.7), size: 13),
                         const SizedBox(width: 3),
                         Text(
                           'View on map',
                           style: TextStyle(
-                            color: primary.withOpacity(0.8),
+                            color: primary.withValues(alpha: 0.8),
                             fontSize: 12,
                           ),
                         ),
@@ -474,7 +574,7 @@ class _TourResultTile extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: tour.images.first,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: onSurface.withOpacity(0.08)),
+                          placeholder: (_, __) => Container(color: onSurface.withValues(alpha: 0.08)),
                           errorWidget: (_, __, ___) => _PlaceholderIcon(primary: primary, icon: Icons.tour),
                         )
                       : _PlaceholderIcon(primary: primary, icon: Icons.tour),
@@ -508,7 +608,7 @@ class _TourResultTile extends StatelessWidget {
                       Text(
                         tour.meetingLocationName,
                         style: TextStyle(
-                          color: onSurface.withOpacity(0.55),
+                          color: onSurface.withValues(alpha: 0.55),
                           fontSize: 12,
                         ),
                         maxLines: 1,
@@ -523,7 +623,9 @@ class _TourResultTile extends StatelessWidget {
                           builder: (_, snap) {
                             final label = snap.hasData
                                 ? CurrencyService.format(snap.data!, currencyCode)
-                                : 'EGP ${tour.price.toStringAsFixed(0)}';
+                                : snap.hasError
+                                    ? 'EGP ${tour.price.toStringAsFixed(0)} ⚠'
+                                    : 'EGP ${tour.price.toStringAsFixed(0)}';
                             return Text(
                               label,
                               style: TextStyle(
@@ -541,7 +643,7 @@ class _TourResultTile extends StatelessWidget {
                           Text(
                             tour.rating.toStringAsFixed(1),
                             style: TextStyle(
-                              color: onSurface.withOpacity(0.7),
+                              color: onSurface.withValues(alpha: 0.7),
                               fontSize: 12,
                             ),
                           ),
@@ -573,8 +675,8 @@ class _PlaceholderIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: primary.withOpacity(0.1),
-      child: Icon(icon, color: primary.withOpacity(0.5), size: 28),
+      color: primary.withValues(alpha: 0.1),
+      child: Icon(icon, color: primary.withValues(alpha: 0.5), size: 28),
     );
   }
 }
@@ -590,7 +692,7 @@ class _TypeBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -617,12 +719,12 @@ class _EmptyPrompt extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search, size: 64, color: primary.withOpacity(0.25)),
+          Icon(Icons.search, size: 64, color: primary.withValues(alpha: 0.25)),
           const SizedBox(height: 16),
           Text(
             'Search for a landmark or tour',
             style: TextStyle(
-              color: onSurface.withOpacity(0.5),
+              color: onSurface.withValues(alpha: 0.5),
               fontSize: 16,
               fontFamily: 'Marcellus',
             ),
@@ -631,7 +733,7 @@ class _EmptyPrompt extends StatelessWidget {
           Text(
             'Try "Pyramids", "Luxor", "museum"…',
             style: TextStyle(
-              color: onSurface.withOpacity(0.35),
+              color: onSurface.withValues(alpha: 0.35),
               fontSize: 13,
             ),
           ),
@@ -653,12 +755,12 @@ class _NoResults extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off, size: 56, color: onSurface.withOpacity(0.2)),
+          Icon(Icons.search_off, size: 56, color: onSurface.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(
             'No results for "$query"',
             style: TextStyle(
-              color: onSurface.withOpacity(0.5),
+              color: onSurface.withValues(alpha: 0.5),
               fontSize: 15,
               fontFamily: 'Marcellus',
             ),

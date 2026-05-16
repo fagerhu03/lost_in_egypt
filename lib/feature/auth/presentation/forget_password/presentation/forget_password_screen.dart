@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 
-import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:lost_in_egypt/feature/auth/data/repository_impl/auth_repository_impl.dart';
+import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({super.key});
@@ -56,15 +53,11 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
         String msg = "Failed to send reset email";
         if (e.code == 'invalid-email') msg = "Invalid email formatting.";
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
-        );
+        showErrorSnackBar(context, msg);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Unexpected Error: \$e"), backgroundColor: Colors.red),
-        );
+        showErrorSnackBarFromException(context, e);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

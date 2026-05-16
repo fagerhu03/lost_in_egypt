@@ -123,9 +123,9 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: isDark ? surface.withOpacity(0.85) : bg.withOpacity(0.9),
+                        color: isDark ? surface.withValues(alpha: 0.85) : bg.withValues(alpha: 0.9),
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                        border: Border.all(color: titleColor.withOpacity(0.2), width: 1),
+                        border: Border.all(color: titleColor.withValues(alpha: 0.2), width: 1),
                       ),
                       child: ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -135,7 +135,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                             children: [
                               TabBar(
                                 labelColor: titleColor,
-                                unselectedLabelColor: titleColor.withOpacity(0.45),
+                                unselectedLabelColor: titleColor.withValues(alpha: 0.45),
                                 indicatorColor: theme.colorScheme.primary,
                                 labelStyle: const TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, fontSize: 14),
                                 tabs: const [Tab(text: 'About'), Tab(text: 'Posts')],
@@ -190,9 +190,9 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.post_add_outlined, size: 52, color: onSurface.withOpacity(0.2)),
+                Icon(Icons.post_add_outlined, size: 52, color: onSurface.withValues(alpha: 0.2)),
                 const SizedBox(height: 12),
-                Text('No posts yet', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: onSurface.withOpacity(0.45))),
+                Text('No posts yet', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: onSurface.withValues(alpha: 0.45))),
               ],
             ),
           );
@@ -234,7 +234,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: theme.colorScheme.surface,
-            border: Border.all(color: titleColor.withOpacity(0.5), width: 3),
+            border: Border.all(color: titleColor.withValues(alpha: 0.5), width: 3),
             image: widget.user.profileImageUrl.isNotEmpty 
               ? DecorationImage(
                   image: CachedNetworkImageProvider(widget.user.profileImageUrl),
@@ -243,7 +243,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
               : null,
           ),
           child: widget.user.profileImageUrl.isEmpty
-              ? Icon(Icons.person, size: 60, color: onSurface.withOpacity(0.5))
+              ? Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5))
               : null,
         ),
         const SizedBox(height: 16),
@@ -272,7 +272,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           Text(
             widget.user.bio,
             textAlign: TextAlign.center,
-            style: TextStyle(color: onSurface.withOpacity(0.8), fontSize: 14),
+            style: TextStyle(color: onSurface.withValues(alpha: 0.8), fontSize: 14),
           ),
         ],
         if (widget.user.instagramHandle.isNotEmpty || widget.user.twitterHandle.isNotEmpty) ...[
@@ -309,7 +309,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: BoxDecoration(
-            color: titleColor.withOpacity(0.1),
+            color: titleColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
@@ -386,7 +386,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           maxLines: _expandedBio ? null : 4,
           overflow: _expandedBio ? TextOverflow.visible : TextOverflow.ellipsis,
           style: TextStyle(
-            color: theme.colorScheme.onSurface.withOpacity(0.85),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
             fontSize: 14,
             height: 1.4,
           ),
@@ -483,10 +483,10 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isUnlocked
-                ? Colors.amber.withOpacity(0.15)
-                : Colors.grey.withOpacity(0.1),
+                ? Colors.amber.withValues(alpha: 0.15)
+                : Colors.grey.withValues(alpha: 0.1),
             border: Border.all(
-              color: isUnlocked ? Colors.amber : Colors.grey.withOpacity(0.3),
+              color: isUnlocked ? Colors.amber : Colors.grey.withValues(alpha: 0.3),
               width: 2,
             ),
           ),
@@ -503,7 +503,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             style: TextStyle(
               fontSize: 10,
               fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
-              color: isUnlocked ? onSurface : onSurface.withOpacity(0.5),
+              color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -532,15 +532,15 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
               height: 90,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: titleColor.withOpacity(0.3), width: 2),
-                image: guide.profileImageUrl.isNotEmpty 
-                    ? DecorationImage(image: NetworkImage(guide.profileImageUrl), fit: BoxFit.cover)
-                    : null,
+                border: Border.all(color: titleColor.withValues(alpha: 0.3), width: 2),
                 color: isDark ? const Color(0xFF3E2C1E) : const Color(0xFF7A4B1D),
               ),
-              child: guide.profileImageUrl.isEmpty
-                  ? const Icon(Icons.person, color: Colors.white70, size: 50)
-                  : null,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: guide.profileImageUrl.isNotEmpty
+                    ? CachedNetworkImage(imageUrl: guide.profileImageUrl, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, color: Colors.white70, size: 50))
+                    : const Icon(Icons.person, color: Colors.white70, size: 50),
+              ),
             ),
             Positioned(
               top: 4,
@@ -581,17 +581,17 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
                   children: [
                     Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 15, fontWeight: FontWeight.bold)),
                     const Icon(Icons.star, color: Colors.amber, size: 18),
-                    Text(' (${guide.reviewCount} reviews)', style: TextStyle(color: titleColor.withOpacity(0.7), fontSize: 13)),
+                    Text(' (${guide.reviewCount} reviews)', style: TextStyle(color: titleColor.withValues(alpha: 0.7), fontSize: 13)),
                   ],
                 ),
               const SizedBox(height: 6),
               Row(
                 children: [
-                  Icon(Icons.location_on, size: 16, color: titleColor.withOpacity(0.8)),
+                  Icon(Icons.location_on, size: 16, color: titleColor.withValues(alpha: 0.8)),
                   const SizedBox(width: 4),
                   Text(
                     guide.nationality.isNotEmpty ? guide.nationality : 'Egypt',
-                    style: TextStyle(fontSize: 14, color: titleColor.withOpacity(0.8)),
+                    style: TextStyle(fontSize: 14, color: titleColor.withValues(alpha: 0.8)),
                   ),
                 ],
               ),
@@ -611,9 +611,9 @@ class _UniversalInfoStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? AppColors.darkText.withOpacity(0.18) : const Color(0xFFBDA47D);
+    final borderColor = isDark ? AppColors.darkText.withValues(alpha: 0.18) : const Color(0xFFBDA47D);
     final titleColor = isDark ? AppColors.darkText : const Color(0xFF7A4B1D);
-    final subColor = isDark ? AppColors.darkText.withOpacity(0.6) : const Color(0xFFB6A17F);
+    final subColor = isDark ? AppColors.darkText.withValues(alpha: 0.6) : const Color(0xFFB6A17F);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -621,7 +621,7 @@ class _UniversalInfoStrip extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         border: Border.all(color: borderColor, width: 1.5),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -639,7 +639,7 @@ class _UniversalInfoStrip extends StatelessWidget {
   Widget _buildInfoItem(IconData icon, String title, String subtitle, Color titleColor, Color subColor) {
     return Column(
       children: [
-        Icon(icon, color: titleColor.withOpacity(0.8), size: 24),
+        Icon(icon, color: titleColor.withValues(alpha: 0.8), size: 24),
         const SizedBox(height: 4),
         Text(title, style: TextStyle(color: titleColor, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
         Text(subtitle, style: TextStyle(color: subColor, fontSize: 11)),
@@ -695,20 +695,17 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+                border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.06)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
                     radius: 18,
-                    backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
-                    backgroundImage: (userImage != null && userImage.isNotEmpty)
-                        ? NetworkImage(userImage)
-                        : null,
-                    child: (userImage == null || userImage.isEmpty)
-                        ? const Icon(Icons.person, size: 18)
-                        : null,
+                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                    child: (userImage != null && userImage.isNotEmpty)
+                        ? ClipOval(child: CachedNetworkImage(imageUrl: userImage, width: 36, height: 36, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, size: 18)))
+                        : const Icon(Icons.person, size: 18),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -737,7 +734,7 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
                           Text(text,
                               style: TextStyle(
                                   fontSize: 13,
-                                  color: theme.colorScheme.onSurface.withOpacity(0.75))),
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.75))),
                         ],
                         if (createdAt != null) ...[
                           const SizedBox(height: 4),
@@ -745,7 +742,7 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
                             '${createdAt.day}/${createdAt.month}/${createdAt.year}',
                             style: TextStyle(
                                 fontSize: 11,
-                                color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                           ),
                         ],
                       ],
@@ -754,7 +751,7 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
                 ],
               ),
             );
-            }).toList(),
+            }),
             if (hasMore)
               TextButton.icon(
                 onPressed: () => setState(() => _limit += _pageSize),
@@ -836,9 +833,9 @@ class _SocialIconButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

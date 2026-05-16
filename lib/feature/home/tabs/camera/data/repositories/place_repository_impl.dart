@@ -28,7 +28,7 @@ class PlaceRepositoryImpl implements PlaceRepository {
       // Convert the raw JSON response to our model format
       return PlaceModel.fromPlacesApi(results.first, _apiKey);
     } catch (e) {
-      throw Exception('Failed to fetch place from Google Places: $e');
+      throw Exception('Failed to fetch place details. Please check your connection.');
     }
   }
 }

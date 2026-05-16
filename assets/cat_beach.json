@@ -1,0 +1,122 @@
+[
+  {
+    "id": "cat_beach_0",
+    "title": "JAZ Bluemarine Beach",
+    "category": "cat_beach",
+    "city": "Hurghada",
+    "latitude": 27.0906114,
+    "longitude": 33.8437202,
+    "rating": 4.9,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJhRbGjip-TRQRcXkJHcfAjwo/photos/AU_ZVEGLYSr2T4NsTQO00chXdqHcqDJhvzs_5QR3ClvG2x7bQ4_cWA_qQyiam4yxr3hEXZvenTaJqpppIONWlXNrjHHpxEc0Hd56iH-_aEYBDCNsdAIS9ayecHwpGUQuphXJPhAW-axIkbg9TsxgLXzqSqxdw50cxx7ISQd-pA6ogxbcH_Jn3eiIdufT0U4P8RMZzyWmTaVY_Z7EDiSxYsFFSvIYtbzXKNkXnF2i8diW1HxhiAdSi55NWiMelfhffzAH_sJ8EAbMFIncwhV_v6o4qpU0Cj6nOIPkuwI8dVAkfEr98Q/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 9549
+  },
+  {
+    "id": "cat_beach_1",
+    "title": "SUNRISE Arabian Beach",
+    "category": "cat_beach",
+    "city": "Sharm El Sheikh",
+    "latitude": 27.9426579,
+    "longitude": 34.3840311,
+    "rating": 4.9,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJCSLXFtJJUxQRbKvXeoyJb_s/photos/AU_ZVEFq2rkF2Hcr8JJ0iyMJc22RCm7x8koBzZeJ4v6PmUo-r6Os8nku6Ad3180KWmt2ysZsUhuQJCVm4nM5_WDLLWUMfD1m0XND7AyrxORmi0pxALw-l3CfjXbDG4Ht2XdAKA0EBstdQTly_a4RKK8fdLBFhGtbr-QQbnXiH-DvTEIC0Hr18Kvits8ttdhG4xHf3X0jnt6y3BXJWGIl3ETXmZ7Cp9k9M8z7Z0k9ifFhFFJW1JPiQoPurTy2T98NFjuMtjgj28nxAJD7gRU8HTdOol7kHrXlwoxTlbZX_AIKnWx9MQ/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 29791
+  },
+  {
+    "id": "cat_beach_2",
+    "title": "Makadi Beach",
+    "category": "cat_beach",
+    "city": "Makadi Bay",
+    "latitude": 27.02,
+    "longitude": 33.905,
+    "rating": 4.9,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJH_RQJvd7TRQR6O6oI8wmupU/photos/AU_ZVEGIG85s1OPoNkt9aQn510IV4_woGlpXYLg8jEz1ke4R93_41Fk5aXY3rcBVtTmV7TQ7jvjbcndC-E9fNVPBo6sbWz849dydu-0cg4ldtSAoqOMhw2677cnKOkH_ltaEwGWhaHhbjb4WoY4rQ4DH2-eXNGA8gZcUSzdko2817sZonPla5ws8CC5XQT10b-K2vou8KD50xGL8LAVj716VatH_XpHvaOqMKOVTr3qtkNY3m5Dk_sgrp1N3cm289m0nRTlhYmtzzoyuSqRAN1-GjXRLZsVn8W4kGuzcYXaeJ34muA/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 7461
+  },
+  {
+    "id": "cat_beach_3",
+    "title": "Tarabin Beach",
+    "category": "cat_beach",
+    "city": "Nuweiba",
+    "latitude": 29.02,
+    "longitude": 34.676,
+    "rating": 4.9,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJc9bG2fbPqhUR6Zg6LWUqUIY/photos/AU_ZVEGhApr-J0gkwVavmieovD3QQ8NwEOUpqwAmiBopErBZPwHvxqRX7HEKKwl2PY0s-A_ysPMOSBw733v3NOvr5C1LL0dOkgK_-JwT8ES1-v-wkXDWZ64KfQf0NixRbYDJxijFPgBAEGSX444wBfBqqcIr1xfBXgMNBpqcIza7WD5KRdHNNtvtjZosqXz6_sDfa-PeL5V8_FXlkXXe8BrJr5t37FqCNiBr5C5AHeZgwtHLQsJDI5-rgiikXoA5sAEOFj5EMzQDIRRfUqDCnbazFdWoweAKoycWQjOUobjR120phuo-8pQru6_P9CbWd9ig2kqSfGc6MjZPIR4JyTbRMGBb-ShdIP0IyBbMRKnqSxF7Khy4RctT6YzDcs6LNVHoEpzra0uPoAAM8YtGVU3MQpCKUT9qfRjvljKGeoEEGmHS8w/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 21
+  },
+  {
+    "id": "cat_beach_4",
+    "title": "Q Beach Ain Sokhna",
+    "category": "cat_beach",
+    "city": "Ain Sokhna",
+    "latitude": 29.4474532,
+    "longitude": 32.4789461,
+    "rating": 4.9,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ6V0H0-atVxQRbwfcCmUzBhQ/photos/AU_ZVEGv2dJKFC-AiYdC0TGvh8o7jdcY_pA1z1x_OAxj7yLZUSsJ-Dl7tkeZl_J29x1e0WGOrDSALXXATEyGTgWt-HDTYmajSur6AzMsogBtW03PXj95ozd2ReYLbZZ2bG7Mz-GwWlOf8mKX2yh0saebrfHdYm09zn9PSHh5PIIOmyoGAaPFoSKvgHpdFfvpItYHHoCwgtgSr8dzyQkkE2qYhJMayfqhmD9DZxd_C0YNud9FRtMWUHADOZLCciSf0JxqydYWqMkH7P4ZkcF8fR9Q6nM0ddevoHMoVmk2vBgd4jjsSg/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 71
+  },
+  {
+    "id": "cat_beach_5",
+    "title": "El Gouna Abu Tig Beach",
+    "category": "cat_beach",
+    "city": "El Gouna",
+    "latitude": 27.408,
+    "longitude": 33.6741,
+    "rating": 4.8,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJo1IpFOJnUhQRdRbLMpsxNxs/photos/AU_ZVEEfoalmeUx5tAACKQPwFTNpMFg4lZR9yGuvgkZqM1YY1GaOnk1FzGXlaXA7NZxP0WpInuXFoI23YQ2LdigwWofeGdiKnwK6G0YqQ5LJ7Ktz_KvJuYFUeUpod5Bhc8RMN6lvXgOpOAed1t7l4cyfYVs1c58_c-T2sGpLpJCMSDY986KlrdCm0eWi75v-_sYb92xblExyQyES1m3BKkeVpIArYy5kwd3rqxuYEERo-CCqoWR4P_59s29Ldtjcf1TS6EV1P-oZXrmfH9fthl2hKHPdIh38apJUG9KSDJ85chFwcSze3mcn2t-86-_tPwAiRGCQnU8fJA1fkji9I8CPSeTgqj56o0Td4eZrR--hJ84trE1jTAXn2FXQfzcZjDJequgxTgfoOV2206fv5uysjsLlZ-dSfSUTFoZ3vGZo4Rsd-zr8483abJUx0AX7FTi8/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 292
+  },
+  {
+    "id": "cat_beach_6",
+    "title": "Blue Hole Beach",
+    "category": "cat_beach",
+    "city": "Dahab",
+    "latitude": 28.571,
+    "longitude": 34.532,
+    "rating": 4.7,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/EjNCbHVlIEhvbGUgUmQsIERhaGFiLCBTb3V0aCBTaW5haSBHb3Zlcm5vcmF0ZSwgRWd5cHQiLiosChQKEglBSui1pkqrFRGFe9EzUV_rvxIUChIJX1itvylLqxURvxkzeY0jZaw/photos/AU_ZVEFvAz1J3kOIPi2WvnQR_YiY80HI9tmu6IYCGC2qgmCyREo4pAOtvOwiQKXIcrzeSBDQJbiJFAyT29M3LFUIf_PydrJM0-BklkHTX4d6ueB3oQPkJNsqLYsA1F_LfF5T7j-oPJ6ZDvONBy3AGWJ_E4h6acfhCNl0O_hH24-I4GWV-ont_Bclg4ks8MfLOLuTp-7Yru8gmTmgOue4C1A47uVNGrfW-ExFv0oKXjQzZp4HCSDgcmiiIdwWZBe6EdrgpNPHqMZXaC7gmLpMxaD8RWJiDFRQRGoBu3HGoWYh-94Ob7Sm2k7uRg9XFB2KCXpLCPIK3yNOhDMOR8bPYfgXR29JLU3rERi-36MCXzMPMRaoyU--Q0dYJSPd-x6U2aG292e1vm62BABCJPvVZQK8q_Sh7R8moN719Cuisri8z4Gse9PMXX4szuVcRygD5A4Gc8owWySCUnO9JYJVAKCjJyRU7_Jr__zvZw62_3CvX_Bb7KUI1j461uE2zfochwZpB6G4AGRZ_gDjVW89fNLr_vjCAn2_vXor2y8lJ_fm57TKhgyOu9Ua51YwRagA75y5eA/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 0
+  },
+  {
+    "id": "cat_beach_7",
+    "title": "Marsa Shagra Beach",
+    "category": "cat_beach",
+    "city": "Marsa Alam",
+    "latitude": 25.2451469,
+    "longitude": 34.7939118,
+    "rating": 4.7,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJgzvpAby-tBURb0r_PTnnGQ0/photos/AU_ZVEEDk9VXz4StbHnYvP2OWt685NlRfv0VbgTm3d5FdzzIrwolBLstcNN18C58IwPdWXTKQH-swWOr2vN0VTRJkcmStnirLBZJBdr42UerFYjrIU37QQ3v5iPe1u_boLV90-FCmWdgUdY05S_pOvVSGyMqpnubU2Nz5MQ-5sWNv4yy9vBgak5prxesFpiHcygS2uR3ol2IhS-O2qcPWInx_objr7gP8Ga8gqjMb7nf3s9nnuyFfWuhlagcGs8FGG3pM2uPceF9DuZMOcz8uzrn0P9HzsGooLB_dslLNsQDgPdiWw/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 1086
+  },
+  {
+    "id": "cat_beach_8",
+    "title": "Soma Bay Beach",
+    "category": "cat_beach",
+    "city": "Soma Bay",
+    "latitude": 26.886,
+    "longitude": 33.953,
+    "rating": 4.7,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJL_qSbshvTRQRpT_xLb1s_Xs/photos/AU_ZVEFxBJR85_2-nzy2RJx9qtbJN4LtzjLBrSv8zqs3hveGV2Od-kB7cTIs570gcu8tjRq3ba4XObgCbBzLcEVhGnti5Kb36AsUbtYu36SvWRhSioicbSt8Z9v9JFDKlkfWrV94y3PS-plxEy_Giwl5Aad1yRwJnOfONx4TCWMj5JpyEyBtMSn3iyqoOtXnXd-qpife7QZkoQH7ePhY8EzYVx-HUTcUVnMwmIHTyEKxHhOET6jcA7z100O3AZfUGGFCvSRdbJRl9twaZER9Dhddb8NaFIv1jUKzEtbEMc9kwfhKXzNe72JHihYnIVPnZsX9deUC00joNbkkzBY_TV3SU3q9lhM7mvWiTUqcYKgAZUWX-RpFqEIquH5YuVHKfBSb95ZONZdsmIBSu9Ny-LVF9lbDDjFgDc2xCIviNBSTFuinagM/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 7642
+  },
+  {
+    "id": "cat_beach_9",
+    "title": "Taba Heights Beach",
+    "category": "cat_beach",
+    "city": "Taba",
+    "latitude": 29.388,
+    "longitude": 34.804,
+    "rating": 4.7,
+    "sea": "Red Sea",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ34V5yaF0ABURfsullGl9OWI/photos/AU_ZVEFM0dpGIg9y4F4essM-3rjnSsTVcJlJZBiAa4jgw8e8nvT92pXmph3CrTj-_3JrHY1O0SOjX10IltsR-93R1De2CetBR-KDSTmcaW6e3PFF87WnsR1KTZlwzQtXY-mpSsf7_XgPtsm-xj1XW30AuxMe14RbK2AYto-pVEXIwAdY7wrEOBIyzEKTXPJDkylJIkeXg4Un1uNy6I3UFddhxSVHux0BALet5dt7BY-yBp-A0VgBeHLii39XZmz_cB24PyraVAA04hD5rnZ85UTHkY2lU1JTXqgY3GqU5hRoSsRbJg/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 13470
+  }
+]

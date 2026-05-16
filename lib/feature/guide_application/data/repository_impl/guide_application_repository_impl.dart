@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../../domain/repositories/guide_application_repository.dart';
 import '../datasources/guide_application_data_source.dart';
 
@@ -35,7 +36,7 @@ class GuideApplicationRepositoryImpl implements GuideApplicationRepository {
       );
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 }

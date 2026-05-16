@@ -15,4 +15,11 @@ class GuideToursCubit extends Cubit<GuideToursState> {
       (tours) => emit(GuideToursLoaded(tours)),
     );
   }
+
+  void removeTour(String tourId) {
+    final current = state;
+    if (current is GuideToursLoaded) {
+      emit(GuideToursLoaded(current.tours.where((t) => t.id != tourId).toList()));
+    }
+  }
 }

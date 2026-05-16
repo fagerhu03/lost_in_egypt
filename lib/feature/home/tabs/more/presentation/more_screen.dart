@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/feature/home/tabs/navigator/widget/account_menu_button.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/presentation/settings_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/presentation/currency_converter_screen.dart';
@@ -28,9 +29,7 @@ class _MoreScreenState extends State<MoreScreen> {
   Future<void> _loadUserProfile() async {
     final user = await _repository.fetchCurrentUser();
     if (user != null && mounted) {
-      setState(() {
-        _profileImageUrl = user.profileImageUrl;
-      });
+      setState(() => _profileImageUrl = user.profileImageUrl);
     }
   }
 
@@ -44,10 +43,8 @@ class _MoreScreenState extends State<MoreScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     final isDark = theme.brightness == Brightness.dark;
     final patternOpacity = isDark ? 0.1 : 0.4;
-
     final bg = theme.scaffoldBackgroundColor;
     final textColor = theme.colorScheme.onSurface;
 
@@ -63,28 +60,27 @@ class _MoreScreenState extends State<MoreScreen> {
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
                 repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => Container(),
+                errorBuilder: (_, _, _) => Container(),
               ),
             ),
           ),
-
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               child: Column(
                 children: [
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Row(
                     children: [
-                      const SizedBox(width: 44),
+                      SizedBox(width: 44.w),
                       Expanded(
                         child: Center(
                           child: Text(
                             "More",
                             style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 30.sp,
                               fontWeight: FontWeight.w500,
-                              color: textColor.withOpacity(0.75),
+                              color: textColor.withValues(alpha: 0.75),
                               fontFamily: "Marcellus",
                             ),
                           ),
@@ -96,18 +92,18 @@ class _MoreScreenState extends State<MoreScreen> {
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 18),
+                  SizedBox(height: 18.h),
 
                   _MoreTile(
                     title: "Currency",
                     icon: Icons.currency_exchange_rounded,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const CurrencyConverterScreen()),
+                      MaterialPageRoute(
+                          builder: (_) => const CurrencyConverterScreen()),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   _MoreTile(
                     title: "Settings",
@@ -115,12 +111,13 @@ class _MoreScreenState extends State<MoreScreen> {
                     onTap: () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                        MaterialPageRoute(
+                            builder: (_) => const SettingsScreen()),
                       );
                       _loadUserProfile();
                     },
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   _MoreTile(
                     title: "Help",
@@ -130,27 +127,29 @@ class _MoreScreenState extends State<MoreScreen> {
                       MaterialPageRoute(builder: (_) => const HelpScreen()),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   _MoreTile(
                     title: "Translator",
                     icon: Icons.translate_rounded,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const TranslatorScreen()),
+                      MaterialPageRoute(
+                          builder: (_) => const TranslatorScreen()),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   _MoreTile(
                     title: "Contact us",
                     icon: Icons.mail_outline_rounded,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ContactUsScreen()),
+                      MaterialPageRoute(
+                          builder: (_) => const ContactUsScreen()),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   // SOS button
                   GestureDetector(
@@ -160,28 +159,29 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
                       decoration: BoxDecoration(
                         color: Colors.red,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.red.withOpacity(0.4),
+                            color: Colors.red.withValues(alpha: 0.4),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.emergency_rounded, color: Colors.white, size: 22),
-                          SizedBox(width: 10),
+                          Icon(Icons.emergency_rounded,
+                              color: Colors.white, size: 22.r),
+                          SizedBox(width: 10.w),
                           Text(
                             "SOS — Emergency Numbers",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               fontFamily: 'Marcellus',
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
@@ -224,45 +224,46 @@ class _MoreTile extends StatelessWidget {
 
     return Material(
       color: surface,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       clipBehavior: Clip.hardEdge,
       elevation: 0,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         onTap: onTap,
         child: Container(
-          height: 64,
+          height: 64.h,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: primary.withOpacity(isDark ? 0.2 : 0.15),
+              color: primary.withValues(alpha: isDark ? 0.2 : 0.15),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: EdgeInsets.symmetric(horizontal: 14.w),
           child: Row(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 38.r,
+                height: 38.r,
                 decoration: BoxDecoration(
-                  color: primary.withOpacity(isDark ? 0.2 : 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  color: primary.withValues(alpha: isDark ? 0.2 : 0.12),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(icon, color: primary, size: 20),
+                child: Icon(icon, color: primary, size: 20.r),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: 14.w),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: onSurface.withOpacity(0.88),
-                    fontSize: 16,
+                    color: onSurface.withValues(alpha: 0.88),
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
                     fontFamily: "Marcellus",
                   ),
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: primary.withOpacity(0.6), size: 22),
+              Icon(Icons.chevron_right_rounded,
+                  color: primary.withValues(alpha: 0.6), size: 22.r),
             ],
           ),
         ),

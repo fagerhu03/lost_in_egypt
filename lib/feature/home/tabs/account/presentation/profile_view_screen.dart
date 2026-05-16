@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
@@ -7,7 +7,7 @@ import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.d
 
 class ProfileViewScreen extends StatefulWidget {
   final String? uid; // optional: view other user's profile if provided
-  const ProfileViewScreen({Key? key, this.uid}) : super(key: key);
+  const ProfileViewScreen({super.key, this.uid});
 
   @override
   State<ProfileViewScreen> createState() => _ProfileViewScreenState();
@@ -75,15 +75,15 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
     // visible shadows: dark in light mode, glow in dark mode
     final cardShadow = BoxShadow(
       color: isDark
-          ? Colors.white.withOpacity(0.14)
-          : Colors.black.withOpacity(0.14),
+          ? Colors.white.withValues(alpha: 0.14)
+          : Colors.black.withValues(alpha: 0.14),
       blurRadius: 18,
       spreadRadius: 1,
       offset: const Offset(0, 10),
     );
 
     final borderColor =
-    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+    (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
     return Scaffold(
       backgroundColor: bg,
@@ -103,7 +103,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           ? Center(
         child: Text(
           'User not found',
-          style: TextStyle(color: onSurface.withOpacity(0.8)),
+          style: TextStyle(color: onSurface.withValues(alpha: 0.8)),
         ),
       )
           : ListView(
@@ -120,14 +120,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                   ),
                   child: CircleAvatar(
                     radius: 54,
-                    backgroundColor: primary.withOpacity(0.18),
-                    backgroundImage: _user!.profileImageUrl.isNotEmpty
-                        ? NetworkImage(_user!.profileImageUrl)
-                        : null,
-                    child: _user!.profileImageUrl.isEmpty
-                        ? Icon(Icons.person,
-                        size: 48, color: onSurface)
-                        : null,
+                    backgroundColor: primary.withValues(alpha: 0.18),
+                    child: _user!.profileImageUrl.isNotEmpty
+                        ? ClipOval(child: CachedNetworkImage(imageUrl: _user!.profileImageUrl, width: 108, height: 108, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 48, color: onSurface)))
+                        : Icon(Icons.person, size: 48, color: onSurface),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -145,7 +141,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                   Text(
                     _user!.nationality,
                     style: TextStyle(
-                      color: onSurface.withOpacity(0.55),
+                      color: onSurface.withValues(alpha: 0.55),
                     ),
                   ),
                 const SizedBox(height: 12),
@@ -180,7 +176,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
               title: 'About',
               child: Text(
                 _user!.bio,
-                style: TextStyle(color: onSurface.withOpacity(0.85)),
+                style: TextStyle(color: onSurface.withValues(alpha: 0.85)),
               ),
               surface: surface,
               onSurface: onSurface,
@@ -200,7 +196,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                     label: Text(
                       i,
                       style:
-                      TextStyle(color: onSurface.withOpacity(0.9)),
+                      TextStyle(color: onSurface.withValues(alpha: 0.9)),
                     ),
                     backgroundColor: surface,
                     side: BorderSide(color: borderColor),
@@ -248,14 +244,14 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                 Text(
                   _user!.email,
                   style:
-                  TextStyle(color: onSurface.withOpacity(0.85)),
+                  TextStyle(color: onSurface.withValues(alpha: 0.85)),
                 ),
                 const SizedBox(height: 6),
                 if (_user!.phoneNumber.isNotEmpty)
                   Text(
                     _user!.phoneNumber,
                     style: TextStyle(
-                        color: onSurface.withOpacity(0.85)),
+                        color: onSurface.withValues(alpha: 0.85)),
                   ),
               ],
             ),
@@ -301,8 +297,8 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                   foregroundColor: Colors.white,
                   elevation: 8,
                   shadowColor: isDark
-                      ? Colors.white.withOpacity(0.18)
-                      : Colors.black.withOpacity(0.22),
+                      ? Colors.white.withValues(alpha: 0.18)
+                      : Colors.black.withValues(alpha: 0.22),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -374,7 +370,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(name, style: TextStyle(color: onSurface.withOpacity(0.55))),
+        Text(name, style: TextStyle(color: onSurface.withValues(alpha: 0.55))),
       ],
     );
   }
@@ -394,7 +390,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           Expanded(
             child: Text(
               handle,
-              style: TextStyle(color: onSurface.withOpacity(0.85)),
+              style: TextStyle(color: onSurface.withValues(alpha: 0.85)),
             ),
           ),
         ],

@@ -147,7 +147,7 @@ class _RoleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     const bool isDark = false; // Forced to light mode as requested
     final cardColor = isDark ? const Color(0xFF2C2C2C) : const Color(0xFFFCFBE8);
-    final shadowColor = isDark ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(isSelected ? 0.15 : 0.05);
+    final shadowColor = isDark ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: isSelected ? 0.15 : 0.05);
     final textColor = isDark ? Colors.white : const Color(0xff634700);
 
     return GestureDetector(

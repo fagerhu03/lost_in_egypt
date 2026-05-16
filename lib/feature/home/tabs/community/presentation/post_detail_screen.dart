@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -8,6 +9,7 @@ import '../data/model/community_post_model.dart';
 import './community_post_card.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import '../../../../../core/widgets/universal_report_dialog.dart';
+import '../../../../../core/utils/error_handler.dart';
 import '../../../../admin/data/models/report_model.dart';
 import '../../../../admin/domain/repositories/reports_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
@@ -196,7 +198,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to post comment: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     }
@@ -251,7 +253,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: TextStyle(color: onSurface.withOpacity(0.6)))),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: TextStyle(color: onSurface.withValues(alpha: 0.6)))),
             TextButton(
               onPressed: () async {
                 final text = controller.text.trim();
@@ -282,14 +284,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           title: Text("Delete Comment", style: TextStyle(color: onSurface)),
           content: Text(
             "Are you sure you want to delete this comment?",
-            style: TextStyle(color: onSurface.withOpacity(0.8)),
+            style: TextStyle(color: onSurface.withValues(alpha: 0.8)),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
               child: Text(
                 "Cancel",
-                style: TextStyle(color: onSurface.withOpacity(0.7)),
+                style: TextStyle(color: onSurface.withValues(alpha: 0.7)),
               ),
             ),
             TextButton(
@@ -370,7 +372,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       margin: EdgeInsets.only(bottom: 10, top: isReply ? 0 : 6),
       padding: EdgeInsets.fromLTRB(12, 10, 12, isReply ? 8 : 10),
       decoration: BoxDecoration(
-        color: isHighlighted ? primary.withOpacity(0.1) : surface,
+        color: isHighlighted ? primary.withValues(alpha: 0.1) : surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: isHighlighted ? primary : borderColor, width: isHighlighted ? 1.5 : 1.0),
         boxShadow: isReply ? [] : [cardShadow],
@@ -383,9 +385,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             children: [
               GestureDetector(
                 onTap: () => _navigateToProfile(ownerId),
-                child: avatar.isNotEmpty
-                    ? CircleAvatar(radius: 12, backgroundImage: NetworkImage(avatar))
-                    : CircleAvatar(radius: 12, backgroundColor: onSurface.withOpacity(0.08), child: Icon(Icons.person, size: 14, color: primary)),
+                child: CircleAvatar(
+                  radius: 12,
+                  backgroundColor: onSurface.withValues(alpha: 0.08),
+                  child: avatar.isNotEmpty
+                      ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 24, height: 24, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 14, color: primary)))
+                      : Icon(Icons.person, size: 14, color: primary),
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -401,14 +407,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       Text((data['userFlag'] ?? '🇪🇬') as String, style: const TextStyle(fontSize: 10)),
                       if (ts != null) ...[
                         const SizedBox(width: 6),
-                        Text(_timeAgo(ts), style: TextStyle(color: onSurface.withOpacity(0.45), fontSize: 11)),
+                        Text(_timeAgo(ts), style: TextStyle(color: onSurface.withValues(alpha: 0.45), fontSize: 11)),
                       ],
                     ],
                   ),
                 ),
               ),
               PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, size: 14, color: onSurface.withOpacity(0.45)),
+                icon: Icon(Icons.more_vert, size: 14, color: onSurface.withValues(alpha: 0.45)),
                 color: surface,
                 surfaceTintColor: Colors.transparent,
                 onSelected: (val) {
@@ -436,14 +442,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               _commentAction(
                 isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
                 '${likes.length}',
-                isLiked ? primary : onSurface.withOpacity(0.45),
+                isLiked ? primary : onSurface.withValues(alpha: 0.45),
                 () => _repository.toggleCommentLike(widget.post.id, commentId, true),
               ),
               const SizedBox(width: 12),
               _commentAction(
                 isDisliked ? Icons.thumb_down : Icons.thumb_down_outlined,
                 dislikes.isNotEmpty ? '${dislikes.length}' : '',
-                isDisliked ? Colors.red.shade400 : onSurface.withOpacity(0.45),
+                isDisliked ? Colors.red.shade400 : onSurface.withValues(alpha: 0.45),
                 () => _repository.toggleCommentLike(widget.post.id, commentId, false),
               ),
               const Spacer(),
@@ -464,7 +470,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget _buildCommentText(String text, Color onSurface, Color primary) {
     final spans = <InlineSpan>[];
     final regex = RegExp(r'(@\w+|#\w+)');
-    final baseStyle = TextStyle(fontSize: 14, color: onSurface.withOpacity(0.92));
+    final baseStyle = TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.92));
     final highlightStyle = TextStyle(fontSize: 14, color: primary, fontWeight: FontWeight.bold);
     int last = 0;
 
@@ -543,7 +549,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            Divider(color: onSurface.withOpacity(0.10)),
+            Divider(color: onSurface.withValues(alpha: 0.10)),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -574,7 +580,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       decoration: BoxDecoration(
                         color: surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: onSurface.withOpacity(0.08)),
+                        border: Border.all(color: onSurface.withValues(alpha: 0.08)),
                       ),
                       child: hasImage
                           ? Column(
@@ -582,11 +588,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               children: [
                                 ClipRRect(
                                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                  child: Image.network(images[0], height: 90, width: 130, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(height: 90, color: onSurface.withOpacity(0.06))),
+                                  child: Image.network(images[0], height: 90, width: 130, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(height: 90, color: onSurface.withValues(alpha: 0.06))),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.fromLTRB(8, 6, 8, 4),
-                                  child: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: onSurface.withOpacity(0.85))),
+                                  child: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: onSurface.withValues(alpha: 0.85))),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -600,7 +606,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(title, maxLines: 5, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: onSurface.withOpacity(0.88), height: 1.35)),
+                                  Text(title, maxLines: 5, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: onSurface.withValues(alpha: 0.88), height: 1.35)),
                                   const Spacer(),
                                   Row(children: [Icon(Icons.thumb_up_outlined, size: 11, color: primary), const SizedBox(width: 3), Text('$likeCount', style: TextStyle(fontSize: 11, color: primary))]),
                                 ],
@@ -626,9 +632,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
-    final dividerColor = onSurface.withOpacity(0.12);
-    final borderColor = (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
-    final cardShadow = BoxShadow(color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.08), blurRadius: 14, spreadRadius: 1, offset: const Offset(0, 6));
+    final dividerColor = onSurface.withValues(alpha: 0.12);
+    final borderColor = (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
+    final cardShadow = BoxShadow(color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.08), blurRadius: 14, spreadRadius: 1, offset: const Offset(0, 6));
 
     return Scaffold(
       backgroundColor: bg,
@@ -640,13 +646,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           if (_replyingToCommentId != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: primary.withOpacity(0.08),
+              color: primary.withValues(alpha: 0.08),
               child: Row(
                 children: [
                   Icon(Icons.reply_rounded, size: 14, color: primary),
                   const SizedBox(width: 6),
                   Expanded(child: Text('Replying to @${_replyingToUserName ?? ''}', style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
-                  GestureDetector(onTap: _cancelReply, child: Icon(Icons.close, size: 16, color: onSurface.withOpacity(0.6))),
+                  GestureDetector(onTap: _cancelReply, child: Icon(Icons.close, size: 16, color: onSurface.withValues(alpha: 0.6))),
                 ],
               ),
             ),
@@ -656,21 +662,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             decoration: BoxDecoration(
               color: surface,
               border: Border(top: BorderSide(color: dividerColor)),
-              boxShadow: [BoxShadow(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, -4))],
+              boxShadow: [BoxShadow(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, -4))],
             ),
             child: SafeArea(
               top: false,
               child: Row(
                 children: [
                   // Current user avatar
-                  _currentUserAvatar != null && _currentUserAvatar!.isNotEmpty
-                      ? CircleAvatar(radius: 14, backgroundImage: NetworkImage(_currentUserAvatar!))
-                      : CircleAvatar(radius: 14, backgroundColor: onSurface.withOpacity(0.08), child: Icon(Icons.person, size: 16, color: primary)),
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: onSurface.withValues(alpha: 0.08),
+                    child: _currentUserAvatar != null && _currentUserAvatar!.isNotEmpty
+                        ? ClipOval(child: CachedNetworkImage(imageUrl: _currentUserAvatar!, width: 28, height: 28, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 16, color: primary)))
+                        : Icon(Icons.person, size: 16, color: primary),
+                  ),
                   const SizedBox(width: 8),
                   // Text field
                   Expanded(
                     child: Container(
-                      decoration: BoxDecoration(color: onSurface.withOpacity(0.06), borderRadius: BorderRadius.circular(20), border: Border.all(color: onSurface.withOpacity(0.10))),
+                      decoration: BoxDecoration(color: onSurface.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(20), border: Border.all(color: onSurface.withValues(alpha: 0.10))),
                       child: TextField(
                         controller: _commentController,
                         focusNode: _focusNode,
@@ -679,7 +689,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         onSubmitted: (_) => _submitComment(),
                         decoration: InputDecoration(
                           hintText: _replyingToCommentId != null ? 'Write a reply...' : 'Write a comment...',
-                          hintStyle: TextStyle(color: onSurface.withOpacity(0.45), fontSize: 14),
+                          hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.45), fontSize: 14),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         ),
@@ -689,7 +699,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   const SizedBox(width: 6),
                   // Emoji button
                   IconButton(
-                    icon: Icon(Icons.emoji_emotions_outlined, color: onSurface.withOpacity(0.55), size: 22),
+                    icon: Icon(Icons.emoji_emotions_outlined, color: onSurface.withValues(alpha: 0.55), size: 22),
                     onPressed: () => _focusNode.requestFocus(),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -704,8 +714,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           width: 36, height: 36,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: hasText ? primary : onSurface.withOpacity(0.12)),
-                          child: Icon(Icons.send_rounded, color: hasText ? Colors.white : onSurface.withOpacity(0.35), size: 18),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: hasText ? primary : onSurface.withValues(alpha: 0.12)),
+                          child: Icon(Icons.send_rounded, color: hasText ? Colors.white : onSurface.withValues(alpha: 0.35), size: 18),
                         ),
                       );
                     },
@@ -738,9 +748,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 }
                 return Row(
                   children: [
-                    authorAvatar.isNotEmpty
-                        ? CircleAvatar(radius: 14, backgroundImage: NetworkImage(authorAvatar))
-                        : CircleAvatar(radius: 14, backgroundColor: onSurface.withOpacity(0.08), child: Icon(Icons.person, size: 16, color: primary)),
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: onSurface.withValues(alpha: 0.08),
+                      child: authorAvatar.isNotEmpty
+                          ? ClipOval(child: CachedNetworkImage(imageUrl: authorAvatar, width: 28, height: 28, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 16, color: primary)))
+                          : Icon(Icons.person, size: 16, color: primary),
+                    ),
                     const SizedBox(width: 8),
                     Flexible(child: Text(authorName, style: TextStyle(color: onSurface, fontSize: 15, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
                   ],
@@ -792,7 +806,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 return SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
-                    child: Text('No comments yet. Be the first!', textAlign: TextAlign.center, style: TextStyle(color: onSurface.withOpacity(0.5))),
+                    child: Text('No comments yet. Be the first!', textAlign: TextAlign.center, style: TextStyle(color: onSurface.withValues(alpha: 0.5))),
                   ),
                 );
               }
@@ -839,7 +853,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   collectIds(c.id);
                 }
               }
-              for (var r in rootComments) collectIds(r.id);
+              for (var r in rootComments) {
+                collectIds(r.id);
+              }
               for (var doc in rawComments) {
                 if (!allHandledIds.contains(doc.id)) {
                   rootComments.add(doc);
@@ -885,7 +901,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               const SizedBox(width: 20),
-                              Container(width: 2, decoration: BoxDecoration(color: primary.withOpacity(0.4), borderRadius: BorderRadius.circular(1))),
+                              Container(width: 2, decoration: BoxDecoration(color: primary.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(1))),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
@@ -900,7 +916,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           padding: const EdgeInsets.only(left: 20, bottom: 8),
                           child: GestureDetector(
                             onTap: () => setState(() => _expandedThreadIds.remove(rootId)),
-                            child: Text('Hide replies  ▴', style: TextStyle(fontSize: 12, color: primary.withOpacity(0.7), fontWeight: FontWeight.bold)),
+                            child: Text('Hide replies  ▴', style: TextStyle(fontSize: 12, color: primary.withValues(alpha: 0.7), fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
@@ -993,9 +1009,9 @@ class _CommentsSectionHeader extends SliverPersistentHeaderDelegate {
             children: [
               Text('Comments ($commentCount)', style: TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, color: onSurface, fontSize: 15)),
               const Spacer(),
-              Icon(Icons.remove_red_eye_outlined, size: 14, color: onSurface.withOpacity(0.5)),
+              Icon(Icons.remove_red_eye_outlined, size: 14, color: onSurface.withValues(alpha: 0.5)),
               const SizedBox(width: 4),
-              Text('$viewCount', style: TextStyle(fontSize: 12, color: onSurface.withOpacity(0.5))),
+              Text('$viewCount', style: TextStyle(fontSize: 12, color: onSurface.withValues(alpha: 0.5))),
             ],
           ),
           const SizedBox(height: 6),

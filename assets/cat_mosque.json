@@ -1,0 +1,122 @@
+[
+  {
+    "id": "cat_mosque_0",
+    "title": "Mosque of Nuweiba",
+    "category": "cat_mosque",
+    "city": "Nuweiba",
+    "latitude": 29.069,
+    "longitude": 34.666,
+    "rating": 5,
+    "era": "Modern",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJWRA0BJfPqhUReNey-GKSY_0/photos/AU_ZVEF9R7EI47Af6t1BgJEqmnVxxtlRQhjjNjLAHl2VwcXK6qxAndYKenYzYL4JMAsev1UKbDA8aVvTzLSFkZnqycBeoF-7P6JibbQhrZIM7BQd1_4fTwVxdh1s3il34_EXFXlsuZ40hqZzFtc0IjL1H_Ib7g3N2lXE_DerLn2_eX8irWLgQNzrQEae3E9snTThSWBhDsWUGMiLw5IhJWsWhQVc6THxkcJufbrlNyUnbJE6jVbRkfZSqpCiHnU6IF2W_Y1N-0-uUW7XqVJLHoB01ffvYhpa5bQQXvl5pqPRIaZpx5QbtiTwwN3-tZ7tdF9H-Q0d8eozvkXzXEUo9nHgdWkkCUjz-LguspUewgbLpqyg-nnZuD0UDu-ThoK8clP7nKkzboEWIhKJL7o1p9AR6-e7b67DZ8YWxIeUJ893RGU/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 4
+  },
+  {
+    "id": "cat_mosque_1",
+    "title": "Al-Azhar Mosque",
+    "category": "cat_mosque",
+    "city": "Cairo",
+    "latitude": 30.0460991,
+    "longitude": 31.2623899,
+    "rating": 4.8,
+    "era": "Fatimid 970 AD",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ9SH986JAWBQR6FIeS8dSZ2c/photos/AU_ZVEFJbJeuUKielNQMtoy5yI3yeTLtxsaghBPBNSIOe27I-oaboiXZsmQoMoVAuYkgbyGs2McuMl9W2s3uFUhrWlihvLtaTEvJdfV_-LbHhlWfmQkRkboJOJ_JhqdB09EoZg79MZ1pxc3Ddbu7reDWV4aiw6KrBPMRdp4_kgNF6N6BvikbEKPEAWGdRRnecHL_aKa-Gcs6zfxVbGlw0eEs99moc4xRJ_u7pxNqUrQPjT4VDw04YHy9VYPJBjECMyyCfwJy5g45vkMsN2aVZ8SftJiQEcJMcnU1jm0NznyWsBQhb5zb6azvORlcBWdL6gkyc1dAPh7Q-veoFs6wd9LcbspwCmsVgSMMGA_REavG_dcyO7G98_IgFaR0qnwsUcBb2uhEySBb0WhuJ16hSG75WUX_IVKQIOr03HrbmqsGBSyWn9rj/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 19910
+  },
+  {
+    "id": "cat_mosque_2",
+    "title": "Mosque of Egypt (Masjid Misr)",
+    "category": "cat_mosque",
+    "city": "Giza",
+    "latitude": 29.9888,
+    "longitude": 31.1428,
+    "rating": 4.8,
+    "era": "Modern",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJW414vdTzVxQRF0hYExgpj70/photos/AU_ZVEEt9aaioMz9xfM0sff7wCRkk-lsHtWu7jEE9HaOvkWYURXO6x9QesMtLde_qekH2Ayo8eufgIOoc1ZDbpMzOMiNz_it73zWqrnlw7wbAUR_iBLDlCP72KFT_EmHgtcalajJnUNDHoCuKa2pNtl3O2oggbHAI5EGm8VysJzhsB9eS0tVUzZ8fOeBqZ8fMOHedD9LJ_-t-hmhSiYX1Iw-K_24NiBHUtVVmt9P1XA_mE4raaa1laHHplXEBmWqA9BJU1qRiA6bbdZ70PGKzWvTdrDpAntE9VvpIfG-yji116GmWApMh5Viyw95atYI_2HaPxrI8VHugK9cP5tKuD4uZf7zvV3HzZMAl7Yi4Zj2kQzNkRCmNnKGpcsYTye-ZbSa2TFyqnZ130y_k3QVqYpoYJGMltN3LybHU3i4C7sY_oNXKa2YxGjrta1K3OtjQm_v/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 491
+  },
+  {
+    "id": "cat_mosque_3",
+    "title": "Sidi Yakout al-Arsh Mosque",
+    "category": "cat_mosque",
+    "city": "Alexandria",
+    "latitude": 31.2059375,
+    "longitude": 29.8814531,
+    "rating": 4.8,
+    "era": "Historic",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJRdovEMvB9RQRvAKSGDj_OsY/photos/AU_ZVEEqkxQ0cYHODH7s1EjLSLGDM4CdIF_uQLf53C_g3ObaA_24DG1xAGK4ltQUliwkwbSzFw6hkH7WpjuDlh0DyPcxSt-mdllTblucOMpOZxbF0JT0Yz8XSrvnIY3gSa3qhzbotxs5fVD0flqT5Q37wLShO_pYaelRV_uPgW9WKcvI22s1pNLe8Vj4Cc0bMJOGirUrnm94AwiQoJW2z1fbPsVhrCjdrgKul206IZPy8ULVXj8llszb8YRIckm0SUwjzSmIAseY2z0Gxs_zVdDpC6WS_vBfxM8iar3fgvGjTqMAwNgcw4k7c1_fc4vz-XfM_pc0149zj9G8nbRHRCnAVurIBNj6JsBGs7T9PgeHOWpYkO2NXsd7dee8-yM03tRbT6pGyPAFwvDjomJbgxmcJq3rIXXu2Bj4r3khCURyOQmd0Q/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 105
+  },
+  {
+    "id": "cat_mosque_4",
+    "title": "Al-Sahaba Mosque",
+    "category": "cat_mosque",
+    "city": "Sharm El Sheikh",
+    "latitude": 27.8664178,
+    "longitude": 34.2952438,
+    "rating": 4.8,
+    "era": "Modern 2016",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJSVTNrS86UxQRsvjUALKtRF0/photos/AU_ZVEHhtOtgk8W80-dIL9VpO3kHJNIc9l48nXhQYsXD732IIzqvGgAn5nMuCSwdS1Yp6UUDudVct8FJQuJJv9wNm2_otZErGnplG6vpemmkrQCgM51br_PUkW0t0ZXzDZQspqaFwx8XZX6y1OXxKMZVqoPYn8QiFwaMWkyeyw_s1AqJTeZF3vyTyhPPDbmB0sOWRFJ9F8akeu9wHviUjivcBP40h6CexshGPH8AYIdLie8GhziR3q8v2fUm0auAjIJCK6_IF94FbMGlGVvsIYPUuALF54ASh4lUPkSHAF2PGLEguxacMGGwSG1KNKSN2CXhwyRvBYYov36Ev5eIMZ8DAicA2fecpTNFM96OWO-vcsckkUu2ieOFyiM-ktUCdcm-lxE3F_SD5Rc9ql1R_BzXnQWNALpavbrN5HABmZ34tT7VmbuP/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 4255
+  },
+  {
+    "id": "cat_mosque_5",
+    "title": "Al-Rahman Mosque",
+    "category": "cat_mosque",
+    "city": "Hurghada",
+    "latitude": 27.1975,
+    "longitude": 33.844,
+    "rating": 4.8,
+    "era": "Modern",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJ3dD5aKyHUhQRVaZD5lCDTc4/photos/AU_ZVEHLyXvW_MPo5vy7023CqUleVSwPX5pGIAFNrGWePpJUREvJO2ZRGP4IdOIun3WXg2ak-1KzX4ZUn-PIvWzlVR5PF___R-7CmYfBnrndyDpEwiqgrFl0c5k3mLFEP6kM5pIy2ggCBUtyBTjCt9HzHfCS3hbSpCaD2g6k8vXCVf5eb410ztf6fCekzMAcA96FC54KpSeIp5lwNTIHOAvuW10kKR0mSKvN85aowl44hwz4bLQke0P6JPs5HeAvIjQ_0UN0dUvgLkuFLbFsPQgxkPt7V4sdnZJDATUJ7mP-Ib8ByfoUBzn8qi3-1Yc4z65aydHGsHtGwUUxbbUNOGK8QfvbVy2KBrNIu_NCcsuysfY_qO-Dm7w5eieh-wbyWp2SZKGvkGYgbr4fi8sktkCWLyZ_0hKr0iBbi7G7HwaHfCd1cvgO/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 156
+  },
+  {
+    "id": "cat_mosque_6",
+    "title": "Abu Haggag Mosque",
+    "category": "cat_mosque",
+    "city": "Luxor",
+    "latitude": 25.7000032,
+    "longitude": 32.6397033,
+    "rating": 4.7,
+    "era": "Islamic 12th c",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJNdZVB9IVSRQRgXfAopPKRjk/photos/AU_ZVEHFykuQ26kyNi3FxU7V7fhbgxqufWpb4TdxUDKtL0x4qR_ITRQvJvesr7ZDE5rg7uKQrIOZX96uPbk5PEM-AqVzGhPrh0PwBhAROQaBFE8fLTPMl81yjmvme5bNDLbRIbDUXodWQ-nTsTB06rgdpbuUSo3XZs3Y7IW4MTiSMBQB047VfQmzjY5alF3bOBC5GJizn5xSQbdx1SR83Xb99Nt9WBMmp7De9lWCjEhr51APkbELxXE2pWU0r6VjXJdzNXyLxmNJFQPMBjR7gJofVDXsibWzkpJO1CSJ6Bkud7IF0FZLFXkGt1JTiAS7irDcHPrWOvQJYiGQlVeqQe3ZYFgUob-s_O-eCT2UqJK79WkmdnErZfkJz8cjyiQpEGv_Sq1EJM6YCds_bchm0alQBgnyFQaobgSZur2FMZfEKPDgog/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 1764
+  },
+  {
+    "id": "cat_mosque_7",
+    "title": "Mosque of Sidi Abu al-Hajjaj",
+    "category": "cat_mosque",
+    "city": "Aswan",
+    "latitude": 24.082,
+    "longitude": 32.888,
+    "rating": 4.7,
+    "era": "Islamic",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJNdZVB9IVSRQRgXfAopPKRjk/photos/AU_ZVEFg2Xeqwm7joXZMwwj__buxXM4xzJi8Dd1wwIdsswFW5mLGc7cMdtaq2VoZf0sSdenbaavwXJLrE7lb5OuJGHA9elP4zbDsQiZCEithZdbV63LFoEFksgjn1gfOwFO9QO5_GmfcJZerE_Wc5s28cdkrgdjZnbd3_ktLhuk16Nc5uKg2Go2wveTv3hHfX9r76yOVDXOwiPi6k5uy-SpP1opsmWpSEa77gNvt1haArMgUB-z39994dYUm-WU8ZDNoXodX82MEm148i7C7gK48BSCuqCWfwaCnsEI9gvBd4SN43Em764hMkS4BXUKm2dfTysRWWtmeoEySCAsPVqMnMt-g1Hup0U8cW1WfUC0ihVUi-hwb1x_uiSuVsl7YFlZBHQx3VN9pAXemEpkCH40FtgCISRQ1-0BlxmSdRJZYcFqZEQ/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 1764
+  },
+  {
+    "id": "cat_mosque_8",
+    "title": "Mosque of Sidi Abd al-Rahim",
+    "category": "cat_mosque",
+    "city": "Qena",
+    "latitude": 26.159,
+    "longitude": 32.725,
+    "rating": 4.7,
+    "era": "Medieval",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJnUbFvSW2ThQRlu9qGkaAPsY/photos/AU_ZVEEYmowuICfIUFd6VedVQbpDtGd1iosctCQ4Ok15A36RcmZTAfuY9CKRWBHLgoATfDF6_ibKaDtS2RL-IVkshESTbYIe8c2AmCzDoCKHZQ3sSNCaJSiM2dROqdcUn0JFg7ozEoVRkp9olFT_dCoP-5oM1DOtjGU1ATZGTxk_RIWcivYA_gqJHkcymhltH8EfdajZuRK2RBpZdmbSfJZzAH8rDqRtESohoAbjoNlxTL7jxtrR4uyOIpmIF1hDBCzMNNyUkbvOnbzoT65wxaN59Nxzm_gqY3G7WuJn4cAkBPnii16PTMW6uuLfssUNcsBoFSy7hlQaXDKs9T4ARIUZQjFlj7ZG0uYgx0oeQKmTEwv2sdiSAnV7nJBezx25l6C8nXG1zMGjVLtrTmjlm8kRYxdmVfnfeKkykuXdD10Wh5ZBaw/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 1750
+  },
+  {
+    "id": "cat_mosque_9",
+    "title": "Mosque of Zaghloul",
+    "category": "cat_mosque",
+    "city": "Port Said",
+    "latitude": 31.262,
+    "longitude": 32.284,
+    "rating": 4.7,
+    "era": "Modern",
+    "imagePath": "https://places.googleapis.com/v1/places/ChIJxbfpIQGd-RQRuEVk9jAwnAk/photos/AU_ZVEEqI76EaWBZU8qUBq4OckcYIfltyBYFOIaORI3gfyhpoBFgU4g5s-t0AQiGdhqGb0BxjnwzXQgBoLuJnkWXUpgb0j1Dj6zlw8JEHkyovhuEw_byBgNVHLN9nXOPzjxgCO-m-vwrvz0SPxOZ3FFmUW9UmHrVRrnKKsJThJeB5uwq1iEMsB5R6X4kykv5HctQuFoT4eeygNtvLpJeCkyHejuSakyGtLSxcvuubbVBKm9BosDcuAJJqXJM_kL4ZS2d2HIDKVkNLQxRml9rIWpdFJp6OmfuHdMoAtfg-Z3cmdwoaIIVF2UjqE_MbiXmBVt1lzaJ3uXWc2ztZGQjTiIYQd-yB6PDwjIu8mtI_30xutwo8_rFKNt3nqVqH-rPlXXgoESzBzPg7mnwRALtNFj9Y7-oaCYwYRUYr_Y9NbFtNJc8pg/media?maxWidthPx=400&maxHeightPx=400&key=AIzaSyDgd8w_zNKtCVvM6s4ltmE7WlxMqBpS5rY",
+    "userRatingCount": 1405
+  }
+]

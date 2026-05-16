@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 import 'dart:async';
 
@@ -166,6 +167,32 @@ class ErrorHandler {
     }
   }
 
+  // ===== PLATFORM EXCEPTION (Google Sign-In, Facebook, etc.) =====
+  static String handlePlatformError(PlatformException e) {
+    final code = e.code;
+    final msg = e.message ?? '';
+
+    // Google Sign-In error codes
+    if (code == 'network_error' || msg.contains('ApiException: 7')) {
+      return 'No internet connection. Please check your network and try again.';
+    }
+    if (code == 'sign_in_canceled' || msg.contains('12501')) {
+      return 'Sign-in was cancelled.';
+    }
+    if (code == 'sign_in_failed' || msg.contains('12500')) {
+      return 'Sign-in failed. Please try again.';
+    }
+    if (msg.contains('10') || code == 'developer_error') {
+      return 'Sign-in configuration error. Please contact support.';
+    }
+
+    // Facebook Sign-In
+    if (code == 'CANCELLED') return 'Sign-in was cancelled.';
+    if (code == 'FAILED') return 'Sign-in failed. Please try again.';
+
+    return 'Sign-in failed. Please check your connection and try again.';
+  }
+
   // ===== GENERIC ERROR HANDLER =====
   static String handleGenericError(dynamic error) {
     if (error is FirebaseAuthException) {
@@ -174,14 +201,27 @@ class ErrorHandler {
       return handleFirestoreError(error);
     } else if (error is FirebaseFunctionsException) {
       return handleCloudFunctionError(error);
+    } else if (error is PlatformException) {
+      return handlePlatformError(error);
     } else if (error is SocketException) {
-      return 'Network error. Please check your internet connection.';
+      return 'No internet connection. Please check your network and try again.';
     } else if (error is TimeoutException) {
-      return 'Request timed out. Please try again.';
+      return 'Request timed out. Please check your connection and try again.';
     } else {
-      return error.toString().isNotEmpty
-          ? error.toString()
-          : 'An unexpected error occurred.';
+      final s = error.toString().toLowerCase();
+      if (s.contains('network') || s.contains('socket') || s.contains('connection')
+          || s.contains('internet') || s.contains('host lookup')
+          || s.contains('failed host') || s.contains('no address')
+          || s.contains('unreachable') || s.contains('offline')) {
+        return 'No internet connection. Please check your network and try again.';
+      }
+      if (s.contains('timeout') || s.contains('timed out')) {
+        return 'Request timed out. Please check your connection and try again.';
+      }
+      if (s.contains('permission') || s.contains('unauthorized') || s.contains('unauthenticated')) {
+        return 'You don\'t have permission to do that. Please log in again.';
+      }
+      return 'Something went wrong. Please try again.';
     }
   }
 

@@ -12,6 +12,7 @@ class BookingEntity extends Equatable {
   final DateTime createdAt;
   final int quantity;
   final double totalAmountEGP;
+  final DateTime? sessionDate; // For recurring tours: the specific session booked
 
   const BookingEntity({
     required this.id,
@@ -25,6 +26,7 @@ class BookingEntity extends Equatable {
     required this.createdAt,
     this.quantity = 1,
     this.totalAmountEGP = 0,
+    this.sessionDate,
   });
 
   @override
@@ -40,5 +42,6 @@ class BookingEntity extends Equatable {
         createdAt,
         quantity,
         totalAmountEGP,
+        sessionDate,
       ];
 }

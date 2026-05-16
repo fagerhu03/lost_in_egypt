@@ -241,7 +241,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           ),
                         ),
                       if (tempRating > 0)
-                        Text(' ${tempRating.toInt()}+ stars', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 13)),
+                        Text(' ${tempRating.toInt()}+ stars', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -257,7 +257,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                         return ChoiceChip(
                           label: Text(f),
                           selected: isSelected,
-                          selectedColor: primary.withOpacity(0.2),
+                          selectedColor: primary.withValues(alpha: 0.2),
                           onSelected: (v) => setSheetState(() => tempFrequency = v ? f : null),
                         );
                       }).toList(),
@@ -320,7 +320,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
             ),
           ),
           Positioned.fill(
-            child: Container(color: (isDark ? AppColors.darkPatternOverlay : AppColors.lightPatternOverlay).withOpacity(isDark ? 0.85 : 0.40)),
+            child: Container(color: (isDark ? AppColors.darkPatternOverlay : AppColors.lightPatternOverlay).withValues(alpha: isDark ? 0.85 : 0.40)),
           ),
           SafeArea(
             child: Column(
@@ -339,9 +339,9 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           height: 48,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
-                            color: primary.withOpacity(isDark ? 0.25 : 0.18),
+                            color: primary.withValues(alpha: isDark ? 0.25 : 0.18),
                             borderRadius: BorderRadius.circular(30),
-                            border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.1)),
+                            border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)),
                           ),
                           child: TextField(
                             onChanged: (val) => setState(() => _searchQuery = val),
@@ -349,9 +349,9 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                             style: TextStyle(color: isDark ? onSurface : Colors.white, fontFamily: "Marcellus", fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
                               hintText: _tabIndex == 0 ? "Search tours..." : "Search guides...",
-                              hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withOpacity(0.85), fontFamily: "Marcellus"),
+                              hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontFamily: "Marcellus"),
                               border: InputBorder.none,
-                              prefixIcon: Icon(Icons.search, color: (isDark ? onSurface : Colors.white).withOpacity(0.85)),
+                              prefixIcon: Icon(Icons.search, color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85)),
                               prefixIconConstraints: const BoxConstraints(minWidth: 32),
                             ),
                           ),
@@ -363,7 +363,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
                           shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
                         ),
                         child: IconButton(
                           icon: Badge(
@@ -403,8 +403,8 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           child: Chip(
                             avatar: Icon(Icons.sort, size: 16, color: primary),
                             label: Text(_sortLabel(), style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w600)),
-                            backgroundColor: primary.withOpacity(0.08),
-                            side: BorderSide(color: primary.withOpacity(0.2)),
+                            backgroundColor: primary.withValues(alpha: 0.08),
+                            side: BorderSide(color: primary.withValues(alpha: 0.2)),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -414,8 +414,8 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                             child: InputChip(
                               label: Text('EGP ${_priceRange.start.round()}-${_priceRange.end.round()}', style: const TextStyle(fontSize: 12)),
                               onDeleted: () => setState(() => _activeFilters.remove('price')),
-                              backgroundColor: primary.withOpacity(0.08),
-                              side: BorderSide(color: primary.withOpacity(0.2)),
+                              backgroundColor: primary.withValues(alpha: 0.08),
+                              side: BorderSide(color: primary.withValues(alpha: 0.2)),
                             ),
                           ),
                         if (_activeFilters.contains('rating'))
@@ -425,8 +425,8 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                               avatar: const Icon(Icons.star, color: Colors.amber, size: 16),
                               label: Text('${_minRating.toInt()}+', style: const TextStyle(fontSize: 12)),
                               onDeleted: () => setState(() { _activeFilters.remove('rating'); _minRating = 0; }),
-                              backgroundColor: primary.withOpacity(0.08),
-                              side: BorderSide(color: primary.withOpacity(0.2)),
+                              backgroundColor: primary.withValues(alpha: 0.08),
+                              side: BorderSide(color: primary.withValues(alpha: 0.2)),
                             ),
                           ),
                         if (_activeFilters.contains('frequency') && _selectedFrequency != null && _tabIndex == 0)
@@ -435,8 +435,8 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                             child: InputChip(
                               label: Text(_selectedFrequency!, style: const TextStyle(fontSize: 12)),
                               onDeleted: () => setState(() { _activeFilters.remove('frequency'); _selectedFrequency = null; }),
-                              backgroundColor: primary.withOpacity(0.08),
-                              side: BorderSide(color: primary.withOpacity(0.2)),
+                              backgroundColor: primary.withValues(alpha: 0.08),
+                              side: BorderSide(color: primary.withValues(alpha: 0.2)),
                             ),
                           ),
                       ],
@@ -451,7 +451,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: isDark ? Colors.white.withOpacity(0.02) : Colors.black.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 4))],
+                      boxShadow: [BoxShadow(color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.black.withValues(alpha: 0.08), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
                     child: Row(
                       children: [
@@ -508,7 +508,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 80, color: Theme.of(context).colorScheme.primary.withOpacity(0.5)),
+          Icon(Icons.search_off, size: 80, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
           const SizedBox(height: 20),
           Text('No $queryType found', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),

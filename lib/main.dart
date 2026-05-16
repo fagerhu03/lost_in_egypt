@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -6,10 +9,12 @@ import 'package:flutter_paymob/flutter_paymob.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/theme/app_theme.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -25,11 +30,14 @@ import 'feature/onboarding/onboarding_screen.dart';
 import 'feature/home/notification/domain/services/local_notification_service.dart';
 
 // ✅ add these imports for saved theme
-import 'feature/home/tabs/more/data/settings_repository.dart';
-import 'feature/auth/data/models/user.dart';
-import 'feature/auth/presentation/email_verification_screen.dart';
 import 'feature/tours/presentation/pages/map_picker_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+
+/// Must be a top-level function for FCM background processing.
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Background messages are displayed natively by FCM — no extra work needed.
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +87,41 @@ void main() async {
     debugPrint("LocalNotifications Initialization Error: $e");
   }
 
+  // ── FCM setup ───────────────────────────────────────────────────────────────
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // iOS: show notifications while app is in foreground
+  if (Platform.isIOS) {
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  }
+
+  // Foreground: show via flutter_local_notifications
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (message.notification != null) {
+      LocalNotificationService().showLocalNotification(
+        id: message.hashCode,
+        title: message.notification!.title ?? 'Lost in Egypt',
+        body: message.notification!.body ?? '',
+        payload: message.data['type'],
+      );
+    }
+  });
+
+  // Background tap: update FCM token on refresh
+  FirebaseMessaging.instance.onTokenRefresh.listen((String newToken) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .update({'fcmToken': newToken});
+    }
+  });
+
   // Initialize Paymob SDK
   try {
     await FlutterPaymob.instance.initialize(
@@ -91,6 +134,17 @@ void main() async {
     debugPrint('Paymob initialization error: $e');
   }
 
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('[FlutterError] ${details.exceptionAsString()}');
+  };
+
+  // ignore: deprecated_member_use
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('[PlatformError] $error\n$stack');
+    return true;
+  };
+
   runApp(const MyApp());
 }
 
@@ -99,37 +153,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: ThemeController.mode,
-      builder: (context, mode, _) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Lost in Egypt',
+    return ScreenUtilInit(
+      designSize: const Size(390, 844),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: ThemeController.mode,
+        builder: (context, mode, _) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Lost in Egypt',
 
-          theme: AppTheme.light.copyWith(
-            textTheme:
-                ThemeData.light().textTheme.apply(fontFamily: 'Marcellus'),
-          ),
-          darkTheme: AppTheme.dark.copyWith(
-            textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Marcellus'),
-          ),
+            theme: AppTheme.light.copyWith(
+              textTheme:
+                  ThemeData.light().textTheme.apply(fontFamily: 'Marcellus'),
+            ),
+            darkTheme: AppTheme.dark.copyWith(
+              textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Marcellus'),
+            ),
 
-          themeMode: mode,
+            themeMode: mode,
 
-          home: AuthGate(),
+            home: AuthGate(),
 
-          routes: {
-            '/onboarding': (context) => const OnboardingScreen(),
-            '/login': (context) => BlocProvider<LoginBloc>(
-                  create: (_) => di.sl<LoginBloc>(),
-                  child: const LoginScreen(),
-                ),
-            '/signup': (context) => const SignupScreen(),
-            '/home': (context) => const HomeWrapper(),
-            '/map_picker': (context) => const MapPickerScreen(),
-          },
-        );
-      },
+            routes: {
+              '/onboarding': (context) => const OnboardingScreen(),
+              '/login': (context) => BlocProvider<LoginBloc>(
+                    create: (_) => di.sl<LoginBloc>(),
+                    child: const LoginScreen(),
+                  ),
+              '/signup': (context) => const SignupScreen(),
+              '/home': (context) => const HomeWrapper(),
+              '/map_picker': (context) => const MapPickerScreen(),
+            },
+          );
+        },
+      ),
     );
   }
 }

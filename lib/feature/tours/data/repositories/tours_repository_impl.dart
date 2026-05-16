@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/error_handler.dart';
 import '../../domain/repositories/tours_repository.dart';
 import '../datasources/tours_data_source.dart';
 import '../models/tour_model.dart';
@@ -33,12 +34,18 @@ class ToursRepositoryImpl implements ToursRepository {
         rating: tour.rating,
         reviewCount: tour.reviewCount,
         createdAt: tour.createdAt,
+        totalCapacity: tour.totalCapacity,
+        recurrenceType: tour.recurrenceType,
+        recurrenceDays: tour.recurrenceDays,
+        meetingTimeOfDay: tour.meetingTimeOfDay,
+        nextOccurrence: tour.nextOccurrence,
+        isArchived: tour.isArchived,
       );
 
       await remoteDataSource.createTour(tourModel, imageFiles);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -62,12 +69,18 @@ class ToursRepositoryImpl implements ToursRepository {
         rating: tour.rating,
         reviewCount: tour.reviewCount,
         createdAt: tour.createdAt,
+        totalCapacity: tour.totalCapacity,
+        recurrenceType: tour.recurrenceType,
+        recurrenceDays: tour.recurrenceDays,
+        meetingTimeOfDay: tour.meetingTimeOfDay,
+        nextOccurrence: tour.nextOccurrence,
+        isArchived: tour.isArchived,
       );
 
       await remoteDataSource.updateTour(tourModel, newImageFiles);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -77,7 +90,7 @@ class ToursRepositoryImpl implements ToursRepository {
       final tours = await remoteDataSource.getToursForGuide(guideId);
       return Right(tours);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -87,7 +100,7 @@ class ToursRepositoryImpl implements ToursRepository {
       final tours = await remoteDataSource.getAllTours();
       return Right(tours);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -114,7 +127,7 @@ class ToursRepositoryImpl implements ToursRepository {
       await remoteDataSource.bookTour(bookingModel);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Gold accent color used for FCM notification icon tint -->
+    <color name="notification_color">#D6A00F</color>
+</resources>

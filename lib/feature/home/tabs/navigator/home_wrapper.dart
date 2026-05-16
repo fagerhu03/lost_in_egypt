@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 
 import '../../../../theme/theme.dart';
@@ -11,7 +9,6 @@ import '../community/presentation/community_screen.dart';
 import '../home/home_screen.dart';
 import '../map/presentation/map_screen.dart';
 import '../more/presentation/more_screen.dart';
-import '../../../admin/presentation/pages/upcoming_bookings_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class HomeWrapper extends StatefulWidget {
@@ -28,7 +25,6 @@ class _HomeWrapperState extends State<HomeWrapper>
 
   int index = 0;
   bool _isNavBarVisible = true;
-  bool _isGuide = false;
 
   late List<Widget> _pages;
   late List<TabItem> _navItems;
@@ -67,7 +63,11 @@ class _HomeWrapperState extends State<HomeWrapper>
     });
 
     _tabController.animateTo(i);
-    _pageController.jumpToPage(i);
+    _pageController.animateToPage(
+      i,
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -94,9 +94,19 @@ class _HomeWrapperState extends State<HomeWrapper>
         : theme.colorScheme.primary;
 
     final inactive = isDark
-        ? AppColors.darkNavBar.withOpacity(0.50)
-        : theme.colorScheme.primary.withOpacity(0.50);
+        ? AppColors.darkNavBar.withValues(alpha: 0.50)
+        : theme.colorScheme.primary.withValues(alpha: 0.50);
 
+    // NO PopScope. Every previous attempt to intercept the system back here
+    // ("back from non-home tab → switch to Home") has resurfaced the bug
+    // where pressing back from any pushed sub-route (Settings, Translator,
+    // Tours, Guides, etc.) jumps to Home with a hard reload. Behaviour now:
+    //   • Press back on a sub-route → pops the sub-route (Flutter default).
+    //   • Press back on any tab when HomeWrapper is topmost → exits the app
+    //     (Android default).
+    // Switching back to Home tab can still happen via the navbar or via a
+    // deep-link calling MapFocusService.instance.tabSwitchNotifier. No
+    // automatic "back jumps to home tab" — that's what kept breaking.
     return Scaffold(
       extendBody: true,
       body: NotificationListener<UserScrollNotification>(
@@ -114,9 +124,7 @@ class _HomeWrapperState extends State<HomeWrapper>
         },
         child: PageView(
           controller: _pageController,
-          physics: (index == 2 || index == 3)
-              ? const NeverScrollableScrollPhysics()
-              : const BouncingScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           onPageChanged: (i) {
             setState(() {
               index = i;
@@ -127,42 +135,49 @@ class _HomeWrapperState extends State<HomeWrapper>
           children: _pages,
         ),
       ),
-      bottomNavigationBar: AnimatedSlide(
+      bottomNavigationBar: AnimatedSize(
         duration: const Duration(milliseconds: 200),
-        offset: _isNavBarVisible ? Offset.zero : const Offset(0, 1),
-        child: Container(
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: isDark
-                    ? Colors.black.withOpacity(0.10)
-                    : Colors.black.withOpacity(0.10),
-                blurRadius: 28,
-                spreadRadius: 6,
-                offset: const Offset(0, -10),
-              ),
-            ],
-          ),
-          child: ConvexAppBar(
-            controller: _tabController,
-            style: TabStyle.react,
-            height: 55,
-            curveSize: 90,
-            backgroundColor: bg,
-            activeColor: primary,
-            color: inactive,
-            elevation: 0,
-            items: _navItems,
-            onTap: (i) {
-              setState(() {
-                index = i;
-                _isNavBarVisible = true;
-              });
-              _tabController.animateTo(i);
-              _pageController.jumpToPage(i);
-            },
-          ),
-        ),
+        curve: Curves.easeInOut,
+        child: _isNavBarVisible
+            ? Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.10),
+                      blurRadius: 28,
+                      spreadRadius: 6,
+                      offset: const Offset(0, -10),
+                    ),
+                  ],
+                ),
+                child: ConvexAppBar(
+                  controller: _tabController,
+                  initialActiveIndex: index,
+                  style: TabStyle.react,
+                  height: 55.h,
+                  curveSize: 90,
+                  backgroundColor: bg,
+                  activeColor: primary,
+                  color: inactive,
+                  elevation: 0,
+                  items: _navItems,
+                  onTap: (i) {
+                    setState(() {
+                      index = i;
+                      _isNavBarVisible = true;
+                    });
+                    _tabController.animateTo(i);
+                    // Smooth slide between tabs — kills the hard-snap visual
+                    // ("ugly refresh") people kept complaining about.
+                    _pageController.animateToPage(
+                      i,
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }

@@ -12,23 +12,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 import 'package:lost_in_egypt/core/di/service_locator.dart';
+import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/active_tour_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/marker_filter_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_marker_service.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 import './place_detail_screen.dart';
 import './saved_places_screen.dart';
 import './near_me_sheet.dart';
 import './trip_planner_sheet.dart';
 import './map_config.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_filter_sheet.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/navigation_info_bar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/route_steps_sheet.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_bar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/map_search_results.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/sandstorm_overlay.dart';
+import 'package:lost_in_egypt/core/models/weather_context.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_bloc.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_event.dart';
@@ -71,6 +75,18 @@ class _MapScreenViewState extends State<MapScreenView>
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+
+  // ── Nearby-place nudge (Phase 7H.2) ───────────────────────────────────────
+  // Separate position stream that runs whenever the map tab is visible — NOT
+  // the live-navigation stream (_positionStream). Surfaces a non-intrusive
+  // floating card when the user passes near a high-scoring place they haven't
+  // been nudged about before.
+  StreamSubscription<Position>? _nudgeStream;
+  _NearbyNudgeData? _activeNudge;
+  Timer? _nudgeDismissTimer;
+  final Set<String> _nudgedPlaceIds = {};
+  DateTime? _lastNudgeEval;
+  bool _evaluatingNudge = false;
   
   double _sheetExtent = 0.55;
 
@@ -90,9 +106,21 @@ class _MapScreenViewState extends State<MapScreenView>
   // Expandable FAB menu state
   bool _isFabExpanded = false;
 
+  // Active solo-tour stop — gold pin on map + "Back to Tour" button
+  MapItem? _tourStop;
+
+  // View-only route: all stop markers shown, camera fitted to bounds
+  List<MapItem> _viewRouteStops = [];
+
   // Cached popular nearby (shuffled once, not on every rebuild)
   List<MapItem> _cachedPopularPlaces = [];
   int _cachedPopularSourceHash = 0;
+
+  // Weather — sandstorm overlay shown once per sandstorm event
+  bool _sandstormShown = false;
+
+  // Map type — normal / satellite toggle
+  MapType _mapType = MapType.normal;
 
   @override
   bool get wantKeepAlive => true;
@@ -100,6 +128,7 @@ class _MapScreenViewState extends State<MapScreenView>
   @override
   void initState() {
     super.initState();
+    WeatherController.weather.addListener(_onWeatherChanged);
     _initializeMapServices();
     _fetchSavedPlaceIds();
     _fetchVisitedLandmarks();
@@ -118,9 +147,27 @@ class _MapScreenViewState extends State<MapScreenView>
   Future<void> _initializeMapServices() async {
     await _markerService.loadCustomMarkerIcons();
     await _checkLocationPermission();
+    // Refresh weather with actual GPS once permission is confirmed
+    Future.microtask(() async {
+      try {
+        final perm = await Geolocator.checkPermission();
+        if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+          final pos = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.low,
+            timeLimit: const Duration(seconds: 6),
+          );
+          WeatherController.refresh(pos.latitude, pos.longitude);
+        }
+      } catch (_) {}
+    });
 
     MapFocusService.instance.focusedItemNotifier.addListener(_onFocusRequested);
     MapFocusService.instance.pendingTripNotifier.addListener(_onPendingTrip);
+    MapFocusService.instance.cameraOnlyNotifier.addListener(_onCameraFocusRequested);
+    MapFocusService.instance.tourStopNotifier.addListener(_onTourStopRequested);
+    MapFocusService.instance.viewRouteNotifier.addListener(_onViewRouteRequested);
+
+    _startNudgeMonitor();
 
     // Rebuild markers now that custom icons are loaded
     if (mounted) {
@@ -129,8 +176,12 @@ class _MapScreenViewState extends State<MapScreenView>
     }
 
     // Check if there's an item already focused before we even loaded
-    if (MapFocusService.instance.focusedItemNotifier.value != null) {
+    if (MapFocusService.instance.tourStopNotifier.value != null) {
+      _onTourStopRequested();
+    } else if (MapFocusService.instance.focusedItemNotifier.value != null) {
       _onFocusRequested();
+    } else if (MapFocusService.instance.cameraOnlyNotifier.value != null) {
+      _onCameraFocusRequested();
     } else if (MapFocusService.instance.pendingTripNotifier.value != null) {
       _onPendingTrip();
     } else {
@@ -191,11 +242,140 @@ class _MapScreenViewState extends State<MapScreenView>
     }
   }
 
+  void _onWeatherChanged() {
+    final weather = WeatherController.weather.value;
+    if (weather == null) return;
+    if (weather.isSandstorm && !_sandstormShown) {
+      _sandstormShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) SandstormOverlay.show(context);
+      });
+    } else if (!weather.isSandstorm) {
+      _sandstormShown = false;
+    }
+  }
+
+  /// Background position stream that fires every ~200 m and asks the
+  /// recommendation engine if any nearby place is a strong taste match worth
+  /// surfacing as a floating nudge card. Independent of the live-navigation
+  /// stream (`_positionStream`) which only runs when navigation is active.
+  void _startNudgeMonitor() {
+    _nudgeStream?.cancel();
+    _nudgeStream = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.medium,
+        distanceFilter: 200,
+      ),
+    ).listen((pos) => _evaluateNudge(pos), onError: (_) {});
+  }
+
+  Future<void> _evaluateNudge(Position pos) async {
+    if (!mounted || _evaluatingNudge) return;
+    // Extra throttle: at most one engine call per 60 s even if the position
+    // stream fires rapidly (rare, but happens on indoor → outdoor transitions).
+    final now = DateTime.now();
+    if (_lastNudgeEval != null &&
+        now.difference(_lastNudgeEval!) < const Duration(seconds: 60)) {
+      return;
+    }
+    _evaluatingNudge = true;
+    _lastNudgeEval = now;
+    try {
+      final allItems = context.read<MapBloc>().state.allItemsCache;
+      if (allItems.isEmpty) return;
+
+      // Pre-filter to items within 2 km of current position
+      final nearby = <MapItem>[];
+      for (final item in allItems) {
+        if (_nudgedPlaceIds.contains(item.id)) continue;
+        final d = Geolocator.distanceBetween(
+          pos.latitude, pos.longitude,
+          item.coordinate.latitude, item.coordinate.longitude,
+        );
+        if (d <= 2000) nearby.add(item);
+      }
+      if (nearby.isEmpty) return;
+
+      // Cap at 30 closest by distance for the engine call
+      nearby.sort((a, b) {
+        final da = Geolocator.distanceBetween(pos.latitude, pos.longitude,
+            a.coordinate.latitude, a.coordinate.longitude);
+        final db = Geolocator.distanceBetween(pos.latitude, pos.longitude,
+            b.coordinate.latitude, b.coordinate.longitude);
+        return da.compareTo(db);
+      });
+      final pool = nearby.take(30).toList();
+
+      final candidates = pool.map((i) {
+        // userRatingCount lives on PlaceModel concretely — pull it where
+        // available, default to 0 otherwise. Popularity is a minor weight.
+        final urc = (i is PlaceModel) ? i.userRatingCount : 0;
+        return <String, dynamic>{
+          'placeId': i.id,
+          'name': i.title,
+          'types': [i.category],
+          'tags': i.tags,
+          'rating': i.rating,
+          'userRatingCount': urc,
+          'lat': i.coordinate.latitude,
+          'lng': i.coordinate.longitude,
+        };
+      }).toList();
+
+      final result = await RecommendationService.recommendPlaces(
+        candidates: candidates,
+        context: 'nearby',
+        limit: 1,
+        userLat: pos.latitude,
+        userLng: pos.longitude,
+      );
+      if (!mounted || result == null || result.recommendations.isEmpty) return;
+
+      final top = result.recommendations.first;
+      if (top.score <= 0.65) return;
+
+      final item = pool.firstWhere((i) => i.id == top.placeId,
+          orElse: () => pool.first);
+      final distanceM = Geolocator.distanceBetween(
+        pos.latitude, pos.longitude,
+        item.coordinate.latitude, item.coordinate.longitude,
+      );
+      if (distanceM > 800) return;
+      if (_nudgedPlaceIds.contains(item.id)) return;
+
+      _nudgedPlaceIds.add(item.id);
+      _nudgeDismissTimer?.cancel();
+      _nudgeDismissTimer = Timer(const Duration(seconds: 8), () {
+        if (mounted) setState(() => _activeNudge = null);
+      });
+      setState(() {
+        _activeNudge = _NearbyNudgeData(
+          item: item,
+          distanceM: distanceM,
+          reason: top.reasons.isNotEmpty ? top.reasons.first : null,
+        );
+      });
+    } finally {
+      _evaluatingNudge = false;
+    }
+  }
+
+  void _dismissNudge() {
+    _nudgeDismissTimer?.cancel();
+    if (mounted) setState(() => _activeNudge = null);
+  }
+
   @override
   void dispose() {
+    WeatherController.weather.removeListener(_onWeatherChanged);
     _positionStream?.cancel();
+    _nudgeStream?.cancel();
+    _nudgeDismissTimer?.cancel();
     MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
     MapFocusService.instance.pendingTripNotifier.removeListener(_onPendingTrip);
+    MapFocusService.instance.cameraOnlyNotifier.removeListener(_onCameraFocusRequested);
+    MapFocusService.instance.tourStopNotifier.removeListener(_onTourStopRequested);
+    MapFocusService.instance.viewRouteNotifier.removeListener(_onViewRouteRequested);
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -222,10 +402,125 @@ class _MapScreenViewState extends State<MapScreenView>
     final item = MapFocusService.instance.focusedItemNotifier.value;
     if (item != null && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<MapBloc>().add(MapPlaceSelected(item));
+        if (!mounted) return;
+        if (_viewRouteStops.isNotEmpty) setState(() => _viewRouteStops = []);
+        final allItems = context.read<MapBloc>().state.allItemsCache;
+        final resolved = _resolveDatasetMatch(item, allItems) ?? item;
+        context.read<MapBloc>().add(MapPlaceSelected(resolved));
+        _focusOnPlace(resolved);
+      });
+    }
+  }
+
+  /// Camera-only focus: pans to coordinates without selecting a place or
+  /// opening the detail sheet. Used by curated trip stops.
+  void _onCameraFocusRequested() {
+    final item = MapFocusService.instance.cameraOnlyNotifier.value;
+    if (item != null && mounted) {
+      MapFocusService.instance.clearCameraFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         _focusOnPlace(item);
       });
     }
+  }
+
+  void _onTourStopRequested() {
+    final item = MapFocusService.instance.tourStopNotifier.value;
+    if (item != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        // Resolve against the bundled dataset so the detail sheet shows real
+        // photos, reviews, and description instead of a blank synthetic pin.
+        final allItems = context.read<MapBloc>().state.allItemsCache;
+        final resolved = _resolveDatasetMatch(item, allItems) ?? item;
+        setState(() { _tourStop = resolved; _viewRouteStops = []; });
+        context.read<MapBloc>().add(MapPlaceSelected(resolved));
+        _updateVisibleMarkers(context.read<MapBloc>().state, forceInclude: resolved);
+        _focusOnPlace(resolved);
+      });
+    }
+  }
+
+  /// Searches the bundled dataset for a pin that best matches [synthetic].
+  ///
+  /// Strategy (in order):
+  /// 1. Exact normalised-title match within 2 km — always wins.
+  /// 2. ≥2 content-word overlap within 2 km (e.g. "grand" + "museum").
+  /// 3. 1 content-word overlap within 1 km, word ≥ 4 chars (e.g. "khan", "giza").
+  ///
+  /// Using a geographic radius prevents garbage Arabic/Hebrew-titled entries
+  /// (which normalise to an empty string and would satisfy `contains("")` for
+  /// every query) from matching everything.
+  MapItem? _resolveDatasetMatch(MapItem synthetic, List<MapItem> allItems) {
+    if (allItems.isEmpty) return null;
+    final q = _normalizeTitle(synthetic.title);
+    if (q.isEmpty) return null;
+
+    final sLat = synthetic.coordinate.latitude;
+    final sLng = synthetic.coordinate.longitude;
+    final qWords = _contentWords(q);
+
+    MapItem? bestMulti;        // best candidate with ≥2 word overlap (2 km)
+    int bestMultiScore = 1;
+    MapItem? bestSingle;       // best candidate with 1 word overlap (1 km)
+    double bestSingleDist = double.infinity;
+
+    for (final item in allItems) {
+      final dist = _haversineM(
+          sLat, sLng, item.coordinate.latitude, item.coordinate.longitude);
+      if (dist > 2000) continue;
+
+      final t = _normalizeTitle(item.title);
+      if (t.isEmpty) continue;           // skip Arabic/Hebrew-only entries
+      if (t == q) return item;           // exact title → immediate win
+
+      final overlap = qWords.intersection(_contentWords(t)).length;
+
+      if (overlap >= 2 && overlap > bestMultiScore) {
+        bestMultiScore = overlap;
+        bestMulti = item;
+      }
+
+      if (overlap == 1 && dist <= 1000 && dist < bestSingleDist) {
+        final word = qWords.intersection(_contentWords(t)).first;
+        if (word.length >= 4) {
+          bestSingleDist = dist;
+          bestSingle = item;
+        }
+      }
+    }
+
+    return bestMulti ?? bestSingle;
+    // Returns null → caller falls back to the synthetic pin (AI coordinates).
+  }
+
+  /// Content words: lower-case words ≥3 chars that are not common stop words.
+  /// Filters out "el", "al", "of", "the", etc. so they don't skew overlap.
+  Set<String> _contentWords(String normalized) {
+    const stop = {
+      'el', 'al', 'the', 'of', 'in', 'at', 'and', 'or', 'a', 'an',
+      'by', 'to', 'for', 'abu', 'ibn', 'bab', 'dar',
+    };
+    return normalized
+        .split(' ')
+        .where((w) => w.length >= 3 && !stop.contains(w))
+        .toSet();
+  }
+
+  String _normalizeTitle(String s) => s
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+
+  double _haversineM(double lat1, double lng1, double lat2, double lng2) {
+    const r = 6371000.0;
+    final p1 = lat1 * pi / 180, p2 = lat2 * pi / 180;
+    final dp = (lat2 - lat1) * pi / 180, dl = (lng2 - lng1) * pi / 180;
+    final a = sin(dp / 2) * sin(dp / 2) +
+        cos(p1) * cos(p2) * sin(dl / 2) * sin(dl / 2);
+    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
   }
 
   void _onPendingTrip() {
@@ -234,11 +529,15 @@ class _MapScreenViewState extends State<MapScreenView>
       MapFocusService.instance.clearPendingTrip();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
+        final allItems = context.read<MapBloc>().state.allItemsCache;
+        final resolved =
+            stops.map((s) => _resolveDatasetMatch(s, allItems) ?? s).toList();
         setState(() {
-          _tripItinerary = stops;
+          _tripItinerary = resolved;
           _tripCurrentIndex = 0;
+          _viewRouteStops = [];
         });
-        final firstStop = stops.first;
+        final firstStop = resolved.first;
         context.read<MapBloc>().add(MapPlaceSelected(firstStop));
         _focusOnPlace(firstStop);
         context.read<MapBloc>().add(
@@ -249,6 +548,56 @@ class _MapScreenViewState extends State<MapScreenView>
           ),
         );
       });
+    }
+  }
+
+  void _onViewRouteRequested() {
+    final rawStops = MapFocusService.instance.viewRouteNotifier.value;
+    if (rawStops == null || rawStops.isEmpty || !mounted) return;
+    MapFocusService.instance.clearViewRoute();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      // Resolve synthetic stops → real dataset items so tapping a gold route
+      // pin opens the full detail sheet (photos / reviews / description).
+      final allItems = context.read<MapBloc>().state.allItemsCache;
+      final resolved = rawStops
+          .map((s) => _resolveDatasetMatch(s, allItems) ?? s)
+          .toList();
+      setState(() => _viewRouteStops = resolved);
+      _updateVisibleMarkers(context.read<MapBloc>().state);
+      await _fitBoundsToStops(resolved);
+    });
+  }
+
+  Future<void> _fitBoundsToStops(List<MapItem> stops) async {
+    if (_mapController == null) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (_mapController == null) return;
+    }
+    double minLat = stops.first.coordinate.latitude;
+    double maxLat = minLat;
+    double minLng = stops.first.coordinate.longitude;
+    double maxLng = minLng;
+    for (final s in stops) {
+      if (s.coordinate.latitude < minLat) minLat = s.coordinate.latitude;
+      if (s.coordinate.latitude > maxLat) maxLat = s.coordinate.latitude;
+      if (s.coordinate.longitude < minLng) minLng = s.coordinate.longitude;
+      if (s.coordinate.longitude > maxLng) maxLng = s.coordinate.longitude;
+    }
+    // Add a small padding so pins aren't clipped by the screen edge
+    const pad = 0.01;
+    try {
+      await _mapController!.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          LatLngBounds(
+            southwest: LatLng(minLat - pad, minLng - pad),
+            northeast: LatLng(maxLat + pad, maxLng + pad),
+          ),
+          80, // pixels of padding inside the viewport
+        ),
+      );
+    } catch (e) {
+      debugPrint('_fitBoundsToStops error: $e');
     }
   }
 
@@ -317,12 +666,19 @@ class _MapScreenViewState extends State<MapScreenView>
       final isSelected = state.selectedPlace?.id == item.id;
       final isVisited = _visitedLandmarkIds.contains(item.id) ||
           _visitedLandmarkIds.contains(item.title);
+      // When this marker IS the active tour stop, paint it gold (instead
+      // of stacking a separate gold pin on top of the regular one — that
+      // hid the dataset pin and broke the photos/reviews flow).
+      final isTourStop = _tourStop?.id == item.id;
       return Marker(
         markerId: MarkerId(item.id),
         position: LatLng(item.coordinate.latitude, item.coordinate.longitude),
-        icon: _markerService.getMarkerIconByCategory(item, isSelected),
+        icon: isTourStop
+            ? BitmapDescriptor.defaultMarkerWithHue(50.0)
+            : _markerService.getMarkerIconByCategory(item, isSelected),
         anchor: const Offset(0.5, 1.0),
         alpha: isVisited ? 0.7 : 1.0,
+        zIndexInt: isTourStop ? 10 : 0,
         onTap: () {
           debugPrint('📍 Marker tapped: ${item.title} (id: ${item.id})');
           _searchController.clear();
@@ -333,7 +689,25 @@ class _MapScreenViewState extends State<MapScreenView>
       );
     }).toSet();
 
-    if (mounted) setState(() => _markers = markers);
+    // View-route pins — gold numbered markers for each stop in the route overview
+    final viewRouteMarkers = _viewRouteStops.asMap().entries.map((entry) {
+      final stop = entry.value;
+      return Marker(
+        markerId: MarkerId('__route_stop_${entry.key}__'),
+        position: LatLng(stop.coordinate.latitude, stop.coordinate.longitude),
+        icon: BitmapDescriptor.defaultMarkerWithHue(50.0),
+        anchor: const Offset(0.5, 1.0),
+        zIndexInt: 9,
+        onTap: () {
+          context.read<MapBloc>().add(MapPlaceSelected(stop));
+          _focusOnPlace(stop);
+        },
+      );
+    }).toSet();
+
+    if (mounted) {
+      setState(() => _markers = {...markers, ...viewRouteMarkers});
+    }
   }
 
   void _updatePolylines(MapState state) {
@@ -518,10 +892,10 @@ class _MapScreenViewState extends State<MapScreenView>
     final primary = theme.colorScheme.primary;
 
     final shadowColor = isDark
-        ? Colors.white.withOpacity(0.18)
-        : Colors.black.withOpacity(0.18);
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.18);
 
-    Color chipBg({bool strong = false}) => surface.withOpacity(strong ? (isDark ? 0.92 : 0.95) : 0.92);
+    Color chipBg({bool strong = false}) => surface.withValues(alpha: strong ? (isDark ? 0.92 : 0.95) : 0.92);
 
     return BlocConsumer<MapBloc, MapState>(
       listenWhen: (previous, current) {
@@ -581,6 +955,7 @@ class _MapScreenViewState extends State<MapScreenView>
                 initialCameraPosition: MapConfig.initialPosition,
                 markers: _markers,
                 polylines: _polylines,
+                mapType: _mapType,
                 myLocationEnabled: state.isLocationPermissionGranted,
                 myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
@@ -624,7 +999,7 @@ class _MapScreenViewState extends State<MapScreenView>
               if (state.isLoading && state.allItems.isEmpty)
                 Positioned.fill(
                   child: Container(
-                    color: surface.withOpacity(0.85),
+                    color: surface.withValues(alpha: 0.85),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -639,14 +1014,14 @@ class _MapScreenViewState extends State<MapScreenView>
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: onSurface.withOpacity(0.7),
+                              color: onSurface.withValues(alpha: 0.7),
                               fontFamily: 'Marcellus',
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             'Loading places near you',
-                            style: TextStyle(fontSize: 13, color: onSurface.withOpacity(0.4)),
+                            style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.4)),
                           ),
                         ],
                       ),
@@ -695,7 +1070,7 @@ class _MapScreenViewState extends State<MapScreenView>
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: onSurface.withOpacity(0.6),
+                                color: onSurface.withValues(alpha: 0.6),
                                 letterSpacing: 0.3,
                               ),
                             ),
@@ -722,7 +1097,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       borderRadius: BorderRadius.circular(16),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.15),
+                                          color: Colors.black.withValues(alpha: 0.15),
                                           blurRadius: 12,
                                           offset: const Offset(0, 5),
                                         ),
@@ -736,7 +1111,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                           item.imagePaths.first,
                                           fit: BoxFit.cover,
                                           errorBuilder: (_, __, ___) => Container(
-                                            color: onSurface.withOpacity(0.1),
+                                            color: onSurface.withValues(alpha: 0.1),
                                             child: Icon(Icons.place, color: primary, size: 28),
                                           ),
                                         ),
@@ -748,7 +1123,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                               end: Alignment.bottomCenter,
                                               colors: [
                                                 Colors.transparent,
-                                                Colors.black.withOpacity(0.75),
+                                                Colors.black.withValues(alpha: 0.75),
                                               ],
                                               stops: const [0.3, 1.0],
                                             ),
@@ -761,7 +1136,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                           child: Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                                             decoration: BoxDecoration(
-                                              color: Colors.black.withOpacity(0.45),
+                                              color: Colors.black.withValues(alpha: 0.45),
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Text(
@@ -829,12 +1204,54 @@ class _MapScreenViewState extends State<MapScreenView>
                 ),
 
 
-              if (!state.isSearchActive && !state.isNavigationMode)
+              // ── Weather chip ──────────────────────────────────────────────
+              if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
+                Positioned(
+                  top: 110,
+                  right: 76,
+                  child: ValueListenableBuilder<WeatherContext?>(
+                    valueListenable: WeatherController.weather,
+                    builder: (_, weather, _) {
+                      if (weather == null) return const SizedBox.shrink();
+                      return GestureDetector(
+                        onTap: () => WeatherForecastSheet.show(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: chipBg(),
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
+                            border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(weather.conditionIcon, color: weather.severityColor, size: 17),
+                              const SizedBox(width: 5),
+                              Text(
+                                weather.tempDisplay,
+                                style: TextStyle(
+                                  color: weather.isOutdoorAdvisory
+                                      ? weather.severityColor
+                                      : onSurface.withValues(alpha: 0.9),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+              if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
                 Positioned(
                   top: 110,
                   right: 20,
                   child: Material(
-                    color: state.selectedUiCategoryId == 'all' ? chipBg() : primary.withOpacity(isDark ? 0.90 : 0.95),
+                    color: state.selectedUiCategoryId == 'all' ? chipBg() : primary.withValues(alpha: isDark ? 0.90 : 0.95),
                     borderRadius: BorderRadius.circular(30),
                     clipBehavior: Clip.hardEdge,
                     child: InkWell(
@@ -861,14 +1278,14 @@ class _MapScreenViewState extends State<MapScreenView>
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [BoxShadow(color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))],
-                          border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
+                          border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.tune,
-                              color: state.selectedUiCategoryId == 'all' ? onSurface.withOpacity(0.9) : Colors.white,
+                              color: state.selectedUiCategoryId == 'all' ? onSurface.withValues(alpha: 0.9) : Colors.white,
                               size: 20,
                             ),
                             if (state.selectedUiCategoryId != 'all') ...[
@@ -885,7 +1302,30 @@ class _MapScreenViewState extends State<MapScreenView>
                   ),
                 ),
 
-              if (!state.isSearchActive)
+              // Nearby place nudge — surfaces when user passes a high-scoring
+              // taste-matched place. Hidden during navigation/trip flows.
+              if (_activeNudge != null &&
+                  !state.isSearchActive &&
+                  !state.isNavigationMode &&
+                  !_isTripActive)
+                Positioned(
+                  top: 110,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: _NearbyNudgeCard(
+                      data: _activeNudge!,
+                      onTap: () {
+                        final item = _activeNudge!.item;
+                        _dismissNudge();
+                        MapFocusService.instance.triggerFocus(item);
+                      },
+                      onDismiss: _dismissNudge,
+                    ),
+                  ),
+                ),
+
+              if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
                 Positioned(
                   top: 110,
                   left: 20,
@@ -899,7 +1339,20 @@ class _MapScreenViewState extends State<MapScreenView>
                         onPressed: () => _goToUserLocation(state.isLocationPermissionGranted),
                         child: Icon(
                           Icons.my_location,
-                          color: state.isLocationPermissionGranted ? primary : onSurface.withOpacity(0.9),
+                          color: state.isLocationPermissionGranted ? primary : onSurface.withValues(alpha: 0.9),
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      FloatingActionButton.small(
+                        heroTag: "satellite_btn",
+                        backgroundColor: _mapType == MapType.satellite ? primary : chipBg(),
+                        onPressed: () => setState(() {
+                          _mapType = _mapType == MapType.normal ? MapType.satellite : MapType.normal;
+                        }),
+                        child: Icon(
+                          Icons.satellite_alt_rounded,
+                          color: _mapType == MapType.satellite ? Colors.white : primary,
                           size: 20,
                         ),
                       ),
@@ -939,11 +1392,11 @@ class _MapScreenViewState extends State<MapScreenView>
                                         chipBg: chipBg(),
                                         onTap: () async {
                                           setState(() => _isFabExpanded = false);
-                                          final itinerary = await Navigator.push<List<MapItem>>(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => TripPlannerSheet(allItems: state.allItemsCache),
-                                            ),
+                                          final itinerary = await showModalBottomSheet<List<MapItem>>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (_) => TripPlannerSheet(allItems: state.allItemsCache),
                                           );
                                           if (itinerary != null && itinerary.isNotEmpty && mounted) {
                                             setState(() {
@@ -993,11 +1446,11 @@ class _MapScreenViewState extends State<MapScreenView>
                                         chipBg: chipBg(),
                                         onTap: () async {
                                           setState(() => _isFabExpanded = false);
-                                          final selectedPlace = await Navigator.push<MapItem>(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => SavedPlacesScreen(allItems: state.allItemsCache),
-                                            ),
+                                          final selectedPlace = await showModalBottomSheet<MapItem>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (_) => SavedPlacesSheet(allItems: state.allItemsCache),
                                           );
                                           if (selectedPlace != null && mounted) {
                                             context.read<MapBloc>().add(MapPlaceSelected(selectedPlace));
@@ -1023,14 +1476,14 @@ class _MapScreenViewState extends State<MapScreenView>
                     heroTag: "reset_filter_btn",
                     backgroundColor: chipBg(),
                     onPressed: () => context.read<MapBloc>().add(const MapCategoryChanged('all')),
-                    icon: Icon(Icons.close, color: onSurface.withOpacity(0.9), size: 18),
-                    label: Text('Reset', style: TextStyle(color: onSurface.withOpacity(0.9))),
+                    icon: Icon(Icons.close, color: onSurface.withValues(alpha: 0.9), size: 18),
+                    label: Text('Reset', style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
                   ),
                 ),
               // Trip progress bar
               if (_isTripActive)
                 Positioned(
-                  top: MediaQuery.of(context).padding.top + 75,
+                  top: MediaQuery.of(context).padding.top + 12,
                   left: 16,
                   right: 16,
                   child: Container(
@@ -1040,7 +1493,7 @@ class _MapScreenViewState extends State<MapScreenView>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1075,7 +1528,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 'Stop ${_tripCurrentIndex + 1} of ${_tripItinerary.length}',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: onSurface.withOpacity(0.5),
+                                  color: onSurface.withValues(alpha: 0.5),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1160,9 +1613,69 @@ class _MapScreenViewState extends State<MapScreenView>
                             context.read<MapBloc>().add(MapNavigationCleared());
                             context.read<MapBloc>().add(const MapPlaceSelected(null));
                           },
-                          child: Icon(Icons.close, size: 20, color: onSurface.withOpacity(0.5)),
+                          child: Icon(Icons.close, size: 20, color: onSurface.withValues(alpha: 0.5)),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+
+              // ── Back to Tour button (shown when a solo plan stop is active) ──
+              if (_tourStop != null && !state.isNavigationMode)
+                Positioned(
+                  bottom: state.selectedPlace != null ? 370 : 105,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        final SavedPlan? plan =
+                            MapFocusService.instance.activeTourPlan;
+                        MapFocusService.instance.clearTourStop();
+                        setState(() => _tourStop = null);
+                        _updateVisibleMarkers(context.read<MapBloc>().state,
+                            forceInclude: state.selectedPlace);
+                        if (plan != null && mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ActiveTourScreen(plan: plan),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD6A00F),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.25),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.tour_outlined,
+                                color: Colors.white, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Back to Tour',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                fontFamily: 'Marcellus',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -1170,6 +1683,7 @@ class _MapScreenViewState extends State<MapScreenView>
               if (state.selectedPlace != null && !state.isNavigationMode)
                 PlaceDetailSheet(
                   place: state.selectedPlace!,
+                  allItems: state.allItemsCache,
                   onClose: () {
                     context.read<MapBloc>().add(const MapPlaceSelected(null));
                     setState(() => _sheetExtent = 0.55); // Reset
@@ -1221,17 +1735,17 @@ class _MapScreenViewState extends State<MapScreenView>
                                 color: surface,
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [BoxShadow(color: shadowColor, blurRadius: 20, spreadRadius: 2, offset: const Offset(0, -4))],
-                                border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
+                                border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: primary)),
                                   const SizedBox(width: 14),
-                                  Text('Finding route...', style: TextStyle(color: onSurface.withOpacity(0.7), fontSize: 15, fontWeight: FontWeight.w500)),
+                                  Text('Finding route...', style: TextStyle(color: onSurface.withValues(alpha: 0.7), fontSize: 15, fontWeight: FontWeight.w500)),
                                   const Spacer(),
                                   Material(
-                                    color: onSurface.withOpacity(0.08),
+                                    color: onSurface.withValues(alpha: 0.08),
                                     shape: const CircleBorder(),
                                     clipBehavior: Clip.hardEdge,
                                     child: InkWell(
@@ -1240,7 +1754,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       child: SizedBox(
                                         width: 36,
                                         height: 36,
-                                        child: Icon(Icons.close_rounded, color: onSurface.withOpacity(0.6), size: 20),
+                                        child: Icon(Icons.close_rounded, color: onSurface.withValues(alpha: 0.6), size: 20),
                                       ),
                                     ),
                                   ),
@@ -1262,7 +1776,7 @@ class _MapScreenViewState extends State<MapScreenView>
                         color: surface,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [BoxShadow(color: shadowColor, blurRadius: 16, spreadRadius: 1)],
-                        border: Border.all(color: primary.withOpacity(0.3)),
+                        border: Border.all(color: primary.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -1274,7 +1788,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: primary.withOpacity(0.15),
+                                    color: primary.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Icon(Icons.navigation_rounded, color: primary, size: 22),
@@ -1298,7 +1812,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       Text(
                                         '${state.currentRoute!.steps[state.currentStepIndex].distance} · ${state.currentRoute!.steps[state.currentStepIndex].duration}',
                                         style: TextStyle(
-                                          color: onSurface.withOpacity(0.5),
+                                          color: onSurface.withValues(alpha: 0.5),
                                           fontSize: 13,
                                         ),
                                       ),
@@ -1317,7 +1831,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                   Text(
                                     '${state.currentRoute!.distance} · ${state.currentRoute!.duration} total',
                                     style: TextStyle(
-                                      color: onSurface.withOpacity(0.6),
+                                      color: onSurface.withValues(alpha: 0.6),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -1331,13 +1845,13 @@ class _MapScreenViewState extends State<MapScreenView>
                               children: [
                                 Text(
                                   'Step ${state.currentStepIndex + 1}/${state.currentRoute!.steps.length}',
-                                  style: TextStyle(color: onSurface.withOpacity(0.5), fontSize: 12),
+                                  style: TextStyle(color: onSurface.withValues(alpha: 0.5), fontSize: 12),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: LinearProgressIndicator(
                                     value: (state.currentStepIndex + 1) / state.currentRoute!.steps.length,
-                                    backgroundColor: onSurface.withOpacity(0.1),
+                                    backgroundColor: onSurface.withValues(alpha: 0.1),
                                     valueColor: AlwaysStoppedAnimation(primary),
                                     minHeight: 4,
                                     borderRadius: BorderRadius.circular(2),
@@ -1345,7 +1859,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 ),
                                 const SizedBox(width: 8),
                                 Material(
-                                  color: Colors.red.withOpacity(0.1),
+                                  color: Colors.red.withValues(alpha: 0.1),
                                   shape: const CircleBorder(),
                                   clipBehavior: Clip.hardEdge,
                                   child: InkWell(
@@ -1396,34 +1910,6 @@ class _MapScreenViewState extends State<MapScreenView>
                   ),
                 ),
 
-              if (state.isLoading)
-                Positioned(
-                  left: 0, right: 0, top: 0,
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: chipBg(strong: true),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [BoxShadow(color: shadowColor, blurRadius: 16, offset: const Offset(0, 6))],
-                            border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.08)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: primary)),
-                              const SizedBox(width: 10),
-                              Text("Loading...", style: TextStyle(color: onSurface.withOpacity(0.9))),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
 
               if (state.isSearchActive)
                 Positioned.fill(
@@ -1433,11 +1919,11 @@ class _MapScreenViewState extends State<MapScreenView>
                       _searchFocusNode.unfocus();
                     },
                     behavior: HitTestBehavior.translucent,
-                    child: Container(color: Colors.black.withOpacity(0.25)),
+                    child: Container(color: Colors.black.withValues(alpha: 0.25)),
                   ),
                 ),
 
-              if (!state.isLiveNavigating)
+              if (!state.isLiveNavigating && !_isTripActive)
               Positioned(
                 top: 50, left: 0, right: 0,
                 child: IgnorePointer(
@@ -1505,7 +1991,7 @@ class _MapScreenViewState extends State<MapScreenView>
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 6,
                 offset: const Offset(2, 2),
               ),
@@ -1521,6 +2007,124 @@ class _MapScreenViewState extends State<MapScreenView>
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Nearby place nudge ───────────────────────────────────────────────────────
+//
+// Tiny floating pill card surfaced when the user walks within 800 m of a
+// high-scoring (taste-matched) place. One nudge per place per session.
+
+class _NearbyNudgeData {
+  final MapItem item;
+  final double distanceM;
+  final String? reason;
+  const _NearbyNudgeData({
+    required this.item,
+    required this.distanceM,
+    this.reason,
+  });
+}
+
+class _NearbyNudgeCard extends StatelessWidget {
+  final _NearbyNudgeData data;
+  final VoidCallback onTap;
+  final VoidCallback onDismiss;
+
+  const _NearbyNudgeCard({
+    required this.data,
+    required this.onTap,
+    required this.onDismiss,
+  });
+
+  String get _distanceLabel {
+    final m = data.distanceM;
+    if (m < 100) return '${m.round()} m away';
+    if (m < 1000) return '${(m / 10).round() * 10} m away';
+    return '${(m / 1000).toStringAsFixed(1)} km away';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+
+    return Material(
+      color: Colors.transparent,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: primary.withValues(alpha: 0.4)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.auto_awesome, size: 16, color: primary),
+              ),
+              const SizedBox(width: 10),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 220),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data.item.title,
+                      style: TextStyle(
+                        color: onSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Marcellus',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      data.reason != null
+                          ? '${data.reason} · $_distanceLabel'
+                          : _distanceLabel,
+                      style: TextStyle(
+                        color: onSurface.withValues(alpha: 0.65),
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, size: 16, color: onSurface.withValues(alpha: 0.5)),
+                padding: const EdgeInsets.only(left: 4),
+                constraints: const BoxConstraints(),
+                tooltip: 'Dismiss',
+                onPressed: onDismiss,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

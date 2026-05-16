@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/core/utils/url_utils.dart';
 import '../../domain/entities/user_entity.dart';
 
 class UserModel extends UserEntity {
@@ -23,6 +24,11 @@ class UserModel extends UserEntity {
     super.twitterHandle,
     super.phoneVerified,
     super.emailVerified,
+    super.notifBookings,
+    super.notifCommunity,
+    super.notifReviews,
+    super.notifGuideUpdates,
+    super.notifDailyDiscovery,
     super.visitedLandmarks,
     super.savedPlaces,
     required super.createdAt,
@@ -45,7 +51,7 @@ class UserModel extends UserEntity {
       lastName: data['lastName'] ?? '',
       birthDate: (data['birthDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
       role: data['role'] ?? 'tourist',
-      profileImageUrl: data['profileImageUrl'] ?? '',
+      profileImageUrl: sanitizeProfileImageUrl(data['profileImageUrl'] ?? ''),
 
       // Phone & Nationality
       phoneNumber: data['phoneNumber'] ?? '',
@@ -67,6 +73,11 @@ class UserModel extends UserEntity {
       isDarkMode: data['preferences']?['darkMode'] ?? false,
       language: data['preferences']?['language'] ?? 'English',
       preferredCurrency: data['preferences']?['currency'] ?? 'EGP',
+      notifBookings: data['notificationPreferences']?['bookings'] ?? true,
+      notifCommunity: data['notificationPreferences']?['community'] ?? true,
+      notifReviews: data['notificationPreferences']?['reviews'] ?? true,
+      notifGuideUpdates: data['notificationPreferences']?['guideUpdates'] ?? true,
+      notifDailyDiscovery: data['notificationPreferences']?['dailyDiscovery'] ?? true,
 
       // Guide Fields
       applicationStatus: data['applicationStatus'] ?? 'none',
@@ -109,6 +120,13 @@ class UserModel extends UserEntity {
         'language': language,
         'currency': preferredCurrency,
       },
+      'notificationPreferences': {
+        'bookings': notifBookings,
+        'community': notifCommunity,
+        'reviews': notifReviews,
+        'guideUpdates': notifGuideUpdates,
+        'dailyDiscovery': notifDailyDiscovery,
+      },
       'applicationStatus': applicationStatus,
       'motaLicenseNumber': motaLicenseNumber,
       'syndicateNumber': syndicateNumber,
@@ -145,6 +163,11 @@ class UserModel extends UserEntity {
     String? preferredCurrency,
     bool? phoneVerified,
     bool? emailVerified,
+    bool? notifBookings,
+    bool? notifCommunity,
+    bool? notifReviews,
+    bool? notifGuideUpdates,
+    bool? notifDailyDiscovery,
     DateTime? createdAt,
     String? applicationStatus,
     String? motaLicenseNumber,
@@ -180,6 +203,11 @@ class UserModel extends UserEntity {
       preferredCurrency: preferredCurrency ?? this.preferredCurrency,
       phoneVerified: phoneVerified ?? this.phoneVerified,
       emailVerified: emailVerified ?? this.emailVerified,
+      notifBookings: notifBookings ?? this.notifBookings,
+      notifCommunity: notifCommunity ?? this.notifCommunity,
+      notifReviews: notifReviews ?? this.notifReviews,
+      notifGuideUpdates: notifGuideUpdates ?? this.notifGuideUpdates,
+      notifDailyDiscovery: notifDailyDiscovery ?? this.notifDailyDiscovery,
       createdAt: createdAt ?? this.createdAt,
       applicationStatus: applicationStatus ?? this.applicationStatus,
       motaLicenseNumber: motaLicenseNumber ?? this.motaLicenseNumber,

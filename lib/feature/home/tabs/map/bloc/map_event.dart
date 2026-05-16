@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../home/data/models/map_item_models.dart';
 
 sealed class MapEvent extends Equatable {

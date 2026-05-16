@@ -1,10 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/onboarding/onboarding_screen.dart';
+import 'package:lost_in_egypt/feature/onboarding/taste_quiz_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/email_verification_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/create_username_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
@@ -25,21 +33,67 @@ class _AuthGateState extends State<AuthGate> {
   bool _isFirestoreEmailVerified = false;
   bool _hasUsername = true; // default true to avoid flash — corrected after load
   bool _isPhoneVerified = true; // default true to avoid flash — corrected after load
+  bool _quizCompleted = true; // default true to avoid flash — corrected after load
 
   Future<void> _applySavedTheme(User firebaseUser) async {
     try {
-      final UserModel? userModel = await _settingsRepo.fetchCurrentUser();
+      final results = await Future.wait([
+        _settingsRepo.fetchCurrentUser().timeout(const Duration(seconds: 3)),
+        SharedPreferences.getInstance(),
+      ]);
+      final userModel = results[0] as UserModel?;
+      final prefs = results[1] as SharedPreferences;
       if (userModel != null) {
         _isFirestoreEmailVerified = userModel.emailVerified;
         _hasUsername = userModel.username.isNotEmpty;
         _isPhoneVerified = userModel.phoneVerified;
       }
+      _quizCompleted = prefs.getBool('taste_quiz_completed') ?? false;
       ThemeController.setDark(userModel?.isDarkMode ?? false);
       CurrencyController.setCurrency(userModel?.preferredCurrency ?? 'EGP');
     } catch (_) {
       // fallback if fetch fails
       ThemeController.setDark(false);
       CurrencyController.setCurrency('EGP');
+    }
+
+    // ── FCM token registration (Non-blocking) ────────────────────────────
+    Future.microtask(() async {
+      try {
+        if (Platform.isIOS) {
+          await FirebaseMessaging.instance.requestPermission();
+        }
+        final token = await FirebaseMessaging.instance.getToken().timeout(const Duration(seconds: 5));
+        if (token != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .update({'fcmToken': token});
+        }
+      } catch (e) {
+        debugPrint('FCM token registration error: $e');
+      }
+    });
+
+    // ── Weather bootstrap (fire-and-forget, Cairo coords as initial anchor) ─
+    // The map screen will refresh with accurate GPS coords once it loads.
+    Future.microtask(() => WeatherController.refresh(30.0444, 31.2357));
+
+    // ── Battery optimization exemption (Android only — Samsung/OEM fix) ────
+    if (Platform.isAndroid) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final alreadyPrompted = prefs.getBool('battery_opt_prompted') ?? false;
+        if (!alreadyPrompted) {
+          final isDisabled = await DisableBatteryOptimization.isBatteryOptimizationDisabled;
+          if (isDisabled != true) {
+            await DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
+          }
+          await prefs.setBool('battery_opt_prompted', true);
+        }
+      } catch (e) {
+        debugPrint('Battery optimization check error: $e');
+      }
     }
   }
 
@@ -62,6 +116,7 @@ class _AuthGateState extends State<AuthGate> {
           _initFuture = null;
           _hasUsername = true;
           _isPhoneVerified = true;
+          _quizCompleted = true;
           CurrencyController.setCurrency('EGP');
           // ThemeController.setDark(false);
 
@@ -95,6 +150,16 @@ class _AuthGateState extends State<AuthGate> {
             // Route to username creation if the user hasn't set one yet
             if (!_hasUsername) {
               return const CreateUsernameScreen();
+            }
+            // Taste quiz — shown once after username is set, before home
+            if (!_quizCompleted) {
+              return TasteQuizScreen(
+                onDone: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('taste_quiz_completed', true);
+                  if (mounted) setState(() => _quizCompleted = true);
+                },
+              );
             }
             // Prompt phone verification (skippable — session-only skip)
             if (!_isPhoneVerified) {

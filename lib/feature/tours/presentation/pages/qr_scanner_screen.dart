@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/utils/error_handler.dart';
 
 class QrScannerScreen extends StatefulWidget {
-  const QrScannerScreen({Key? key}) : super(key: key);
+  const QrScannerScreen({super.key});
 
   @override
   State<QrScannerScreen> createState() => _QrScannerScreenState();
@@ -69,7 +71,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         alreadyCheckedIn: status == 'checked_in' || status == 'partially_checked_in',
       );
     } catch (e) {
-      _showResult(context, valid: false, message: 'Error: $e');
+      _showResult(context, valid: false, message: ErrorHandler.handleGenericError(e));
     }
   }
 
@@ -152,7 +154,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     decoration: BoxDecoration(
-                      color: (isValid ? Colors.green : Colors.red).withOpacity(0.12),
+                      color: (isValid ? Colors.green : Colors.red).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Row(
@@ -188,11 +190,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage:
-                          (avatar != null && avatar.isNotEmpty) ? NetworkImage(avatar) : null,
-                      child: (avatar == null || avatar.isEmpty)
-                          ? const Icon(Icons.person, size: 28)
-                          : null,
+                      child: (avatar != null && avatar.isNotEmpty)
+                          ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 60, height: 60, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, size: 28)))
+                          : const Icon(Icons.person, size: 28),
                     ),
                     const SizedBox(width: 14),
                     Column(
@@ -206,7 +206,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                           Text(
                             '@$username',
                             style: TextStyle(
-                                fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                fontSize: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                       ],
                     ),
@@ -238,7 +238,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         'Check in how many?',
                         style: TextStyle(
                           fontSize: 14,
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
                       const Spacer(),
@@ -310,7 +310,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         } catch (e) {
                           if (mounted) {
                             Navigator.pop(ctx);
-                            _showResult(context, valid: false, message: 'Error: $e');
+                            _showResult(context, valid: false, message: ErrorHandler.handleGenericError(e));
                           }
                         }
                       },
@@ -381,7 +381,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               margin: const EdgeInsets.only(bottom: 48),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Text(
@@ -469,7 +469,7 @@ class _SheetRow extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 10),
-          Text('$label: ', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.55), fontSize: 13)),
+          Text('$label: ', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.55), fontSize: 13)),
           Expanded(
             child: Text(value,
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),

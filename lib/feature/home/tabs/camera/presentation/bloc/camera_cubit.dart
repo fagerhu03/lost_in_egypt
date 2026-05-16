@@ -1,33 +1,32 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 import '../../data/datasources/landmark_remote_datasource.dart';
-import '../../domain/repositories/landmark_repository.dart';
-import '../../domain/repositories/place_repository.dart';
+import '../../data/repositories/landmark_repository_impl.dart';
+import '../../data/repositories/place_repository_impl.dart';
 import '../../../account/domain/badge_constants.dart';
 import '../../../account/domain/badge_model.dart';
-import '../../../../../home/notification/domain/services/local_notification_service.dart';
+import '../../../../../../core/utils/error_handler.dart';
 import 'camera_state.dart';
 
-/// Camera Cubit using ChangeNotifier for state management
-class CameraCubit extends ChangeNotifier {
-  CameraState _state = const CameraInitial();
+/// Camera Cubit using Cubit for state management
+class CameraCubit extends Cubit<CameraState> {
   CameraController? _controller;
   List<CameraDescription> _cameras = [];
   int _selectedCameraIndex = 0;
   
   // Translation & AR
   final TextRecognizer _textRecognizer = TextRecognizer();
-  OnDeviceTranslator? _translator;
-  bool _isProcessingFrame = false;
-  bool _translatorInitialized = false;
+
   
   // Language map
   static const Map<String, TranslateLanguage> _mlLanguages = {
@@ -46,34 +45,24 @@ class CameraCubit extends ChangeNotifier {
   };
 
   // Repositories
-  final LandmarkRepository _landmarkRepository;
-  final PlaceRepository _placeRepository;
+  final LandmarkRepositoryImpl _landmarkRepository;
+  final PlaceRepositoryImpl _placeRepository;
   final ImagePicker _imagePicker;
-
-  // Firebase instances (injected — never accessed as static singletons)
-  final FirebaseAuth _firebaseAuth;
-  final FirebaseFirestore _firestore;
 
   String _sourceLang = 'English';
   String _targetLang = 'Arabic';
 
   CameraCubit({
-    required LandmarkRepository landmarkRepository,
-    required PlaceRepository placeRepository,
-    required FirebaseAuth firebaseAuth,
-    required FirebaseFirestore firestore,
+    LandmarkRepositoryImpl? landmarkRepository,
+    required PlaceRepositoryImpl placeRepository,
     ImagePicker? imagePicker,
-  })  : _landmarkRepository = landmarkRepository,
+  })  : _landmarkRepository = landmarkRepository ?? LandmarkRepositoryImpl(),
         _placeRepository = placeRepository,
-        _firebaseAuth = firebaseAuth,
-        _firestore = firestore,
-        _imagePicker = imagePicker ?? ImagePicker();
-
-  /// Current state
-  CameraState get state => _state;
+        _imagePicker = imagePicker ?? ImagePicker(),
+        super(const CameraInitial());
 
   /// Check if camera is ready
-  bool get isCameraReady => _state is CameraReady;
+  bool get isCameraReady => state is CameraReady;
 
   /// Get the camera controller if ready
   CameraController? get controller => _controller;
@@ -94,16 +83,11 @@ class CameraCubit extends ChangeNotifier {
       if (_cameras.isNotEmpty) {
         await _initializeCameraController(_cameras[_selectedCameraIndex]);
       } else {
-        _emit(const CameraError('No cameras available on this device'));
+        emit(const CameraError('No cameras available on this device'));
       }
     } catch (e) {
-      _emit(CameraError('Failed to initialize camera: $e'));
+      emit(const CameraError('Failed to initialize camera. Please restart the app.'));
     }
-  }
-
-  void _emit(CameraState newState) {
-    _state = newState;
-    notifyListeners();
   }
 
   Future<void> _initializeCameraController(CameraDescription camera) async {
@@ -126,39 +110,37 @@ class CameraCubit extends ChangeNotifier {
     try {
       await _controller!.initialize();
       
-      // Initialize translator but don't fail if it doesn't work
-      await _initTranslator();
-      
-      _emit(CameraReady(controller: _controller!));
-    } catch (e) {
-      debugPrint("Error initializing camera: $e");
-      _emit(CameraError('Failed to initialize camera: $e'));
-    }
-  } 
-
-  Future<void> _initTranslator() async {
-    try {
+      // Get min and max zoom levels
+      double minZoom = 1.0;
+      double maxZoom = 1.0;
       try {
-        _translator?.close();
+        minZoom = await _controller!.getMinZoomLevel();
+        maxZoom = await _controller!.getMaxZoomLevel();
       } catch (_) {}
 
-      _translator = OnDeviceTranslator(
-        sourceLanguage: _mlLanguages[_sourceLang]!,
-        targetLanguage: _mlLanguages[_targetLang]!,
-      );
-      _translatorInitialized = true;
+      // Models will be downloaded on-demand when translating
+      
+      emit(CameraReady(
+        controller: _controller!,
+        minZoom: minZoom,
+        maxZoom: maxZoom,
+        currentZoom: minZoom,
+        flashMode: FlashMode.auto,
+      ));
     } catch (e) {
-      debugPrint("Failed to initialize translator: $e");
-      _translatorInitialized = false;
+      debugPrint("Error initializing camera: $e");
+      emit(const CameraError('Failed to initialize camera. Please restart the app.'));
     }
   }
+
+
 
   /// Flip to the other camera
   void flipCamera() {
     if (_cameras.length < 2) return;
     
-    if (_state is CameraReady) {
-      final currentState = _state as CameraReady;
+    if (state is CameraReady) {
+      final currentState = state as CameraReady;
       if (currentState.isTranslateMode) {
         toggleTranslateMode();
       }
@@ -170,36 +152,25 @@ class CameraCubit extends ChangeNotifier {
 
   /// Toggle AR translation mode
   Future<void> toggleTranslateMode() async {
-    if (_state is! CameraReady) return;
-    
-    final currentState = _state as CameraReady;
+    if (state is! CameraReady) return;
+
+    final currentState = state as CameraReady;
     final newMode = !currentState.isTranslateMode;
-    
+
     if (newMode) {
-      _emit(const CameraAnalyzing());
-      
-      try {
-        await _downloadModelsIfNeeded();
-        
-        // Re-emit CameraReady with translation mode on
-        _emit(currentState.copyWith(
-          isTranslateMode: true,
-          clearRecognizedText: true,
-          translations: {},
-          clearGalleryImage: true,
-        ));
-        
-        if (_controller != null && _controller!.value.isInitialized) {
-          _startImageStream();
-        }
-      } catch (e) {
-        debugPrint("Failed to initialize translation: $e");
-        _emit(CameraError('Failed to initialize translation models. Please check your internet connection.'));
-        return;
-      }
+      // Switch to translate mode immediately — don't show CameraAnalyzing
+      // Models download in the background; stream starts once ready
+      emit(currentState.copyWith(
+        isTranslateMode: true,
+        clearRecognizedText: true,
+        translations: {},
+        clearGalleryImage: true,
+      ));
+
+      // Don't block, download in background
+      _downloadModelsIfNeeded().catchError((_) {});
     } else {
-      _stopImageStream();
-      _emit(currentState.copyWith(
+      emit(currentState.copyWith(
         isTranslateMode: false,
         clearRecognizedText: true,
         translations: {},
@@ -213,126 +184,41 @@ class CameraCubit extends ChangeNotifier {
     final sourceMlLang = _mlLanguages[_sourceLang]!;
     final targetMlLang = _mlLanguages[_targetLang]!;
 
-    bool sourceDownloaded = await modelManager.isModelDownloaded(sourceMlLang.bcpCode);
-    bool targetDownloaded = await modelManager.isModelDownloaded(targetMlLang.bcpCode);
+    final sourceDownloaded = await modelManager.isModelDownloaded(sourceMlLang.bcpCode);
+    final targetDownloaded = await modelManager.isModelDownloaded(targetMlLang.bcpCode);
 
     if (!sourceDownloaded) {
-      await modelManager.downloadModel(sourceMlLang.bcpCode);
-    }
-    if (!targetDownloaded) {
-      await modelManager.downloadModel(targetMlLang.bcpCode);
-    }
-
-    _translator = OnDeviceTranslator(
-      sourceLanguage: sourceMlLang,
-      targetLanguage: targetMlLang,
-    );
-    _translatorInitialized = true;
-  }
-
-
-  void _startImageStream() {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-
-    _controller!.startImageStream((CameraImage image) {
-      if (_isProcessingFrame || _state is! CameraReady) return;
-      final currentState = _state as CameraReady;
-      if (!currentState.isTranslateMode) return;
-      if (currentState.galleryImagePath != null) return; // Prevent live stream from overwriting gallery mode
-      
-      _processCameraImage(image);
-    });
-  }
-
-  void _stopImageStream() {
-    if (_controller != null && _controller!.value.isStreamingImages) {
-      _controller!.stopImageStream();
-    }
-  }
-
-  Future<void> _processCameraImage(CameraImage image) async {
-    if (!_translatorInitialized || _translator == null) return;
-    
-    _isProcessingFrame = true;
-    try {
-      final WriteBuffer allBytes = WriteBuffer();
-      for (final Plane plane in image.planes) {
-        allBytes.putUint8List(plane.bytes);
-      }
-      final bytes = allBytes.done().buffer.asUint8List();
-
-      final Size imageSize = Size(
-        image.width.toDouble(),
-        image.height.toDouble(),
-      );
-      final InputImageRotation imageRotation =
-          InputImageRotationValue.fromRawValue(
-            _controller!.description.sensorOrientation,
-          ) ??
-          InputImageRotation.rotation0deg;
-      final InputImageFormat inputImageFormat =
-          InputImageFormatValue.fromRawValue(image.format.raw) ??
-              InputImageFormat.nv21;
-
-      final inputImageMetadata = InputImageMetadata(
-        size: imageSize,
-        rotation: imageRotation,
-        format: inputImageFormat,
-        bytesPerRow: image.planes[0].bytesPerRow,
-      );
-
-      final inputImage = InputImage.fromBytes(
-        bytes: bytes,
-        metadata: inputImageMetadata,
-      );
-      
-      final recognizedText = await _textRecognizer.processImage(inputImage);
-
-      if (_state is CameraReady) {
-        final currentState = _state as CameraReady;
-        if (!currentState.isTranslateMode) return;
-
-        // Perform translation
-        Map<String, String> currentTranslations = {};
-        for (final TextBlock block in recognizedText.blocks) {
-          final originalText = block.text.trim();
-          final lowerText = originalText.toLowerCase();
-
-          // Easter Egg: The Sphinx's Riddle
-          if (lowerText.contains("riddle") || lowerText.contains("sphinx")) {
-            _emit(const CameraSphinxSecret());
-            return;
-          }
-
-          if (originalText.isNotEmpty && _translator != null) {
-            try {
-              final translated = await _translator!.translateText(originalText);
-              currentTranslations[originalText] = translated;
-            } catch (e) {
-              debugPrint("Translation error: $e");
-              currentTranslations[originalText] = originalText;
-            }
-          }
-        }
-
-        _emit(currentState.copyWith(
-          recognizedText: recognizedText,
-          imageSize: imageSize,
-          translations: currentTranslations,
+      if (state is CameraAnalyzing) {
+        final currentState = state as CameraAnalyzing;
+        emit(CameraAnalyzing(
+          isGalleryImage: currentState.isGalleryImage,
+          capturedImagePath: currentState.capturedImagePath,
+          message: "Downloading $_sourceLang model (this may take a minute)...",
         ));
       }
-    } catch (e) {
-      debugPrint("Error processing frame: $e");
-    } finally {
-      _isProcessingFrame = false;
+      await modelManager.downloadModel(sourceMlLang.bcpCode).timeout(const Duration(seconds: 45));
+    }
+    
+    if (!targetDownloaded) {
+      if (state is CameraAnalyzing) {
+        final currentState = state as CameraAnalyzing;
+        emit(CameraAnalyzing(
+          isGalleryImage: currentState.isGalleryImage,
+          capturedImagePath: currentState.capturedImagePath,
+          message: "Downloading $_targetLang model (this may take a minute)...",
+        ));
+      }
+      await modelManager.downloadModel(targetMlLang.bcpCode).timeout(const Duration(seconds: 45));
     }
   }
+
+
 
   /// Pick image from gallery for landmark detection
   Future<void> pickFromGallery() async {
-    if (_state is! CameraReady) return;
+    if (state is! CameraReady) return;
     
-    final currentState = _state as CameraReady;
+    final currentState = state as CameraReady;
     if (currentState.isTranslateMode) {
       await _pickFromGalleryForTranslation();
     } else {
@@ -348,7 +234,11 @@ class CameraCubit extends ChangeNotifier {
         return;
       }
 
-      _emit(const CameraAnalyzing());
+      emit(CameraAnalyzing(
+        isGalleryImage: true,
+        capturedImagePath: image.path,
+        message: "Identifying landmark...",
+      ));
 
       // Easter Egg: The Sphinx's Riddle
       final inputImage = InputImage.fromFilePath(image.path);
@@ -356,7 +246,7 @@ class CameraCubit extends ChangeNotifier {
       for (final TextBlock block in recognizedText.blocks) {
         final lowerText = block.text.trim().toLowerCase();
         if (lowerText.contains("riddle") || lowerText.contains("sphinx")) {
-          _emit(const CameraSphinxSecret());
+          emit(const CameraSphinxSecret());
           return;
         }
       }
@@ -366,7 +256,7 @@ class CameraCubit extends ChangeNotifier {
 
       if (landmark == null) {
         // DON'T auto-return - let user dismiss manually
-        _emit(const CameraNoLandmarkFound());
+        emit(const CameraNoLandmarkFound());
         return;
       }
 
@@ -375,19 +265,19 @@ class CameraCubit extends ChangeNotifier {
 
       if (place == null) {
         // Found landmark but not in database - DON'T auto-return
-        _emit(CameraNoLandmarkFound(identifiedLabel: landmark.name));
+        emit(CameraNoLandmarkFound(identifiedLabel: landmark.name));
         return;
       }
 
       final unlockedBadge = await _recordLandmarkVisit(place.id);
-      _emit(CameraLandmarkIdentified(place, newlyUnlockedBadge: unlockedBadge));
-      
+      emit(CameraLandmarkIdentified(place, newlyUnlockedBadge: unlockedBadge, fromGallery: true));
+
     } on LandmarkDetectionException catch (e) {
       debugPrint("Landmark detection error: $e");
-      _emit(CameraError(e.message, isApiKeyError: e.isApiKeyError));
+      emit(CameraError(e.message, isApiKeyError: e.isApiKeyError));
     } catch (e) {
       debugPrint("General error: $e");
-      _emit(CameraError('Failed to analyze image: $e'));
+      emit(CameraError(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -402,13 +292,13 @@ class CameraCubit extends ChangeNotifier {
       await _processImageForTranslation(image.path);
     } catch (e) {
       debugPrint("Gallery translation error: $e");
-      _emit(CameraError('Failed to translate gallery image: $e'));
+      emit(CameraError(ErrorHandler.handleGenericError(e)));
     }
   }
 
   Future<void> _processImageForTranslation(String imagePath) async {
     try {
-      _emit(const CameraAnalyzing(isGalleryImage: true));
+      emit(const CameraAnalyzing(isGalleryImage: true, message: "Translating..."));
 
       final inputImage = InputImage.fromFilePath(imagePath);
       
@@ -424,46 +314,25 @@ class CameraCubit extends ChangeNotifier {
       for (final TextBlock block in recognizedText.blocks) {
         final lowerText = block.text.trim().toLowerCase();
         if (lowerText.contains("riddle") || lowerText.contains("sphinx")) {
-          _emit(const CameraSphinxSecret());
+          emit(const CameraSphinxSecret());
           return;
         }
       }
 
-      // Try to download translation models if not already done
-      if (!_translatorInitialized || _translator == null) {
-        try {
-          final modelManager = OnDeviceTranslatorModelManager();
-          
-          final sourceMlLang = _mlLanguages[_sourceLang]!;
-          final targetMlLang = _mlLanguages[_targetLang]!;
-
-          bool sourceDownloaded = await modelManager.isModelDownloaded(sourceMlLang.bcpCode);
-          bool targetDownloaded = await modelManager.isModelDownloaded(targetMlLang.bcpCode);
-
-          if (!sourceDownloaded) {
-            await modelManager.downloadModel(sourceMlLang.bcpCode);
-          }
-          if (!targetDownloaded) {
-            await modelManager.downloadModel(targetMlLang.bcpCode);
-          }
-
-          _translator = OnDeviceTranslator(
-            sourceLanguage: sourceMlLang,
-            targetLanguage: targetMlLang,
-          );
-          _translatorInitialized = true;
-        } catch (e) {
-          debugPrint("Failed to initialize translation: $e");
-          _emit(CameraError('Translation not available: $e. Please check your internet connection.'));
-          return;
-        }
+      // Ensure models are downloaded before translating
+      try {
+        await _downloadModelsIfNeeded();
+      } catch (e) {
+        debugPrint("Failed to initialize translation: $e");
+        emit(const CameraError('Could not download translation models. Please check your internet connection.'));
+        return;
       }
 
       Map<String, String> currentTranslations = await _translateExistingText(recognizedText);
 
       if (recognizedText.blocks.any((block) => block.text.trim().isNotEmpty)) {
         // Show the gallery image with AR overlay!
-        _emit(CameraReady(
+        emit(CameraReady(
           controller: _controller,
           isTranslateMode: true,
           recognizedText: recognizedText,
@@ -474,25 +343,37 @@ class CameraCubit extends ChangeNotifier {
           galleryImagePath: imagePath,
         ));
       } else {
-        _emit(const CameraError('No text found in the selected image.'));
+        emit(const CameraError('No text found in the selected image.'));
       }
     } catch (e) {
       debugPrint("Translation error: $e");
-      _emit(CameraError('Failed to translate image: $e'));
+      emit(CameraError(ErrorHandler.handleGenericError(e)));
     }
   }
 
   /// Capture and analyze current camera view
   Future<void> captureAndAnalyze() async {
     if (_controller == null || !_controller!.value.isInitialized) return;
-    if (_state is CameraAnalyzing) return;
+    if (state is CameraAnalyzing) return;
 
-    final wasTranslateMode = _state is CameraReady && (_state as CameraReady).isTranslateMode;
+    final wasTranslateMode = state is CameraReady && (state as CameraReady).isTranslateMode;
 
     try {
-      _emit(wasTranslateMode ? const CameraAnalyzing(isGalleryImage: true) : const CameraAnalyzing());
+      HapticFeedback.lightImpact();
+
+      // Emit a transient capturing state
+      emit(wasTranslateMode 
+          ? const CameraAnalyzing(isGalleryImage: true, message: "Capturing...") 
+          : const CameraAnalyzing(message: "Capturing..."));
 
       final XFile imageFile = await _controller!.takePicture();
+
+      // Re-emit with the captured image path so the UI can show a still preview
+      if (!wasTranslateMode) {
+        emit(CameraAnalyzing(capturedImagePath: imageFile.path, message: "Identifying landmark..."));
+      } else {
+        emit(const CameraAnalyzing(isGalleryImage: true, message: "Translating..."));
+      }
       
       // If we are translating, just freeze and show translation immediately
       // without triggering Gamification gamification or API calls.
@@ -507,7 +388,7 @@ class CameraCubit extends ChangeNotifier {
       for (final TextBlock block in recognizedText.blocks) {
         final lowerText = block.text.trim().toLowerCase();
         if (lowerText.contains("riddle") || lowerText.contains("sphinx")) {
-          _emit(const CameraSphinxSecret());
+          emit(const CameraSphinxSecret());
           return;
         }
       }
@@ -516,7 +397,7 @@ class CameraCubit extends ChangeNotifier {
 
       if (landmark == null) {
         // DON'T auto-return - let user dismiss manually
-        _emit(const CameraNoLandmarkFound());
+        emit(const CameraNoLandmarkFound());
         return;
       }
 
@@ -524,102 +405,120 @@ class CameraCubit extends ChangeNotifier {
 
       if (place == null) {
         // Found landmark but not in database - DON'T auto-return
-        _emit(CameraNoLandmarkFound(identifiedLabel: landmark.name));
+        emit(CameraNoLandmarkFound(identifiedLabel: landmark.name));
         return;
       }
 
       final unlockedBadge = await _recordLandmarkVisit(place.id);
-      _emit(CameraLandmarkIdentified(place, newlyUnlockedBadge: unlockedBadge));
+      emit(CameraLandmarkIdentified(place, newlyUnlockedBadge: unlockedBadge));
       
     } on LandmarkDetectionException catch (e) {
       debugPrint("Landmark detection error: $e");
-      _emit(CameraError(e.message, isApiKeyError: e.isApiKeyError));
+      emit(CameraError(e.message, isApiKeyError: e.isApiKeyError));
     } catch (e) {
       debugPrint("Capture error: $e");
-      _emit(CameraError('Failed to analyze image: $e'));
+      emit(CameraError(ErrorHandler.handleGenericError(e)));
     }
   }
 
   /// Change source language for translation
   Future<void> setSourceLanguage(String lang) async {
     _sourceLang = lang;
-    if (_state is CameraReady && (_state as CameraReady).isTranslateMode) {
-      final currentState = _state as CameraReady;
+    if (state is CameraReady && (state as CameraReady).isTranslateMode) {
+      final currentState = state as CameraReady;
       
-      // If we have a gallery image, keep the text and just re-translate
-      // Otherwise list clears for live camera
-      _emit(currentState.galleryImagePath != null 
-          ? const CameraAnalyzing(isGalleryImage: true) 
-          : const CameraAnalyzing());
+      if (currentState.galleryImagePath != null) {
+        emit(CameraAnalyzing(
+          isGalleryImage: true, 
+          message: "Translating...",
+          capturedImagePath: currentState.galleryImagePath,
+        ));
           
-      try {
-        await _downloadModelsIfNeeded();
-        
-        if (currentState.galleryImagePath != null && currentState.recognizedText != null) {
-          final newTranslations = await _translateExistingText(currentState.recognizedText!);
-          _emit(currentState.copyWith(
-            sourceLang: lang,
-            translations: newTranslations,
-          ));
-        } else {
-          _emit(currentState.copyWith(
-            sourceLang: lang,
-            clearRecognizedText: true,
-            translations: {},
-          ));
+        try {
+          await _downloadModelsIfNeeded();
+          
+          if (currentState.recognizedText != null) {
+            final newTranslations = await _translateExistingText(currentState.recognizedText!);
+            emit(currentState.copyWith(
+              sourceLang: lang,
+              translations: newTranslations,
+            ));
+          }
+        } catch (e) {
+          emit(const CameraError('Failed to download language model. Please check your internet connection.'));
         }
-      } catch (e) {
-        _emit(CameraError('Failed to download language model: $e'));
+      } else {
+        emit(currentState.copyWith(
+          sourceLang: lang,
+          clearRecognizedText: true,
+          translations: {},
+        ));
+        
+        // Run in background, don't block the live camera
+        _downloadModelsIfNeeded().catchError((_) {});
       }
-    } else if (_state is CameraReady) {
-      _emit((_state as CameraReady).copyWith(sourceLang: lang));
+    } else if (state is CameraReady) {
+      emit((state as CameraReady).copyWith(sourceLang: lang));
+      _downloadModelsIfNeeded().catchError((_) {});
     }
   }
 
   /// Change target language for translation
   Future<void> setTargetLanguage(String lang) async {
     _targetLang = lang;
-    if (_state is CameraReady && (_state as CameraReady).isTranslateMode) {
-      final currentState = _state as CameraReady;
+    if (state is CameraReady && (state as CameraReady).isTranslateMode) {
+      final currentState = state as CameraReady;
       
-      // If we have a gallery image, keep the text and just re-translate
-      // Otherwise list clears for live camera
-      _emit(currentState.galleryImagePath != null 
-          ? const CameraAnalyzing(isGalleryImage: true) 
-          : const CameraAnalyzing());
+      if (currentState.galleryImagePath != null) {
+        emit(CameraAnalyzing(
+          isGalleryImage: true, 
+          message: "Translating...",
+          capturedImagePath: currentState.galleryImagePath,
+        ));
           
-      try {
-        await _downloadModelsIfNeeded();
-        
-        if (currentState.galleryImagePath != null && currentState.recognizedText != null) {
-          final newTranslations = await _translateExistingText(currentState.recognizedText!);
-          _emit(currentState.copyWith(
-            targetLang: lang,
-            translations: newTranslations,
-          ));
-        } else {
-          _emit(currentState.copyWith(
-            targetLang: lang,
-            clearRecognizedText: true,
-            translations: {},
-          ));
+        try {
+          await _downloadModelsIfNeeded();
+          
+          if (currentState.recognizedText != null) {
+            final newTranslations = await _translateExistingText(currentState.recognizedText!);
+            emit(currentState.copyWith(
+              targetLang: lang,
+              translations: newTranslations,
+            ));
+          }
+        } catch (e) {
+          emit(const CameraError('Failed to download language model. Please check your internet connection.'));
         }
-      } catch (e) {
-        _emit(CameraError('Failed to download language model: $e'));
+      } else {
+        emit(currentState.copyWith(
+          targetLang: lang,
+          clearRecognizedText: true,
+          translations: {},
+        ));
+        
+        // Run in background, don't block the live camera
+        _downloadModelsIfNeeded().catchError((_) {});
       }
-    } else if (_state is CameraReady) {
-      _emit((_state as CameraReady).copyWith(targetLang: lang));
+    } else if (state is CameraReady) {
+      emit((state as CameraReady).copyWith(targetLang: lang));
+      _downloadModelsIfNeeded().catchError((_) {});
     }
   }
 
   Future<Map<String, String>> _translateExistingText(RecognizedText text) async {
     Map<String, String> currentTranslations = {};
-    if (_translator == null) return currentTranslations;
+    
+    // Create local translator to guarantee correct languages and prevent race conditions
+    final translator = OnDeviceTranslator(
+      sourceLanguage: _mlLanguages[_sourceLang]!,
+      targetLanguage: _mlLanguages[_targetLang]!,
+    );
+    
     for (final TextBlock block in text.blocks) {
       final originalText = block.text.trim();
       if (originalText.isNotEmpty) {
         try {
-          final translated = await _translator!.translateText(originalText);
+          final translated = await translator.translateText(originalText);
           currentTranslations[originalText] = translated;
         } catch (e) {
           debugPrint("Translation error: $e");
@@ -627,13 +526,24 @@ class CameraCubit extends ChangeNotifier {
         }
       }
     }
+    
+    try {
+      await translator.close();
+    } catch (_) {}
+    
     return currentTranslations;
   }
 
   /// Return to ready state - called when user dismisses dialog
   void resetToReady() {
     if (_controller != null && _controller!.value.isInitialized) {
-      _emit(CameraReady(controller: _controller!));
+      // Re-query current states just in case
+      final flash = _controller!.value.flashMode;
+      emit(CameraReady(
+        controller: _controller!,
+        flashMode: flash,
+        isTranslateMode: false,
+      ));
     } else {
       initCamera();
     }
@@ -641,8 +551,8 @@ class CameraCubit extends ChangeNotifier {
 
   /// Clear gallery image and return to live camera
   void clearGalleryImage() {
-    if (_state is CameraReady) {
-      _emit((_state as CameraReady).copyWith(
+    if (state is CameraReady) {
+      emit((state as CameraReady).copyWith(
         clearGalleryImage: true,
         clearRecognizedText: true,
         translations: {},
@@ -650,15 +560,62 @@ class CameraCubit extends ChangeNotifier {
     }
   }
 
+  /// Toggle flash mode
+  Future<void> toggleFlash() async {
+    if (state is! CameraReady || _controller == null) return;
+    
+    final currentState = state as CameraReady;
+    FlashMode nextMode;
+    switch (currentState.flashMode) {
+      case FlashMode.auto:
+        nextMode = FlashMode.always;
+        break;
+      case FlashMode.always:
+        nextMode = FlashMode.torch;
+        break;
+      case FlashMode.torch:
+        nextMode = FlashMode.off;
+        break;
+      case FlashMode.off:
+        nextMode = FlashMode.auto;
+        break;
+    }
+
+    try {
+      await _controller!.setFlashMode(nextMode);
+      emit(currentState.copyWith(flashMode: nextMode));
+    } catch (e) {
+      debugPrint('Error toggling flash: $e');
+    }
+  }
+
+  /// Set zoom level
+  Future<void> setZoomLevel(double zoom) async {
+    if (state is! CameraReady || _controller == null) return;
+    final currentState = state as CameraReady;
+
+    double safeZoom = zoom;
+    if (safeZoom < currentState.minZoom) safeZoom = currentState.minZoom;
+    if (safeZoom > currentState.maxZoom) safeZoom = currentState.maxZoom;
+
+    try {
+      // Don't await the native call to prevent lag during continuous pinch/slider updates
+      _controller!.setZoomLevel(safeZoom).catchError((_) {});
+      emit(currentState.copyWith(currentZoom: safeZoom));
+    } catch (e) {
+      debugPrint('Error setting zoom: $e');
+    }
+  }
+
   /// Gamification: Record visited landmark
   Future<BadgeModel?> _recordLandmarkVisit(String placeId) async {
     try {
-      final user = _firebaseAuth.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) return null;
 
-      final userRef = _firestore.collection('users').doc(user.uid);
-
-      return await _firestore.runTransaction((transaction) async {
+      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      
+      return await FirebaseFirestore.instance.runTransaction((transaction) async {
         final doc = await transaction.get(userRef);
         if (!doc.exists) return null;
         
@@ -671,9 +628,7 @@ class CameraCubit extends ChangeNotifier {
           
           final newCount = visited.length;
           try {
-            final badge = BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
-            _sendBadgeNotification(user.uid, badge);
-            return badge;
+            return BadgeConstants.allBadges.firstWhere((b) => b.requiredVisits == newCount);
           } catch (_) {
             return null;
           }
@@ -686,39 +641,13 @@ class CameraCubit extends ChangeNotifier {
     }
   }
 
-  void _sendBadgeNotification(String uid, BadgeModel badge) {
-    // Local OS popup immediately
-    LocalNotificationService().showLocalNotification(
-      id: badge.id.hashCode.abs() % 100000,
-      title: 'Badge Unlocked! 🏆',
-      body: 'You earned the "${badge.name}" badge!',
-    );
-    // Persist in Firestore so it shows in the notification screen
-    _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('notifications')
-        .add({
-      'recipientId': uid,
-      'senderId': 'system',
-      'senderName': 'Lost in Egypt',
-      'senderAvatar': '',
-      'title': 'Badge Unlocked! 🏆',
-      'message': 'You earned the "${badge.name}" badge!',
-      'type': 'badge',
-      'deepLinkTargetId': badge.id,
-      'isRead': false,
-      'timestamp': FieldValue.serverTimestamp(),
-    }).catchError((e) => debugPrint('Badge notification error: $e'));
-  }
-
   /// Gamification: Unlock Secret Badge
   Future<BadgeModel?> unlockSecretBadge(String badgeId) async {
     try {
-      final user = _firebaseAuth.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) return null;
 
-      final userRef = _firestore.collection('users').doc(user.uid);
+      final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
       
       // Get current data first (reads from cache if offline)
       final doc = await userRef.get(const GetOptions(source: Source.serverAndCache));
@@ -730,11 +659,9 @@ class CameraCubit extends ChangeNotifier {
       if (!visited.contains(badgeId)) {
         // Fire and forget update to support offline unlocks
         userRef.update({'visitedLandmarks': FieldValue.arrayUnion([badgeId])});
-
+        
         try {
-          final badge = BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
-          _sendBadgeNotification(user.uid, badge);
-          return badge;
+          return BadgeConstants.allBadges.firstWhere((b) => b.id == badgeId);
         } catch (_) {
           return null;
         }
@@ -747,11 +674,9 @@ class CameraCubit extends ChangeNotifier {
   }
 
   @override
-  void dispose() {
-    _stopImageStream();
+  Future<void> close() async {
     _controller?.dispose();
     _textRecognizer.close();
-    _translator?.close();
-    super.dispose();
+    return super.close();
   }
 }

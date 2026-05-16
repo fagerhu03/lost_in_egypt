@@ -19,12 +19,12 @@ class EmptyNotificationsView extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: primary.withOpacity(0.10),
+              color: primary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(
               Icons.mail_outline,
-              color: primary.withOpacity(0.85),
+              color: primary.withValues(alpha: 0.85),
               size: 34,
             ),
           ),
@@ -32,7 +32,7 @@ class EmptyNotificationsView extends StatelessWidget {
           Text(
             "No notifications yet",
             style: TextStyle(
-              color: onSurface.withOpacity(0.87),
+              color: onSurface.withValues(alpha: 0.87),
               fontFamily: "Marcellus",
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -43,7 +43,7 @@ class EmptyNotificationsView extends StatelessWidget {
             "Your notifications will appear here once\nyou start getting them.",
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: onSurface.withOpacity(0.55),
+              color: onSurface.withValues(alpha: 0.55),
               fontFamily: "Marcellus",
               fontSize: 12,
               height: 1.3,

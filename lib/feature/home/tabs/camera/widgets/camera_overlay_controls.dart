@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:camera/camera.dart';
 import '../presentation/bloc/camera_cubit.dart';
 import '../presentation/bloc/camera_state.dart';
 
@@ -16,24 +16,27 @@ class CameraOverlayControls extends StatelessWidget {
   });
 
   Widget _buildLanguageDropdown({
+    required BuildContext context,
     required String value,
     required Function(String) onChanged,
   }) {
     final languages = CameraCubit.availableLanguages.keys.toList();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.black38,
+        color: isDark ? Colors.black54 : Colors.white70,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white30),
+        border: Border.all(color: isDark ? Colors.white30 : Colors.black26),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
-          dropdownColor: Colors.black87,
-          style: const TextStyle(color: Colors.white, fontSize: 12),
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+          dropdownColor: isDark ? Colors.black87 : Colors.white,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 12),
+          icon: Icon(Icons.arrow_drop_down, color: isDark ? Colors.white : Colors.black87),
           isExpanded: true,
           onChanged: (String? newValue) {
             if (newValue != null) {
@@ -71,10 +74,22 @@ class CameraOverlayControls extends StatelessWidget {
                     if (showGalleryImage) {
                       cubit.clearGalleryImage();
                     } else {
-                      MapFocusService.instance.switchToTab(0);
+                      Navigator.of(context).maybePop();
                     }
                   },
                 ),
+                if (!showGalleryImage)
+                  IconButton(
+                    icon: Icon(
+                      state.flashMode == FlashMode.off ? Icons.flash_off :
+                      state.flashMode == FlashMode.auto ? Icons.flash_auto :
+                      state.flashMode == FlashMode.always ? Icons.flash_on :
+                      Icons.highlight, // Torch
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    onPressed: () => cubit.toggleFlash(),
+                  ),
                 Text(
                   showGalleryImage ? "Translation" : "Lens",
                   style: const TextStyle(
@@ -103,12 +118,14 @@ class CameraOverlayControls extends StatelessWidget {
                   const SizedBox(height: 16),
                   if (state.isTranslateMode)
                     _buildLanguageDropdown(
+                      context: context,
                       value: state.sourceLang,
                       onChanged: (newLang) => cubit.setSourceLanguage(newLang),
                     ),
                   const SizedBox(height: 8),
                   if (state.isTranslateMode)
                     _buildLanguageDropdown(
+                      context: context,
                       value: state.targetLang,
                       onChanged: (newLang) => cubit.setTargetLanguage(newLang),
                     ),
@@ -134,9 +151,11 @@ class CameraOverlayControls extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Material(
-                          color: Colors.white.withOpacity(0.92),
+                          color: Theme.of(context).colorScheme.surface,
                           shape: const CircleBorder(),
                           clipBehavior: Clip.hardEdge,
+                          elevation: 4,
+                          shadowColor: Colors.black.withValues(alpha: 0.5),
                           child: InkWell(
                             onTap: () => cubit.pickFromGallery(),
                             customBorder: const CircleBorder(),
@@ -171,13 +190,13 @@ class CameraOverlayControls extends StatelessWidget {
                                 padding: const EdgeInsets.all(4),
                                 child: Container(
                                   decoration: const BoxDecoration(
-                                    color: Color(0xFFFFFDF4),
+                                    color: Colors.white,
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
-                                    Icons.search,
-                                    size: 36,
-                                    color: Color(0xFF4A3D2E),
+                                    Icons.camera_alt,
+                                    size: 32,
+                                    color: Colors.black87,
                                   ),
                                 ),
                               ),
@@ -185,37 +204,32 @@ class CameraOverlayControls extends StatelessWidget {
                           )
                         else
                           const SizedBox(width: 84),
-                        const SizedBox(width: 50),
-                      ],
-                    ),
-                  ),
-                  // AR Translate Button
-                  Positioned(
-                    left: MediaQuery.of(context).size.width * 0.21,
-                    top: -20, // Slightly above the capture/gallery buttons
-                    child: Material(
-                      color: state.isTranslateMode
-                          ? const Color(0xFF4A3D2E)
-                          : Colors.white.withOpacity(0.92),
-                      shape: const CircleBorder(),
-                      clipBehavior: Clip.hardEdge,
-                      elevation: 2,
-                      shadowColor: Colors.black.withOpacity(0.2),
-                      child: InkWell(
-                        onTap: () => cubit.toggleTranslateMode(),
-                        customBorder: const CircleBorder(),
-                        child: SizedBox(
-                          width: 44,
-                          height: 44,
-                          child: Icon(
-                            Icons.translate,
-                            size: 20,
-                            color: state.isTranslateMode
-                                ? Colors.white
-                                : const Color(0xFF4A3D2E),
+                        // AR Translate Button
+                        Material(
+                          color: state.isTranslateMode
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.surface,
+                          shape: const CircleBorder(),
+                          clipBehavior: Clip.hardEdge,
+                          elevation: 6,
+                          shadowColor: Colors.black.withValues(alpha: 0.5),
+                          child: InkWell(
+                            onTap: () => cubit.toggleTranslateMode(),
+                            customBorder: const CircleBorder(),
+                            child: SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: Icon(
+                                Icons.translate,
+                                size: 22,
+                                color: state.isTranslateMode
+                                    ? Theme.of(context).colorScheme.onPrimary
+                                    : Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ],

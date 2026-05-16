@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../feature/admin/data/models/report_model.dart';
 import '../../feature/admin/domain/repositories/reports_repository.dart';
+import '../utils/error_handler.dart';
 
 class UniversalReportDialog extends StatefulWidget {
   final ReportType reportType;
@@ -10,12 +11,12 @@ class UniversalReportDialog extends StatefulWidget {
   final ReportsRepository repository; // Pass the repository or use GetIt
   
   const UniversalReportDialog({
-    Key? key,
+    super.key,
     required this.reportType,
     required this.reportedItemId,
     this.reportedItemOwnerId,
     required this.repository,
-  }) : super(key: key);
+  });
 
   static Future<void> show(
     BuildContext context, {
@@ -106,7 +107,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit report: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     } finally {
@@ -181,7 +182,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                         visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                         activeColor: const Color(0xFFC79A00), // App primary color roughly
                       );
-                    }).toList(),
+                    }),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _descriptionController,

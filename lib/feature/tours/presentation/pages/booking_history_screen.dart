@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
+import '../../../../core/utils/error_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -21,13 +23,17 @@ import '../../../../feature/reviews/data/models/review_model.dart';
 import '../../../../feature/home/notification/data/datasources/notifications_data_source.dart';
 import '../../../../feature/home/notification/data/models/notification_model.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/guide_location_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../../../core/utils/map_style_helper.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main screen
 // ─────────────────────────────────────────────────────────────────────────────
 
 class BookingHistoryScreen extends StatelessWidget {
-  const BookingHistoryScreen({Key? key}) : super(key: key);
+  const BookingHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -99,21 +105,9 @@ class _BookingTabState extends State<_BookingTab> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: 60, color: theme.colorScheme.error),
-                const SizedBox(height: 12),
-                const Text('Error loading bookings'),
-                const SizedBox(height: 8),
-                Text(
-                  'Check the debug console for a Firestore index link.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                ),
-              ],
-            ),
+          return AppErrorWidget(
+            message: 'Could not load bookings.\nCheck your connection and try again.',
+            icon: Icons.book_outlined,
           );
         }
 
@@ -135,18 +129,18 @@ class _BookingTabState extends State<_BookingTab> {
                 Icon(
                   widget.upcoming ? Icons.explore_outlined : Icons.history,
                   size: 80,
-                  color: theme.colorScheme.onSurface.withOpacity(0.2),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   widget.upcoming ? 'No upcoming tours' : 'No past tours',
-                  style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                  style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                 ),
                 if (widget.upcoming) ...[
                   const SizedBox(height: 8),
                   Text(
                     'Explore tours and book your next adventure!',
-                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withOpacity(0.35)),
+                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
                   ),
                 ],
               ],
@@ -233,10 +227,10 @@ class _BookingCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.08)),
+              border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.08)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -254,18 +248,18 @@ class _BookingCard extends StatelessWidget {
                         : Container(
                             width: 56,
                             height: 56,
-                            color: theme.colorScheme.surfaceVariant,
+                            color: theme.colorScheme.surfaceContainerHighest,
                             child: Icon(Icons.landscape, color: theme.colorScheme.onSurfaceVariant),
                           ),
                   ),
                   title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   subtitle: location.isNotEmpty
-                      ? Text(location, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)))
+                      ? Text(location, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)))
                       : null,
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.12),
+                      color: statusColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -283,7 +277,7 @@ class _BookingCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         date != null ? DateFormat('MMM d, yyyy · h:mm a').format(date) : 'TBD',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                       const Spacer(),
                       Text(
@@ -361,7 +355,7 @@ class _CountdownBannerState extends State<_CountdownBanner> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 16),
       decoration: BoxDecoration(
-        color: widget.theme.colorScheme.primaryContainer.withOpacity(0.4),
+        color: widget.theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
@@ -396,12 +390,12 @@ class BookingDetailScreen extends StatefulWidget {
   final bool upcoming;
 
   const BookingDetailScreen({
-    Key? key,
+    super.key,
     required this.bookingId,
     required this.bookingData,
     required this.tourData,
     required this.upcoming,
-  }) : super(key: key);
+  });
 
   @override
   State<BookingDetailScreen> createState() => _BookingDetailScreenState();
@@ -546,7 +540,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       if (mounted) {
         setState(() => _cancelling = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to cancel: $e')),
+          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
         );
       }
     }
@@ -687,6 +681,17 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         userName: userName,
                         userImage: userImage,
                       ));
+                      final reviewSignal = rating >= 4 ? 'visit' : rating <= 2 ? 'dismiss' : null;
+                      if (reviewSignal != null) {
+                        RecommendationService.recordSignal(
+                          placeId: tourId,
+                          placeName: widget.tourData['title'] ?? '',
+                          types: ['tourist_attraction'],
+                          tags: ['cultural'],
+                          signalType: reviewSignal,
+                          source: 'review',
+                        );
+                      }
                       if (mounted) {
                         Navigator.pop(ctx);
                         setState(() => _hasReviewed = true);
@@ -697,7 +702,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                     } catch (e) {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $e')),
+                          SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
                         );
                       }
                     }
@@ -709,6 +714,16 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showGuideTrackingSheet(String guideId, String guideName) {
+    if (guideId.isEmpty) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _GuideTrackingSheet(guideId: guideId, guideName: guideName),
     );
   }
 
@@ -741,7 +756,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unable to re-book: $e')),
+        SnackBar(content: Text(ErrorHandler.handleGenericError(e))),
       );
     }
   }
@@ -783,7 +798,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   ? CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover)
                   : Container(
                       color: theme.colorScheme.primaryContainer,
-                      child: Icon(Icons.landscape, size: 80, color: theme.colorScheme.primary.withOpacity(0.3)),
+                      child: Icon(Icons.landscape, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
                     ),
             ),
           ),
@@ -806,7 +821,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.12),
+                          color: statusColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -908,7 +923,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                             style: TextStyle(
                               fontFamily: 'monospace',
                               fontSize: 13,
-                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -916,7 +931,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                             'Show this to your guide upon arrival',
                             style: TextStyle(
                               fontSize: 12,
-                              color: theme.colorScheme.onSurface.withOpacity(0.4),
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -966,11 +981,45 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                                 const Text('View Meeting Point',
                                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                                 Text('Opens in Map tab',
-                                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                               ],
                             ),
                             const Spacer(),
                             Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // ── Track guide live location ────────────────────────────
+                  if (status == 'confirmed' && widget.upcoming) ...[
+                    const Divider(),
+                    InkWell(
+                      onTap: () => _showGuideTrackingSheet(
+                        widget.tourData['guideId'] ?? '',
+                        _guideData != null
+                            ? '${_guideData!['firstName'] ?? ''} ${_guideData!['lastName'] ?? ''}'.trim()
+                            : 'Guide',
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          children: [
+                            Icon(Icons.location_on_rounded, color: Colors.green.shade600),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Track Guide Live',
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                                Text('See your guide\'s real-time location',
+                                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                              ],
+                            ),
+                            const Spacer(),
+                            Icon(Icons.chevron_right, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                           ],
                         ),
                       ),
@@ -1059,16 +1108,16 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         icon: Icon(Icons.cancel_outlined,
-                            size: 18, color: _cancelling ? Colors.red.withOpacity(0.4) : Colors.red),
+                            size: 18, color: _cancelling ? Colors.red.withValues(alpha: 0.4) : Colors.red),
                         label: Text('Cancel Booking',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: _cancelling ? Colors.red.withOpacity(0.4) : Colors.red,
+                              color: _cancelling ? Colors.red.withValues(alpha: 0.4) : Colors.red,
                             )),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                              color: _cancelling ? Colors.red.withOpacity(0.3) : Colors.red.withOpacity(0.6)),
+                              color: _cancelling ? Colors.red.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.6)),
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
@@ -1112,7 +1161,7 @@ class _InfoRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label,
-                  style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                  style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
               const SizedBox(height: 2),
               Text(value,
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -1157,8 +1206,9 @@ class _GuideRow extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundImage: (avatar != null && avatar.isNotEmpty) ? NetworkImage(avatar) : null,
-              child: (avatar == null || avatar.isEmpty) ? const Icon(Icons.person) : null,
+              child: (avatar != null && avatar.isNotEmpty)
+                  ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 48, height: 48, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person)))
+                  : const Icon(Icons.person),
             ),
             const SizedBox(width: 12),
             Column(
@@ -1173,17 +1223,17 @@ class _GuideRow extends StatelessWidget {
                           const Icon(Icons.star, size: 14, color: Colors.amber),
                           const SizedBox(width: 4),
                           Text('${rating.toStringAsFixed(1)} ($reviewCount)',
-                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                         ],
                       )
                     : Text('New Guide',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
               ],
             ),
             const Spacer(),
             Icon(Icons.verified, size: 18, color: theme.colorScheme.primary),
             const SizedBox(width: 4),
-            Icon(Icons.chevron_right, size: 18, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+            Icon(Icons.chevron_right, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
           ],
         ),
       ),
@@ -1224,7 +1274,7 @@ class _WeatherRow extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -1235,7 +1285,7 @@ class _WeatherRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Weather on tour day',
-                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                 const SizedBox(height: 2),
                 Text('$maxT°C / $minT°C',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
@@ -1250,43 +1300,196 @@ class _WeatherRow extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Live guide location sheet
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _GuideTrackingSheet extends StatefulWidget {
+  final String guideId;
+  final String guideName;
+
+  const _GuideTrackingSheet({required this.guideId, required this.guideName});
+
+  @override
+  State<_GuideTrackingSheet> createState() => _GuideTrackingSheetState();
+}
+
+class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
+  GoogleMapController? _mapController;
+  bool _cameraMoved = false;
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.6,
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          // Handle + title
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: Column(
+              children: [
+                Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Icon(Icons.location_on_rounded, color: Colors.green.shade600, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${widget.guideName} – Live Location',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+          // Map
+          Expanded(
+            child: StreamBuilder<Map<String, double>?>(
+              stream: GuideLocationService.instance.watchGuide(widget.guideId),
+              builder: (context, snap) {
+                final loc = snap.data;
+
+                if (loc != null && !_cameraMoved && _mapController != null) {
+                  _cameraMoved = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _mapController?.animateCamera(
+                      CameraUpdate.newLatLngZoom(LatLng(loc['lat']!, loc['lng']!), 15),
+                    );
+                  });
+                }
+
+                final markers = loc == null
+                    ? <Marker>{}
+                    : {
+                        Marker(
+                          markerId: const MarkerId('guide'),
+                          position: LatLng(loc['lat']!, loc['lng']!),
+                          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+                          infoWindow: InfoWindow(title: widget.guideName),
+                        ),
+                      };
+
+                return ClipRRect(
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        initialCameraPosition: const CameraPosition(
+                          target: LatLng(30.0444, 31.2357),
+                          zoom: 12,
+                        ),
+                        markers: markers,
+                        myLocationButtonEnabled: false,
+                        zoomControlsEnabled: false,
+                        onMapCreated: (controller) {
+                          _mapController = controller;
+                          MapStyleHelper.applyTheme(controller, context);
+                          if (loc != null && !_cameraMoved) {
+                            _cameraMoved = true;
+                            controller.animateCamera(
+                              CameraUpdate.newLatLngZoom(LatLng(loc['lat']!, loc['lng']!), 15),
+                            );
+                          }
+                        },
+                      ),
+                      if (loc == null)
+                        Positioned(
+                          bottom: 20,
+                          left: 20,
+                          right: 20,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: primary.withValues(alpha: 0.15)),
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 16, height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: primary),
+                                ),
+                                const SizedBox(width: 10),
+                                const Expanded(
+                                  child: Text(
+                                    'Waiting for guide to share their location…',
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ActionChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
   final ThemeData theme;
-  final Color? color;
 
   const _ActionChip({
     required this.icon,
     required this.label,
     required this.onTap,
     required this.theme,
-    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? theme.colorScheme.primary;
+    final c = theme.colorScheme.primary;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(24),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: c.withOpacity(0.1),
+          color: c.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: c.withOpacity(0.3)),
+          border: Border.all(color: c.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: onTap == null ? c.withOpacity(0.4) : c),
+            Icon(icon, size: 16, color: onTap == null ? c.withValues(alpha: 0.4) : c),
             const SizedBox(width: 6),
             Text(label,
                 style: TextStyle(
                   fontSize: 13,
-                  color: onTap == null ? c.withOpacity(0.4) : c,
+                  color: onTap == null ? c.withValues(alpha: 0.4) : c,
                   fontWeight: FontWeight.w600,
                 )),
           ],

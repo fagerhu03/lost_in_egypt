@@ -25,7 +25,7 @@ class MapActionButtons extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
-    Color chipBg() => surface.withOpacity(isDark ? 0.92 : 0.92);
+    Color chipBg() => surface.withValues(alpha: isDark ? 0.92 : 0.92);
 
     return Stack(
       children: [
@@ -42,7 +42,7 @@ class MapActionButtons extends StatelessWidget {
                 Icons.my_location,
                 color: state.isLocationPermissionGranted
                     ? primary
-                    : onSurface.withOpacity(0.9),
+                    : onSurface.withValues(alpha: 0.9),
               ),
             ),
           ),
@@ -58,7 +58,7 @@ class MapActionButtons extends StatelessWidget {
                 Icons.my_location,
                 color: state.isLocationPermissionGranted
                     ? primary
-                    : onSurface.withOpacity(0.9),
+                    : onSurface.withValues(alpha: 0.9),
               ),
             ),
           ),
@@ -74,9 +74,9 @@ class MapActionButtons extends StatelessWidget {
               onPressed: () =>
                   context.read<MapBloc>().add(const MapCategoryChanged('all')),
               icon: Icon(Icons.close,
-                  color: onSurface.withOpacity(0.9), size: 18),
+                  color: onSurface.withValues(alpha: 0.9), size: 18),
               label: Text('Reset',
-                  style: TextStyle(color: onSurface.withOpacity(0.9))),
+                  style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
             ),
           ),
       ],

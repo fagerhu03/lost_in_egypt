@@ -64,7 +64,7 @@ class ContactUsScreen extends StatelessWidget {
           Text(
             "Reach out through any of the channels below and we'll get back to you as soon as possible.",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: onSurface.withOpacity(0.65), height: 1.5),
+            style: TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.65), height: 1.5),
           ),
           const SizedBox(height: 32),
 
@@ -99,7 +99,7 @@ class ContactUsScreen extends StatelessWidget {
             onTap: () => _launch("https://instagram.com/lostinegypt.app", context),
           ),
           const SizedBox(height: 32),
-          Divider(color: onSurface.withOpacity(0.1)),
+          Divider(color: onSurface.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
           Text(
             "Response times",
@@ -155,7 +155,7 @@ class _ContactTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: gold.withOpacity(0.15)),
+            border: Border.all(color: gold.withValues(alpha: 0.15)),
           ),
           child: Row(
             children: [
@@ -163,7 +163,7 @@ class _ContactTile extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: primary.withOpacity(0.12),
+                  color: primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: primary, size: 20),
@@ -183,7 +183,7 @@ class _ContactTile extends StatelessWidget {
                     Text(subtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          color: onSurface.withOpacity(0.6),
+                          color: onSurface.withValues(alpha: 0.6),
                         )),
                   ],
                 ),
@@ -210,7 +210,7 @@ class _ResponseRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 14, color: onSurface.withOpacity(0.7))),
+          Text(label, style: TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.7))),
           Text(time,
               style: TextStyle(
                 fontSize: 14,

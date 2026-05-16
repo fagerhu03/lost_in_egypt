@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">lost_in_egypt</string>
+    <string name="app_name">Lost In Egypt</string>
     <string name="facebook_app_id">4144174049245026</string>
     <string name="facebook_client_token">6f9588d25e4988f20778a40e6a38a9b9</string>
     <string name="fb_login_protocol_scheme">fb1234567890</string> </resources>

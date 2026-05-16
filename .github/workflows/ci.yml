@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main, backend]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    name: Analyze & Unit Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.x'
+          channel: stable
+          cache: true
+
+      - name: Create dummy .env for CI
+        run: touch .env
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Unit tests
+        run: flutter test test/unit/ --no-pub

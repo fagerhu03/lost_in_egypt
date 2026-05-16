@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../core/error/failures.dart';
+import '../../../../../core/utils/error_handler.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../../domain/repositories/notifications_repository.dart';
 import '../datasources/notifications_data_source.dart';
@@ -28,7 +29,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       await dataSource.markAllAsRead(userId);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -38,7 +39,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       await dataSource.markAsRead(userId, notificationId);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -62,7 +63,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       await dataSource.sendNotification(model);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 
@@ -72,7 +73,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       await dataSource.deleteNotification(userId, notificationId);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(ErrorHandler.handleGenericError(e)));
     }
   }
 

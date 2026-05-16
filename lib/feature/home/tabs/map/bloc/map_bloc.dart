@@ -4,7 +4,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../data/map_repository.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/navigation_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/navigation_service.dart'
+    show NavigationException, NavigationFailureKind, NavigationService;
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 import '../../home/data/models/map_item_models.dart';
 
@@ -59,7 +60,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       ));
     } catch (e) {
       debugPrint('❌ Error loading map items: $e');
-      emit(state.copyWith(isLoading: false, error: 'Error loading places: $e'));
+      emit(state.copyWith(isLoading: false, error: 'Failed to load places. Please check your connection.'));
     }
   }
 
@@ -153,7 +154,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       return;
     }
 
-    // Set to loading and clear place/search
     emit(state.copyWithClearPlace(
       isNavigationMode: true,
       isLoadingRoute: true,
@@ -164,9 +164,25 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     ));
 
     try {
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      // Try live GPS first; fall back to last known position so routing works
+      // even when getCurrentPosition times out (e.g. weak indoor signal).
+      Position? position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        ).timeout(const Duration(seconds: 8));
+      } catch (_) {
+        position = await Geolocator.getLastKnownPosition();
+      }
+
+      if (position == null) {
+        emit(state.copyWithClearPlace(
+          isLoadingRoute: false,
+          isNavigationMode: false,
+          error: 'Could not determine your location. Please enable GPS and try again.',
+        ));
+        return;
+      }
 
       final origin = LatLng(position.latitude, position.longitude);
       final destination = LatLng(
@@ -181,25 +197,31 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         mode: event.mode,
       );
 
-      if (route == null) {
-        emit(state.copyWithClearPlace(
-          isLoadingRoute: false,
-          isNavigationMode: false,
-          error: 'Could not find a route. Please try again.',
-        ));
-      } else {
-        emit(state.copyWith(
-          isLoadingRoute: false,
-          currentRoute: route,
-          selectedPlace: state.selectedPlace,
-          navigationDestination: event.destination, 
-        ));
-      }
-    } catch (e) {
+      emit(state.copyWith(
+        isLoadingRoute: false,
+        currentRoute: route,
+        selectedPlace: state.selectedPlace,
+        navigationDestination: event.destination,
+      ));
+    } on NavigationException catch (e) {
+      final msg = switch (e.kind) {
+        NavigationFailureKind.noRoute =>
+          'No route found. Try a different travel mode or check the destination.',
+        NavigationFailureKind.networkError =>
+          'No internet connection. Please check your network and try again.',
+        NavigationFailureKind.apiError =>
+          'Navigation service error. Please try again later.',
+      };
       emit(state.copyWithClearPlace(
         isLoadingRoute: false,
         isNavigationMode: false,
-        error: 'Navigation error: $e',
+        error: msg,
+      ));
+    } catch (_) {
+      emit(state.copyWithClearPlace(
+        isLoadingRoute: false,
+        isNavigationMode: false,
+        error: 'Navigation failed. Please try again.',
       ));
     }
   }

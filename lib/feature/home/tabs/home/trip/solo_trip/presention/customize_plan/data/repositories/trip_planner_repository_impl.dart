@@ -12,7 +12,7 @@ class TripPlannerRepositoryImpl implements TripPlannerRepository {
     final interests =
     plan.interests.isEmpty ? 'Not selected' : plan.interests.join(', ');
     final areas = plan.areas.isEmpty ? 'Not selected' : plan.areas.join(', ');
-    final tripTime = plan.tripTime ?? 'Not selected';
+    final tripTimes = plan.tripTimes.isEmpty ? 'Not selected' : plan.tripTimes.join(' & ');
 
     return '''
 Create a personalized travel plan in Egypt based on these user preferences:
@@ -21,7 +21,7 @@ Create a personalized travel plan in Egypt based on these user preferences:
 - Current location or preferred start point: $location
 - Interests: $interests
 - Areas to visit: $areas
-- Preferred time: $tripTime
+- Preferred time: $tripTimes
 - Budget range: ${plan.minBudget.toInt()} to ${plan.maxBudget.toInt()} EGP
 
 Return a practical itinerary with suggestions that match the selected interests, timing, and budget.

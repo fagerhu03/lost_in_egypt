@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 
 class SavedCardsScreen extends StatefulWidget {
-  const SavedCardsScreen({Key? key}) : super(key: key);
+  const SavedCardsScreen({super.key});
 
   @override
   State<SavedCardsScreen> createState() => _SavedCardsScreenState();
@@ -49,17 +49,17 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.credit_card_off, size: 80, color: theme.colorScheme.onSurface.withOpacity(0.2)),
+                        Icon(Icons.credit_card_off, size: 80, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
                         const SizedBox(height: 16),
                         Text(
                           'No saved cards yet',
-                          style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Cards are saved automatically after\nyour first successful payment.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withOpacity(0.35)),
+                          style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
                         ),
                       ],
                     ),
@@ -89,7 +89,7 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: primary.withOpacity(0.2),
+                            color: primary.withValues(alpha: 0.2),
                             blurRadius: 12,
                             offset: const Offset(0, 6),
                           ),
@@ -120,7 +120,7 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Text('DEFAULT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),

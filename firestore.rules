@@ -118,12 +118,63 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // ── Recommendation engine ─────────────────────────────────────────────────
+    // Signals written only by Cloud Functions (admin SDK bypasses rules).
+    // User may read their own log; admin may read all.
+    match /users/{userId}/signals/{sigId} {
+      allow read: if isAuth() && (isSelf(userId) || isAdmin());
+      allow write: if false;
+    }
+
+    // Aggregate place affinity — authenticated read, server-only write.
+    match /place_affinity/{placeId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
+    // Item-item neighbor map (collaborative filtering) — server-only write.
+    match /place_neighbors/{placeId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
+    // Cold-start country priors — server-only write.
+    match /country_priors/{countryCode} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
     // ── Notifications (per-user subcollection) ────────────────────────────────
     match /users/{userId}/notifications/{notificationId} {
       allow read: if isAuth() && isSelf(userId);
       // Any authenticated user can push a notification to another user
       // (needed for like/comment/booking triggers from the client)
       allow write: if isAuth();
+    }
+
+    // ── Solo plans (per-user subcollection) ───────────────────────────────────
+    // Users can fully manage their own plans; no one else can touch them.
+    match /users/{userId}/solo_plans/{planId} {
+      allow read, write: if isAuth() && isSelf(userId);
+    }
+
+    // ── Places API photo cache ────────────────────────────────────────────────
+    // Cached by authenticated clients; one doc per curated trip ID (slug).
+    match /place_photos/{tripId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+
+    // ── AI story cache (per-landmark slug, 90-day TTL) ────────────────────────
+    match /place_stories/{slug} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+
+    // ── Rate limits (Cloud Functions internal — server SDK bypasses rules) ─────
+    // Client never reads or writes this; deny everything to be explicit.
+    match /_rate_limits/{docId} {
+      allow read, write: if false;
     }
   }
 }

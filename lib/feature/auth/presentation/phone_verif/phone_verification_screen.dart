@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pinput/pinput.dart';
+import '../../../../core/utils/error_handler.dart';
 
 class PhoneVerificationScreen extends StatefulWidget {
   /// Called after successful verification. If null, falls back to Navigator.pop(true).
@@ -81,7 +82,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
         },
       );
     } catch (e) {
-      _showError("Error sending code: $e");
+      _showError(ErrorHandler.handleGenericError(e));
       setState(() => _isLoading = false);
     }
   }
@@ -145,7 +146,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       }
       setState(() => _isLoading = false);
     } catch (e) {
-      _showError("Error saving to database: $e");
+      _showError(ErrorHandler.handleGenericError(e));
       setState(() => _isLoading = false);
     }
   }
@@ -183,7 +184,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: goldColor.withOpacity(0.1),
+                color: goldColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

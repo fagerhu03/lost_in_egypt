@@ -14,6 +14,7 @@ class BookingModel extends BookingEntity {
     required super.createdAt,
     super.quantity = 1,
     super.totalAmountEGP = 0,
+    super.sessionDate,
   });
 
   factory BookingModel.fromMap(Map<String, dynamic> data, String documentId) {
@@ -29,6 +30,7 @@ class BookingModel extends BookingEntity {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       quantity: (data['quantity'] as num?)?.toInt() ?? 1,
       totalAmountEGP: (data['totalAmountEGP'] as num?)?.toDouble() ?? 0,
+      sessionDate: (data['sessionDate'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -44,6 +46,7 @@ class BookingModel extends BookingEntity {
       'createdAt': Timestamp.fromDate(createdAt),
       'quantity': quantity,
       'totalAmountEGP': totalAmountEGP,
+      if (sessionDate != null) 'sessionDate': Timestamp.fromDate(sessionDate!),
     };
   }
 }

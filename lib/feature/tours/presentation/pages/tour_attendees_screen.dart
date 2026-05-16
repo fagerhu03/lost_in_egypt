@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
@@ -9,7 +9,7 @@ class TourAttendeesScreen extends StatelessWidget {
   final String tourId;
   final String tourTitle;
 
-  const TourAttendeesScreen({Key? key, required this.tourId, required this.tourTitle}) : super(key: key);
+  const TourAttendeesScreen({super.key, required this.tourId, required this.tourTitle});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class TourAttendeesScreen extends StatelessWidget {
                   Text(
                     'A Firestore index may be needed.\nCheck debug console for the link.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                   ),
                 ],
               ),
@@ -58,14 +58,14 @@ class TourAttendeesScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.people_outline, size: 80, color: theme.colorScheme.onSurface.withOpacity(0.2)),
+                  Icon(Icons.people_outline, size: 80, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
                   const SizedBox(height: 16),
-                  Text('No bookings yet', style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                  Text('No bookings yet', style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                   const SizedBox(height: 8),
                   Text(
                     'When travelers book this tour,\nthey\'ll appear here.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withOpacity(0.35)),
+                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
                   ),
                 ],
               ),
@@ -80,7 +80,7 @@ class TourAttendeesScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [primary.withOpacity(0.15), primary.withOpacity(0.05)],
+                    colors: [primary.withValues(alpha: 0.15), primary.withValues(alpha: 0.05)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -90,9 +90,9 @@ class TourAttendeesScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _statItem('${confirmed.length}', 'Confirmed', Colors.green),
-                    Container(width: 1, height: 40, color: primary.withOpacity(0.2)),
+                    Container(width: 1, height: 40, color: primary.withValues(alpha: 0.2)),
                     _statItem('${cancelled.length}', 'Cancelled', Colors.red),
-                    Container(width: 1, height: 40, color: primary.withOpacity(0.2)),
+                    Container(width: 1, height: 40, color: primary.withValues(alpha: 0.2)),
                     _statItem('${bookings.length}', 'Total', primary),
                   ],
                 ),
@@ -122,7 +122,7 @@ class TourAttendeesScreen extends StatelessWidget {
     return Column(
       children: [
         Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: TextStyle(fontSize: 12, color: color.withOpacity(0.8))),
+        Text(label, style: TextStyle(fontSize: 12, color: color.withValues(alpha: 0.8))),
       ],
     );
   }
@@ -194,10 +194,10 @@ class _AttendeeCardState extends State<_AttendeeCard> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.06)),
+        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.06)),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.white : Colors.black).withOpacity(0.03),
+            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -218,20 +218,21 @@ class _AttendeeCardState extends State<_AttendeeCard> {
                 : null,
             leading: CircleAvatar(
               radius: 24,
-              backgroundImage: profileUrl.isNotEmpty ? NetworkImage(profileUrl) : null,
-              backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
-              child: profileUrl.isEmpty ? Icon(Icons.person, color: theme.colorScheme.primary) : null,
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+              child: profileUrl.isNotEmpty
+                  ? ClipOval(child: CachedNetworkImage(imageUrl: profileUrl, width: 48, height: 48, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, color: theme.colorScheme.primary)))
+                  : Icon(Icons.person, color: theme.colorScheme.primary),
             ),
             title: Text(name.isNotEmpty ? name : 'Unknown User', style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (username.isNotEmpty)
-                  Text('@$username', style: TextStyle(fontSize: 12, color: theme.colorScheme.primary.withOpacity(0.8), fontWeight: FontWeight.w500)),
+                  Text('@$username', style: TextStyle(fontSize: 12, color: theme.colorScheme.primary.withValues(alpha: 0.8), fontWeight: FontWeight.w500)),
                 if (email.isNotEmpty)
-                  Text(email, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                  Text(email, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                 if (phone.isNotEmpty)
-                  Text(phone, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                  Text(phone, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
               ],
             ),
             trailing: Row(
@@ -240,7 +241,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: paymentStatus == 'paid' ? Colors.green.withOpacity(0.12) : Colors.orange.withOpacity(0.12),
+                    color: paymentStatus == 'paid' ? Colors.green.withValues(alpha: 0.12) : Colors.orange.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -255,7 +256,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
                 if (_userData != null) ...[
                   const SizedBox(width: 4),
                   Icon(Icons.chevron_right, size: 18,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
                 ],
               ],
             ),

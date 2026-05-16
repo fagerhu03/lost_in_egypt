@@ -1,6 +1,5 @@
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/domain/place_importance.dart';
-import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 
 class MarkerFilterService {
   

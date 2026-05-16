@@ -1,21 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_model.dart';
-import 'package:lost_in_egypt/feature/admin/presentation/pages/admin_dashboard_screen.dart' as lost_in_egypt_admin;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:lost_in_egypt/feature/tours/presentation/bloc/guide_tours_cubit.dart' as lost_in_egypt_tours;
-import 'package:lost_in_egypt/feature/tours/presentation/pages/guide_dashboard_screen.dart' as lost_in_egypt_tours;
 import 'package:lost_in_egypt/feature/guide_application/presentation/bloc/apply_guide_cubit.dart' as lost_in_egypt_guide_cubit;
 import 'package:lost_in_egypt/feature/guide_application/presentation/pages/apply_guide_screen.dart' as lost_in_egypt_guide_screen;
 import 'package:lost_in_egypt/feature/tours/presentation/pages/booking_history_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/your_plan_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/saved_posts_screen.dart';
+import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/my_plans_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -26,6 +26,8 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   UserModel? _user;
+  // Top 3 canonical taste keys (descending). Populated from the same user doc.
+  List<String> _topTasteKeys = [];
   bool _isLoading = true;
 
   @override
@@ -50,12 +52,28 @@ class _AccountScreenState extends State<AccountScreen> {
       if (!mounted) return;
 
       if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        // Extract the top 3 strongest-positive taste keys for the "Your Taste"
+        // card. Hidden when vector is empty or all zero/negative.
+        final raw = data['tasteVector'];
+        final topKeys = <String>[];
+        if (raw is Map) {
+          final entries = raw.entries
+              .where((e) => (e.value is num) && (e.value as num).toDouble() > 0)
+              .toList()
+            ..sort((a, b) =>
+                (b.value as num).toDouble().compareTo((a.value as num).toDouble()));
+          for (final e in entries.take(3)) {
+            topKeys.add(e.key.toString());
+          }
+        }
         setState(() {
-          _user = UserModel.fromMap(doc.data()!, doc.id);
+          _user = UserModel.fromMap(data, doc.id);
+          _topTasteKeys = topKeys;
           _isLoading = false;
         });
       } else {
-         setState(() => _isLoading = false);
+        setState(() => _isLoading = false);
       }
     } catch (e) {
       debugPrint("Error loading user: $e");
@@ -63,9 +81,27 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  /// Converts a canonical taste-vector key (e.g. "historical_landmark",
+  /// "pharaonic") into a human-readable label for the "Your Taste" pills.
+  String _prettyTasteKey(String key) {
+    const overrides = {
+      'historical_landmark': 'History',
+      'archaeological_site': 'Ancient Sites',
+      'tourist_attraction': 'Attractions',
+      'amusement_park': 'Theme Parks',
+      'art_gallery': 'Art',
+      'night_club': 'Nightlife',
+      'shopping_mall': 'Shopping',
+    };
+    if (overrides.containsKey(key)) return overrides[key]!;
+    return key
+        .split('_')
+        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
+  }
+
   Future<void> _handleSignOut(BuildContext context) async {
     await sl<FirebaseAuth>().signOut();
-
     if (!context.mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
   }
@@ -74,45 +110,45 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
     final bg = theme.scaffoldBackgroundColor;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
-
     final patternOpacity = isDark ? 0.20 : 0.40;
 
     final tileShadow = BoxShadow(
       color: isDark
           ? Colors.white.withValues(alpha: 0.16)
-          : Colors.black.withValues(alpha: 0.04), // soft shadow
+          : Colors.black.withValues(alpha: 0.04),
       blurRadius: 10,
       spreadRadius: 0,
       offset: const Offset(0, 4),
     );
 
     final borderColor =
-    (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
+        (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
     final User? authUser = sl<FirebaseAuth>().currentUser;
     String displayName = "User";
     if (_user != null) {
-        displayName = "${_user!.firstName} ${_user!.lastName}".trim();
-        if (displayName.isEmpty) displayName = "User";
+      displayName = "${_user!.firstName} ${_user!.lastName}".trim();
+      if (displayName.isEmpty) displayName = "User";
     } else if (authUser?.displayName != null && authUser!.displayName!.isNotEmpty) {
-        displayName = authUser.displayName!;
+      displayName = authUser.displayName!;
     }
 
     final String profileUrl = _user?.profileImageUrl ?? "";
-
-    // The beige card color from prototype
     final Color cardColor = isDark ? surface.withValues(alpha: 0.5) : const Color(0xFFF3F2E4);
-    // Gold button color from prototype
     final Color goldButtonColor = const Color(0xFFC79A00);
 
     int trueVisitedCount = 0;
     if (_user != null) {
-      final secretBadgeIds = BadgeConstants.allBadges.where((b) => b.isSecret).map((b) => b.id).toList();
-      trueVisitedCount = _user!.visitedLandmarks.where((id) => !secretBadgeIds.contains(id)).length;
+      final secretBadgeIds = BadgeConstants.allBadges
+          .where((b) => b.isSecret)
+          .map((b) => b.id)
+          .toList();
+      trueVisitedCount = _user!.visitedLandmarks
+          .where((id) => !secretBadgeIds.contains(id))
+          .length;
     }
 
     return Scaffold(
@@ -127,313 +163,449 @@ class _AccountScreenState extends State<AccountScreen> {
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
                 repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => const SizedBox.shrink(),
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
           ),
           SafeArea(
             child: Column(
               children: [
-                // Top Custom App Bar matching prototype
+                // Top bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     children: [
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: Icon(Icons.arrow_back_ios_new, color: onSurface, size: 20),
+                        child: Icon(Icons.arrow_back_ios_new,
+                            color: onSurface, size: 20.r),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Container(
-                          height: 44,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.45),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  "Where want to go?",
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              Icon(Icons.search, color: Colors.white.withValues(alpha: 0.8), size: 20),
-                            ],
-                          ),
+                      const Spacer(),
+                      Text(
+                        'My Profile',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontFamily: 'Marcellus',
+                          color: onSurface,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.account_circle, color: onSurface.withValues(alpha: 0.6), size: 36),
+                      const Spacer(),
+                      SizedBox(width: 20.r),
                     ],
                   ),
                 ),
-                
+
                 Expanded(
-                  child: _isLoading 
-                  ? Center(child: CircularProgressIndicator(color: theme.colorScheme.primary))
-                  : SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Profile Card
-                        Stack(
-                          alignment: Alignment.topCenter,
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(top: 50),
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: cardColor,
-                                borderRadius: BorderRadius.circular(24),
-                                border: isDark ? Border.all(color: borderColor) : null,
-                                boxShadow: isDark ? [] : [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  )
-                                ],
-                              ),
-                              child: Column(
+                  child: _isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                              color: theme.colorScheme.primary))
+                      : SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24.w, vertical: 16.h),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Profile Card
+                              Stack(
+                                alignment: Alignment.topCenter,
                                 children: [
-                                  const SizedBox(height: 60),
-                                  Text(
-                                    displayName,
-                                    style: TextStyle(
-                                      color: isDark ? onSurface : const Color(0xFF6B3A28), // Brown text from prototype
-                                      fontSize: 22,
-                                      fontFamily: "Marcellus",
+                                  Container(
+                                    margin: EdgeInsets.only(top: 50.h),
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: cardColor,
+                                      borderRadius: BorderRadius.circular(24.r),
+                                      border: isDark
+                                          ? Border.all(color: borderColor)
+                                          : null,
+                                      boxShadow: isDark
+                                          ? []
+                                          : [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.05),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 5),
+                                              )
+                                            ],
                                     ),
-                                  ),
-                                  if (_user?.username.isNotEmpty == true) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "@${_user!.username}",
-                                      style: TextStyle(
-                                        color: Theme.of(context).colorScheme.primary,
-                                        fontSize: 14,
-                                        fontFamily: "Marcellus",
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 16),
-                                  
-                                  // --- GAMIFICATION UI HERE ---
-                                  if (_user != null) ...[
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                                      decoration: BoxDecoration(
-                                        color: isDark ? Colors.black26 : Colors.white.withValues(alpha: 0.6),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(Icons.place, color: Colors.amber, size: 18),
-                                          const SizedBox(width: 8),
+                                    child: Column(
+                                      children: [
+                                        SizedBox(height: 60.h),
+                                        Text(
+                                          displayName,
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? onSurface
+                                                : const Color(0xFF6B3A28),
+                                            fontSize: 22.sp,
+                                            fontFamily: "Marcellus",
+                                          ),
+                                        ),
+                                        if (_user?.username.isNotEmpty == true) ...[
+                                          SizedBox(height: 4.h),
                                           Text(
-                                            "$trueVisitedCount Places Visited",
+                                            "@${_user!.username}",
                                             style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: onSurface.withValues(alpha: 0.8),
+                                              color: theme.colorScheme.primary,
+                                              fontSize: 14.sp,
+                                              fontFamily: "Marcellus",
                                             ),
                                           ),
                                         ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    
-                                    // Badges
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                                      child: Builder(
-                                        builder: (context) {
-                                          final displayBadges = BadgeConstants.allBadges.where((b) {
-                                            return !b.isSecret || _user!.visitedLandmarks.contains(b.id);
-                                          }).toList();
-                                          
-                                          return Wrap(
-                                            alignment: WrapAlignment.center,
-                                            spacing: 6,
-                                            runSpacing: 10,
-                                            children: List.generate(
-                                              displayBadges.length,
-                                              (index) {
-                                                final badge = displayBadges[index];
-                                                final isUnlocked = _user!.visitedLandmarks.contains(badge.id) || 
-                                                    (trueVisitedCount >= badge.requiredVisits && !badge.isSecret);
-                                                return _buildBadgeIcon(badge, isUnlocked, onSurface);
+                                        SizedBox(height: 16.h),
+
+                                        if (_user != null) ...[
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 20.w, vertical: 8.h),
+                                            margin: EdgeInsets.symmetric(
+                                                horizontal: 16.w),
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? Colors.black26
+                                                  : Colors.white
+                                                      .withValues(alpha: 0.6),
+                                              borderRadius:
+                                                  BorderRadius.circular(16.r),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.place,
+                                                    color: Colors.amber,
+                                                    size: 18.r),
+                                                SizedBox(width: 8.w),
+                                                Text(
+                                                  "$trueVisitedCount Places Visited",
+                                                  style: TextStyle(
+                                                    fontSize: 14.sp,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: onSurface
+                                                        .withValues(alpha: 0.8),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(height: 20.h),
+
+                                          // Your Taste card — top 3 canonical
+                                          // taste vector keys as gold pills.
+                                          // Hidden when vector is empty or all
+                                          // entries are zero/negative.
+                                          if (_topTasteKeys.isNotEmpty) ...[
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 12.w),
+                                              child: Container(
+                                                width: double.infinity,
+                                                padding: EdgeInsets.fromLTRB(
+                                                    14.w, 10.h, 14.w, 12.h),
+                                                decoration: BoxDecoration(
+                                                  color: goldButtonColor
+                                                      .withValues(alpha: 0.10),
+                                                  borderRadius:
+                                                      BorderRadius.circular(14.r),
+                                                  border: Border.all(
+                                                      color: goldButtonColor
+                                                          .withValues(alpha: 0.30)),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Icon(Icons.auto_awesome,
+                                                            size: 14.r,
+                                                            color: goldButtonColor),
+                                                        SizedBox(width: 6.w),
+                                                        Text(
+                                                          'Your Taste',
+                                                          style: TextStyle(
+                                                            fontSize: 13.sp,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color: goldButtonColor,
+                                                            fontFamily: 'Marcellus',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    SizedBox(height: 8.h),
+                                                    Wrap(
+                                                      spacing: 6,
+                                                      runSpacing: 6,
+                                                      children: _topTasteKeys
+                                                          .map((k) => Container(
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                        horizontal:
+                                                                            10.w,
+                                                                        vertical:
+                                                                            5.h),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: goldButtonColor
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.18),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              20.r),
+                                                                ),
+                                                                child: Text(
+                                                                  _prettyTasteKey(k),
+                                                                  style: TextStyle(
+                                                                    fontSize: 12.sp,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color:
+                                                                        goldButtonColor,
+                                                                  ),
+                                                                ),
+                                                              ))
+                                                          .toList(),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(height: 16.h),
+                                          ],
+
+                                          // Badges
+                                          Container(
+                                            width: double.infinity,
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 12.w),
+                                            child: Builder(
+                                              builder: (context) {
+                                                final displayBadges =
+                                                    BadgeConstants.allBadges
+                                                        .where((b) =>
+                                                            !b.isSecret ||
+                                                            _user!
+                                                                .visitedLandmarks
+                                                                .contains(b.id))
+                                                        .toList();
+                                                return Wrap(
+                                                  alignment:
+                                                      WrapAlignment.center,
+                                                  spacing: 6,
+                                                  runSpacing: 10,
+                                                  children: List.generate(
+                                                    displayBadges.length,
+                                                    (index) {
+                                                      final badge =
+                                                          displayBadges[index];
+                                                      final isUnlocked = _user!
+                                                              .visitedLandmarks
+                                                              .contains(
+                                                                  badge.id) ||
+                                                          (trueVisitedCount >=
+                                                                  badge
+                                                                      .requiredVisits &&
+                                                              !badge.isSecret);
+                                                      return _buildBadgeIcon(
+                                                          badge,
+                                                          isUnlocked,
+                                                          onSurface);
+                                                    },
+                                                  ),
+                                                );
                                               },
                                             ),
-                                          );
-                                        }
-                                      ),
+                                          ),
+                                          SizedBox(height: 20.h),
+                                        ],
+                                      ],
                                     ),
-                                    const SizedBox(height: 20),
-                                  ],
+                                  ),
+
+                                  // Profile Avatar (overlapping)
+                                  Container(
+                                    width: 104.r,
+                                    height: 104.r,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: goldButtonColor, width: 3),
+                                    ),
+                                    child: ClipOval(
+                                      child: profileUrl.isNotEmpty
+                                          ? CachedNetworkImage(
+                                              imageUrl: profileUrl,
+                                              fit: BoxFit.cover,
+                                              width: 104.r,
+                                              height: 104.r,
+                                              errorWidget: (_, _, _) =>
+                                                  Container(
+                                                color: surface,
+                                                child: Icon(Icons.person,
+                                                    size: 60.r,
+                                                    color: onSurface
+                                                        .withValues(alpha: 0.5)),
+                                              ),
+                                            )
+                                          : Container(
+                                              color: surface,
+                                              child: Icon(Icons.person,
+                                                  size: 60.r,
+                                                  color: onSurface
+                                                      .withValues(alpha: 0.5)),
+                                            ),
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                            
-                            // Profile Avatar Overlapping
-                            Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: surface,
-                                border: Border.all(color: cardColor, width: 4),
-                                image: profileUrl.isNotEmpty 
-                                  ? DecorationImage(
-                                      image: NetworkImage(profileUrl),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
+
+                              SizedBox(height: 30.h),
+
+                              Text(
+                                "Account Settings:",
+                                style: TextStyle(
+                                  color: isDark
+                                      ? onSurface
+                                      : const Color(0xFF6B3A28),
+                                  fontSize: 16.sp,
+                                  fontFamily: "Marcellus",
+                                ),
                               ),
-                              child: profileUrl.isEmpty
-                                  ? Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5))
-                                  : null,
-                            ),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 30),
-                        
-                        Text(
-                          "Account Settings:",
-                          style: TextStyle(
-                            color: isDark ? onSurface : const Color(0xFF6B3A28), // Matches prototype
-                            fontSize: 16,
-                            fontFamily: "Marcellus",
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                              SizedBox(height: 16.h),
 
-                        _AccountTile(
-                          title: "Edit Profile",
-                          icon: Icons.person_outline_rounded,
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                const EditProfileScreenEnhanced(),
-                              ),
-                            );
-                            _loadUser();
-                          },
-                        ),
-
-
-                        if (_user?.role == 'tourist') ...[
-                          if (_user?.applicationStatus == 'pending')
-                            _ApplicationStatusTile(
-                              status: 'pending',
-                              surface: surface,
-                              onSurface: onSurface,
-                              borderColor: borderColor,
-                              shadow: tileShadow,
-                            )
-                          else if (_user?.applicationStatus == 'rejected')
-                            _ApplicationStatusTile(
-                              status: 'rejected',
-                              surface: surface,
-                              onSurface: onSurface,
-                              borderColor: borderColor,
-                              shadow: tileShadow,
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => BlocProvider(
-                                    create: (context) => lost_in_egypt_guide_cubit.ApplyGuideCubit(
-                                      applyGuideUseCase: GetIt.I(),
+                              _AccountTile(
+                                title: "Edit Profile",
+                                icon: Icons.person_outline_rounded,
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const EditProfileScreenEnhanced(),
                                     ),
-                                    child: const lost_in_egypt_guide_screen.ApplyGuideScreen(),
+                                  );
+                                  _loadUser();
+                                },
+                              ),
+
+                              if (_user?.role == 'tourist') ...[
+                                if (_user?.applicationStatus == 'pending')
+                                  _ApplicationStatusTile(
+                                    status: 'pending',
+                                    surface: surface,
+                                    onSurface: onSurface,
+                                    borderColor: borderColor,
+                                    shadow: tileShadow,
+                                  )
+                                else if (_user?.applicationStatus == 'rejected')
+                                  _ApplicationStatusTile(
+                                    status: 'rejected',
+                                    surface: surface,
+                                    onSurface: onSurface,
+                                    borderColor: borderColor,
+                                    shadow: tileShadow,
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BlocProvider(
+                                          create: (context) =>
+                                              lost_in_egypt_guide_cubit
+                                                  .ApplyGuideCubit(
+                                            applyGuideUseCase: GetIt.I(),
+                                          ),
+                                          child: const lost_in_egypt_guide_screen
+                                              .ApplyGuideScreen(),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  _AccountTile(
+                                    title: "Apply to be a Guide",
+                                    icon: Icons.badge_outlined,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => BlocProvider(
+                                            create: (context) =>
+                                                lost_in_egypt_guide_cubit
+                                                    .ApplyGuideCubit(
+                                              applyGuideUseCase: GetIt.I(),
+                                            ),
+                                            child: const lost_in_egypt_guide_screen
+                                                .ApplyGuideScreen(),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                              ],
+                              _AccountTile(
+                                title: "My Bookings",
+                                icon: Icons.calendar_today_outlined,
+                                onTap: () => Navigator.push(context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const BookingHistoryScreen())),
+                              ),
+                              _AccountTile(
+                                title: "Saved Posts",
+                                icon: Icons.bookmark_outline_rounded,
+                                onTap: () => Navigator.push(context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const SavedPostsScreen())),
+                              ),
+                              _AccountTile(
+                                title: "My Plans",
+                                icon: Icons.map_outlined,
+                                onTap: () => Navigator.push(context,
+                                    MaterialPageRoute(
+                                        builder: (_) => const MyPlansScreen())),
+                              ),
+                              _AccountTile(
+                                title: "Membership",
+                                icon: Icons.workspace_premium_outlined,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const YourPlanScreen()),
+                                ),
+                              ),
+
+                              SizedBox(height: 24.h),
+
+                              SizedBox(
+                                width: double.infinity,
+                                height: 56.h,
+                                child: ElevatedButton(
+                                  onPressed: () => _handleSignOut(context),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: goldButtonColor,
+                                    foregroundColor: Colors.black87,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    elevation: 2,
+                                  ),
+                                  child: Text(
+                                    "Sign out",
+                                    style: TextStyle(fontSize: 18.sp),
                                   ),
                                 ),
                               ),
-                            )
-                          else
-                            _AccountTile(
-                              title: "Apply to be a Guide",
-                              icon: Icons.badge_outlined,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => BlocProvider(
-                                      create: (context) => lost_in_egypt_guide_cubit.ApplyGuideCubit(
-                                        applyGuideUseCase: GetIt.I(),
-                                      ),
-                                      child: const lost_in_egypt_guide_screen.ApplyGuideScreen(),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                        ],
-                        _AccountTile(
-                          title: "My Bookings",
-                          icon: Icons.calendar_today_outlined,
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
-                          },
-                        ),
-                        _AccountTile(
-                          title: "Saved Posts",
-                          icon: Icons.bookmark_outline_rounded,
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedPostsScreen()));
-                          },
-                        ),
-                        _AccountTile(
-                          title: "Your plan",
-                          icon: Icons.workspace_premium_outlined,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const YourPlanScreen()),
+                              SizedBox(height: 30.h),
+                            ],
                           ),
                         ),
-                        
-                        const SizedBox(height: 24),
-                        
-                        // Sign out button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: () => _handleSignOut(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: goldButtonColor,
-                              foregroundColor: Colors.black87, // Dark text on gold
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 2,
-                            ),
-                            child: const Text(
-                              "Sign out",
-                              style: TextStyle(
-                                fontSize: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                      ],
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -448,30 +620,32 @@ class _AccountScreenState extends State<AccountScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 44,
-          height: 44,
+          width: 44.r,
+          height: 44.r,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isUnlocked
                 ? Colors.amber.withValues(alpha: 0.15)
                 : Colors.grey.withValues(alpha: 0.1),
             border: Border.all(
-              color: isUnlocked ? Colors.amber : Colors.grey.withValues(alpha: 0.3),
+              color: isUnlocked
+                  ? Colors.amber
+                  : Colors.grey.withValues(alpha: 0.3),
               width: 2,
             ),
           ),
           child: isUnlocked
-              ? Icon(badge.iconData, color: Colors.amber, size: 22)
-              : const Icon(Icons.lock, color: Colors.grey, size: 18),
+              ? Icon(badge.iconData, color: Colors.amber, size: 22.r)
+              : Icon(Icons.lock, color: Colors.grey, size: 18.r),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         SizedBox(
-          width: 64, // Keep names from spreading too wide and forcing wraps
+          width: 64.w,
           child: Text(
             badge.name,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 10.sp,
               fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
               color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
             ),
@@ -483,7 +657,7 @@ class _AccountScreenState extends State<AccountScreen> {
 }
 
 class _ApplicationStatusTile extends StatelessWidget {
-  final String status; // 'pending' | 'rejected'
+  final String status;
   final Color surface;
   final Color onSurface;
   final Color borderColor;
@@ -504,56 +678,64 @@ class _ApplicationStatusTile extends StatelessWidget {
     final isPending = status == 'pending';
     final statusColor = isPending ? Colors.orange : Colors.red;
     final statusLabel = isPending ? 'Under Review' : 'Not Approved';
-    final statusIcon = isPending ? Icons.hourglass_top_rounded : Icons.cancel_outlined;
+    final statusIcon =
+        isPending ? Icons.hourglass_top_rounded : Icons.cancel_outlined;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: statusColor.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
         boxShadow: [shadow],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         clipBehavior: Clip.hardEdge,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: EdgeInsets.symmetric(horizontal: 18.w),
             child: SizedBox(
-              height: 56,
+              height: 56.h,
               child: Row(
                 children: [
-                  Icon(Icons.badge_outlined, color: statusColor, size: 20),
-                  const SizedBox(width: 10),
+                  Icon(Icons.badge_outlined, color: statusColor, size: 20.r),
+                  SizedBox(width: 10.w),
                   Text(
                     'Guide Application',
-                    style: TextStyle(color: onSurface.withOpacity(0.85), fontSize: 16),
+                    style: TextStyle(
+                        color: onSurface.withValues(alpha: 0.85),
+                        fontSize: 16.sp),
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(statusIcon, size: 13, color: statusColor),
-                        const SizedBox(width: 4),
-                        Text(statusLabel,
-                            style: TextStyle(
-                                fontSize: 12, color: statusColor, fontWeight: FontWeight.bold)),
+                        Icon(statusIcon, size: 13.r, color: statusColor),
+                        SizedBox(width: 4.w),
+                        Text(
+                          statusLabel,
+                          style: TextStyle(
+                              fontSize: 12.sp,
+                              color: statusColor,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),
                   if (!isPending) ...[
-                    const SizedBox(width: 6),
-                    Icon(Icons.chevron_right, color: onSurface.withOpacity(0.5)),
+                    SizedBox(width: 6.w),
+                    Icon(Icons.chevron_right,
+                        color: onSurface.withValues(alpha: 0.5)),
                   ],
                 ],
               ),
@@ -585,49 +767,49 @@ class _AccountTile extends StatelessWidget {
     final surface = theme.colorScheme.surface;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       child: Material(
         color: surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         clipBehavior: Clip.hardEdge,
         elevation: 0,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: Container(
-            height: 64,
+            height: 64.h,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: primary.withOpacity(isDark ? 0.2 : 0.15),
+                color: primary.withValues(alpha: isDark ? 0.2 : 0.15),
               ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: EdgeInsets.symmetric(horizontal: 14.w),
             child: Row(
               children: [
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 38.r,
+                  height: 38.r,
                   decoration: BoxDecoration(
-                    color: primary.withOpacity(isDark ? 0.2 : 0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    color: primary.withValues(alpha: isDark ? 0.2 : 0.12),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: Icon(icon, color: primary, size: 20),
+                  child: Icon(icon, color: primary, size: 20.r),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
                 Expanded(
                   child: Text(
                     title,
                     style: TextStyle(
-                      color: onSurface.withOpacity(0.88),
-                      fontSize: 16,
+                      color: onSurface.withValues(alpha: 0.88),
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
                       fontFamily: 'Marcellus',
                     ),
                   ),
                 ),
                 Icon(Icons.chevron_right_rounded,
-                    color: primary.withOpacity(0.6), size: 22),
+                    color: primary.withValues(alpha: 0.6), size: 22.r),
               ],
             ),
           ),

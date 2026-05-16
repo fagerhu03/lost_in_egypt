@@ -26,7 +26,7 @@ class LandmarkRepositoryImpl implements LandmarkRepository {
     } on LandmarkDetectionException {
       rethrow;
     } catch (e) {
-      throw LandmarkDetectionException('Unexpected error: $e');
+      throw LandmarkDetectionException('Something went wrong. Please try again.');
     }
   }
 }

@@ -19,30 +19,30 @@ class GuideCard extends StatelessWidget {
     isDark ? AppColors.darkText : AppColors.lightText;
 
     final labelColor = isDark
-        ? AppColors.darkText.withOpacity(0.65)
-        : AppColors.lightText.withOpacity(0.55);
+        ? AppColors.darkText.withValues(alpha: 0.65)
+        : AppColors.lightText.withValues(alpha: 0.55);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         // ✅ Brighter box in light mode
         color: isDark
-            ? AppColors.darkBox.withOpacity(0.65)
+            ? AppColors.darkBox.withValues(alpha: 0.65)
             : Color(0xffFFFEF0),
 
         borderRadius: BorderRadius.circular(14),
 
         border: Border.all(
           color: isDark
-              ? AppColors.darkText.withOpacity(0.12)
+              ? AppColors.darkText.withValues(alpha: 0.12)
               : const Color(0xFFE6D8B8),
         ),
 
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.35)
-                : Colors.black.withOpacity(0.08),
+                ? Colors.black.withValues(alpha: 0.35)
+                : Colors.black.withValues(alpha: 0.08),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -67,9 +67,9 @@ class GuideCard extends StatelessWidget {
                             : const [Color(0xFF7A4B1D), Color(0xFF4B3021)],
                       ),
                     ),
-                    child: guide.profileImageUrl != null && guide.profileImageUrl!.isNotEmpty
+                    child: guide.profileImageUrl.isNotEmpty
                         ? Image.network(
-                            guide.profileImageUrl!,
+                            guide.profileImageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => const Icon(
                               Icons.person,
@@ -159,8 +159,8 @@ class GuideCard extends StatelessWidget {
           Divider(
             height: 1,
             color: isDark
-                ? AppColors.darkText.withOpacity(0.15)
-                : AppColors.lightText.withOpacity(0.15),
+                ? AppColors.darkText.withValues(alpha: 0.15)
+                : AppColors.lightText.withValues(alpha: 0.15),
           ),
           const SizedBox(height: 6),
           Row(
