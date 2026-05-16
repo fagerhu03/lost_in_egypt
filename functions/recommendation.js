@@ -453,15 +453,24 @@ function scoreCandidate({
   }
 
   // ── Weight distribution (context-dependent) ───────────────────────────────
-  let w = { taste: 0.40, rating: 0.15, proximity: 0.20, popularity: 0.10, collab: 0.15 };
+  // All five base weights sum to 1.00 within every context. Solo proximity is
+  // deliberately light (0.10) because users with real taste history should be
+  // shown what they love regardless of distance — the existence of Karnak
+  // shouldn't be hidden from a history lover in Cairo just because Luxor is
+  // 600 km away. The freed weight goes to taste (0.50), which is the primary
+  // signal for users with recorded preferences. Proximity dominates in the
+  // "nearby" and "home" contexts which are explicitly about local discovery.
+  let w = { taste: 0.50, rating: 0.15, proximity: 0.10, popularity: 0.10, collab: 0.15 };
 
   if (context === "nearby") {
-    // Map "near me" panel — user wants to know what's physically close right now
-    w = { ...w, proximity: 0.30, taste: 0.30 };
+    // Map "near me" panel — user wants to know what's physically close right now.
+    // Sums to 1.00: 0.30 + 0.15 + 0.30 + 0.10 + 0.15
+    w = { taste: 0.30, rating: 0.15, proximity: 0.30, popularity: 0.10, collab: 0.15 };
   }
   if (context === "similar") {
-    // "Places similar to X you visited" — collaborative signal matters most
-    w = { ...w, collab: 0.30, taste: 0.30 };
+    // "Places similar to X you visited" — collaborative signal matters most.
+    // Sums to 1.00: 0.30 + 0.15 + 0.10 + 0.15 + 0.30
+    w = { taste: 0.30, rating: 0.15, proximity: 0.10, popularity: 0.15, collab: 0.30 };
   }
   if (context === "home") {
     // Home feed — proximity is the dominant signal; taste breaks ties among nearby places.
@@ -475,10 +484,14 @@ function scoreCandidate({
     w = { taste: 0.40, rating: 0.20, proximity: 0.10, popularity: 0.15, collab: 0.15 };
   }
 
-  // Cold-start adjustment: reduce personal taste weight, let country prior fill the gap
+  // Cold-start adjustment: reduce personal taste weight, let country prior fill the gap.
+  // Also hard-cap proximity to 0.10 — a new tourist hasn't told us if they want
+  // "near me" results, and the country prior signals interest in distant heritage
+  // sites (Karnak, Valley of the Kings) that a proximity-heavy home weight would
+  // otherwise crush. The remaining ~0.30 comes from priorScore added explicitly below.
   if (!hasEnoughSignals && countryPrior) {
     w = { ...w, taste: 0.10 };
-    // The remaining 0.30 comes from priorScore added explicitly below
+    if (w.proximity > 0.10) w.proximity = 0.10;
   }
 
   // ── Final weighted sum ────────────────────────────────────────────────────
