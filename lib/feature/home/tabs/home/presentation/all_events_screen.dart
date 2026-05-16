@@ -270,16 +270,16 @@ class _EventCard extends StatelessWidget {
                         ? CachedNetworkImage(
                             imageUrl: event.imagePath,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
+                            placeholder: (_, _) => Container(
                                 color: onSurface.withValues(alpha: 0.06)),
-                            errorWidget: (_, __, ___) =>
+                            errorWidget: (_, _, _) =>
                                 _ImageError(primary: primary),
                           )
                         : event.imagePath.isNotEmpty
                             ? Image.asset(
                                 event.imagePath,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
+                                errorBuilder: (_, _, _) =>
                                     _ImageError(primary: primary),
                               )
                             : _ImageError(primary: primary),

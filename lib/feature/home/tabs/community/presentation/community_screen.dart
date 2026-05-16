@@ -208,7 +208,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       Expanded(
                         child: ListView.separated(
                           itemCount: searchResults.length,
-                          separatorBuilder: (_, __) => Divider(height: 1, color: onSurface.withValues(alpha: 0.10)),
+                          separatorBuilder: (_, _) => Divider(height: 1, color: onSurface.withValues(alpha: 0.10)),
                           itemBuilder: (context, index) {
                             final place = searchResults[index];
                             final name = (place['displayName'] as Map<String, dynamic>?)?['text'] as String? ?? '';
@@ -456,7 +456,7 @@ class _CommunityScreenState extends State<CommunityScreen>
           Positioned.fill(
             child: Opacity(
               opacity: patternOpacity,
-              child: Image.asset('assets/pattern_comp.png', fit: BoxFit.cover, repeat: ImageRepeat.repeat, errorBuilder: (_, __, ___) => Container()),
+              child: Image.asset('assets/pattern_comp.png', fit: BoxFit.cover, repeat: ImageRepeat.repeat, errorBuilder: (_, _, _) => Container()),
             ),
           ),
           SafeArea(
@@ -480,8 +480,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: 4,
-                                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                                itemBuilder: (_, __) => _buildShimmerSkeleton(surface, onSurface, isDark, boxShadow),
+                                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                                itemBuilder: (_, _) => _buildShimmerSkeleton(surface, onSurface, isDark, boxShadow),
                               );
                             }
                             if (snapshot.hasError) {
@@ -547,7 +547,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                                   controller: _scrollController,
                                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                                   itemCount: filteredPosts.length + 3, // +3: challenge, leaderboard, trending
-                                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                                   itemBuilder: (context, index) {
                                     if (index == 0) return _buildChallengeCard(context, primary, onSurface, surface);
                                     if (index == 1) return _buildLeaderboard(allPosts, primary, onSurface, surface, isDark);
@@ -690,7 +690,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
           final cat = categories[i];
           final isSelected = _activeCategory == cat.$1;
@@ -753,7 +753,7 @@ class _CommunityScreenState extends State<CommunityScreen>
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: tags.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (_, i) {
               final tag = tags[i];
               final isActive = _activeHashtag == tag.key;

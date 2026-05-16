@@ -61,6 +61,7 @@ class _HomeWrapperState extends State<HomeWrapper>
       index = i;
       _isNavBarVisible = true;
     });
+    MapFocusService.instance.activeTabNotifier.value = i;
 
     _tabController.animateTo(i);
     _pageController.animateToPage(
@@ -130,6 +131,11 @@ class _HomeWrapperState extends State<HomeWrapper>
               index = i;
               _isNavBarVisible = true;
             });
+            // NOTE: do NOT write activeTabNotifier here. PageView fires this
+            // callback for every intermediate index during animateToPage, so
+            // a Home→More tap would briefly tick i=1,2,3 before settling at 4.
+            // The user-intent handlers (onTap + _handleTabSwitch) always hold
+            // the final target — they are the only legitimate writers.
             _tabController.animateTo(i);
           },
           children: _pages,
@@ -166,6 +172,7 @@ class _HomeWrapperState extends State<HomeWrapper>
                       index = i;
                       _isNavBarVisible = true;
                     });
+                    MapFocusService.instance.activeTabNotifier.value = i;
                     _tabController.animateTo(i);
                     // Smooth slide between tabs — kills the hard-snap visual
                     // ("ugly refresh") people kept complaining about.

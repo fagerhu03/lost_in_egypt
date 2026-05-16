@@ -165,6 +165,26 @@ service cloud.firestore {
       allow write: if isAuth();
     }
 
+    // ── Places API detail cache (30-day TTL) ──────────────────────────────────
+    // One doc per Places API place ID. Stores the raw API response so future
+    // sessions on any device can skip the per-tap getPlaceDetails billing.
+    match /place_details/{placeId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+
+    // ── Places API bulk snapshot (60-day TTL) ─────────────────────────────────
+    // Sharded cache of the ~54-query startup batch. One meta doc + N shard
+    // docs (~100 places each, well under the 1 MiB doc limit). Survives
+    // reinstalls and benefits every device/user — only the first global
+    // cold-starter pays the Places API cost. Schema:
+    //   places_snapshot/v1_meta       → { shardCount, totalCount, cachedAt }
+    //   places_snapshot/v1_shard_0..N → { places: [...raw API JSON...] }
+    match /places_snapshot/{docId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+
     // ── AI story cache (per-landmark slug, 90-day TTL) ────────────────────────
     match /place_stories/{slug} {
       allow read: if isAuth();

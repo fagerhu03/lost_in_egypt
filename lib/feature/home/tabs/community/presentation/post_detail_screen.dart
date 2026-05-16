@@ -562,7 +562,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: docs.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (_, i) {
                   final d = docs[i].data() as Map<String, dynamic>;
                   final images = List<String>.from(d['images'] ?? []);
@@ -588,7 +588,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               children: [
                                 ClipRRect(
                                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                  child: Image.network(images[0], height: 90, width: 130, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(height: 90, color: onSurface.withValues(alpha: 0.06))),
+                                  child: Image.network(images[0], height: 90, width: 130, fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(height: 90, color: onSurface.withValues(alpha: 0.06))),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.fromLTRB(8, 6, 8, 4),
@@ -707,7 +707,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   // Send button — filled gold circle
                   ValueListenableBuilder<TextEditingValue>(
                     valueListenable: _commentController,
-                    builder: (_, val, __) {
+                    builder: (_, val, _) {
                       final hasText = val.text.trim().isNotEmpty;
                       return GestureDetector(
                         onTap: hasText ? _submitComment : null,

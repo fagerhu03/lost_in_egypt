@@ -520,7 +520,7 @@ class _PhotosRowState extends State<_PhotosRow> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 44),
             itemCount: photos.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               return ClipRRect(
                 borderRadius: BorderRadius.circular(16),
@@ -591,7 +591,7 @@ class _GuideToursListState extends State<_GuideToursList> {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: tours.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                separatorBuilder: (_, _) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   return SizedBox(
                     width: 250,

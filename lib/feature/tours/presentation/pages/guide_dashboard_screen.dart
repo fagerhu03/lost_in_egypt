@@ -212,7 +212,7 @@ class _EarningsSummary extends StatelessWidget {
               Container(width: 1, height: 50, color: primary.withValues(alpha: 0.15)),
               ValueListenableBuilder<String>(
                 valueListenable: CurrencyController.currency,
-                builder: (_, currency, __) => FutureBuilder<double>(
+                builder: (_, currency, _) => FutureBuilder<double>(
                   future: CurrencyService.instance.convertFromEGP(totalRevenue, currency),
                   builder: (_, snap) {
                     final label = snap.hasData
@@ -282,7 +282,7 @@ class _GuideTourCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   tour.images.isNotEmpty
-                      ? Image.network(tour.images.first, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey[300]))
+                      ? Image.network(tour.images.first, fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: Colors.grey[300]))
                       : Container(color: Theme.of(context).colorScheme.surfaceContainerHighest, child: Center(child: Icon(Icons.landscape, size: 48, color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)))),
                   // Gradient overlay
                   Positioned(
@@ -312,7 +312,7 @@ class _GuideTourCard extends StatelessWidget {
                       ),
                       child: ValueListenableBuilder<String>(
                         valueListenable: CurrencyController.currency,
-                        builder: (_, currency, __) => FutureBuilder<double>(
+                        builder: (_, currency, _) => FutureBuilder<double>(
                           future: CurrencyService.instance.convertFromEGP(tour.price, currency),
                           builder: (_, snap) => Text(
                             snap.hasData

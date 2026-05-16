@@ -455,12 +455,12 @@ class _PlaceResultTile extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: place.imagePath,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: onSurface.withValues(alpha: 0.08)),
-                          errorWidget: (_, __, ___) => _PlaceholderIcon(primary: primary),
+                          placeholder: (_, _) => Container(color: onSurface.withValues(alpha: 0.08)),
+                          errorWidget: (_, _, _) => _PlaceholderIcon(primary: primary),
                         )
                       : place.imagePath.isNotEmpty
                           ? Image.asset(place.imagePath, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _PlaceholderIcon(primary: primary))
+                              errorBuilder: (_, _, _) => _PlaceholderIcon(primary: primary))
                           : _PlaceholderIcon(primary: primary),
                 ),
               ),
@@ -574,8 +574,8 @@ class _TourResultTile extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: tour.images.first,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: onSurface.withValues(alpha: 0.08)),
-                          errorWidget: (_, __, ___) => _PlaceholderIcon(primary: primary, icon: Icons.tour),
+                          placeholder: (_, _) => Container(color: onSurface.withValues(alpha: 0.08)),
+                          errorWidget: (_, _, _) => _PlaceholderIcon(primary: primary, icon: Icons.tour),
                         )
                       : _PlaceholderIcon(primary: primary, icon: Icons.tour),
                 ),

@@ -529,7 +529,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
             itemCount: filtered.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 14),
+            separatorBuilder: (_, _) => const SizedBox(height: 14),
             itemBuilder: (context, index) => TourCard(tour: filtered[index]),
           );
         }
@@ -555,7 +555,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
           itemCount: filteredGuides.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 14),
+          separatorBuilder: (_, _) => const SizedBox(height: 14),
           itemBuilder: (context, index) {
             final user = filteredGuides[index];
             return InkWell(

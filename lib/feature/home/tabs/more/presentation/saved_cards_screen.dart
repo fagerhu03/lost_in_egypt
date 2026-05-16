@@ -69,7 +69,7 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                 return ListView.separated(
                   padding: const EdgeInsets.all(20),
                   itemCount: docs.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
                     final lastFour = data['lastFour'] ?? '••••';

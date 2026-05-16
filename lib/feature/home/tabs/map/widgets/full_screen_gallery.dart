@@ -92,13 +92,13 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                   child: CachedNetworkImage(
                     imageUrl: widget.imageUrls[index],
                     fit: BoxFit.contain,
-                    placeholder: (_, __) => const Center(
+                    placeholder: (_, _) => const Center(
                       child: CircularProgressIndicator(
                         color: Color(0xFFD6A00F),
                         strokeWidth: 2,
                       ),
                     ),
-                    errorWidget: (_, __, ___) => const Center(
+                    errorWidget: (_, _, _) => const Center(
                       child: Icon(Icons.broken_image, color: Colors.white38, size: 64),
                     ),
                   ),

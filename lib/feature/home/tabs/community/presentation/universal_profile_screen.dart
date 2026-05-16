@@ -201,7 +201,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 32),
           itemCount: posts.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
           itemBuilder: (context, i) {
             final post = posts[i];
             return CommunityPostCard(
@@ -798,7 +798,7 @@ class _UniversalGuideToursListState extends State<_UniversalGuideToursList> {
                 scrollDirection: Axis.horizontal,
                 itemCount: tours.length,
                 clipBehavior: Clip.none,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                separatorBuilder: (_, _) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   return SizedBox(width: 250, child: TourCard(tour: tours[index]));
                 },

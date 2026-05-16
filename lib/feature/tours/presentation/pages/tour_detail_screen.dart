@@ -846,7 +846,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: docs.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final reviewDoc = docs[index];
                 final data = reviewDoc.data() as Map<String, dynamic>;
@@ -1279,10 +1279,10 @@ class _SimilarTourCard extends StatelessWidget {
               CachedNetworkImage(
                 imageUrl: tour.images.first,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
+                placeholder: (_, _) => Container(
                   color: theme.colorScheme.primary.withValues(alpha: 0.08),
                 ),
-                errorWidget: (_, __, ___) => Container(
+                errorWidget: (_, _, _) => Container(
                   color: theme.colorScheme.primary.withValues(alpha: 0.06),
                   child: Icon(Icons.tour,
                       color: theme.colorScheme.primary.withValues(alpha: 0.3),

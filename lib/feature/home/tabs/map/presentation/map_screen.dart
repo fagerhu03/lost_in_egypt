@@ -39,11 +39,52 @@ import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_event.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_state.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-class MapScreen extends StatelessWidget {
+/// Lazy gate around the real map UI. PageView eagerly builds intermediate
+/// pages during `animateToPage` traversal — without this gate, a Home→More
+/// tab transition would instantiate MapBloc and fire the 54-query Places API
+/// cold-start batch even though the user never asked for the map. The gate
+/// renders a transparent placeholder until the Map tab is actually selected
+/// (activeTabNotifier == 2), then swaps in the real BlocProvider + view.
+/// Once activated it stays activated for the rest of the app session.
+class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
   @override
+  State<MapScreen> createState() => _MapScreenState();
+}
+
+class _MapScreenState extends State<MapScreen> {
+  bool _activated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final notifier = MapFocusService.instance.activeTabNotifier;
+    if (notifier.value == 2) {
+      _activated = true;
+    } else {
+      notifier.addListener(_onTabChanged);
+    }
+  }
+
+  void _onTabChanged() {
+    if (MapFocusService.instance.activeTabNotifier.value == 2 && !_activated) {
+      MapFocusService.instance.activeTabNotifier.removeListener(_onTabChanged);
+      if (mounted) setState(() => _activated = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    MapFocusService.instance.activeTabNotifier.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (!_activated) {
+      return const ColoredBox(color: Colors.transparent);
+    }
     return BlocProvider(
       create: (context) => sl<MapBloc>()..add(MapInitialized()),
       child: const MapScreenView(),
@@ -1081,7 +1122,7 @@ class _MapScreenViewState extends State<MapScreenView>
                               clipBehavior: Clip.none,
                               scrollDirection: Axis.horizontal,
                               padding: const EdgeInsets.symmetric(horizontal: 20),
-                              separatorBuilder: (_, __) => const SizedBox(width: 12),
+                              separatorBuilder: (_, _) => const SizedBox(width: 12),
                               itemCount: displayPlaces.length,
                               itemBuilder: (context, index) {
                                 final item = displayPlaces[index];
@@ -1110,7 +1151,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                         Image.network(
                                           item.imagePaths.first,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Container(
+                                          errorBuilder: (_, _, _) => Container(
                                             color: onSurface.withValues(alpha: 0.1),
                                             child: Icon(Icons.place, color: primary, size: 28),
                                           ),

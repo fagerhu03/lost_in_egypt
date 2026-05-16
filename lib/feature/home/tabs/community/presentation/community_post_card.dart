@@ -493,8 +493,8 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                                 fit: BoxFit.cover,
                                 memCacheHeight: 150,
                                 memCacheWidth: 150,
-                                placeholder: (_, __) => Container(width: 34, height: 34, color: onSurface.withValues(alpha: 0.08)),
-                                errorWidget: (_, __, ___) => Container(
+                                placeholder: (_, _) => Container(width: 34, height: 34, color: onSurface.withValues(alpha: 0.08)),
+                                errorWidget: (_, _, _) => Container(
                                   width: 34, height: 34,
                                   color: onSurface.withValues(alpha: 0.08),
                                   child: Icon(Icons.person, size: 20, color: primary),

@@ -873,9 +873,9 @@ class _BookingSimilarTourCard extends StatelessWidget {
               CachedNetworkImage(
                 imageUrl: tour.images.first,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
+                placeholder: (_, _) => Container(
                     color: theme.colorScheme.primary.withValues(alpha: 0.08)),
-                errorWidget: (_, __, ___) => Container(
+                errorWidget: (_, _, _) => Container(
                   color: theme.colorScheme.primary.withValues(alpha: 0.06),
                   child: Icon(Icons.tour,
                       color: theme.colorScheme.primary.withValues(alpha: 0.3),

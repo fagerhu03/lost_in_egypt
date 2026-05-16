@@ -90,7 +90,7 @@ class MapSearchResults extends StatelessWidget {
           padding: EdgeInsets.zero,
           shrinkWrap: true,
           itemCount: searchResults.length,
-          separatorBuilder: (_, __) => Divider(
+          separatorBuilder: (_, _) => Divider(
             height: 1,
             color: onSurface.withValues(alpha: 0.07),
           ),

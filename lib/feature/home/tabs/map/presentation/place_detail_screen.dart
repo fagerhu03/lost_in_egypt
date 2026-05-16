@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
@@ -14,6 +15,7 @@ import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 
 // Mirrors OUTDOOR_TYPES + SEMI_OUTDOOR_TYPES in functions/recommendation.js.
@@ -60,6 +62,15 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   List<_SimilarPlace> _similarPlaces = [];
   bool _loadingSimilar = false;
 
+  // Lazy-loaded display fields. Initialised from widget.place; backfilled from
+  // getPlaceDetails when missing. The bulk Places API fetch in MapRepository
+  // omits `reviews` and `editorialSummary` (drops SKU from Atmosphere $0.040
+  // to Enterprise $0.035), so we restore the rich data on demand here. Places
+  // sourced from cat_*.json already arrive with descriptions populated, so the
+  // empty-check below short-circuits and no API call fires for those.
+  late String _description = widget.place.description;
+  late List<PlaceReview> _reviews = widget.place.reviews;
+
   @override
   void initState() {
     super.initState();
@@ -67,10 +78,75 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     _calculateDistance();
     _loadCrowdLevel();
     _loadCommunityPostCount();
+    _backfillDetailsIfMissing();
     if (widget.allItems.length > 1) {
       _loadingSimilar = true;
       _loadSimilarPlaces();
     }
+  }
+
+  /// Fetches description + reviews from the Places Details API when the bulk
+  /// fetch didn't include them. Idempotent: skips if both are already
+  /// populated, skips for synthetic / non-Google IDs, and the underlying
+  /// getPlaceDetails call is Firestore-cached for 30 days.
+  Future<void> _backfillDetailsIfMissing() async {
+    if (_description.isNotEmpty && _reviews.isNotEmpty) return;
+
+    final placeId = widget.place.id;
+    if (placeId.isEmpty) return;
+    // Synthetic IDs from SOS results / AI-generated trip stops / local JSON
+    // entries that don't have a real Google place ID. The Places API would
+    // reject these — short-circuit silently. Local JSON entries already arrive
+    // with descriptions populated, so the empty-check above usually handles
+    // them, but the explicit prefix list is the durable guarantee.
+    //   cat_*    → cat_*.json (LocalPlacesService curated places)
+    //   place_*  → final_places_clean_v2.json (offline fallback dataset)
+    //   sos_*    → SOSScreen synthetic markers
+    //   local_*, synthetic_* → reserved prefixes for future synthetic sources
+    if (placeId.startsWith('cat_') ||
+        placeId.startsWith('place_') ||
+        placeId.startsWith('sos_') ||
+        placeId.startsWith('local_') ||
+        placeId.startsWith('synthetic_')) {
+      return;
+    }
+
+    final details =
+        await GetIt.instance<PlacesApiService>().getPlaceDetails(placeId);
+    if (!mounted || details == null) return;
+
+    String? freshDescription;
+    final editorial = details['editorialSummary'];
+    if (editorial is Map<String, dynamic>) {
+      final t = editorial['text'];
+      if (t is String && t.isNotEmpty) freshDescription = t;
+    }
+
+    final freshReviews = <PlaceReview>[];
+    final rawReviews = details['reviews'];
+    if (rawReviews is List) {
+      for (final r in rawReviews) {
+        if (r is Map<String, dynamic>) {
+          try {
+            freshReviews.add(PlaceReview.fromJson(r));
+          } catch (_) {}
+        }
+      }
+    }
+
+    if (!mounted) return;
+    if ((freshDescription == null || _description.isNotEmpty) &&
+        (freshReviews.isEmpty || _reviews.isNotEmpty)) {
+      return;
+    }
+    setState(() {
+      if (_description.isEmpty && freshDescription != null) {
+        _description = freshDescription;
+      }
+      if (_reviews.isEmpty && freshReviews.isNotEmpty) {
+        _reviews = freshReviews;
+      }
+    });
   }
 
   Future<void> _loadSimilarPlaces() async {
@@ -622,8 +698,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     ),
                     SizedBox(height: 10.h),
                     Text(
-                      widget.place.description.isNotEmpty
-                          ? widget.place.description
+                      _description.isNotEmpty
+                          ? _description
                           : "Explore the ancient wonders and hidden gems of Egypt. "
                               "This location offers a unique glimpse into the rich "
                               "history and culture of the region.",
@@ -682,7 +758,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       _buildCrowdBadge(_crowdCount!, primary, onSurface, isDark),
                     ],
 
-                    if (widget.place.reviews.isNotEmpty) ...[
+                    if (_reviews.isNotEmpty) ...[
                       SizedBox(height: 16.h),
                       Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
                       SizedBox(height: 16.h),
@@ -695,7 +771,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                       ),
                       SizedBox(height: 12.h),
-                      ...widget.place.reviews.take(3).map((review) =>
+                      ..._reviews.take(3).map((review) =>
                         _buildReviewCard(review, onSurface, primary, isDark),
                       ),
                     ],

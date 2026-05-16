@@ -173,8 +173,8 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                               child: CachedNetworkImage(
                                 imageUrl: widget.place.imagePaths[index],
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => const ShimmerLoadingWidget.rectangular(height: 280),
-                                errorWidget: (_, __, ___) => Container(color: Colors.grey.withValues(alpha: 0.15)),
+                                placeholder: (_, _) => const ShimmerLoadingWidget.rectangular(height: 280),
+                                errorWidget: (_, _, _) => Container(color: Colors.grey.withValues(alpha: 0.15)),
                               ),
                             );
                           },
@@ -183,8 +183,8 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                           ? CachedNetworkImage(
                               imageUrl: widget.place.imagePath,
                               fit: BoxFit.cover,
-                              placeholder: (_, __) => const ShimmerLoadingWidget.rectangular(height: 280),
-                              errorWidget: (_, __, ___) => Container(color: Colors.grey.withValues(alpha: 0.15)),
+                              placeholder: (_, _) => const ShimmerLoadingWidget.rectangular(height: 280),
+                              errorWidget: (_, _, _) => Container(color: Colors.grey.withValues(alpha: 0.15)),
                             )
                           : Container(color: primary.withValues(alpha: isDark ? 0.15 : 0.08)),
                   

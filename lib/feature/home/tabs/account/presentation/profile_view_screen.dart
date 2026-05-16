@@ -269,7 +269,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: BadgeConstants.allBadges.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                separatorBuilder: (_, _) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   final badge = BadgeConstants.allBadges[index];
                   final isUnlocked = _user!.visitedLandmarks.length >= badge.requiredVisits;

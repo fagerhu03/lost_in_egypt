@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,7 +19,27 @@ class MapRepository {
   /// Disk cache file name.
   static const String _cacheFileName = 'places_cache_v3.json';
   static const String _cacheTimestampFileName = 'places_cache_v3_timestamp.txt';
-  static const int _cacheTtlDays = 7;
+  // Landmarks and tourist attractions are essentially static — pyramids
+  // don't move and museum names don't change month to month. A long TTL
+  // amortises the ~54-query Places API cold-start batch across two months
+  // of real use instead of weekly.
+  static const int _cacheTtlDays = 60;
+
+  // Firestore snapshot cache — sits between disk and the live API.
+  // Survives reinstalls and is shared across all devices/users, so the very
+  // first dev/real user globally pays the cold-start API cost; everyone else
+  // reads the snapshot. The dataset (~1.5 MB) is sharded because a single
+  // Firestore doc is capped at 1 MiB.
+  //   places_snapshot/v1_meta             → { shardCount, cachedAt, totalCount }
+  //   places_snapshot/v1_shard_0..N-1     → { places: [...raw API JSON...] }
+  // Versioned with the `v1_` prefix so any future field-mask change can
+  // invalidate the snapshot atomically by bumping to v2_.
+  static const String _snapshotCollection = 'places_snapshot';
+  static const String _snapshotVersion = 'v1';
+  static const String _snapshotMetaDocId = '${_snapshotVersion}_meta';
+  // Places per shard. ~3 KB/place after the trimmed field mask → 100 places
+  // is ≈ 300 KB, comfortable buffer under the 1 MiB doc limit.
+  static const int _snapshotShardSize = 100;
 
   MapRepository({
     required PlacesApiService placesApiService,
@@ -106,6 +128,131 @@ class MapRepository {
     }
   }
 
+  // ── Firestore snapshot helpers ────────────────────────────────────
+
+  /// Reads the sharded snapshot from Firestore. Returns null if the snapshot
+  /// is missing, expired, or any shard read fails. Failure modes are silent
+  /// so the caller can fall through to the live API call without surfacing
+  /// internal cache misses to the user.
+  Future<List<Map<String, dynamic>>?> _loadFromFirestoreSnapshot() async {
+    try {
+      final fs = FirebaseFirestore.instance;
+      final metaSnap =
+          await fs.collection(_snapshotCollection).doc(_snapshotMetaDocId).get();
+      if (!metaSnap.exists) {
+        debugPrint('☁️ No Firestore snapshot meta — falling through');
+        return null;
+      }
+
+      final meta = metaSnap.data();
+      if (meta == null) return null;
+
+      final cachedAt = (meta['cachedAt'] as Timestamp?)?.toDate();
+      if (cachedAt == null ||
+          DateTime.now().difference(cachedAt).inDays >= _cacheTtlDays) {
+        debugPrint('⏰ Firestore snapshot expired — falling through');
+        return null;
+      }
+
+      final shardCount = (meta['shardCount'] as num?)?.toInt() ?? 0;
+      if (shardCount <= 0) return null;
+
+      // Parallel shard reads. If any shard is missing or malformed, abort and
+      // fall through to the API rather than serve a partial dataset.
+      final futures = <Future<DocumentSnapshot<Map<String, dynamic>>>>[
+        for (var i = 0; i < shardCount; i++)
+          fs
+              .collection(_snapshotCollection)
+              .doc('${_snapshotVersion}_shard_$i')
+              .get(),
+      ];
+      final shardSnaps = await Future.wait(futures);
+
+      final combined = <Map<String, dynamic>>[];
+      for (final snap in shardSnaps) {
+        if (!snap.exists) {
+          debugPrint('⚠️ Firestore snapshot shard ${snap.id} missing — aborting');
+          return null;
+        }
+        final data = snap.data();
+        final places = data?['places'];
+        if (places is! List) {
+          debugPrint('⚠️ Firestore snapshot shard ${snap.id} malformed — aborting');
+          return null;
+        }
+        for (final p in places) {
+          if (p is Map<String, dynamic>) {
+            combined.add(p);
+          } else if (p is Map) {
+            combined.add(Map<String, dynamic>.from(p));
+          }
+        }
+      }
+
+      debugPrint('☁️ Loaded ${combined.length} places from Firestore snapshot '
+          '($shardCount shard${shardCount == 1 ? '' : 's'}, 0 API calls!)');
+      return combined;
+    } catch (e) {
+      debugPrint('⚠️ Firestore snapshot read failed: $e');
+      return null;
+    }
+  }
+
+  /// Persists [rawJson] to Firestore as sharded docs + a meta doc. Best-effort:
+  /// shards are written first, the meta doc last, so a partially-failed write
+  /// leaves the previous meta doc pointing at the previous (older but valid)
+  /// shards rather than at half-written new ones. Never throws — failures are
+  /// logged and swallowed so a Firestore outage can't break the user's session.
+  Future<void> _saveToFirestoreSnapshot(
+    List<Map<String, dynamic>> rawJson,
+  ) async {
+    if (rawJson.isEmpty) return;
+    try {
+      final fs = FirebaseFirestore.instance;
+      final shardCount = (rawJson.length / _snapshotShardSize).ceil();
+
+      // Write shards in parallel. Wrap each write so one failure doesn't abort
+      // the rest — but we still bail before writing the meta doc if any failed.
+      final shardWrites = <Future<bool>>[];
+      for (var i = 0; i < shardCount; i++) {
+        final start = i * _snapshotShardSize;
+        final end = (start + _snapshotShardSize) > rawJson.length
+            ? rawJson.length
+            : start + _snapshotShardSize;
+        final shardData = rawJson.sublist(start, end);
+        shardWrites.add(
+          fs
+              .collection(_snapshotCollection)
+              .doc('${_snapshotVersion}_shard_$i')
+              .set({'places': shardData})
+              .then((_) => true)
+              .catchError((e) {
+            debugPrint('⚠️ Firestore snapshot shard $i write failed: $e');
+            return false;
+          }),
+        );
+      }
+      final results = await Future.wait(shardWrites);
+      if (results.any((ok) => !ok)) {
+        debugPrint('⚠️ Aborting snapshot meta write — at least one shard failed');
+        return;
+      }
+
+      // Meta doc written last so readers never see a "shardCount=N but only
+      // M shards exist" state.
+      await fs.collection(_snapshotCollection).doc(_snapshotMetaDocId).set({
+        'shardCount': shardCount,
+        'totalCount': rawJson.length,
+        'cachedAt': Timestamp.now(),
+        'version': _snapshotVersion,
+      });
+      debugPrint('☁️ Wrote ${rawJson.length} places to Firestore snapshot '
+          '($shardCount shard${shardCount == 1 ? '' : 's'})');
+    } catch (e) {
+      debugPrint('⚠️ Firestore snapshot write failed: $e');
+    }
+  }
+
   // ── Public API ───────────────────────────────────────────────────
 
   /// Fetch all traveler-relevant places across Egypt.
@@ -130,30 +277,52 @@ class MapRepository {
       }
     }
 
-    // 3. API fetch (only if no cache exists)
+    // 3. Firestore snapshot — survives reinstalls and is shared across all
+    // devices/users. Sits between disk cache and the live API so the very
+    // first global user pays the API cost; everyone else (including dev
+    // rebuilds, fresh installs, new users) reads ~20 Firestore docs instead.
+    final snapshotData = await _loadFromFirestoreSnapshot();
+    if (snapshotData != null && snapshotData.isNotEmpty) {
+      final items = _parseJsonToItems(snapshotData);
+      if (items.isNotEmpty) {
+        _cache['all'] = items;
+        // Mirror to local disk so subsequent cold starts on this device
+        // skip the Firestore round-trip entirely.
+        unawaited(_saveToDisk(snapshotData));
+        return items;
+      }
+    }
+
+    // 4. API fetch (only if every cache tier above missed)
     debugPrint('🌐 No cache found — fetching from Places API...');
     try {
       final queries = MapConfig.getAllTravelerQueries();
       final allPlacesJson = await _placesApiService.searchMultipleQueries(queries);
 
-      // Save raw JSON to disk for future launches
+      // Save raw JSON to disk for future launches AND to Firestore so other
+      // devices benefit too. Both writes are fire-and-forget — the user gets
+      // the parsed items immediately while persistence happens in the
+      // background. Firestore failures are tolerated and re-attempted on the
+      // next cold start.
       await _saveToDisk(allPlacesJson);
+      unawaited(_saveToFirestoreSnapshot(allPlacesJson));
 
       final items = _parseJsonToItems(allPlacesJson);
-      debugPrint('📦 Fetched ${items.length} items from API (saved to disk)');
+      debugPrint('📦 Fetched ${items.length} items from API (saved to disk + Firestore)');
       _cache['all'] = items;
       return items;
     } catch (e) {
       debugPrint('❌ MapRepo API Error: $e — falling back to bundled asset (OFFLINE PATH ONLY)');
     }
 
-    // 4. OFFLINE-ONLY bundled-asset fallback.
+    // 5. OFFLINE-ONLY bundled-asset fallback.
     //
-    // We only get here when the live Places API call AND every disk-cached
-    // snapshot from prior API calls both failed — i.e. the device is offline
-    // on first launch (no API, no warm cache). This branch must NEVER be the
-    // primary data path: the user explicitly required Places API as the only
-    // online source. Do not call into this asset from any feature code.
+    // We only get here when the live Places API call AND every cache tier
+    // (memory, disk, Firestore snapshot) all failed — i.e. the device is
+    // offline on first launch with no Firestore connectivity either. This
+    // branch must NEVER be the primary data path: the user explicitly
+    // required Places API as the only online source. Do not call into this
+    // asset from any feature code.
     try {
       final jsonString = await rootBundle.loadString('assets/final_places_clean_v2.json');
       final List<dynamic> decoded = jsonDecode(jsonString);

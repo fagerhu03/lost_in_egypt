@@ -55,9 +55,9 @@ class TourCard extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: tour.images.first,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) =>
+                          placeholder: (_, _) =>
                               const ShimmerLoadingWidget.rectangular(height: 180),
-                          errorWidget: (_, __, ___) => _buildPlaceholderImage(),
+                          errorWidget: (_, _, _) => _buildPlaceholderImage(),
                         )
                       : _buildPlaceholderImage(),
                 ),

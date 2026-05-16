@@ -154,7 +154,7 @@ class _BookingTabState extends State<_BookingTab> {
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           itemCount: docs.length + (hasMore ? 1 : 0),
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
           itemBuilder: (context, i) {
             if (i == docs.length) {
               return TextButton(
