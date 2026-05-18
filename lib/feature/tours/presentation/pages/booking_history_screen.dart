@@ -24,6 +24,7 @@ import '../../../../feature/home/notification/data/datasources/notifications_dat
 import '../../../../feature/home/notification/data/models/notification_model.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/guide_location_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/utils/map_style_helper.dart';
@@ -683,11 +684,15 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       ));
                       final reviewSignal = rating >= 4 ? 'visit' : rating <= 2 ? 'dismiss' : null;
                       if (reviewSignal != null) {
+                        final destinations = (widget.tourData['destinations'] as List?)?.join(' ') ?? '';
+                        final inferred = RecommendationMappings.inferKeysFromText(
+                          '${widget.tourData['title'] ?? ''} $destinations ${widget.tourData['description'] ?? ''}',
+                        );
                         RecommendationService.recordSignal(
                           placeId: tourId,
                           placeName: widget.tourData['title'] ?? '',
-                          types: ['tourist_attraction'],
-                          tags: ['cultural'],
+                          types: inferred['types']!,
+                          tags: inferred['tags']!,
                           signalType: reviewSignal,
                           source: 'review',
                         );

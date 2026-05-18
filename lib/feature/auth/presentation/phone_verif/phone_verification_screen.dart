@@ -24,6 +24,11 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
 
   // State
   String _completePhoneNumber = "";
+  // ISO 3166-1 alpha-2 country code from the phone picker (e.g. "EG", "US").
+  // Written to users/{uid}.nationalityCode on successful verification so the
+  // recommendation engine's country-prior cold-start path can score new users
+  // before they accumulate personal signals. Default matches initialCountryCode.
+  String _isoCode = "EG";
   String _verificationId = "";
   bool _codeSent = false;
   bool _isLoading = false;
@@ -42,6 +47,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'phoneNumber': _completePhoneNumber,
           'phoneVerified': true,
+          'nationalityCode': _isoCode,
         }, SetOptions(merge: true));
         if (mounted) {
           if (widget.onVerified != null) {
@@ -123,6 +129,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'phoneNumber': _completePhoneNumber,
         'phoneVerified': true,
+        'nationalityCode': _isoCode,
       }, SetOptions(merge: true));
 
       if (mounted) {
@@ -227,6 +234,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                 initialCountryCode: 'EG',
                 onChanged: (phone) {
                   _completePhoneNumber = phone.completeNumber;
+                  _isoCode = phone.countryISOCode;
                 },
               ),
 

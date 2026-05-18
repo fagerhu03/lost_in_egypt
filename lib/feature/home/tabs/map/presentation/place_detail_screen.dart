@@ -182,6 +182,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
       userLng: lng,
       limit: 5,
       excludeSeen: false,
+      weather: WeatherController.weather.value,
     );
 
     if (!mounted) return;
@@ -849,12 +850,16 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             final sp = _similarPlaces[index];
                             return GestureDetector(
                               onTap: () {
+                                // Tapping a Similar Places thumbnail expresses
+                                // interest, not a real visit — use 'like' (+0.4)
+                                // not 'visit' (+1.0). Otherwise five thumbnail
+                                // taps cross the 5-signal cold-start threshold.
                                 RecommendationService.recordSignal(
                                   placeId: sp.item.id,
                                   placeName: sp.item.title,
                                   types: [sp.item.category],
                                   tags: sp.item.tags,
-                                  signalType: 'visit',
+                                  signalType: 'like',
                                   source: 'similar_places',
                                 );
                                 widget.onClose();

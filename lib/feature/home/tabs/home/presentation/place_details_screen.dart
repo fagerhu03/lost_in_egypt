@@ -9,6 +9,7 @@ import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 
 class PlaceDetailsScreen extends StatefulWidget {
   final PlaceModel place;
@@ -78,6 +79,14 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
         await FirebaseFirestore.instance.collection('users').doc(_userId).update({
           'savedPlaces': FieldValue.arrayUnion([widget.place.id])
         });
+        RecommendationService.recordSignal(
+          placeId: widget.place.id,
+          placeName: widget.place.title,
+          types: [widget.place.category],
+          tags: widget.place.tags,
+          signalType: 'save',
+          source: 'home_place_details',
+        );
       } else {
         await FirebaseFirestore.instance.collection('users').doc(_userId).update({
           'savedPlaces': FieldValue.arrayRemove([widget.place.id])

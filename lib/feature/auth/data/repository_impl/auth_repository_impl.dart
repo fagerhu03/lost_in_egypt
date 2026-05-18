@@ -21,6 +21,8 @@ class AuthRepositoryImpl implements AuthRepository {
     required String birthMonth,
     required String birthDay,
     required String birthYear,
+    required String phoneNumber,
+    required String nationalityCode,
   }) async {
     try {
       await remoteDataSource.signUp(
@@ -31,6 +33,8 @@ class AuthRepositoryImpl implements AuthRepository {
         birthMonth: birthMonth,
         birthDay: birthDay,
         birthYear: birthYear,
+        phoneNumber: phoneNumber,
+        nationalityCode: nationalityCode,
       );
       return const Right(null);
     } on FirebaseAuthException catch (e) {

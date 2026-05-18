@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/weather_controller.dart';
 import '../../../../core/widgets/shimmer_loading_widget.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 import '../../domain/entities/tour_entity.dart';
@@ -83,6 +84,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
       context: 'tours',
       limit: 6,
       excludeSeen: false,
+      weather: WeatherController.weather.value,
     );
     if (!mounted) return;
     if (result == null || result.recommendations.isEmpty) {

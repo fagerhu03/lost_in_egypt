@@ -16,6 +16,7 @@ import 'booking_history_screen.dart';
 import 'tour_detail_screen.dart';
 import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/weather_controller.dart';
 import '../../../../core/utils/error_handler.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
@@ -104,6 +105,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         context: 'similar',
         limit: 3,
         excludeSeen: false, // small tour pool — keep all candidates visible
+        weather: WeatherController.weather.value,
       );
       if (!mounted) return;
       if (result == null || result.recommendations.isEmpty) {
@@ -249,11 +251,14 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       result.fold(
         (l) => _showSnackBar('Booking Error: ${l.message}', isError: true),
         (r) {
+          final inferred = RecommendationMappings.inferKeysFromText(
+            '${widget.tour.title} ${widget.tour.destinations.join(' ')} ${widget.tour.description}',
+          );
           RecommendationService.recordSignal(
             placeId: widget.tour.id,
             placeName: widget.tour.title,
-            types: ['tourist_attraction'],
-            tags: ['cultural', 'adventure'],
+            types: inferred['types']!,
+            tags: inferred['tags']!,
             signalType: 'booking',
             source: 'booking',
           );

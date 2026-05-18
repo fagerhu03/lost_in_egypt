@@ -12,11 +12,11 @@ class RoleSelectionScreen extends StatefulWidget {
 class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   bool? isGuideSelected;
 
-  void _navigateToSignup(BuildContext context, bool isGuide) {
+  void _navigateToSignup(BuildContext context, bool _) {
+    // Both tourist + guide signups go through the same screen now — guides
+    // apply later from their dashboard, not at signup time.
     Navigator.of(context).push(
-      FadePageRoute(
-        page: SignupScreen(isGuidePreselected: isGuide),
-      ),
+      FadePageRoute(page: const SignupScreen()),
     );
   }
 

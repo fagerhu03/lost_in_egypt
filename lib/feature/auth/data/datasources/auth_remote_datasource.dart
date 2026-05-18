@@ -13,7 +13,8 @@ abstract class AuthRemoteDataSource {
     required String birthMonth,
     required String birthDay,
     required String birthYear,
-    String? phoneNumber,
+    required String phoneNumber,
+    required String nationalityCode,
   });
 
   Future<UserModel> login({required String email, required String password});
@@ -58,16 +59,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String birthMonth,
     required String birthDay,
     required String birthYear,
-    String? phoneNumber,
+    required String phoneNumber,
+    required String nationalityCode,
   }) async {
     final UserCredential result = await firebaseAuth
         .createUserWithEmailAndPassword(email: email, password: password);
     final User user = result.user!;
 
-    // ✅ Send email verification
-    if (!user.emailVerified) {
-      await user.sendEmailVerification();
-    }
+    // sendEmailVerification is always needed for fresh accounts — fresh
+    // password sign-ups are never emailVerified, so the previous guard
+    // was dead code.
+    await user.sendEmailVerification();
 
     int monthIndex = _getMonthIndex(birthMonth);
     int day = int.parse(birthDay);
@@ -82,8 +84,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       birthDate: parsedBirthDate,
       role: "tourist", // or UserRole.tourist.name if using Enum
       profileImageUrl: "",
-      phoneNumber: phoneNumber ?? "",
+      phoneNumber: phoneNumber,
       nationality: "",
+      // ISO 3166-1 alpha-2 captured from the IntlPhoneField country picker.
+      // Required so the recommendation engine can apply the country-prior
+      // cold-start path from day 1 (instead of waiting for edit-profile).
+      nationalityCode: nationalityCode,
       language: "English",
       isNotificationsEnabled: true,
       isDarkMode: false,

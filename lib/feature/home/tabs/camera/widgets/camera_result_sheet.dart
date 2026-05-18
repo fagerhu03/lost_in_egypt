@@ -92,6 +92,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
         limit: 3,
         userLat: lat,
         userLng: lng,
+        weather: WeatherController.weather.value,
       );
       if (!mounted) return;
       if (result == null || result.recommendations.isEmpty) {

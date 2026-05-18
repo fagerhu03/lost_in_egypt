@@ -22,6 +22,7 @@ import '../../../../feature/reviews/data/datasources/reviews_data_source.dart';
 import '../../../../feature/reviews/data/models/review_model.dart';
 import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/weather_controller.dart';
 import '../../../../core/widgets/shimmer_loading_widget.dart';
 
 class TourDetailScreen extends StatefulWidget {
@@ -123,6 +124,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         // has opened a few tour details the "You might also enjoy" row
         // empties out and the section disappears entirely.
         excludeSeen: false,
+        weather: WeatherController.weather.value,
       );
       if (!mounted) return;
       if (result == null || result.recommendations.isEmpty) {
@@ -1218,11 +1220,14 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                       ));
                       final reviewSignal = selectedRating >= 4 ? 'visit' : selectedRating <= 2 ? 'dismiss' : null;
                       if (reviewSignal != null) {
+                        final inferred = RecommendationMappings.inferKeysFromText(
+                          '${widget.tour.title} ${widget.tour.destinations.join(' ')} ${widget.tour.description}',
+                        );
                         RecommendationService.recordSignal(
                           placeId: tourId,
                           placeName: widget.tour.title,
-                          types: ['tourist_attraction'],
-                          tags: ['cultural'],
+                          types: inferred['types']!,
+                          tags: inferred['tags']!,
                           signalType: reviewSignal,
                           source: 'review',
                         );

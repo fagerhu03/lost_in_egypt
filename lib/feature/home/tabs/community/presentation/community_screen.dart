@@ -15,6 +15,7 @@ import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verifi
 import '../../../../../core/widgets/shimmer_loading_widget.dart';
 import '../../map/data/places_api_service.dart';
 import '../../../../../core/services/recommendation_service.dart';
+import '../../../../../core/services/recommendation_mappings.dart';
 import '../../../../../core/utils/snack_bar_utils.dart';
 
 class CommunityScreen extends StatefulWidget {
@@ -320,6 +321,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     // Capture before setState clears them
     final postLocationId = _selectedLocationId;
     final postLocationName = _selectedLocationName;
+    final postCategory = _selectedCategory;
     try {
       await _repository.addPost(
         _postController.text.trim(),
@@ -331,9 +333,14 @@ class _CommunityScreenState extends State<CommunityScreen>
         category: _selectedCategory ?? '',
       );
       if (postLocationId != null) {
+        final inferred = RecommendationMappings.inferKeysFromText(
+          '${postLocationName ?? ''} ${postCategory ?? ''}',
+        );
         RecommendationService.recordSignal(
           placeId: postLocationId,
           placeName: postLocationName,
+          types: inferred['types']!,
+          tags: inferred['tags']!,
           signalType: 'post',
           source: 'community',
         );

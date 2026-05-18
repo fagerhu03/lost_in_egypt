@@ -811,12 +811,16 @@ class _PlanViewState extends State<_PlanView> {
     final uniqueTypes = plan.days
         .expand((d) => d.stops)
         .map((s) => s.placeType)
-        .toSet();
-    for (final type in uniqueTypes) {
+        .toSet()
+        .toList();
+    if (uniqueTypes.isNotEmpty) {
+      // Single signal — server applies -0.3 once across every key in the list.
+      // Looping previously N-amplified the penalty AND polluted soloPlanSeen
+      // with synthetic IDs per type.
       RecommendationService.recordSignal(
-        placeId: 'custom_${type.toLowerCase().replaceAll(' ', '_')}',
+        placeId: 'custom_${plan.title.toLowerCase().replaceAll(RegExp(r"\s+"), "_")}',
         placeName: plan.title,
-        types: [type],
+        types: uniqueTypes,
         signalType: 'dismiss',
         source: 'result_screen',
       );

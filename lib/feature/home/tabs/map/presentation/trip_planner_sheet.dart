@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class TripPlannerSheet extends StatefulWidget {
@@ -34,6 +35,18 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
     super.dispose();
   }
 
+  /// Returns the user's current GPS or null on permission/timeout failures.
+  /// Silent failure — proximity scoring just contributes 0 if this returns null.
+  Future<Position?> _getUserPosition() async {
+    try {
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      ).timeout(const Duration(seconds: 8));
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _loadSuggestions() async {
     final sorted = List<MapItem>.from(widget.allItems)
       ..sort((a, b) => b.rating.compareTo(a.rating));
@@ -50,11 +63,16 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
       'lng': item.coordinate.longitude,
     }).toList();
 
+    final pos = await _getUserPosition();
+
     final result = await RecommendationService.recommendPlaces(
       candidates: candidates,
       context: 'solo',
       limit: 8,
       excludeSeen: false,
+      userLat: pos?.latitude,
+      userLng: pos?.longitude,
+      weather: WeatherController.weather.value,
     );
 
     if (!mounted) return;
@@ -98,11 +116,16 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
       'lng': item.coordinate.longitude,
     }).toList();
 
+    final pos = await _getUserPosition();
+
     final result = await RecommendationService.recommendPlaces(
       candidates: candidates,
       context: 'similar',
       limit: 6,
       excludeSeen: false,
+      userLat: pos?.latitude,
+      userLng: pos?.longitude,
+      weather: WeatherController.weather.value,
     );
 
     if (!mounted) return;

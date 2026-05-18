@@ -17,6 +17,7 @@ import '../../map/data/places_api_service.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/utils/snack_bar_utils.dart';
 import '../../../../../core/services/recommendation_service.dart';
+import '../../../../../core/services/recommendation_mappings.dart';
 
 // Available emoji reactions
 const List<String> _kReactions = ['❤️', '😮', '😄', '🔥', '👏'];
@@ -769,9 +770,14 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                       color: widget.post.isLikedByMe ? Colors.red.shade400 : onSurface.withValues(alpha: 0.65),
                       onTap: () {
                         if (!widget.post.isLikedByMe && widget.post.locationId != null) {
+                          final inferred = RecommendationMappings.inferKeysFromText(
+                            widget.post.locationName ?? '',
+                          );
                           RecommendationService.recordSignal(
                             placeId: widget.post.locationId!,
                             placeName: widget.post.locationName ?? '',
+                            types: inferred['types']!,
+                            tags: inferred['tags']!,
                             signalType: 'like',
                             source: 'community',
                           );

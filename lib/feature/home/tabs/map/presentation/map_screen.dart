@@ -32,6 +32,7 @@ import 'package:lost_in_egypt/feature/home/tabs/map/widgets/sandstorm_overlay.da
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/utils/dataset_resolver.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/map/bloc/map_bloc.dart';
@@ -369,6 +370,7 @@ class _MapScreenViewState extends State<MapScreenView>
         limit: 1,
         userLat: pos.latitude,
         userLng: pos.longitude,
+        weather: WeatherController.weather.value,
       );
       if (!mounted || result == null || result.recommendations.isEmpty) return;
 
@@ -446,7 +448,7 @@ class _MapScreenViewState extends State<MapScreenView>
         if (!mounted) return;
         if (_viewRouteStops.isNotEmpty) setState(() => _viewRouteStops = []);
         final allItems = context.read<MapBloc>().state.allItemsCache;
-        final resolved = _resolveDatasetMatch(item, allItems) ?? item;
+        final resolved = DatasetResolver.resolveItem(item, allItems) ?? item;
         context.read<MapBloc>().add(MapPlaceSelected(resolved));
         _focusOnPlace(resolved);
       });
@@ -474,7 +476,7 @@ class _MapScreenViewState extends State<MapScreenView>
         // Resolve against the bundled dataset so the detail sheet shows real
         // photos, reviews, and description instead of a blank synthetic pin.
         final allItems = context.read<MapBloc>().state.allItemsCache;
-        final resolved = _resolveDatasetMatch(item, allItems) ?? item;
+        final resolved = DatasetResolver.resolveItem(item, allItems) ?? item;
         setState(() { _tourStop = resolved; _viewRouteStops = []; });
         context.read<MapBloc>().add(MapPlaceSelected(resolved));
         _updateVisibleMarkers(context.read<MapBloc>().state, forceInclude: resolved);
@@ -483,86 +485,8 @@ class _MapScreenViewState extends State<MapScreenView>
     }
   }
 
-  /// Searches the bundled dataset for a pin that best matches [synthetic].
-  ///
-  /// Strategy (in order):
-  /// 1. Exact normalised-title match within 2 km — always wins.
-  /// 2. ≥2 content-word overlap within 2 km (e.g. "grand" + "museum").
-  /// 3. 1 content-word overlap within 1 km, word ≥ 4 chars (e.g. "khan", "giza").
-  ///
-  /// Using a geographic radius prevents garbage Arabic/Hebrew-titled entries
-  /// (which normalise to an empty string and would satisfy `contains("")` for
-  /// every query) from matching everything.
-  MapItem? _resolveDatasetMatch(MapItem synthetic, List<MapItem> allItems) {
-    if (allItems.isEmpty) return null;
-    final q = _normalizeTitle(synthetic.title);
-    if (q.isEmpty) return null;
-
-    final sLat = synthetic.coordinate.latitude;
-    final sLng = synthetic.coordinate.longitude;
-    final qWords = _contentWords(q);
-
-    MapItem? bestMulti;        // best candidate with ≥2 word overlap (2 km)
-    int bestMultiScore = 1;
-    MapItem? bestSingle;       // best candidate with 1 word overlap (1 km)
-    double bestSingleDist = double.infinity;
-
-    for (final item in allItems) {
-      final dist = _haversineM(
-          sLat, sLng, item.coordinate.latitude, item.coordinate.longitude);
-      if (dist > 2000) continue;
-
-      final t = _normalizeTitle(item.title);
-      if (t.isEmpty) continue;           // skip Arabic/Hebrew-only entries
-      if (t == q) return item;           // exact title → immediate win
-
-      final overlap = qWords.intersection(_contentWords(t)).length;
-
-      if (overlap >= 2 && overlap > bestMultiScore) {
-        bestMultiScore = overlap;
-        bestMulti = item;
-      }
-
-      if (overlap == 1 && dist <= 1000 && dist < bestSingleDist) {
-        final word = qWords.intersection(_contentWords(t)).first;
-        if (word.length >= 4) {
-          bestSingleDist = dist;
-          bestSingle = item;
-        }
-      }
-    }
-
-    return bestMulti ?? bestSingle;
-    // Returns null → caller falls back to the synthetic pin (AI coordinates).
-  }
-
-  /// Content words: lower-case words ≥3 chars that are not common stop words.
-  /// Filters out "el", "al", "of", "the", etc. so they don't skew overlap.
-  Set<String> _contentWords(String normalized) {
-    const stop = {
-      'el', 'al', 'the', 'of', 'in', 'at', 'and', 'or', 'a', 'an',
-      'by', 'to', 'for', 'abu', 'ibn', 'bab', 'dar',
-    };
-    return normalized
-        .split(' ')
-        .where((w) => w.length >= 3 && !stop.contains(w))
-        .toSet();
-  }
-
-  String _normalizeTitle(String s) => s
-      .toLowerCase()
-      .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-
-  double _haversineM(double lat1, double lng1, double lat2, double lng2) {
-    const r = 6371000.0;
-    final p1 = lat1 * pi / 180, p2 = lat2 * pi / 180;
-    final dp = (lat2 - lat1) * pi / 180, dl = (lng2 - lng1) * pi / 180;
-    final a = sin(dp / 2) * sin(dp / 2) +
-        cos(p1) * cos(p2) * sin(dl / 2) * sin(dl / 2);
-    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
-  }
+  // Synthetic→dataset pin resolution is now in lib/core/utils/dataset_resolver.dart
+  // so active_tour_screen and other surfaces can reuse the same matcher.
 
   void _onPendingTrip() {
     final stops = MapFocusService.instance.pendingTripNotifier.value;
@@ -572,7 +496,7 @@ class _MapScreenViewState extends State<MapScreenView>
         if (!mounted) return;
         final allItems = context.read<MapBloc>().state.allItemsCache;
         final resolved =
-            stops.map((s) => _resolveDatasetMatch(s, allItems) ?? s).toList();
+            stops.map((s) => DatasetResolver.resolveItem(s, allItems) ?? s).toList();
         setState(() {
           _tripItinerary = resolved;
           _tripCurrentIndex = 0;
@@ -602,7 +526,7 @@ class _MapScreenViewState extends State<MapScreenView>
       // pin opens the full detail sheet (photos / reviews / description).
       final allItems = context.read<MapBloc>().state.allItemsCache;
       final resolved = rawStops
-          .map((s) => _resolveDatasetMatch(s, allItems) ?? s)
+          .map((s) => DatasetResolver.resolveItem(s, allItems) ?? s)
           .toList();
       setState(() => _viewRouteStops = resolved);
       _updateVisibleMarkers(context.read<MapBloc>().state);
