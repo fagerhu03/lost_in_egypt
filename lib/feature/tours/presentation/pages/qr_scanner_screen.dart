@@ -42,6 +42,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
           .doc(bookingId)
           .get();
 
+      if (!mounted) return;
       if (!doc.exists) {
         _showResult(context, valid: false, message: 'Booking not found');
         return;
@@ -71,6 +72,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         alreadyCheckedIn: status == 'checked_in' || status == 'partially_checked_in',
       );
     } catch (e) {
+      if (!mounted) return;
       _showResult(context, valid: false, message: ErrorHandler.handleGenericError(e));
     }
   }
@@ -297,7 +299,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             'status': newStatus,
                             'checkedInCount': newCheckedIn,
                           });
-                          if (mounted) {
+                          if (context.mounted) {
                             Navigator.pop(ctx);
                             _showResult(
                               context,
@@ -308,7 +310,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             );
                           }
                         } catch (e) {
-                          if (mounted) {
+                          if (context.mounted) {
                             Navigator.pop(ctx);
                             _showResult(context, valid: false, message: ErrorHandler.handleGenericError(e));
                           }

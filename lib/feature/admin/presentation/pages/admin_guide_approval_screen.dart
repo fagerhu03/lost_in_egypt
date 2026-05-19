@@ -52,7 +52,7 @@ class _AdminGuideApprovalScreenState extends State<AdminGuideApprovalScreen> {
                       child: Icon(Icons.person, color: Colors.white),
                     ),
                     title: Text('${guide.firstName} ${guide.lastName}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('${guide.email}\nMOTA: ${guide.motaLicenseNumber ?? 'N/A'}'),
+                    subtitle: Text('${guide.email}\nMOTA: ${guide.motaLicenseNumber}'),
                     isThreeLine: true,
                     trailing: FutureBuilder<DocumentSnapshot>(
                       future: FirebaseFirestore.instance.collection('users').doc(guide.id).get(),

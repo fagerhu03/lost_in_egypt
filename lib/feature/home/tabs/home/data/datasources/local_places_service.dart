@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/map_item_models.dart';
@@ -69,7 +70,7 @@ class LocalPlacesService {
       _cache[categoryId] = places;
       return places;
     } catch (e) {
-      print("Error loading places for $categoryId: $e");
+      debugPrint("Error loading places for $categoryId: $e");
       return [];
     }
   }

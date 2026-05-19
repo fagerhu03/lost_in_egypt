@@ -32,7 +32,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
     try {
       final styleParams = isDark ? 'assets/darkmode_map_style.json' : 'assets/map_style.json';
       _mapStyle = await rootBundle.loadString(styleParams);
-      _mapController?.setMapStyle(_mapStyle);
+      if (mounted) setState(() {});
     } catch (_) {
       // fallback to default
     }
@@ -102,11 +102,9 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             mapToolbarEnabled: false,
+            style: _mapStyle,
             onMapCreated: (controller) {
               _mapController = controller;
-              if (_mapStyle != null) {
-                _mapController!.setMapStyle(_mapStyle);
-              }
             },
           ),
           

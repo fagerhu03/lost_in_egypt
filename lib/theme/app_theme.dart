@@ -8,7 +8,6 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.lightPrimaryButton,
       brightness: Brightness.light,
-      background: AppColors.lightBackground,
       surface: const Color(0xFFFFFEF0),
     ),
     appBarTheme: const AppBarTheme(
@@ -28,7 +27,6 @@ class AppTheme {
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.darkPrimaryButton,
       brightness: Brightness.dark,
-      background: AppColors.darkBackground,
       surface: const Color(0xFF112B36),
     ),
     appBarTheme: const AppBarTheme(

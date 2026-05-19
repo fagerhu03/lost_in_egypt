@@ -697,8 +697,10 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                           source: 'review',
                         );
                       }
-                      if (mounted) {
+                      if (ctx.mounted) {
                         Navigator.pop(ctx);
+                      }
+                      if (mounted) {
                         setState(() => _hasReviewed = true);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Review submitted!')),
@@ -1322,6 +1324,15 @@ class _GuideTrackingSheet extends StatefulWidget {
 class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
   GoogleMapController? _mapController;
   bool _cameraMoved = false;
+  String? _mapStyle;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MapStyleHelper.getStyle(context).then((style) {
+      if (mounted) setState(() => _mapStyle = style);
+    });
+  }
 
   @override
   void dispose() {
@@ -1408,9 +1419,9 @@ class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
                         markers: markers,
                         myLocationButtonEnabled: false,
                         zoomControlsEnabled: false,
+                        style: _mapStyle,
                         onMapCreated: (controller) {
                           _mapController = controller;
-                          MapStyleHelper.applyTheme(controller, context);
                           if (loc != null && !_cameraMoved) {
                             _cameraMoved = true;
                             controller.animateCamera(

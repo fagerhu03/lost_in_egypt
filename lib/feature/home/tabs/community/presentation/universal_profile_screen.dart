@@ -171,7 +171,6 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
   Widget _buildUserPostsTab(BuildContext context, Color titleColor) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
-    final primary = theme.colorScheme.primary;
 
     return StreamBuilder<QuerySnapshot>(
       stream: GetIt.I<FirebaseFirestore>()
@@ -217,7 +216,6 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
 
   Widget _buildTouristProfile(BuildContext context, Color titleColor) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
     final displayName = "${widget.user.firstName} ${widget.user.lastName}".trim();
     

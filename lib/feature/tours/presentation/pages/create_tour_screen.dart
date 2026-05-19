@@ -54,6 +54,15 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
   List<MapItem> _availablePlaces = [];
   bool _isLoadingPlaces = true;
   GoogleMapController? _previewMapController;
+  String? _mapStyle;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MapStyleHelper.getStyle(context).then((style) {
+      if (mounted) setState(() => _mapStyle = style);
+    });
+  }
 
   @override
   void dispose() {
@@ -535,9 +544,9 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                 zoomControlsEnabled: false,
                                 mapToolbarEnabled: false,
                                 myLocationButtonEnabled: false,
+                                style: _mapStyle,
                                 onMapCreated: (controller) {
                                   _previewMapController = controller;
-                                  MapStyleHelper.applyTheme(controller, context);
                                 },
                               ),
                               Positioned(

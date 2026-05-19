@@ -42,6 +42,15 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
   // screen builds. Empty list while loading or if engine returns nothing.
   List<TourEntity> _similarTours = [];
   bool _loadingSimilar = true;
+  String? _mapStyle;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MapStyleHelper.getStyle(context).then((style) {
+      if (mounted) setState(() => _mapStyle = style);
+    });
+  }
 
   @override
   void initState() {
@@ -154,7 +163,6 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       body: CustomScrollView(
@@ -352,9 +360,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                           zoomControlsEnabled: false,
                           myLocationButtonEnabled: false,
                           mapToolbarEnabled: false,
+                          style: _mapStyle,
                           onMapCreated: (controller) {
                             _meetingMapController = controller;
-                            MapStyleHelper.applyTheme(controller, context);
                           },
                         ),
                         Positioned.fill(
@@ -856,7 +864,6 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                 final text = data['text'] ?? '';
                 final userName = data['userName'] ?? 'Anonymous';
                 final userId = data['userId'] as String?;
-                final reviewDocId = reviewDoc.id;
                 final userImage = data['userImage'] as String?;
                 final isOwnReview = userId == currentUid;
                 

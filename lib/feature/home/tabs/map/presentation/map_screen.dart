@@ -585,6 +585,7 @@ class _MapScreenViewState extends State<MapScreenView>
           CameraPosition(target: offsetTarget, zoom: targetZoom),
         ),
       );
+      if (!mounted) return;
       context.read<MapBloc>().add(const MapZoomChanged(targetZoom));
     } catch (e) {
       debugPrint('Camera animation error: $e');
@@ -729,10 +730,7 @@ class _MapScreenViewState extends State<MapScreenView>
   }
 
   Future<void> _applyCurrentMapStyle() async {
-    final controller = _mapController;
-    if (controller == null) return;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    await controller.setMapStyle(isDark ? _darkMapStyle : _lightMapStyle);
+    if (mounted) setState(() {});
   }
 
   Future<void> _checkLocationPermission() async {
@@ -740,10 +738,12 @@ class _MapScreenViewState extends State<MapScreenView>
                     await Geolocator.checkPermission() == LocationPermission.always;
     if (!granted) {
       final requested = await Geolocator.requestPermission();
+      if (!mounted) return;
       context.read<MapBloc>().add(MapLocationPermissionUpdated(
         requested == LocationPermission.whileInUse || requested == LocationPermission.always
       ));
     } else {
+      if (!mounted) return;
       context.read<MapBloc>().add(const MapLocationPermissionUpdated(true));
     }
   }
@@ -774,12 +774,14 @@ class _MapScreenViewState extends State<MapScreenView>
     
     // Easter Egg: Sandstorm Mode
     if (dest != null && dest.title.toLowerCase().contains('sahara desert')) {
+      if (!mounted) return;
       SandstormOverlay.show(context);
       await _flutterTts.setPitch(0.6);
       await _flutterTts.setSpeechRate(0.4);
       await _flutterTts.speak("The desert consumes all.");
     }
 
+    if (!mounted) return;
     context.read<MapBloc>().add(const MapLiveNavigationStarted());
     _isFollowingUser = true;
     
@@ -924,6 +926,7 @@ class _MapScreenViewState extends State<MapScreenView>
                 myLocationEnabled: state.isLocationPermissionGranted,
                 myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
+                style: isDark ? _darkMapStyle : _lightMapStyle,
                 onMapCreated: (controller) async {
                   _mapController = controller;
                   await _loadAndApplyMapStyleIfNeeded();
@@ -942,7 +945,7 @@ class _MapScreenViewState extends State<MapScreenView>
                   // Skip zoom updates during live navigation to avoid interference
                   if (state.isLiveNavigating) return;
                   final zoom = await _mapController?.getZoomLevel() ?? state.currentZoom;
-                  if (mounted) {
+                  if (context.mounted) {
                     context.read<MapBloc>().add(MapZoomChanged(zoom));
                   }
                 },
@@ -1234,6 +1237,7 @@ class _MapScreenViewState extends State<MapScreenView>
                           ),
                         );
                         if (chosen != null) {
+                          if (!context.mounted) return;
                           context.read<MapBloc>().add(MapCategoryChanged(chosen));
                         }
                       },
@@ -1363,7 +1367,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                             backgroundColor: Colors.transparent,
                                             builder: (_) => TripPlannerSheet(allItems: state.allItemsCache),
                                           );
-                                          if (itinerary != null && itinerary.isNotEmpty && mounted) {
+                                          if (itinerary != null && itinerary.isNotEmpty && context.mounted) {
                                             setState(() {
                                               _tripItinerary = itinerary;
                                               _tripCurrentIndex = 0;
@@ -1396,7 +1400,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                             backgroundColor: Colors.transparent,
                                             builder: (_) => NearMeSheet(allItems: state.allItemsCache),
                                           );
-                                          if (selectedPlace != null && mounted) {
+                                          if (selectedPlace != null && context.mounted) {
                                             context.read<MapBloc>().add(MapPlaceSelected(selectedPlace));
                                             _focusOnPlace(selectedPlace);
                                           }
@@ -1417,7 +1421,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                             backgroundColor: Colors.transparent,
                                             builder: (_) => SavedPlacesSheet(allItems: state.allItemsCache),
                                           );
-                                          if (selectedPlace != null && mounted) {
+                                          if (selectedPlace != null && context.mounted) {
                                             context.read<MapBloc>().add(MapPlaceSelected(selectedPlace));
                                             _focusOnPlace(selectedPlace);
                                           }

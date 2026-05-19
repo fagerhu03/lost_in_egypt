@@ -75,7 +75,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   String? _replyingToCommentId;
   String? _replyingToUserName;
-  String? _replyingToMentionName;
   final Set<String> _expandedThreadIds = {};
 
   late Stream<DocumentSnapshot> _postStream;
@@ -174,6 +173,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
 
     if (!isPhoneVerified) {
+      if (!mounted) return;
       final bool? verified = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const PhoneVerificationScreen()),
@@ -208,7 +208,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     setState(() {
       _replyingToCommentId   = rootThreadId;
       _replyingToUserName    = mentionedUserName;
-      _replyingToMentionName = mentionedUserName;
       final tag = "@$mentionedUserName ";
       if (!_commentController.text.startsWith(tag)) {
         _commentController.text = "$tag${_commentController.text}";
@@ -224,7 +223,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     setState(() {
       _replyingToCommentId   = null;
       _replyingToUserName    = null;
-      _replyingToMentionName = null;
       _commentController.clear();
     });
   }

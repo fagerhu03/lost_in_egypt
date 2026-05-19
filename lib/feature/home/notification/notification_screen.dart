@@ -76,6 +76,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       // ── Tourist: booking confirmed, tour cancelled, or booking cancelled by guide
       if (notif.type == 'booking_confirmed' || notif.type == 'tour_cancelled' ||
           notif.type == 'tour_updated' || notif.type == 'booking_cancelled') {
+        if (!mounted) return;
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
         return;
@@ -83,6 +84,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
       // ── Guide: new booking received → navigate to guide dashboard
       if (notif.type == 'booking') {
+        if (!mounted) return;
         Navigator.push(context, MaterialPageRoute(
           builder: (_) => BlocProvider(
             create: (_) => GuideToursCubit(
@@ -290,7 +292,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   ),
                                   onDismissed: (_) async {
                                     await _repo.deleteNotification(_userId, notif.id);
-                                    if (mounted) {
+                                    if (context.mounted) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         const SnackBar(

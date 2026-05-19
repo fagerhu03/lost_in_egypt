@@ -78,7 +78,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                   await _repo.deletePost(widget.post.id);
                   if (widget.isDetail && mounted) Navigator.pop(context);
                 } catch (e) {
-                  showErrorSnackBarFromException(context, e);
+                  if (mounted) showErrorSnackBarFromException(context, e);
                 }
               },
               child: const Text("Delete", style: TextStyle(color: Colors.red)),
@@ -100,8 +100,9 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
     );
     try {
       final doc = await FirebaseFirestore.instance.collection('users').doc(targetId).get();
-      if (mounted) Navigator.pop(context);
-      if (doc.exists && mounted) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      if (doc.exists) {
         final profileUser = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
         if (profileUser.id == FirebaseAuth.instance.currentUser?.uid) {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountScreen()));
@@ -110,7 +111,8 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
         }
       }
     } catch (e) {
-      if (mounted) Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context);
       showErrorSnackBarFromException(context, e);
     }
   }
@@ -151,10 +153,10 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                   try {
                     await _repo.editPost(widget.post.id, ctrl.text.trim());
                   } catch (e) {
-                    showErrorSnackBarFromException(context, e);
+                    if (mounted) showErrorSnackBarFromException(context, e);
                   }
                 }
-                Navigator.pop(ctx);
+                if (ctx.mounted) Navigator.pop(ctx);
               },
               child: Text("Save", style: TextStyle(color: primary)),
             ),
@@ -305,13 +307,15 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
           .collection('usernames')
           .doc(username.toLowerCase())
           .get();
-      if (mounted) Navigator.pop(context);
-      if (snap.exists && mounted) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      if (snap.exists) {
         final uid = snap.data()?['uid'] as String?;
         if (uid != null) _navigateToProfile(uid);
       }
     } catch (e) {
-      if (mounted) Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context);
     }
   }
 

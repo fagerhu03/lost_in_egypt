@@ -50,8 +50,6 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
 
     return Scaffold(
@@ -138,7 +136,7 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
             ),
           );
           final user = FirebaseAuth.instance.currentUser;
-          if (user != null && mounted) {
+          if (user != null && context.mounted) {
             context.read<GuideToursCubit>().fetchTours(user.uid);
           }
         },

@@ -92,9 +92,9 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDetailRow('MOTA License', applicant.motaLicenseNumber ?? 'N/A'),
+                      _buildDetailRow('MOTA License', applicant.motaLicenseNumber),
                       const Divider(),
-                      _buildDetailRow('Syndicate ID', applicant.syndicateNumber ?? 'N/A'),
+                      _buildDetailRow('Syndicate ID', applicant.syndicateNumber),
                       const Divider(),
                       _buildDetailRow('Languages', applicant.certifiedLanguages.isNotEmpty ? applicant.certifiedLanguages.join(', ') : 'None listed'),
                     ],

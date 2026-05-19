@@ -115,16 +115,16 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: !widget.isFromSignup,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         if (widget.isFromSignup) {
            Navigator.of(context).pushAndRemoveUntil(
              FadePageRoute(page: AuthGate()),
              (route) => false,
            );
-           return false;
         }
-        return true;
       },
       child: Scaffold(
         appBar: AppBar(title: const Text('Apply as Guide')),

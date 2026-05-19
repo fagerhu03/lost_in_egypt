@@ -183,7 +183,7 @@ class MyApp extends StatelessWidget {
                     child: const LoginScreen(),
                   ),
               '/signup': (context) => const SignupScreen(),
-              '/home': (context) => const HomeWrapper(),
+              '/home': (context) => HomeWrapper(),
               '/map_picker': (context) => const MapPickerScreen(),
             },
           );

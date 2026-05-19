@@ -17,7 +17,6 @@ class SavedPostsScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final bg = theme.scaffoldBackgroundColor;
     final onSurface = theme.colorScheme.onSurface;
-    final primary = theme.colorScheme.primary;
     final surface = theme.colorScheme.surface;
     final currentUid = GetIt.I<FirebaseAuth>().currentUser?.uid ?? '';
 

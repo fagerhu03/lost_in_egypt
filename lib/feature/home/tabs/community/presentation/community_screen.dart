@@ -136,6 +136,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     }
 
     if (!isPhoneVerified) {
+      if (!mounted) return;
       final bool? verified = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const PhoneVerificationScreen()),

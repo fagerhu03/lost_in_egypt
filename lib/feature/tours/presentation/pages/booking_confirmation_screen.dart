@@ -153,6 +153,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       final tourDoc = await FirebaseFirestore.instance
           .collection('tours').doc(widget.tour.id).get();
       final currentCap = (tourDoc.data()?['maxAttendees'] as num?)?.toInt() ?? 0;
+      if (!context.mounted) return;
       if (currentCap < _quantity) {
         if (currentCap <= 0) {
           _showSnackBar('Sorry, this tour is now fully booked.', isError: true);
@@ -166,6 +167,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         return;
       }
     } catch (_) {}
+
+    if (!mounted) return;
 
     setState(() => _isLoading = true);
 
@@ -547,35 +550,46 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               // ── Payment Method ──
               _buildSectionTitle('Payment Method'),
               const SizedBox(height: 12),
-              _buildPaymentOption(
-                title: 'Credit / Debit Card',
-                subtitle: 'Visa, Mastercard, Meeza',
-                icon: Icons.credit_card,
-                value: 'card',
-                theme: theme,
-              ),
-              _buildPaymentOption(
-                title: 'Mobile Wallet',
-                subtitle: 'Vodafone Cash, Orange, Etisalat',
-                icon: Icons.phone_android,
-                value: 'wallet',
-                theme: theme,
-              ),
-              _buildPaymentOption(
-                title: 'Apple Pay',
-                subtitle: 'iOS only • Coming soon',
-                icon: Icons.apple,
-                value: 'apple_pay',
-                theme: theme,
-                enabled: false, // Enable when Apple Pay integration is live
-              ),
-              _buildPaymentOption(
-                title: 'Fawry / Kiosk',
-                subtitle: 'Pay at any 172,000+ Fawry outlets',
-                icon: Icons.receipt_long,
-                value: 'kiosk',
-                theme: theme,
-                enabled: false, // Enable when kiosk integration is created
+              RadioGroup<String>(
+                groupValue: _selectedPaymentMethod,
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedPaymentMethod = val);
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildPaymentOption(
+                      title: 'Credit / Debit Card',
+                      subtitle: 'Visa, Mastercard, Meeza',
+                      icon: Icons.credit_card,
+                      value: 'card',
+                      theme: theme,
+                    ),
+                    _buildPaymentOption(
+                      title: 'Mobile Wallet',
+                      subtitle: 'Vodafone Cash, Orange, Etisalat',
+                      icon: Icons.phone_android,
+                      value: 'wallet',
+                      theme: theme,
+                    ),
+                    _buildPaymentOption(
+                      title: 'Apple Pay',
+                      subtitle: 'iOS only • Coming soon',
+                      icon: Icons.apple,
+                      value: 'apple_pay',
+                      theme: theme,
+                      enabled: false, // Enable when Apple Pay integration is live
+                    ),
+                    _buildPaymentOption(
+                      title: 'Fawry / Kiosk',
+                      subtitle: 'Pay at any 172,000+ Fawry outlets',
+                      icon: Icons.receipt_long,
+                      value: 'kiosk',
+                      theme: theme,
+                      enabled: false, // Enable when kiosk integration is created
+                    ),
+                  ],
+                ),
               ),
 
               // Wallet phone input
@@ -798,18 +812,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     bool enabled = true,
   }) {
     final isSelected = _selectedPaymentMethod == value;
-    return Opacity(
-      opacity: enabled ? 1.0 : 0.4,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.08),
-            width: isSelected ? 2 : 1,
+    return IgnorePointer(
+      ignoring: !enabled,
+      child: Opacity(
+        opacity: enabled ? 1.0 : 0.4,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.08),
+              width: isSelected ? 2 : 1,
+            ),
           ),
-        ),
         child: RadioListTile<String>(
           title: Row(
             children: [
@@ -836,16 +852,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             ],
           ),
           value: value,
-          groupValue: _selectedPaymentMethod,
           activeColor: theme.colorScheme.primary,
-          onChanged: enabled
-              ? (val) {
-                  if (val != null) setState(() => _selectedPaymentMethod = val);
-                }
-              : null,
         ),
       ),
-    );
+    ));
   }
 }
 

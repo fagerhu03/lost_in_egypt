@@ -64,7 +64,6 @@ class _SOSScreenState extends State<SOSScreen> {
   final _placesService = GetIt.instance<PlacesApiService>();
 
   Position? _position;
-  String _locationStatus = "Tap to find nearest help";
   bool _locating = false;
   bool _searching = false;
 
@@ -77,7 +76,6 @@ class _SOSScreenState extends State<SOSScreen> {
   Future<void> _findHelp() async {
     setState(() {
       _locating = true;
-      _locationStatus = "Getting your location…";
       _searchError = null;
     });
 
@@ -89,7 +87,6 @@ class _SOSScreenState extends State<SOSScreen> {
       if (permission == LocationPermission.deniedForever) {
         setState(() {
           _locating = false;
-          _locationStatus = "Location permission denied";
           _searchError =
               "Please enable location in your device settings to find nearby help.";
         });
@@ -103,14 +100,12 @@ class _SOSScreenState extends State<SOSScreen> {
       setState(() {
         _position = pos;
         _locating = false;
-        _locationStatus = "Location found";
       });
 
       await _searchNearby();
     } catch (e) {
       setState(() {
         _locating = false;
-        _locationStatus = "Could not get location";
         _searchError = "Make sure location services are enabled and try again.";
       });
     }

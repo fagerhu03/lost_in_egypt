@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../domain/entities/community_post.dart';
@@ -59,7 +60,7 @@ class CommunityPostModel extends CommunityPost {
 
     // Debug Logging
     if (data['userId'] == null || data['userId'] == '') {
-      print("⚠️ CommunityPostModel: userId is NULL or empty for post ${doc.id}");
+      debugPrint("⚠️ CommunityPostModel: userId is NULL or empty for post ${doc.id}");
     }
 
     return CommunityPostModel(

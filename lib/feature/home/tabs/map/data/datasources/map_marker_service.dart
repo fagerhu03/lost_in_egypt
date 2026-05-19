@@ -102,7 +102,7 @@ class MapMarkerService {
       throw Exception('Failed to convert image to bytes');
     }
 
-    return BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
+    return BitmapDescriptor.bytes(byteData.buffer.asUint8List());
   }
 
   BitmapDescriptor getMarkerIconByCategory(MapItem item, bool isSelected) {

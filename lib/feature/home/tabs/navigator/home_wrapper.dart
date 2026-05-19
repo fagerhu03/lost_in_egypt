@@ -12,12 +12,16 @@ import '../more/presentation/more_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class HomeWrapper extends StatefulWidget {
-  const HomeWrapper({super.key});
+  /// Static key so AuthGate StreamBuilder rebuilds never create a fresh State
+  /// (which would reset the active tab index to 0 — the recurring "back takes
+  /// you to Home" bug).
+  static final globalKey = GlobalKey<_HomeWrapperState>();
+
+  HomeWrapper() : super(key: globalKey);
 
   @override
   State<HomeWrapper> createState() => _HomeWrapperState();
 }
-
 class _HomeWrapperState extends State<HomeWrapper>
     with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();

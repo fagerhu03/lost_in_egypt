@@ -191,7 +191,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                             const SizedBox(height: 10),
                             SizedBox(
                               height: 320,
-                              child: _GuideToursList(guideId: widget.guide.id ?? ''),
+                              child: _GuideToursList(guideId: widget.guide.id),
                             ),
                             const Spacer(),
                             if (FirebaseAuth.instance.currentUser?.uid == widget.guide.id)

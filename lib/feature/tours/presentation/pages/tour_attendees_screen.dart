@@ -186,7 +186,6 @@ class _AttendeeCardState extends State<_AttendeeCard> {
     final email = _userData?['email'] ?? '';
     final profileUrl = _userData?['profileImageUrl'] ?? '';
     final userId = widget.bookingData['userId'] as String? ?? '';
-    final status = widget.bookingData['status'] ?? 'pending';
     final paymentStatus = widget.bookingData['paymentStatus'] ?? 'none';
 
     return Container(

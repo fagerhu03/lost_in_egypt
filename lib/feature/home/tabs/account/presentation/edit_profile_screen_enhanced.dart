@@ -233,6 +233,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         _completePhoneNumber.isNotEmpty && _currentUser!.phoneNumber.isEmpty;
 
     if ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty) {
+      if (!mounted) return;
       final bool? verified = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -411,6 +412,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     setState(() => _isLoading = false);
 
     final TextEditingController newLangController = TextEditingController();
+    if (!mounted) return;
     final bool? shouldSubmit = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

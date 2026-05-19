@@ -192,7 +192,7 @@ class _AuthGateState extends State<AuthGate> {
             // an on-demand trust step prompted at the natural moments —
             // posting in community, commenting, applying as a guide, or via
             // the "Verify Phone" tile in Edit Profile.
-            return const HomeWrapper();
+            return HomeWrapper();
           },
         );
       },
