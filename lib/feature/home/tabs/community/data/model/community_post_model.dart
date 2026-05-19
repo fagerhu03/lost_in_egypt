@@ -30,6 +30,8 @@ class CommunityPostModel extends CommunityPost {
     super.views,
     super.reactionCounts,
     super.myReaction,
+    super.taggedEventId,
+    super.taggedEventName,
     required this.timestamp,
   });
 
@@ -93,6 +95,8 @@ class CommunityPostModel extends CommunityPost {
       views: (data['views'] as int?) ?? 0,
       reactionCounts: reactionCounts,
       myReaction: myReaction,
+      taggedEventId: data['taggedEventId'] as String?,
+      taggedEventName: data['taggedEventName'] as String?,
       timestamp: date,
     );
   }

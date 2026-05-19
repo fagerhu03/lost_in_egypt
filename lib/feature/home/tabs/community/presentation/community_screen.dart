@@ -9,9 +9,9 @@ import 'package:get_it/get_it.dart';
 import '../../navigator/widget/account_menu_button.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import '../domain/entities/community_post.dart';
+import '../data/community_post_action_service.dart';
 import './community_post_card.dart';
 import 'post_detail_screen.dart';
-import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import '../../../../../core/widgets/shimmer_loading_widget.dart';
 import '../../map/data/places_api_service.dart';
 import '../../../../../core/services/recommendation_service.dart';
@@ -71,6 +71,23 @@ class _CommunityScreenState extends State<CommunityScreen>
       setState(() => _composerFocused = _composerFocusNode.hasFocus);
     });
     _scrollController.addListener(_onScroll);
+    CommunityPostActionService.instance.pendingPostContent.addListener(_handlePendingPost);
+    _checkPendingPost();
+  }
+
+  void _checkPendingPost() {
+    final content = CommunityPostActionService.instance.pendingPostContent.value;
+    if (content != null) {
+      _postController.text = content;
+      CommunityPostActionService.instance.pendingPostContent.value = null;
+      _composerFocusNode.requestFocus();
+    }
+  }
+
+  void _handlePendingPost() {
+    if (mounted) {
+      _checkPendingPost();
+    }
   }
 
   void _onScroll() {
@@ -82,6 +99,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   @override
   void dispose() {
+    CommunityPostActionService.instance.pendingPostContent.removeListener(_handlePendingPost);
     _postController.dispose();
     _composerFocusNode.dispose();
     _scrollController.dispose();
@@ -121,28 +139,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   void _handlePostAction() async {
     if (_isPosting) return;
     if (_postController.text.trim().isEmpty && _selectedImages.isEmpty) return;
-
-    final user = _auth.currentUser;
-
-    bool isPhoneVerified = false;
-    try {
-      final doc = await _firestore.collection('users').doc(user?.uid).get();
-      if (doc.exists) {
-        isPhoneVerified = doc.data()?['phoneVerified'] ?? false;
-      }
-    } catch (e) {
-      debugPrint('Error checking phone verification: $e');
-    }
-
-    if (!isPhoneVerified) {
-      final bool? verified = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const PhoneVerificationScreen()),
-      );
-      if (verified == true) _handlePost();
-    } else {
-      _handlePost();
-    }
+    _handlePost();
   }
 
   Future<void> _pickLocation() async {
@@ -320,6 +317,11 @@ class _CommunityScreenState extends State<CommunityScreen>
     // Capture before setState clears them
     final postLocationId = _selectedLocationId;
     final postLocationName = _selectedLocationName;
+    final eventId = CommunityPostActionService.instance.pendingEventId;
+    final eventName = CommunityPostActionService.instance.pendingEventName;
+    // Clear pending event data
+    CommunityPostActionService.instance.pendingEventId = null;
+    CommunityPostActionService.instance.pendingEventName = null;
     try {
       await _repository.addPost(
         _postController.text.trim(),
@@ -329,6 +331,8 @@ class _CommunityScreenState extends State<CommunityScreen>
         locationLat: _selectedLocationLat,
         locationLng: _selectedLocationLng,
         category: _selectedCategory ?? '',
+        taggedEventId: eventId,
+        taggedEventName: eventName,
       );
       if (postLocationId != null) {
         RecommendationService.recordSignal(

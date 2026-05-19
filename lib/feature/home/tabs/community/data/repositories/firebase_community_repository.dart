@@ -109,6 +109,8 @@ class FirebaseCommunityRepository {
     double? locationLat,
     double? locationLng,
     String category = '',
+    String? taggedEventId,
+    String? taggedEventName,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -131,6 +133,8 @@ class FirebaseCommunityRepository {
       if (locationLat != null) 'locationLat': locationLat,
       if (locationLng != null) 'locationLng': locationLng,
       'category': category,
+      if (taggedEventId != null) 'taggedEventId': taggedEventId,
+      if (taggedEventName != null) 'taggedEventName': taggedEventName,
       'likes': [],
       'dislikes': [],
       'savedBy': [],

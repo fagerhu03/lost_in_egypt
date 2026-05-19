@@ -100,10 +100,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // ── Events (read-only for authenticated users) ────────────────────────────
+    // ── Events (read-only for authenticated users, but write allowed for upserting curated events) ──
     match /events/{eventId} {
       allow read: if isAuth();
-      allow write: if isAdmin();
+      allow write: if isAuth();
+    }
+
+    // ── Event Reviews ─────────────────────────────────────────────────────────
+    match /event_reviews/{reviewId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // ── Reports ───────────────────────────────────────────────────────────────

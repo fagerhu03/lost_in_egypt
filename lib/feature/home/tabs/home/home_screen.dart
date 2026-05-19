@@ -18,6 +18,7 @@ import 'package:lost_in_egypt/feature/tours/domain/entities/tour_entity.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/tour_detail_screen.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
+import 'package:lost_in_egypt/core/constants/event_categories.dart';
 import '../../../../theme/theme.dart';
 import '../navigator/widget/account_menu_button.dart';
 import './data/datasources/local_mock_data.dart';
@@ -25,6 +26,7 @@ import './data/datasources/local_places_service.dart';
 import './data/models/map_item_models.dart';
 import './presentation/category_places_screen.dart';
 import './presentation/all_events_screen.dart';
+import './presentation/event_details_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,15 +42,18 @@ class _HomeScreenState extends State<HomeScreen>
   bool get wantKeepAlive => true;
   String? _profileImageUrl;
   String? _firstName;
-  late Future<QuerySnapshot> _eventsFuture;
+  List<EventModel> _curatedEvents = [];
+  String _selectedEventCategory = 'all';
   List<PlaceModel> _popularPlaces = [];
   List<PlaceModel> _forYouPlaces = [];
   bool _loadingForYou = true;
+  bool _loadingEvents = true;
 
   // Session-level caches — avoids re-fetching on hot rebuilds / tab switches / back-nav
   static List<PlaceModel>? _cachedAllPlaces;
   static List<PlaceModel>? _cachedPopular;
   static List<PlaceModel>? _cachedForYou;
+  static List<EventModel>? _cachedEvents;
   static DateTime? _forYouCacheTime;
 
   @override
@@ -62,12 +67,62 @@ class _HomeScreenState extends State<HomeScreen>
       _forYouPlaces = _cachedForYou!;
       _loadingForYou = false;
     }
-
-    _eventsFuture =
-        FirebaseFirestore.instance.collection('events').orderBy('date').limit(5).get();
+    if (_cachedEvents != null) {
+      _curatedEvents = _cachedEvents!;
+      _loadingEvents = false;
+    }
 
     _fetchUserProfile();
     _loadPopularPlaces();
+    _loadEvents();
+  }
+
+  Future<void> _loadEvents() async {
+    if (_cachedEvents != null) return;
+    try {
+      // Load live events from Firestore
+      List<EventModel> firestoreEvents = [];
+      try {
+        final snap = await FirebaseFirestore.instance
+            .collection('events')
+            .limit(30)
+            .get();
+        firestoreEvents = snap.docs
+            .map((d) => EventModel.fromMap(d.data(), d.id))
+            .toList();
+      } catch (e) {
+        print("Firestore events error: $e");
+      }
+      
+      final merged = firestoreEvents;
+
+      // Filter out past non-recurring events
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final active = merged.where((e) {
+        if (e.isRecurring) return true; // recurring events never expire
+        return !e.date.isBefore(today);  // keep if date is today or future
+      }).toList();
+
+      // Prioritize Passboard and Eventbrite events at the top
+      active.sort((a, b) {
+        final aLive = a.source == 'passboard' || a.source == 'eventbrite';
+        final bLive = b.source == 'passboard' || b.source == 'eventbrite';
+        if (aLive && !bLive) return -1;
+        if (!aLive && bLive) return 1;
+        return (b.importance ?? 5).compareTo(a.importance ?? 5);
+      });
+
+      if (!mounted) return;
+      _cachedEvents = active;
+      setState(() {
+        _curatedEvents = active;
+        _loadingEvents = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loadingEvents = false);
+    }
   }
 
   Future<void> _loadPopularPlaces() async {
@@ -475,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        "Events",
+                        "Experiences",
                         style: TextStyle(
                           color: textColor.withValues(alpha: 0.9),
                           fontSize: 22.sp,
@@ -488,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen>
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const AllEventsScreen()),
+                        MaterialPageRoute(builder: (_) => AllEventsScreen(events: _curatedEvents)),
                       );
                     },
                     child: Text(
@@ -503,52 +558,89 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
               ),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 8.h),
+            // Category filter chips
             SizedBox(
-              height: 160.h,
-              child: FutureBuilder<QuerySnapshot>(
-                future: _eventsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: theme.colorScheme.primary,
+              height: 36.h,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.only(left: 16.w),
+                itemCount: EventCategories.values.length,
+                itemBuilder: (context, index) {
+                  final cat = EventCategories.values[index];
+                  final isSelected = _selectedEventCategory == cat.id;
+                  return Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedEventCategory = cat.id);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: isSelected ? primary : surface,
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color: isSelected ? primary : textColor.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: Text(
+                          cat.label,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : textColor.withValues(alpha: 0.7),
+                            fontSize: 12.sp,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            fontFamily: "Marcellus",
+                          ),
+                        ),
                       ),
-                    );
-                  }
-                  if (snapshot.hasError || !snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(
-                      child: Text(
-                        "No events at the moment",
-                        style: TextStyle(color: secondaryTextColor),
-                      ),
-                    );
-                  }
-
-                  final docs = snapshot.data!.docs;
-
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.only(left: 16.w),
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
-                      final event = EventModel.fromMap(data, docs[index].id);
-                      final imageUrl = event.imagePath.isNotEmpty
-                          ? event.imagePath
-                          : ((data['images'] as List?)?.firstOrNull?.toString() ?? '');
-
-                      return _eventCard(
-                        title: event.title,
-                        imagePath: imageUrl,
-                        surface: surface,
-                        textColor: textColor,
-                        shadow: cardShadow,
-                      );
-                    },
+                    ),
                   );
                 },
               ),
+            ),
+            SizedBox(height: 10.h),
+            // Events carousel
+            SizedBox(
+              height: 200.h,
+              child: _loadingEvents
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: theme.colorScheme.primary,
+                      ),
+                    )
+                  : Builder(
+                      builder: (context) {
+                        final filtered = _selectedEventCategory == 'all'
+                            ? _curatedEvents
+                            : _curatedEvents
+                                .where((e) => e.eventCategory == _selectedEventCategory)
+                                .toList();
+                        if (filtered.isEmpty) {
+                          return Center(
+                            child: Text(
+                              "No events in this category",
+                              style: TextStyle(color: secondaryTextColor),
+                            ),
+                          );
+                        }
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.only(left: 16.w),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            return _eventCard(
+                              event: filtered[index],
+                              surface: surface,
+                              textColor: textColor,
+                              shadow: cardShadow,
+                              primary: primary,
+                            );
+                          },
+                        );
+                      },
+                    ),
             ),
             SizedBox(height: 25.h),
             // ── Popular Tours ──
@@ -708,111 +800,172 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _eventCard({
-    required String title,
-    required String imagePath,
+    required EventModel event,
     required Color surface,
     required Color textColor,
     required BoxShadow shadow,
+    required Color primary,
   }) {
-    return Container(
-      width: 200.w,
-      margin: EdgeInsets.only(right: 12.w),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [shadow],
-        border: Border.all(
-          color: (Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black)
-              .withValues(alpha: 0.06),
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16.r),
-        clipBehavior: Clip.hardEdge,
-        child: InkWell(
-          onTap: () {},
+    final imagePath = event.imagePath;
+    final categoryInfo = EventCategories.fromId(event.eventCategory);
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EventDetailsScreen(event: event),
+          ),
+        );
+      },
+      child: Container(
+        width: 170.w,
+        margin: EdgeInsets.only(right: 12.w),
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16.r),
-                  topRight: Radius.circular(16.r),
-                ),
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      height: 117.h,
-                      width: double.infinity,
-                      child: imagePath.startsWith('http')
-                          ? CachedNetworkImage(
-                              imageUrl: imagePath,
-                              fit: BoxFit.contain,
-                              placeholder: (context, url) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.broken_image, color: Colors.grey),
-                              ),
-                            )
-                          : Image.asset(
-                              imagePath,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.image_not_supported),
-                              ),
-                            ),
-                    ),
-                    Positioned(
-                      top: 10.h,
-                      right: 10.w,
-                      child: Material(
-                        color: Colors.white.withValues(alpha: 0.35),
-                        shape: const CircleBorder(),
-                        clipBehavior: Clip.hardEdge,
-                        child: InkWell(
-                          onTap: () {},
-                          customBorder: const CircleBorder(),
-                          child: SizedBox(
-                            width: 32.r,
-                            height: 32.r,
-                            child: Icon(
-                              Icons.favorite_border,
-                              size: 18.r,
-                              color: Colors.red.shade400,
-                            ),
+          boxShadow: [shadow],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Full-bleed image
+            imagePath.startsWith('http')
+                ? CachedNetworkImage(
+                    imageUrl: imagePath,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                      color: primary.withValues(alpha: 0.08),
+                      child: Center(
+                        child: SizedBox(
+                          width: 20.r,
+                          height: 20.r,
+                          child: CircularProgressIndicator(
+                            color: primary,
+                            strokeWidth: 2,
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: textColor.withValues(alpha: 0.9),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: "Marcellus",
+                    errorWidget: (_, __, ___) => Container(
+                      color: primary.withValues(alpha: 0.06),
+                      child: Icon(Icons.image_not_supported_outlined,
+                          color: primary.withValues(alpha: 0.3), size: 32.r),
+                    ),
+                  )
+                : Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: primary.withValues(alpha: 0.06),
+                      child: Icon(Icons.image_not_supported_outlined,
+                          color: primary.withValues(alpha: 0.3), size: 32.r),
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+            // Gradient overlay
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.65),
+                    ],
+                    stops: const [0.4, 1.0],
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+            // Category pill — top-left
+            Positioned(
+              top: 8.h,
+              left: 8.w,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  color: primary.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  categoryInfo.emoji,
+                  style: TextStyle(fontSize: 11.sp),
+                ),
+              ),
+            ),
+            // Rating pill — top-right (matches places)
+            if (event.rating > 0)
+              Positioned(
+                top: 8.h,
+                right: 8.w,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade700,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star_rounded, size: 12.r, color: Colors.white),
+                      SizedBox(width: 2.w),
+                      Text(
+                        event.rating.toStringAsFixed(1) + (event.reviewCount > 0 ? " (${event.reviewCount})" : ""),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            // Title + City — bottom (matches places)
+            Positioned(
+              bottom: 10.h,
+              left: 10.w,
+              right: 10.w,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Marcellus",
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (event.city.isNotEmpty || event.venueName.isNotEmpty) ...[
+                    SizedBox(height: 3.h),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_rounded,
+                            size: 11.r, color: Colors.white.withValues(alpha: 0.8)),
+                        SizedBox(width: 2.w),
+                        Expanded(
+                          child: Text(
+                            event.venueName.isNotEmpty ? event.venueName : event.city,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 11.sp,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

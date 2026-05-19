@@ -27,6 +27,9 @@ class CommunityPost {
   final Map<String, int> reactionCounts;
   // Which emoji this user reacted with, or null
   final String? myReaction;
+  // Tagged event (from Event Details -> Post to Community)
+  final String? taggedEventId;
+  final String? taggedEventName;
 
   const CommunityPost({
     required this.id,
@@ -55,5 +58,7 @@ class CommunityPost {
     this.views = 0,
     this.reactionCounts = const {},
     this.myReaction,
+    this.taggedEventId,
+    this.taggedEventName,
   });
 }

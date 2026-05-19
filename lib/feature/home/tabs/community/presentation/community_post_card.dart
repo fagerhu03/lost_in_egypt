@@ -17,6 +17,7 @@ import '../../map/data/places_api_service.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/utils/snack_bar_utils.dart';
 import '../../../../../core/services/recommendation_service.dart';
+import '../../home/presentation/event_details_screen.dart';
 
 // Available emoji reactions
 const List<String> _kReactions = ['❤️', '😮', '😄', '🔥', '👏'];
@@ -703,6 +704,76 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                                   const SizedBox(width: 4),
                                   Icon(Icons.open_in_new_rounded, size: 11, color: primary.withOpacity(0.7)),
                                 ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // ── Tagged Event chip ─────────────────────────────────
+                    if (widget.post.taggedEventId != null &&
+                        widget.post.taggedEventName != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: GestureDetector(
+                          onTap: () async {
+                            final eventId = widget.post.taggedEventId!;
+                            if (!mounted) return;
+                            final nav = Navigator.of(context);
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (_) => const Center(child: CircularProgressIndicator()),
+                            );
+                            try {
+                              final doc = await FirebaseFirestore.instance
+                                  .collection('events')
+                                  .doc(eventId)
+                                  .get();
+                              nav.pop();
+                              if (doc.exists && mounted) {
+                                final event = EventModel.fromMap(
+                                    doc.data() as Map<String, dynamic>, doc.id);
+                                nav.push(MaterialPageRoute(
+                                  builder: (_) => EventDetailsScreen(event: event),
+                                ));
+                              }
+                            } catch (_) {
+                              nav.pop();
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  primary.withOpacity(0.18),
+                                  primary.withOpacity(0.08),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: primary.withOpacity(0.35), width: 1),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.event_rounded,
+                                    size: 14, color: primary),
+                                const SizedBox(width: 5),
+                                Text(
+                                  widget.post.taggedEventName!,
+                                  style: TextStyle(
+                                    color: primary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Icon(Icons.arrow_forward_ios_rounded,
+                                    size: 10,
+                                    color: primary.withOpacity(0.7)),
                               ],
                             ),
                           ),

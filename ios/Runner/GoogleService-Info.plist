@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>435450589544-0ri6hl54s9tusfehkkc4kl7ffs3ji0db.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.435450589544-0ri6hl54s9tusfehkkc4kl7ffs3ji0db</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>435450589544-1p56fi2tbgrad6sqd0te0itnrb5udtnh.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCaXz56Nl2wvYfgfHASi5SkWgtXLBZUTec</string>
+	<key>GCM_SENDER_ID</key>
+	<string>435450589544</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.lostInEgypt</string>
+	<key>PROJECT_ID</key>
+	<string>lost-in-egypt-elasly</string>
+	<key>STORAGE_BUCKET</key>
+	<string>lost-in-egypt-elasly.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:435450589544:ios:31a31fd75d91234bf0e6dd</string>
+</dict>
+</plist>

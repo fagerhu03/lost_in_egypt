@@ -11,6 +11,10 @@ admin.initializeApp();
 // ── Recommendation Engine (see recommendation.js + design doc in memory) ─────
 Object.assign(exports, require("./recommendation"));
 
+// ── Eventbrite Sync (daily scheduled + manual callable) ──────────────────────
+Object.assign(exports, require("./eventbrite_sync"));
+Object.assign(exports, require("./passboard_sync"));
+
 // Define secrets stored securely in Google Cloud Secret Manager
 const geminiApiKey = defineSecret("GEMINI_API_KEY");
 const groqApiKey = defineSecret("GROQ_API_KEY");
