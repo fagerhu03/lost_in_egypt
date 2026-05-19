@@ -23,13 +23,13 @@ class MapSearchBar extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
     
     final shadowColor = isDark
-        ? Colors.white.withOpacity(0.18)
-        : Colors.black.withOpacity(0.18);
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.18);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: surface.withOpacity(isDark ? 0.92 : 0.97),
+        color: surface.withValues(alpha: isDark ? 0.92 : 0.97),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -39,7 +39,7 @@ class MapSearchBar extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
         ),
       ),
       child: Row(
@@ -47,7 +47,7 @@ class MapSearchBar extends StatelessWidget {
           const SizedBox(width: 14),
           Icon(
             Icons.search_rounded,
-            color: onSurface.withOpacity(0.5),
+            color: onSurface.withValues(alpha: 0.5),
             size: 22,
           ),
           const SizedBox(width: 10),
@@ -79,7 +79,7 @@ class MapSearchBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search places...',
                 hintStyle: TextStyle(
-                  color: onSurface.withOpacity(0.4),
+                  color: onSurface.withValues(alpha: 0.4),
                   fontSize: 15,
                 ),
                 border: InputBorder.none,
@@ -97,7 +97,7 @@ class MapSearchBar extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   child: Icon(
                     Icons.close_rounded,
-                    color: onSurface.withOpacity(0.5),
+                    color: onSurface.withValues(alpha: 0.5),
                     size: 20,
                   ),
                 ),

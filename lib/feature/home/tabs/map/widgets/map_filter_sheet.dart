@@ -29,7 +29,7 @@ class MapFilterSheet extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
-    final dividerColor = onSurface.withOpacity(0.10);
+    final dividerColor = onSurface.withValues(alpha: 0.10);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
@@ -44,15 +44,15 @@ class MapFilterSheet extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.black.withOpacity(0.12),
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.12),
                 blurRadius: 18,
                 spreadRadius: 1,
                 offset: const Offset(0, -6),
               ),
             ],
             border: Border.all(
-              color: (isDark ? Colors.white : Colors.black).withOpacity(0.06),
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
             ),
           ),
           child: Column(
@@ -63,7 +63,7 @@ class MapFilterSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: onSurface.withOpacity(isDark ? 0.25 : 0.18),
+                  color: onSurface.withValues(alpha: isDark ? 0.25 : 0.18),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -86,13 +86,13 @@ class MapFilterSheet extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: selectedCategory == 'all'
-                            ? primary.withOpacity(0.12)
-                            : Colors.green.withOpacity(0.12),
+                            ? primary.withValues(alpha: 0.12)
+                            : Colors.green.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: selectedCategory == 'all'
-                              ? primary.withOpacity(0.25)
-                              : Colors.green.withOpacity(0.25),
+                              ? primary.withValues(alpha: 0.25)
+                              : Colors.green.withValues(alpha: 0.25),
                         ),
                       ),
                       child: Text(
@@ -139,12 +139,12 @@ class MapFilterSheet extends StatelessWidget {
                           height: 40,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? primary.withOpacity(0.14)
-                                : onSurface.withOpacity(0.06),
+                                ? primary.withValues(alpha: 0.14)
+                                : onSurface.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: (isDark ? Colors.white : Colors.black)
-                                  .withOpacity(0.06),
+                                  .withValues(alpha: 0.06),
                             ),
                           ),
                           child: Center(
@@ -169,12 +169,12 @@ class MapFilterSheet extends StatelessWidget {
                                   : '$count places',
                           style: TextStyle(
                             fontSize: 12,
-                            color: onSurface.withOpacity(0.70),
+                            color: onSurface.withValues(alpha: 0.70),
                           ),
                         ),
                         trailing: isSelected
                             ? Icon(Icons.check_circle, color: primary)
-                            : Icon(Icons.chevron_right, color: onSurface.withOpacity(0.45)),
+                            : Icon(Icons.chevron_right, color: onSurface.withValues(alpha: 0.45)),
                         onTap: () => onCategorySelected(category.id),
                       ),
                     );

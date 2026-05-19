@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 
-import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:lost_in_egypt/feature/auth/data/repository_impl/auth_repository_impl.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {

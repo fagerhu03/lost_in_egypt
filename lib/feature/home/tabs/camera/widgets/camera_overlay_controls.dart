@@ -155,7 +155,7 @@ class CameraOverlayControls extends StatelessWidget {
                           shape: const CircleBorder(),
                           clipBehavior: Clip.hardEdge,
                           elevation: 4,
-                          shadowColor: Colors.black.withOpacity(0.5),
+                          shadowColor: Colors.black.withValues(alpha: 0.5),
                           child: InkWell(
                             onTap: () => cubit.pickFromGallery(),
                             customBorder: const CircleBorder(),
@@ -212,7 +212,7 @@ class CameraOverlayControls extends StatelessWidget {
                           shape: const CircleBorder(),
                           clipBehavior: Clip.hardEdge,
                           elevation: 6,
-                          shadowColor: Colors.black.withOpacity(0.5),
+                          shadowColor: Colors.black.withValues(alpha: 0.5),
                           child: InkWell(
                             onTap: () => cubit.toggleTranslateMode(),
                             customBorder: const CircleBorder(),

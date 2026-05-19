@@ -12,12 +12,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
+import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
 import 'package:lost_in_egypt/core/services/story_cache_service.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/core/services/weather_service.dart';
+import 'package:lost_in_egypt/core/utils/dataset_resolver.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import '../../../../../../../theme/theme.dart';
 
@@ -42,6 +45,11 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
 
   Duration _elapsed = Duration.zero;
   Timer? _timer;
+
+  /// Cached map dataset for resolving synthetic stop names to real placeIds
+  /// before recording signals. Empty until [_loadDataset] completes; signal
+  /// recording falls back to a namespaced synthetic ID if resolution fails.
+  List<MapItem> _dataset = const [];
 
   @override
   void initState() {
@@ -69,7 +77,18 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
     }
 
     _loadWeather();
+    _loadDataset();
     _showOnboardingIfNeeded();
+  }
+
+  /// Fires once per tour. Best-effort: if it fails we fall back to a
+  /// namespaced synthetic placeId at signal time. MapRepository is cached, so
+  /// subsequent screens that need the dataset don't pay this cost again.
+  Future<void> _loadDataset() async {
+    try {
+      final items = await sl<MapRepository>().fetchAllMapItemsLimited();
+      if (mounted) setState(() => _dataset = items);
+    } catch (_) {}
   }
 
   @override
@@ -194,13 +213,38 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       );
       if (completed) {
         final stop = _plan.days[dayIndex].stops[stopIndex];
-        RecommendationService.recordSignal(
-          placeId: stop.name.toLowerCase().replaceAll(' ', '_'),
-          placeName: stop.name,
-          types: [stop.placeType],
-          signalType: 'visit',
-          source: 'active_tour',
-        );
+        // Try to resolve the AI-generated stop name to a real dataset entry so
+        // the signal is recorded against the canonical placeId (matches the
+        // Places API ID used by every other surface). Falls back to a clearly
+        // namespaced synthetic ID when resolution fails — the taste vector
+        // still updates either way.
+        final resolved = stop.hasCoordinates && _dataset.isNotEmpty
+            ? DatasetResolver.resolve(
+                name: stop.name,
+                lat: stop.lat!,
+                lng: stop.lng!,
+                dataset: _dataset,
+              )
+            : null;
+        if (resolved != null) {
+          RecommendationService.recordSignal(
+            placeId: resolved.id,
+            placeName: resolved.title,
+            types: [resolved.category],
+            tags: resolved.tags,
+            signalType: 'visit',
+            source: 'active_tour',
+          );
+        } else {
+          RecommendationService.recordSignal(
+            placeId:
+                'tour_stop:${stop.name.toLowerCase().replaceAll(RegExp(r"\s+"), "_")}',
+            placeName: stop.name,
+            types: [stop.placeType],
+            signalType: 'visit',
+            source: 'active_tour',
+          );
+        }
       }
       final updatedDays = List<SavedPlanDay>.from(_plan.days);
       updatedDays[dayIndex] =

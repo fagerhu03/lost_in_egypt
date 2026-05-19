@@ -98,7 +98,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
     try {
       final filename =
-          'profile_${_firebaseUser!.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          'profile_${_firebaseUser.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final ref = FirebaseStorage.instance
           .ref()
           .child('profile_images')
@@ -118,7 +118,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(_firebaseUser!.uid)
+          .doc(_firebaseUser.uid)
           .update({'profileImageUrl': imageUrl});
 
       if (mounted) {
@@ -158,7 +158,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(_firebaseUser!.uid)
+          .doc(_firebaseUser.uid)
           .get()
           .timeout(const Duration(seconds: 10));
 
@@ -190,7 +190,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
     // Auto-verify email for social login users
     if (_currentUser != null && mounted) {
-      final isSocialLogin = _firebaseUser!.providerData.any(
+      final isSocialLogin = _firebaseUser.providerData.any(
             (userInfo) =>
         userInfo.providerId == 'google.com' ||
             userInfo.providerId == 'facebook.com',
@@ -233,6 +233,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         _completePhoneNumber.isNotEmpty && _currentUser!.phoneNumber.isEmpty;
 
     if ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty) {
+      if (!mounted) return;
       final bool? verified = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -393,7 +394,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     try {
       final existingQuery = await FirebaseFirestore.instance
           .collection('admin_requests')
-          .where('userId', isEqualTo: _firebaseUser!.uid)
+          .where('userId', isEqualTo: _firebaseUser.uid)
           .where('type', isEqualTo: 'language_addition')
           .where('status', isEqualTo: 'pending')
           .get();
@@ -411,6 +412,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     setState(() => _isLoading = false);
 
     final TextEditingController newLangController = TextEditingController();
+    if (!mounted) return;
     final bool? shouldSubmit = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -451,12 +453,12 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       ),
     );
 
-    if (shouldSubmit == true && _firebaseUser != null) {
+    if (shouldSubmit == true) {
       setState(() => _isLoading = true);
       try {
         await FirebaseFirestore.instance.collection('admin_requests').add({
           'type': 'language_addition',
-          'userId': _firebaseUser!.uid,
+          'userId': _firebaseUser.uid,
           'requestedLanguage': newLangController.text.trim(),
           'status': 'pending',
           'createdAt': FieldValue.serverTimestamp(),
@@ -543,15 +545,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     // visible shadows (dark in light, glow in dark)
     final fieldShadow = BoxShadow(
       color: isDark
-          ? Colors.white.withOpacity(0.14)
-          : Colors.black.withOpacity(0.12),
+          ? Colors.white.withValues(alpha: 0.14)
+          : Colors.black.withValues(alpha: 0.12),
       blurRadius: 16,
       spreadRadius: 1,
       offset: const Offset(0, 8),
     );
 
     final borderColor =
-    (isDark ? Colors.white : Colors.black).withOpacity(isDark ? 0.10 : 0.06);
+    (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
     return Container(
       decoration: BoxDecoration(
@@ -598,7 +600,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                                 Text(
                                   "Profile Completion",
                                   style: TextStyle(
-                                    color: onSurface.withOpacity(0.7),
+                                    color: onSurface.withValues(alpha: 0.7),
                                     fontSize: 13,
                                     fontFamily: 'Marcellus',
                                   ),
@@ -619,7 +621,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                               borderRadius: BorderRadius.circular(4),
                               child: LinearProgressIndicator(
                                 value: completed / 8,
-                                backgroundColor: primary.withOpacity(0.12),
+                                backgroundColor: primary.withValues(alpha: 0.12),
                                 valueColor: AlwaysStoppedAnimation<Color>(primary),
                                 minHeight: 6,
                               ),
@@ -793,7 +795,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: primary.withOpacity(0.18),
+              color: primary.withValues(alpha: 0.18),
               boxShadow: [shadow],
             ),
             child: ClipOval(
@@ -831,7 +833,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                       color: (Theme.of(context).brightness == Brightness.dark
                           ? Colors.white
                           : Colors.black)
-                          .withOpacity(0.08),
+                          .withValues(alpha: 0.08),
                     ),
                   ),
                   child: _isUploadingImage
@@ -878,7 +880,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     child: Text(
       text,
       style: TextStyle(
-        color: onSurface.withOpacity(0.85),
+        color: onSurface.withValues(alpha: 0.85),
         fontSize: 14,
         fontFamily: "Marcellus",
         fontWeight: FontWeight.w600,
@@ -896,11 +898,11 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: readOnly ? surface.withOpacity(0.70) : surface,
+        color: readOnly ? surface.withValues(alpha: 0.70) : surface,
         borderRadius: BorderRadius.circular(25),
         boxShadow: readOnly ? [] : [shadow],
         border: Border.all(
-          color: readOnly ? borderColor.withOpacity(1) : borderColor,
+          color: readOnly ? borderColor.withValues(alpha: 1) : borderColor,
         ),
       ),
       child: TextField(
@@ -911,7 +913,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           suffixIcon: readOnly
-              ? Icon(Icons.lock_outline, color: onSurface.withOpacity(0.7), size: 20)
+              ? Icon(Icons.lock_outline, color: onSurface.withValues(alpha: 0.7), size: 20)
               : null,
         ),
       ),
@@ -939,7 +941,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(16),
           hintText: "Tell us about yourself...",
-          hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
+          hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.45)),
         ),
       ),
     );
@@ -968,7 +970,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         initialCountryCode: _isoCode,
         style: TextStyle(color: onSurface),
         dropdownTextStyle: TextStyle(color: onSurface),
-        dropdownIcon: Icon(Icons.arrow_drop_down, color: onSurface.withOpacity(0.8)),
+        dropdownIcon: Icon(Icons.arrow_drop_down, color: onSurface.withValues(alpha: 0.8)),
         onChanged: (phone) {
           _completePhoneNumber = phone.completeNumber;
           _isoCode = phone.countryISOCode;
@@ -1009,7 +1011,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
               borderRadius: BorderRadius.circular(20),
               inputDecoration: InputDecoration(
                 hintText: 'Search nationality',
-                prefixIcon: Icon(Icons.search, color: onSurface.withOpacity(0.8)),
+                prefixIcon: Icon(Icons.search, color: onSurface.withValues(alpha: 0.8)),
                 border: OutlineInputBorder(
                   borderSide: BorderSide(color: borderColor),
                   borderRadius: BorderRadius.circular(14),
@@ -1101,13 +1103,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? primary.withOpacity(0.8) : borderColor,
+                  color: isSelected ? primary.withValues(alpha: 0.8) : borderColor,
                 ),
               ),
               child: Text(
                 interest,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : onSurface.withOpacity(0.9),
+                  color: isSelected ? Colors.white : onSurface.withValues(alpha: 0.9),
                   fontSize: 15,
                 ),
               ),
@@ -1210,7 +1212,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                 hintText: "your_handle",
-                hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
+                hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.45)),
               ),
             ),
           ),
@@ -1256,7 +1258,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               hintText: hint,
-              hintStyle: TextStyle(color: onSurface.withOpacity(0.45)),
+              hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.45)),
             ),
           ),
         ),
@@ -1298,8 +1300,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             _currentUser?.emailVerified ?? false,
             onResend: () async {
               try {
-                if (_firebaseUser != null && !_firebaseUser!.emailVerified) {
-                  await _firebaseUser!.sendEmailVerification();
+                if (_firebaseUser != null && !_firebaseUser.emailVerified) {
+                  await _firebaseUser.sendEmailVerification();
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(

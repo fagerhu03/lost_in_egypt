@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/map_item_models.dart';
@@ -17,6 +18,21 @@ class LocalPlacesService {
     'cat_adventure':  'assets/cat_adventure.json',
   };
 
+  /// Maps the asset-bucket categoryId (`cat_museum`) to the canonical engine
+  /// type (`museum`). Used so the `category` field on every loaded PlaceModel
+  /// matches what places loaded from Places API / dataset return — otherwise
+  /// `category.toUpperCase()` renders inconsistently across the app
+  /// ("MUSEUM" vs "CAT_MUSEUM") and the recommendation engine fails to score
+  /// these places against the user's tasteVector (which uses canonical keys).
+  static const Map<String, String> _canonicalCategory = {
+    'cat_museum':     'museum',
+    'cat_restaurant': 'restaurant',
+    'cat_beach':      'beach',
+    'cat_mosque':     'mosque',
+    'cat_hotel':      'tourist_attraction',
+    'cat_adventure':  'tourist_attraction',
+  };
+
   /// Load all places for a given category directly from its JSON file.
   static Future<List<PlaceModel>> getPlacesByCategory(String categoryId) async {
     if (_cache.containsKey(categoryId)) return _cache[categoryId]!;
@@ -28,11 +44,12 @@ class LocalPlacesService {
       final jsonString = await rootBundle.loadString(assetPath);
       final List<dynamic> jsonList = jsonDecode(jsonString);
 
+      final canonicalCat = _canonicalCategory[categoryId] ?? 'tourist_attraction';
       final places = jsonList.map((item) {
         return PlaceModel(
           id: item['id'] ?? '',
           title: item['title'] ?? '',
-          category: categoryId,
+          category: canonicalCat,
           coordinate: GeoPoint(
             (item['latitude'] as num?)?.toDouble() ?? 30.0444,
             (item['longitude'] as num?)?.toDouble() ?? 31.2357,
@@ -53,7 +70,7 @@ class LocalPlacesService {
       _cache[categoryId] = places;
       return places;
     } catch (e) {
-      print("Error loading places for $categoryId: $e");
+      debugPrint("Error loading places for $categoryId: $e");
       return [];
     }
   }

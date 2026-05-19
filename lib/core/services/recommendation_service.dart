@@ -152,7 +152,8 @@ class RecommendationService {
   ///   - 'solo'    → taste-heavy (40%) — for trip planning
   ///   - 'nearby'  → proximity-heavy (30%) — for map nearby panel
   ///   - 'similar' → collab-heavy (30%) — for "similar places" after a visit
-  ///   - 'home'    → balanced — for home feed carousel
+  ///   - 'home'    → proximity-heavy (45%) — for home feed carousel
+  ///   - 'tours'   → taste (40%) + rating (20%) — for guided-tour carousels
   ///
   /// [weather] is passed to the engine so outdoor places are penalised during
   /// extreme heat / sandstorm conditions. Safe to omit if unavailable.
@@ -226,5 +227,14 @@ class RecommendationService {
       // HttpsError code 'resource-exhausted' means rate limit hit — not a bug.
       debugPrint('RecommendationService.warmStart: $e');
     }
+  }
+
+  // ── Debug / recovery ───────────────────────────────────────────────────────
+
+  /// Clears the user's tasteVector and resets signal counters. Used by the
+  /// "Reset Taste Signals (Debug)" tile in Settings to recover from a corrupted
+  /// taste vector. Throws so the caller can show success/failure to the user.
+  static Future<void> resetTasteVector() async {
+    await _fn('resetTasteVector').call({});
   }
 }

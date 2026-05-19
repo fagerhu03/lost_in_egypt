@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 
 import '../data/model/community_post_model.dart';
-import '../domain/entities/community_post.dart';
 import 'community_post_card.dart';
 import 'post_detail_screen.dart';
 import '../../../../../core/widgets/shimmer_loading_widget.dart';
@@ -18,7 +17,6 @@ class SavedPostsScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final bg = theme.scaffoldBackgroundColor;
     final onSurface = theme.colorScheme.onSurface;
-    final primary = theme.colorScheme.primary;
     final surface = theme.colorScheme.surface;
     final currentUid = GetIt.I<FirebaseAuth>().currentUser?.uid ?? '';
 
@@ -39,7 +37,7 @@ class SavedPostsScreen extends StatelessWidget {
         ),
       ),
       body: currentUid.isEmpty
-          ? Center(child: Text('Sign in to view saved posts.', style: TextStyle(color: onSurface.withOpacity(0.6))))
+          ? Center(child: Text('Sign in to view saved posts.', style: TextStyle(color: onSurface.withValues(alpha: 0.6))))
           : StreamBuilder<QuerySnapshot>(
               stream: GetIt.I<FirebaseFirestore>()
                   .collection('community_posts')
@@ -51,14 +49,14 @@ class SavedPostsScreen extends StatelessWidget {
                   return ListView.separated(
                     padding: const EdgeInsets.all(12),
                     itemCount: 4,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (_, __) => _buildSkeleton(surface, onSurface, isDark),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (_, _) => _buildSkeleton(surface, onSurface, isDark),
                   );
                 }
 
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text('Something went wrong.', style: TextStyle(color: onSurface.withOpacity(0.6))),
+                    child: Text('Something went wrong.', style: TextStyle(color: onSurface.withValues(alpha: 0.6))),
                   );
                 }
 
@@ -69,16 +67,16 @@ class SavedPostsScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.bookmark_border_rounded, size: 64, color: onSurface.withOpacity(0.2)),
+                        Icon(Icons.bookmark_border_rounded, size: 64, color: onSurface.withValues(alpha: 0.2)),
                         const SizedBox(height: 16),
                         Text(
                           'No saved posts yet',
-                          style: TextStyle(fontFamily: 'Marcellus', fontSize: 18, color: onSurface.withOpacity(0.5)),
+                          style: TextStyle(fontFamily: 'Marcellus', fontSize: 18, color: onSurface.withValues(alpha: 0.5)),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Tap the bookmark icon on any post to save it here.',
-                          style: TextStyle(fontSize: 13, color: onSurface.withOpacity(0.4)),
+                          style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.4)),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -92,7 +90,7 @@ class SavedPostsScreen extends StatelessWidget {
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
                   itemCount: posts.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final post = posts[index];
                     return CommunityPostCard(
@@ -116,7 +114,7 @@ class SavedPostsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: (isDark ? Colors.white : Colors.black).withOpacity(0.05)),
+        border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

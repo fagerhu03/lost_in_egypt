@@ -63,12 +63,8 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: applicant.profileImageUrl != null
-                        ? CachedNetworkImageProvider(applicant.profileImageUrl!)
-                        : null,
-                    child: applicant.profileImageUrl == null
-                        ? const Icon(Icons.person, size: 50)
-                        : null,
+                    backgroundImage: CachedNetworkImageProvider(applicant.profileImageUrl),
+                    child: null,
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -77,7 +73,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(applicant.email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
-                  if (applicant.phoneNumber != null && applicant.phoneNumber!.isNotEmpty)
+                  if (applicant.phoneNumber.isNotEmpty)
                     Text('Phone: ${applicant.phoneNumber}', style: const TextStyle(fontSize: 16, color: Colors.grey)),
                 ],
               ),
@@ -96,9 +92,9 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDetailRow('MOTA License', applicant.motaLicenseNumber ?? 'N/A'),
+                      _buildDetailRow('MOTA License', applicant.motaLicenseNumber),
                       const Divider(),
-                      _buildDetailRow('Syndicate ID', applicant.syndicateNumber ?? 'N/A'),
+                      _buildDetailRow('Syndicate ID', applicant.syndicateNumber),
                       const Divider(),
                       _buildDetailRow('Languages', applicant.certifiedLanguages.isNotEmpty ? applicant.certifiedLanguages.join(', ') : 'None listed'),
                     ],
@@ -109,7 +105,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Documents Grid
-            if (docs != null && docs.isNotEmpty) ...[
+            if (docs.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
@@ -186,7 +182,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
           ),
           child: Row(
             children: [

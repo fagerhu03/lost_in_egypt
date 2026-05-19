@@ -43,7 +43,7 @@ class CameraAnalyzingView extends StatelessWidget {
               ),
             ),
           // Dark overlay + spinner
-          Container(color: Colors.black.withOpacity(capturedPath != null ? 0.55 : 0.0)),
+          Container(color: Colors.black.withValues(alpha: capturedPath != null ? 0.55 : 0.0)),
           Center(
             child: TweenAnimationBuilder<double>(
               tween: Tween<double>(begin: 0.95, end: 1.0),
@@ -59,11 +59,11 @@ class CameraAnalyzingView extends StatelessWidget {
                 margin: const EdgeInsets.all(24),
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.85),
+                  color: Colors.black.withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFE6A44A).withOpacity(0.2),
+                      color: const Color(0xFFE6A44A).withValues(alpha: 0.2),
                       blurRadius: 20,
                       spreadRadius: 2,
                     )

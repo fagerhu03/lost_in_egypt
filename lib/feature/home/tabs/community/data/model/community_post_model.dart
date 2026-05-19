@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../domain/entities/community_post.dart';
@@ -61,7 +62,7 @@ class CommunityPostModel extends CommunityPost {
 
     // Debug Logging
     if (data['userId'] == null || data['userId'] == '') {
-      print("⚠️ CommunityPostModel: userId is NULL or empty for post ${doc.id}");
+      debugPrint("⚠️ CommunityPostModel: userId is NULL or empty for post ${doc.id}");
     }
 
     return CommunityPostModel(
@@ -104,7 +105,7 @@ class CommunityPostModel extends CommunityPost {
   static Map<String, int> _parseReactionCounts(dynamic raw) {
     if (raw is! Map) return {};
     final result = <String, int>{};
-    for (final entry in (raw as Map).entries) {
+    for (final entry in (raw).entries) {
       if (entry.value is List) {
         final count = (entry.value as List).length;
         if (count > 0) result[entry.key as String] = count;
@@ -115,7 +116,7 @@ class CommunityPostModel extends CommunityPost {
 
   static String? _findMyReaction(dynamic raw, String uid) {
     if (raw is! Map || uid.isEmpty) return null;
-    for (final entry in (raw as Map).entries) {
+    for (final entry in (raw).entries) {
       if (entry.value is List && (entry.value as List).contains(uid)) {
         return entry.key as String;
       }

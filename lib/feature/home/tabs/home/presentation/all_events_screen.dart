@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:lost_in_egypt/core/constants/event_categories.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
+import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/presentation/event_details_screen.dart';
 
@@ -15,27 +18,60 @@ class AllEventsScreen extends StatefulWidget {
 }
 
 class _AllEventsScreenState extends State<AllEventsScreen> {
-  late List<EventModel> _allEvents;
-  String _selectedCategory = 'all';
-  String _selectedCity = 'All Cities';
+  int _limit = 10;
+  static const int _pageSize = 10;
+
+  // Loaded once on screen open. Used to rank events by personal taste; empty
+  // map = unranked (chronological order falls through).
+  Map<String, num> _tasteVector = {};
 
   @override
   void initState() {
     super.initState();
-    _allEvents = widget.events;
+    _loadTasteVector();
   }
 
-  List<EventModel> get _filteredEvents {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    return _allEvents.where((e) {
-      // Hide past non-recurring events
-      if (!e.isRecurring && e.date.isBefore(today)) return false;
-      final catMatch = _selectedCategory == 'all' || e.eventCategory == _selectedCategory;
-      final cityMatch = _selectedCity == 'All Cities' || e.city == _selectedCity;
-      return catMatch && cityMatch;
-    }).toList();
+  Future<void> _loadTasteVector() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (!mounted) return;
+      final raw = doc.data()?['tasteVector'];
+      if (raw is Map) {
+        final cast = <String, num>{};
+        for (final e in raw.entries) {
+          if (e.value is num) cast[e.key.toString()] = e.value as num;
+        }
+        setState(() => _tasteVector = cast);
+      }
+    } catch (_) {}
   }
+
+  /// Dot-product score of the event's inferred canonical keys against the
+  /// user's taste vector. Zero when vector is empty (no taste data yet).
+  double _scoreEvent(EventModel e) {
+    if (_tasteVector.isEmpty) return 0;
+    final keys = RecommendationMappings.inferKeysFromText(
+        '${e.title} ${e.description}');
+    double score = 0;
+    for (final k in keys['types']!) {
+      score += (_tasteVector[k] ?? 0).toDouble();
+    }
+    for (final k in keys['tags']!) {
+      score += (_tasteVector[k] ?? 0).toDouble();
+    }
+    return score;
+  }
+
+  Stream<QuerySnapshot> get _stream => FirebaseFirestore.instance
+      .collection('events')
+      .orderBy('date', descending: false)
+      .limit(_limit)
+      .snapshots();
 
   @override
   Widget build(BuildContext context) {
@@ -71,139 +107,109 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
         centerTitle: true,
         foregroundColor: onSurface,
       ),
-      body: Column(
-              children: [
-                // Category filter chips
-                SizedBox(
-                  height: 48.h,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                    itemCount: EventCategories.values.length,
-                    itemBuilder: (context, index) {
-                      final cat = EventCategories.values[index];
-                      final isSelected = _selectedCategory == cat.id;
-                      return Padding(
-                        padding: EdgeInsets.only(right: 8.w),
-                        child: GestureDetector(
-                          onTap: () => setState(() => _selectedCategory = cat.id),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-                            decoration: BoxDecoration(
-                              color: isSelected ? primary : surface,
-                              borderRadius: BorderRadius.circular(20.r),
-                              border: Border.all(
-                                color: isSelected ? primary : onSurface.withValues(alpha: 0.15),
-                              ),
-                            ),
-                            child: Text(
-                              cat.label,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : onSurface.withValues(alpha: 0.7),
-                                fontSize: 12.sp,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                fontFamily: 'Marcellus',
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _stream,
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator(color: primary));
+          }
+          if (snap.hasError) {
+            return AppErrorWidget(
+              message: 'Could not load events.\nCheck your connection and try again.',
+              icon: Icons.event_busy_rounded,
+              onRetry: () => setState(() {}),
+            );
+          }
+
+          final rawDocs = snap.data?.docs ?? [];
+
+          // Decode events once so we can both score and render without re-parsing
+          final events = rawDocs.map((d) {
+            final data = d.data() as Map<String, dynamic>;
+            return EventModel.fromMap(data, d.id);
+          }).toList();
+
+          String? topPickId;
+          if (_tasteVector.isNotEmpty && events.isNotEmpty) {
+            final scored = events
+                .map((e) => (event: e, score: _scoreEvent(e)))
+                .toList()
+              ..sort((a, b) => b.score.compareTo(a.score));
+            events
+              ..clear()
+              ..addAll(scored.map((s) => s.event));
+            if (scored.first.score > 0) topPickId = scored.first.event.id;
+          }
+          final docs = events;
+
+          if (docs.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.event_busy, size: 60, color: primary.withValues(alpha: 0.25)),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No events right now',
+                    style: TextStyle(
+                      color: onSurface.withValues(alpha: 0.5),
+                      fontSize: 16,
+                      fontFamily: 'Marcellus',
+                    ),
                   ),
-                ),
-                // City filter chips
-                SizedBox(
-                  height: 40.h,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                    itemCount: EventCategories.cities.length,
-                    itemBuilder: (context, index) {
-                      final city = EventCategories.cities[index];
-                      final isSelected = _selectedCity == city;
-                      return Padding(
-                        padding: EdgeInsets.only(right: 8.w),
-                        child: GestureDetector(
-                          onTap: () => setState(() => _selectedCity = city),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? primary.withValues(alpha: 0.15)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(16.r),
-                              border: Border.all(
-                                color: isSelected ? primary : onSurface.withValues(alpha: 0.1),
-                              ),
-                            ),
-                            child: Text(
-                              city,
-                              style: TextStyle(
-                                color: isSelected ? primary : onSurface.withValues(alpha: 0.5),
-                                fontSize: 11.sp,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                  const SizedBox(height: 8),
+                  Text(
+                    'Check back soon for upcoming events in Egypt.',
+                    style: TextStyle(
+                      color: onSurface.withValues(alpha: 0.35),
+                      fontSize: 13,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                SizedBox(height: 4.h),
-                // Results count
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      '${_filteredEvents.length} experience${_filteredEvents.length == 1 ? '' : 's'} found',
-                      style: TextStyle(
-                        color: onSurface.withValues(alpha: 0.4),
-                        fontSize: 12.sp,
+                ],
+              ),
+            );
+          }
+
+          final hasMore = docs.length == _limit;
+
+          return ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            itemCount: docs.length + (hasMore ? 1 : 0),
+            itemBuilder: (context, i) {
+              if (i == docs.length) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Center(
+                    child: TextButton(
+                      onPressed: () => setState(() => _limit += _pageSize),
+                      child: Text(
+                        'Load more',
+                        style: TextStyle(
+                          color: primary,
+                          fontFamily: 'Marcellus',
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: 8.h),
-                // Event list
-                Expanded(
-                  child: _filteredEvents.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.event_busy, size: 60, color: primary.withValues(alpha: 0.25)),
-                              SizedBox(height: 16.h),
-                              Text(
-                                'No events match your filters',
-                                style: TextStyle(
-                                  color: onSurface.withValues(alpha: 0.5),
-                                  fontSize: 16,
-                                  fontFamily: 'Marcellus',
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 32.h),
-                          itemCount: _filteredEvents.length,
-                          itemBuilder: (context, i) {
-                            return _EventCard(
-                              event: _filteredEvents[i],
-                              shadow: shadow,
-                              surface: surface,
-                              onSurface: onSurface,
-                              primary: primary,
-                              isDark: isDark,
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+                );
+              }
+
+              final event = docs[i];
+              return _EventCard(
+                event: event,
+                isTopPick: event.id == topPickId,
+                shadow: shadow,
+                surface: surface,
+                onSurface: onSurface,
+                primary: primary,
+                isDark: isDark,
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -215,6 +221,7 @@ class _EventCard extends StatelessWidget {
   final Color onSurface;
   final Color primary;
   final bool isDark;
+  final bool isTopPick;
 
   const _EventCard({
     required this.event,
@@ -223,6 +230,7 @@ class _EventCard extends StatelessWidget {
     required this.onSurface,
     required this.primary,
     required this.isDark,
+    this.isTopPick = false,
   });
 
   @override
@@ -236,7 +244,10 @@ class _EventCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [shadow],
         border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+          color: isTopPick
+              ? primary.withValues(alpha: 0.55)
+              : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+          width: isTopPick ? 2 : 1,
         ),
       ),
       child: Material(
@@ -301,24 +312,62 @@ class _EventCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Category pill
+                    // Top-left badges
                     Positioned(
                       top: 10.h,
                       left: 10.w,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: primary.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Text(
-                          categoryInfo.label,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w600,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isTopPick) ...[
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                              decoration: BoxDecoration(
+                                color: primary,
+                                borderRadius: BorderRadius.circular(12.r),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.18),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.auto_awesome, size: 12.r, color: Colors.white),
+                                  SizedBox(width: 4.w),
+                                  Text(
+                                    'Tailored pick',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w700,
+                                      fontFamily: 'Marcellus',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 6.w),
+                          ],
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                            decoration: BoxDecoration(
+                              color: primary.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Text(
+                              categoryInfo.label,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                     // Location badge
@@ -404,15 +453,16 @@ class _EventCard extends StatelessWidget {
                     if (event.venueName.isNotEmpty) ...[
                       Row(
                         children: [
-                          Icon(Icons.place_outlined, size: 14.r, color: primary),
+                          Icon(Icons.location_on_outlined,
+                              size: 14.r,
+                              color: onSurface.withValues(alpha: 0.5)),
                           SizedBox(width: 5.w),
                           Expanded(
                             child: Text(
                               event.venueName,
                               style: TextStyle(
-                                color: primary,
+                                color: onSurface.withValues(alpha: 0.55),
                                 fontSize: 13.sp,
-                                fontWeight: FontWeight.w600,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -435,7 +485,9 @@ class _EventCard extends StatelessWidget {
                         ),
                         if (event.duration.isNotEmpty) ...[
                           SizedBox(width: 12.w),
-                          Icon(Icons.access_time_outlined, size: 14.r, color: onSurface.withValues(alpha: 0.5)),
+                          Icon(Icons.access_time_outlined,
+                              size: 14.r,
+                              color: onSurface.withValues(alpha: 0.5)),
                           SizedBox(width: 4.w),
                           Text(
                             event.duration,

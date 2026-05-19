@@ -81,8 +81,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       }
     }
     
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    await _mapController?.setMapStyle(isDark ? _darkMapStyle : _lightMapStyle);
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _onMapTapped(LatLng location) async {
@@ -139,6 +140,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             // we render a custom FAB at the bottom-right instead.
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
+            style: Theme.of(context).brightness == Brightness.dark ? _darkMapStyle : _lightMapStyle,
             onMapCreated: (controller) async {
               _mapController = controller;
               await _loadAndApplyMapStyleIfNeeded();
@@ -305,7 +307,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                           const SizedBox(height: 4),
                           Text(
                             '${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                           ),
                         ],
                       ),

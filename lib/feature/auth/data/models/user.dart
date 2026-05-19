@@ -13,6 +13,7 @@ class UserModel extends UserEntity {
     required super.profileImageUrl,
     super.phoneNumber,
     super.nationality,
+    super.nationalityCode,
     super.isNotificationsEnabled,
     super.isDarkMode,
     super.language,
@@ -32,6 +33,7 @@ class UserModel extends UserEntity {
     super.visitedLandmarks,
     super.savedPlaces,
     required super.createdAt,
+    super.quizCompletedAt,
     super.applicationStatus,
     super.motaLicenseNumber,
     super.syndicateNumber,
@@ -56,6 +58,7 @@ class UserModel extends UserEntity {
       // Phone & Nationality
       phoneNumber: data['phoneNumber'] ?? '',
       nationality: data['nationality'] ?? '',
+      nationalityCode: data['nationalityCode'] ?? '',
 
       // New Profile Fields
       bio: data['bio'] ?? '',
@@ -92,6 +95,10 @@ class UserModel extends UserEntity {
 
       // Timestamps
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      // Set by Cloud Function applyQuizAnswers when the user finishes the
+      // taste quiz. AuthGate reads this to skip the quiz gate on returning
+      // logins (per-user, survives device switch + cache clear).
+      quizCompletedAt: (data['quizCompletedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -105,6 +112,7 @@ class UserModel extends UserEntity {
       'profileImageUrl': profileImageUrl,
       'phoneNumber': phoneNumber,
       'nationality': nationality,
+      'nationalityCode': nationalityCode,
       'bio': bio,
       'interests': interests,
       'visitedLandmarks': visitedLandmarks,
@@ -150,6 +158,7 @@ class UserModel extends UserEntity {
     String? profileImageUrl,
     String? phoneNumber,
     String? nationality,
+    String? nationalityCode,
     String? bio,
     List<String>? interests,
     List<String>? visitedLandmarks,
@@ -169,6 +178,7 @@ class UserModel extends UserEntity {
     bool? notifGuideUpdates,
     bool? notifDailyDiscovery,
     DateTime? createdAt,
+    DateTime? quizCompletedAt,
     String? applicationStatus,
     String? motaLicenseNumber,
     String? syndicateNumber,
@@ -189,6 +199,7 @@ class UserModel extends UserEntity {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       nationality: nationality ?? this.nationality,
+      nationalityCode: nationalityCode ?? this.nationalityCode,
       bio: bio ?? this.bio,
       interests: interests ?? this.interests,
       visitedLandmarks: visitedLandmarks ?? this.visitedLandmarks,
@@ -209,6 +220,7 @@ class UserModel extends UserEntity {
       notifGuideUpdates: notifGuideUpdates ?? this.notifGuideUpdates,
       notifDailyDiscovery: notifDailyDiscovery ?? this.notifDailyDiscovery,
       createdAt: createdAt ?? this.createdAt,
+      quizCompletedAt: quizCompletedAt ?? this.quizCompletedAt,
       applicationStatus: applicationStatus ?? this.applicationStatus,
       motaLicenseNumber: motaLicenseNumber ?? this.motaLicenseNumber,
       syndicateNumber: syndicateNumber ?? this.syndicateNumber,

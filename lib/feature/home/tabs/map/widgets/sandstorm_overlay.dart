@@ -91,7 +91,7 @@ class _SandstormOverlayState extends State<SandstormOverlay> with SingleTickerPr
           // Background tint
           Positioned.fill(
             child: Container(
-              color: Colors.orange.shade900.withOpacity(0.4 * fadeVal),
+              color: Colors.orange.shade900.withValues(alpha: 0.4 * fadeVal),
             ),
           ),
           
@@ -137,7 +137,7 @@ class _SandPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (var p in particles) {
       final paint = Paint()
-        ..color = Color(0xFFE6A44A).withOpacity(p.opacity)
+        ..color = Color(0xFFE6A44A).withValues(alpha: p.opacity)
         ..strokeWidth = p.thickness
         ..strokeCap = StrokeCap.round;
         

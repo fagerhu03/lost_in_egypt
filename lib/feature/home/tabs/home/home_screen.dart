@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
-import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/weather_banner.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
@@ -485,11 +485,8 @@ class _HomeScreenState extends State<HomeScreen>
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.only(left: 16.w),
-                    itemCount: 4,
-                    itemBuilder: (_, _) => ShimmerLoadingWidget.rectangular(
-                      width: 170.w,
-                      height: 200.h,
-                    ),
+                    itemCount: 3,
+                    itemBuilder: (_, _) => const _ForYouSkeletonCard(),
                   ),
                 )
               else
@@ -1374,6 +1371,79 @@ class _HomeScreenState extends State<HomeScreen>
           ],
         );
       },
+    );
+  }
+}
+
+// ── Skeleton card mirroring _popularPlaceCard's silhouette so the "For You"
+// loading state reads as content-in-progress rather than four grey slabs.
+class _ForYouSkeletonCard extends StatelessWidget {
+  const _ForYouSkeletonCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlight = isDark ? Colors.grey[700]! : Colors.grey[200]!;
+    final accent = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+
+    return Container(
+      width: 170.w,
+      margin: EdgeInsets.only(right: 12.w),
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Shimmer.fromColors(
+        baseColor: base,
+        highlightColor: highlight,
+        child: Stack(
+          children: [
+            Container(color: base),
+            // Rating pill placeholder — top-right, matches real card's pill
+            Positioned(
+              top: 10.h,
+              right: 10.w,
+              child: Container(
+                width: 34.w,
+                height: 16.h,
+                decoration: BoxDecoration(
+                  color: accent,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
+            // Title + subtitle bars at the bottom — matches real card layout
+            Positioned(
+              left: 10.w,
+              right: 10.w,
+              bottom: 12.h,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 110.w,
+                    height: 12.h,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Container(
+                    width: 70.w,
+                    height: 10.h,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

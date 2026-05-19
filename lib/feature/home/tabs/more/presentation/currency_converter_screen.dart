@@ -149,7 +149,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         style: TextStyle(
                           fontSize: 30,
                           fontFamily: "Marcellus",
-                          color: textColor.withOpacity(0.75),
+                          color: textColor.withValues(alpha: 0.75),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -164,7 +164,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontFamily: "Marcellus",
-                      color: textColor.withOpacity(0.7),
+                      color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -189,7 +189,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       shape: const CircleBorder(),
                       clipBehavior: Clip.hardEdge,
                       elevation: 4,
-                      shadowColor: Colors.black.withOpacity(0.1),
+                      shadowColor: Colors.black.withValues(alpha: 0.1),
                       child: InkWell(
                         onTap: _swapCurrencies,
                         customBorder: const CircleBorder(),
@@ -212,7 +212,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontFamily: "Marcellus",
-                      color: textColor.withOpacity(0.7),
+                      color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -236,7 +236,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontFamily: "Marcellus",
-                      color: textColor.withOpacity(0.7),
+                      color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -248,7 +248,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     decoration: InputDecoration(
                       hintText: "Enter amount",
                       hintStyle: TextStyle(
-                        color: textColor.withOpacity(0.4),
+                        color: textColor.withValues(alpha: 0.4),
                       ),
                       filled: true,
                       fillColor: surface,
@@ -270,7 +270,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         },
                         icon: Icon(
                           Icons.close,
-                          color: textColor.withOpacity(0.5),
+                          color: textColor.withValues(alpha: 0.5),
                         ),
                       )
                           : null,
@@ -297,7 +297,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       onPressed: _isConverting ? null : _convert,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
-                        disabledBackgroundColor: primary.withOpacity(0.6),
+                        disabledBackgroundColor: primary.withValues(alpha: 0.6),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -338,7 +338,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -351,7 +351,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                             style: TextStyle(
                               fontSize: 14,
                               fontFamily: "Marcellus",
-                              color: textColor.withOpacity(0.6),
+                              color: textColor.withValues(alpha: 0.6),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -370,7 +370,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                             style: TextStyle(
                               fontSize: 14,
                               fontFamily: "Marcellus",
-                              color: textColor.withOpacity(0.5),
+                              color: textColor.withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -397,7 +397,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

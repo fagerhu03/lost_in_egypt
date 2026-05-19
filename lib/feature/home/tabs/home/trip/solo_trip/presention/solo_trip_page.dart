@@ -375,15 +375,16 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                               color: Colors.white, size: 28.r),
                                         ),
                                         onDismissed: (_) {
-                                          for (final key in trip.scoringKeys) {
-                                            RecommendationService.recordSignal(
-                                              placeId: trip.id,
-                                              placeName: trip.title,
-                                              types: [key],
-                                              signalType: 'dismiss',
-                                              source: 'solo_trip',
-                                            );
-                                          }
+                                          // Single signal so the server applies the
+                                          // dismiss weight (-0.3) once across all keys.
+                                          // Looping per key N-amplified the penalty.
+                                          RecommendationService.recordSignal(
+                                            placeId: trip.id,
+                                            placeName: trip.title,
+                                            types: trip.scoringKeys,
+                                            signalType: 'dismiss',
+                                            source: 'solo_trip',
+                                          );
                                         },
                                         child: Padding(
                                           padding: EdgeInsets.only(

@@ -26,6 +26,8 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   UserModel? _user;
+  // Top 3 canonical taste keys (descending). Populated from the same user doc.
+  List<String> _topTasteKeys = [];
   bool _isLoading = true;
 
   @override
@@ -50,8 +52,24 @@ class _AccountScreenState extends State<AccountScreen> {
       if (!mounted) return;
 
       if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        // Extract the top 3 strongest-positive taste keys for the "Your Taste"
+        // card. Hidden when vector is empty or all zero/negative.
+        final raw = data['tasteVector'];
+        final topKeys = <String>[];
+        if (raw is Map) {
+          final entries = raw.entries
+              .where((e) => (e.value is num) && (e.value as num).toDouble() > 0)
+              .toList()
+            ..sort((a, b) =>
+                (b.value as num).toDouble().compareTo((a.value as num).toDouble()));
+          for (final e in entries.take(3)) {
+            topKeys.add(e.key.toString());
+          }
+        }
         setState(() {
-          _user = UserModel.fromMap(doc.data()!, doc.id);
+          _user = UserModel.fromMap(data, doc.id);
+          _topTasteKeys = topKeys;
           _isLoading = false;
         });
       } else {
@@ -61,6 +79,25 @@ class _AccountScreenState extends State<AccountScreen> {
       debugPrint("Error loading user: $e");
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Converts a canonical taste-vector key (e.g. "historical_landmark",
+  /// "pharaonic") into a human-readable label for the "Your Taste" pills.
+  String _prettyTasteKey(String key) {
+    const overrides = {
+      'historical_landmark': 'History',
+      'archaeological_site': 'Ancient Sites',
+      'tourist_attraction': 'Attractions',
+      'amusement_park': 'Theme Parks',
+      'art_gallery': 'Art',
+      'night_club': 'Nightlife',
+      'shopping_mall': 'Shopping',
+    };
+    if (overrides.containsKey(key)) return overrides[key]!;
+    return key
+        .split('_')
+        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
@@ -255,6 +292,93 @@ class _AccountScreenState extends State<AccountScreen> {
                                             ),
                                           ),
                                           SizedBox(height: 20.h),
+
+                                          // Your Taste card — top 3 canonical
+                                          // taste vector keys as gold pills.
+                                          // Hidden when vector is empty or all
+                                          // entries are zero/negative.
+                                          if (_topTasteKeys.isNotEmpty) ...[
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 12.w),
+                                              child: Container(
+                                                width: double.infinity,
+                                                padding: EdgeInsets.fromLTRB(
+                                                    14.w, 10.h, 14.w, 12.h),
+                                                decoration: BoxDecoration(
+                                                  color: goldButtonColor
+                                                      .withValues(alpha: 0.10),
+                                                  borderRadius:
+                                                      BorderRadius.circular(14.r),
+                                                  border: Border.all(
+                                                      color: goldButtonColor
+                                                          .withValues(alpha: 0.30)),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Icon(Icons.auto_awesome,
+                                                            size: 14.r,
+                                                            color: goldButtonColor),
+                                                        SizedBox(width: 6.w),
+                                                        Text(
+                                                          'Your Taste',
+                                                          style: TextStyle(
+                                                            fontSize: 13.sp,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color: goldButtonColor,
+                                                            fontFamily: 'Marcellus',
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    SizedBox(height: 8.h),
+                                                    Wrap(
+                                                      spacing: 6,
+                                                      runSpacing: 6,
+                                                      children: _topTasteKeys
+                                                          .map((k) => Container(
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                        horizontal:
+                                                                            10.w,
+                                                                        vertical:
+                                                                            5.h),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: goldButtonColor
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.18),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              20.r),
+                                                                ),
+                                                                child: Text(
+                                                                  _prettyTasteKey(k),
+                                                                  style: TextStyle(
+                                                                    fontSize: 12.sp,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color:
+                                                                        goldButtonColor,
+                                                                  ),
+                                                                ),
+                                                              ))
+                                                          .toList(),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(height: 16.h),
+                                          ],
 
                                           // Badges
                                           Container(

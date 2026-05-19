@@ -15,7 +15,6 @@ import 'package:lost_in_egypt/feature/onboarding/onboarding_screen.dart';
 import 'package:lost_in_egypt/feature/onboarding/taste_quiz_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/email_verification_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/create_username_screen.dart';
-import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/navigator/home_wrapper.dart';
 
 class AuthGate extends StatefulWidget {
@@ -32,7 +31,6 @@ class _AuthGateState extends State<AuthGate> {
   Future<void>? _initFuture;
   bool _isFirestoreEmailVerified = false;
   bool _hasUsername = true; // default true to avoid flash — corrected after load
-  bool _isPhoneVerified = true; // default true to avoid flash — corrected after load
   bool _quizCompleted = true; // default true to avoid flash — corrected after load
 
   Future<void> _applySavedTheme(User firebaseUser) async {
@@ -46,9 +44,19 @@ class _AuthGateState extends State<AuthGate> {
       if (userModel != null) {
         _isFirestoreEmailVerified = userModel.emailVerified;
         _hasUsername = userModel.username.isNotEmpty;
-        _isPhoneVerified = userModel.phoneVerified;
       }
-      _quizCompleted = prefs.getBool('taste_quiz_completed') ?? false;
+      // Quiz completion: Firestore `quizCompletedAt` is the source of truth
+      // (written by the `applyQuizAnswers` Cloud Function). SharedPrefs is a
+      // device-local cache so the gate still works on cold-start when offline.
+      // Checking only SharedPrefs broke device-switch and cache-clear: returning
+      // users hit the quiz screen again even though they'd completed it.
+      final hasFirestoreQuiz = userModel?.quizCompletedAt != null;
+      final hasLocalQuiz = prefs.getBool('taste_quiz_completed') ?? false;
+      _quizCompleted = hasFirestoreQuiz || hasLocalQuiz;
+      // Backfill the local cache from Firestore so offline launches are fast.
+      if (hasFirestoreQuiz && !hasLocalQuiz) {
+        await prefs.setBool('taste_quiz_completed', true);
+      }
       ThemeController.setDark(userModel?.isDarkMode ?? false);
       CurrencyController.setCurrency(userModel?.preferredCurrency ?? 'EGP');
     } catch (_) {
@@ -115,7 +123,6 @@ class _AuthGateState extends State<AuthGate> {
           _appliedForUid = null;
           _initFuture = null;
           _hasUsername = true;
-          _isPhoneVerified = true;
           _quizCompleted = true;
           CurrencyController.setCurrency('EGP');
           // ThemeController.setDark(false);
@@ -142,9 +149,27 @@ class _AuthGateState extends State<AuthGate> {
             }
             // Always get the freshly reloaded user to ensure emailVerified is accurate
             final freshUser = FirebaseAuth.instance.currentUser;
-            if (freshUser != null && !freshUser.emailVerified && !_isFirestoreEmailVerified) {
+
+            // OAuth providers (Google, Facebook, Apple) verify identity
+            // themselves — no need to gate users on email-link verification.
+            // Without this, Facebook users whose Facebook-side email isn't
+            // verified can get trapped on the verification screen with no
+            // working escape.
+            final isOAuthOnly = freshUser != null &&
+                freshUser.providerData.isNotEmpty &&
+                freshUser.providerData
+                    .every((p) => p.providerId != 'password');
+
+            if (freshUser != null &&
+                !freshUser.emailVerified &&
+                !_isFirestoreEmailVerified &&
+                !isOAuthOnly) {
               return EmailVerificationScreen(
                 onVerified: () => setState(() => _isFirestoreEmailVerified = true),
+                // Session-only skip — re-prompts on next cold start. Prevents
+                // any new user from being permanently trapped if their email
+                // never arrives.
+                onSkip: () => setState(() => _isFirestoreEmailVerified = true),
               );
             }
             // Route to username creation if the user hasn't set one yet
@@ -161,14 +186,13 @@ class _AuthGateState extends State<AuthGate> {
                 },
               );
             }
-            // Prompt phone verification (skippable — session-only skip)
-            if (!_isPhoneVerified) {
-              return PhoneVerificationScreen(
-                onVerified: () => setState(() => _isPhoneVerified = true),
-                onSkip: () => setState(() => _isPhoneVerified = true),
-              );
-            }
-            return const HomeWrapper();
+            // Phone verification is no longer a startup gate. The number +
+            // country are captured at signup (via IntlPhoneField), so the
+            // engine has its nationalityCode from day 1. Verifying the SMS is
+            // an on-demand trust step prompted at the natural moments —
+            // posting in community, commenting, applying as a guide, or via
+            // the "Verify Phone" tile in Edit Profile.
+            return HomeWrapper();
           },
         );
       },

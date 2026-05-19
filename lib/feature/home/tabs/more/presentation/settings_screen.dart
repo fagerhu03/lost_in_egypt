@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
+import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
@@ -136,6 +137,50 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     if (mounted) setState(() => _currentUser = updatedUser);
     await _repository.updateSetting(updatedUser, key, value);
+  }
+
+  Future<void> _resetTasteSignals() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reset Taste Signals?',
+            style: TextStyle(fontFamily: 'Marcellus')),
+        content: const Text(
+          "This clears every personalisation signal recorded for you — "
+          "saved likes, dismissals, quiz answers, visit history. "
+          "Recommendations will reset to defaults until you interact again.",
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Reset', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await RecommendationService.resetTasteVector();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Taste signals reset.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Couldn't reset signals. Try again."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -369,6 +414,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                                         ),
                                       );
                                     },
+                            ),
+                            SizedBox(height: 12.h),
+
+                            // Debug Reset Taste Vector
+                            _buildTile(
+                              icon: Icons.psychology_outlined,
+                              title: "Reset Taste Signals (Debug)",
+                              trailing: const SizedBox.shrink(),
+                              iconColor: Colors.red,
+                              iconBgColor: Colors.red.withValues(alpha: 0.12),
+                              borderColor:
+                                  Colors.red.withValues(alpha: 0.25),
+                              onTap: _currentUser == null
+                                  ? null
+                                  : _resetTasteSignals,
                             ),
                             SizedBox(height: 32.h),
 

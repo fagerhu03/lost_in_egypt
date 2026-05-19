@@ -64,7 +64,6 @@ class _SOSScreenState extends State<SOSScreen> {
   final _placesService = GetIt.instance<PlacesApiService>();
 
   Position? _position;
-  String _locationStatus = "Tap to find nearest help";
   bool _locating = false;
   bool _searching = false;
 
@@ -77,7 +76,6 @@ class _SOSScreenState extends State<SOSScreen> {
   Future<void> _findHelp() async {
     setState(() {
       _locating = true;
-      _locationStatus = "Getting your location…";
       _searchError = null;
     });
 
@@ -89,7 +87,6 @@ class _SOSScreenState extends State<SOSScreen> {
       if (permission == LocationPermission.deniedForever) {
         setState(() {
           _locating = false;
-          _locationStatus = "Location permission denied";
           _searchError =
               "Please enable location in your device settings to find nearby help.";
         });
@@ -103,14 +100,12 @@ class _SOSScreenState extends State<SOSScreen> {
       setState(() {
         _position = pos;
         _locating = false;
-        _locationStatus = "Location found";
       });
 
       await _searchNearby();
     } catch (e) {
       setState(() {
         _locating = false;
-        _locationStatus = "Could not get location";
         _searchError = "Make sure location services are enabled and try again.";
       });
     }
@@ -302,7 +297,7 @@ class _SOSScreenState extends State<SOSScreen> {
                       decoration: BoxDecoration(
                         color: selected
                             ? cat.color
-                            : cat.color.withOpacity(isDark ? 0.15 : 0.1),
+                            : cat.color.withValues(alpha: isDark ? 0.15 : 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -369,7 +364,7 @@ class _SOSScreenState extends State<SOSScreen> {
                 Text(
                   "Using your current location",
                   style: TextStyle(
-                      fontSize: 12, color: onSurface.withOpacity(0.55)),
+                      fontSize: 12, color: onSurface.withValues(alpha: 0.55)),
                 ),
               ],
             ),
@@ -416,7 +411,7 @@ class _SOSScreenState extends State<SOSScreen> {
             "Tourist Police (126) has English-speaking operators.",
             style: TextStyle(
               fontSize: 11,
-              color: onSurface.withOpacity(0.5),
+              color: onSurface.withValues(alpha: 0.5),
               height: 1.5,
             ),
           ),
@@ -517,9 +512,9 @@ class _ErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.12),
+          color: Colors.orange.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.orange.withOpacity(0.4)),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
         ),
         child: Row(
           children: [
@@ -564,12 +559,12 @@ class _NearbyCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: categoryColor.withOpacity(0.2), width: 1.2),
+        border: Border.all(color: categoryColor.withValues(alpha: 0.2), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.06),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -582,7 +577,7 @@ class _NearbyCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: categoryColor.withOpacity(0.12),
+              color: categoryColor.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(categoryIcon, color: categoryColor, size: 20),
@@ -606,7 +601,7 @@ class _NearbyCard extends StatelessWidget {
                   Text(
                     result.address,
                     style: TextStyle(
-                        fontSize: 11, color: onSurface.withOpacity(0.55)),
+                        fontSize: 11, color: onSurface.withValues(alpha: 0.55)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -670,7 +665,7 @@ class _ActionButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
+            color: color.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -702,7 +697,7 @@ class _DialChip extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: onTap,
-        splashColor: Colors.white.withOpacity(0.2),
+        splashColor: Colors.white.withValues(alpha: 0.2),
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: 16,
@@ -714,7 +709,7 @@ class _DialChip extends StatelessWidget {
                 width: featured ? 46 : 36,
                 height: featured ? 46 : 36,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -748,7 +743,7 @@ class _DialChip extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 7, vertical: 3),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.22),
+                              color: Colors.white.withValues(alpha: 0.22),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: const Text(
@@ -770,7 +765,7 @@ class _DialChip extends StatelessWidget {
                         fontSize: featured ? 13 : 11,
                         fontWeight:
                             featured ? FontWeight.w600 : FontWeight.normal,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         height: 1.2,
                       ),
                     ),
@@ -780,7 +775,7 @@ class _DialChip extends StatelessWidget {
                         dialNumber.subtitle!,
                         style: TextStyle(
                           fontSize: 10,
-                          color: Colors.white.withOpacity(0.72),
+                          color: Colors.white.withValues(alpha: 0.72),
                           height: 1.3,
                         ),
                       ),

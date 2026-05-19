@@ -23,6 +23,15 @@ class DateLocationStep extends StatefulWidget {
 
 class _DateLocationStepState extends State<DateLocationStep> {
   GoogleMapController? _miniMapController;
+  String? _mapStyle;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MapStyleHelper.getStyle(context).then((style) {
+      if (mounted) setState(() => _mapStyle = style);
+    });
+  }
 
   @override
   void dispose() {
@@ -218,9 +227,9 @@ class _DateLocationStepState extends State<DateLocationStep> {
                   zoomGesturesEnabled: false,
                   rotateGesturesEnabled: false,
                   tiltGesturesEnabled: false,
+                  style: _mapStyle,
                   onMapCreated: (controller) {
                     _miniMapController = controller;
-                    MapStyleHelper.applyTheme(controller, context);
                   },
                 ),
               ),

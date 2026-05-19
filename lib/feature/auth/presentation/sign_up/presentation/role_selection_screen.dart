@@ -12,19 +12,18 @@ class RoleSelectionScreen extends StatefulWidget {
 class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   bool? isGuideSelected;
 
-  void _navigateToSignup(BuildContext context, bool isGuide) {
+  void _navigateToSignup(BuildContext context, bool _) {
+    // Both tourist + guide signups go through the same screen now — guides
+    // apply later from their dashboard, not at signup time.
     Navigator.of(context).push(
-      FadePageRoute(
-        page: SignupScreen(isGuidePreselected: isGuide),
-      ),
+      FadePageRoute(page: const SignupScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const bool isDark = false; // Forced to light mode as requested
-    final bgColor = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFCFBE8);
-    final textColor = isDark ? Colors.white70 : const Color(0xff634700);
+    final bgColor = const Color(0xFFFCFBE8);
+    final textColor = const Color(0xff634700);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -82,7 +81,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                               isGuideSelected = false;
                             });
                             Future.delayed(const Duration(milliseconds: 300), () {
-                              if (mounted) {
+                              if (context.mounted) {
                                 _navigateToSignup(context, false);
                                 // reset selection after pushing to avoid red flash on back
                                 Future.delayed(const Duration(milliseconds: 300), () {
@@ -106,7 +105,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                               isGuideSelected = true;
                             });
                             Future.delayed(const Duration(milliseconds: 300), () {
-                              if (mounted) {
+                              if (context.mounted) {
                                 _navigateToSignup(context, true);
                                 // reset selection after pushing to avoid red flash on back
                                 Future.delayed(const Duration(milliseconds: 300), () {
@@ -145,10 +144,9 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bool isDark = false; // Forced to light mode as requested
-    final cardColor = isDark ? const Color(0xFF2C2C2C) : const Color(0xFFFCFBE8);
-    final shadowColor = isDark ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(isSelected ? 0.15 : 0.05);
-    final textColor = isDark ? Colors.white : const Color(0xff634700);
+    final cardColor = const Color(0xFFFCFBE8);
+    final shadowColor = Colors.black.withValues(alpha: isSelected ? 0.15 : 0.05);
+    final textColor = const Color(0xff634700);
 
     return GestureDetector(
       onTap: onTap,

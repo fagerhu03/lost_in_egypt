@@ -36,7 +36,7 @@ class RouteStepsSheet extends StatelessWidget {
                   width: 40,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: onSurface.withOpacity(0.15),
+                    color: onSurface.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(2.5),
                   ),
                 ),
@@ -64,7 +64,7 @@ class RouteStepsSheet extends StatelessWidget {
                           '${routeInfo.distance} • ${routeInfo.duration}',
                           style: TextStyle(
                             fontSize: 13,
-                            color: onSurface.withOpacity(0.5),
+                            color: onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
@@ -75,7 +75,7 @@ class RouteStepsSheet extends StatelessWidget {
 
               Divider(
                 height: 24,
-                color: onSurface.withOpacity(0.08),
+                color: onSurface.withValues(alpha: 0.08),
               ),
 
               // Steps
@@ -98,11 +98,11 @@ class RouteStepsSheet extends StatelessWidget {
                               width: 28,
                               height: 28,
                               decoration: BoxDecoration(
-                                color: primary.withOpacity(
+                                color: primary.withValues(alpha: 
                                     isDark ? 0.20 : 0.12),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: primary.withOpacity(0.4),
+                                  color: primary.withValues(alpha: 0.4),
                                   width: 1.5,
                                 ),
                               ),
@@ -120,7 +120,7 @@ class RouteStepsSheet extends StatelessWidget {
                               Expanded(
                                 child: Container(
                                   width: 2,
-                                  color: primary.withOpacity(0.2),
+                                  color: primary.withValues(alpha: 0.2),
                                 ),
                               ),
                           ],
@@ -137,7 +137,7 @@ class RouteStepsSheet extends StatelessWidget {
                                   step.instruction,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: onSurface.withOpacity(0.9),
+                                    color: onSurface.withValues(alpha: 0.9),
                                     fontWeight: FontWeight.w500,
                                     height: 1.4,
                                   ),
@@ -148,28 +148,28 @@ class RouteStepsSheet extends StatelessWidget {
                                     Icon(
                                       Icons.straighten_rounded,
                                       size: 14,
-                                      color: onSurface.withOpacity(0.4),
+                                      color: onSurface.withValues(alpha: 0.4),
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
                                       step.distance,
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: onSurface.withOpacity(0.45),
+                                        color: onSurface.withValues(alpha: 0.45),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
                                     Icon(
                                       Icons.access_time_rounded,
                                       size: 14,
-                                      color: onSurface.withOpacity(0.4),
+                                      color: onSurface.withValues(alpha: 0.4),
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
                                       step.duration,
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: onSurface.withOpacity(0.45),
+                                        color: onSurface.withValues(alpha: 0.45),
                                       ),
                                     ),
                                   ],
@@ -193,10 +193,10 @@ class RouteStepsSheet extends StatelessWidget {
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.15),
+                        color: Colors.green.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.green.withOpacity(0.5),
+                          color: Colors.green.withValues(alpha: 0.5),
                           width: 1.5,
                         ),
                       ),

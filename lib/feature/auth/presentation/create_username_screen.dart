@@ -133,7 +133,7 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeWrapper()),
+        MaterialPageRoute(builder: (_) => HomeWrapper()),
         (route) => false,
       );
     } on FirebaseException catch (e) {

@@ -23,15 +23,15 @@ class MapSearchResults extends StatelessWidget {
     final primary = theme.colorScheme.primary;
 
     final shadowColor = isDark
-        ? Colors.white.withOpacity(0.18)
-        : Colors.black.withOpacity(0.18);
+        ? Colors.white.withValues(alpha: 0.18)
+        : Colors.black.withValues(alpha: 0.18);
 
     if (searchResults.isEmpty && hasSearchText) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: surface.withOpacity(isDark ? 0.94 : 0.98),
+          color: surface.withValues(alpha: isDark ? 0.94 : 0.98),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
@@ -41,7 +41,7 @@ class MapSearchResults extends StatelessWidget {
             ),
           ],
           border: Border.all(
-            color: (isDark ? Colors.white : Colors.black).withOpacity(0.06),
+            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
           ),
         ),
         child: Row(
@@ -49,14 +49,14 @@ class MapSearchResults extends StatelessWidget {
           children: [
             Icon(
               Icons.search_off_rounded,
-              color: onSurface.withOpacity(0.4),
+              color: onSurface.withValues(alpha: 0.4),
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               'No places found',
               style: TextStyle(
-                color: onSurface.withOpacity(0.5),
+                color: onSurface.withValues(alpha: 0.5),
                 fontSize: 14,
               ),
             ),
@@ -71,7 +71,7 @@ class MapSearchResults extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       constraints: const BoxConstraints(maxHeight: 300),
       decoration: BoxDecoration(
-        color: surface.withOpacity(isDark ? 0.94 : 0.98),
+        color: surface.withValues(alpha: isDark ? 0.94 : 0.98),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -81,7 +81,7 @@ class MapSearchResults extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withOpacity(0.06),
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
         ),
       ),
       child: ClipRRect(
@@ -90,9 +90,9 @@ class MapSearchResults extends StatelessWidget {
           padding: EdgeInsets.zero,
           shrinkWrap: true,
           itemCount: searchResults.length,
-          separatorBuilder: (_, __) => Divider(
+          separatorBuilder: (_, _) => Divider(
             height: 1,
-            color: onSurface.withOpacity(0.07),
+            color: onSurface.withValues(alpha: 0.07),
           ),
           itemBuilder: (context, index) {
             final item = searchResults[index];
@@ -114,7 +114,7 @@ class MapSearchResults extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: primary.withOpacity(0.1),
+                        color: primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       alignment: Alignment.center,
@@ -142,7 +142,7 @@ class MapSearchResults extends StatelessWidget {
                           Text(
                             item.category.toUpperCase(),
                             style: TextStyle(
-                              color: primary.withOpacity(0.8),
+                              color: primary.withValues(alpha: 0.8),
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                               letterSpacing: 0.5,
@@ -153,7 +153,7 @@ class MapSearchResults extends StatelessWidget {
                     ),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: onSurface.withOpacity(0.25),
+                      color: onSurface.withValues(alpha: 0.25),
                       size: 14,
                     ),
                   ],

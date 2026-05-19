@@ -10,17 +10,15 @@ import '../../../../core/utils/error_handler.dart';
 
 // Imports for Deep Linking context
 import '../../../home/tabs/community/presentation/post_detail_screen.dart';
-import '../../../home/tabs/community/domain/entities/community_post.dart';
 import '../../../home/tabs/community/data/model/community_post_model.dart';
 import '../../../tours/presentation/pages/tour_detail_screen.dart';
-import '../../../tours/domain/entities/tour_entity.dart';
 import '../../../tours/data/models/tour_model.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 import '../../../auth/data/models/user.dart';
 import '../../../tours/presentation/bloc/guide_tours_cubit.dart';
 
 class AdminReportsScreen extends StatefulWidget {
-  const AdminReportsScreen({Key? key}) : super(key: key);
+  const AdminReportsScreen({super.key});
 
   @override
   State<AdminReportsScreen> createState() => _AdminReportsScreenState();
@@ -321,7 +319,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
             margin: const EdgeInsets.only(bottom: 12),
             child: ListTile(
               leading: CircleAvatar(
-                backgroundColor: _getColorForType(report.reportedItemType).withOpacity(0.2),
+                backgroundColor: _getColorForType(report.reportedItemType).withValues(alpha: 0.2),
                 child: Icon(_getIconForType(report.reportedItemType), color: _getColorForType(report.reportedItemType)),
               ),
               title: Text(report.reason, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -411,7 +409,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
                             margin: const EdgeInsets.only(bottom: 12),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: _getColorForType(report.reportedItemType).withOpacity(0.2),
+                                backgroundColor: _getColorForType(report.reportedItemType).withValues(alpha: 0.2),
                                 child: Icon(_getIconForType(report.reportedItemType), color: _getColorForType(report.reportedItemType)),
                               ),
                               title: Text(report.reason, style: const TextStyle(fontWeight: FontWeight.bold)),

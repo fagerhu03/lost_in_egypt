@@ -11,12 +11,12 @@ class UniversalReportDialog extends StatefulWidget {
   final ReportsRepository repository; // Pass the repository or use GetIt
   
   const UniversalReportDialog({
-    Key? key,
+    super.key,
     required this.reportType,
     required this.reportedItemId,
     this.reportedItemOwnerId,
     required this.repository,
-  }) : super(key: key);
+  });
 
   static Future<void> show(
     BuildContext context, {
@@ -168,21 +168,27 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ..._reasons.map((reason) {
-                      return RadioListTile<String>(
-                        title: Text(reason, style: const TextStyle(fontSize: 14)),
-                        value: reason,
-                        groupValue: _selectedReason,
-                        onChanged: (val) {
+                    RadioGroup<String>(
+                      groupValue: _selectedReason,
+                      onChanged: (val) {
+                        if (val != null) {
                           setState(() {
                             _selectedReason = val;
                           });
-                        },
-                        contentPadding: EdgeInsets.zero,
-                        visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                        activeColor: const Color(0xFFC79A00), // App primary color roughly
-                      );
-                    }).toList(),
+                        }
+                      },
+                      child: Column(
+                        children: _reasons.map((reason) {
+                          return RadioListTile<String>(
+                            title: Text(reason, style: const TextStyle(fontSize: 14)),
+                            value: reason,
+                            contentPadding: EdgeInsets.zero,
+                            visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                            activeColor: const Color(0xFFC79A00), // App primary color roughly
+                          );
+                        }).toList(),
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _descriptionController,

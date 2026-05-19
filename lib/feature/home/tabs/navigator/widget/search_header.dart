@@ -21,12 +21,12 @@ class SearchHeader extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
 
     final bgColor = isDark
-        ? Colors.black.withOpacity(0.15)
-        : primary.withOpacity(0.18);
+        ? Colors.black.withValues(alpha: 0.15)
+        : primary.withValues(alpha: 0.18);
 
     final textColor = isDark
-        ? onSurface.withOpacity(0.92)
-        : Colors.white.withOpacity(0.92);
+        ? onSurface.withValues(alpha: 0.92)
+        : Colors.white.withValues(alpha: 0.92);
 
     final iconColor = textColor;
 
@@ -39,7 +39,7 @@ class SearchHeader extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: (isDark ? Colors.white : Colors.black).withOpacity(0.10),
+            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.10),
             width: 1,
           ),
         ),

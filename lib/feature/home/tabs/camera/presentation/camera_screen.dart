@@ -17,7 +17,6 @@ import '../widgets/camera_result_sheet.dart';
 import '../widgets/camera_overlay_controls.dart';
 import '../widgets/badge_unlock_dialog.dart';
 import '../widgets/translation_draggable_panel.dart';
-import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -270,10 +269,10 @@ class _CameraScreenState extends State<CameraScreen> {
                   data: SliderThemeData(
                     trackHeight: 2,
                     activeTrackColor: Colors.white,
-                    inactiveTrackColor: Colors.white.withOpacity(0.3),
+                    inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
                     thumbColor: Colors.white,
                     thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-                    overlayColor: Colors.white.withOpacity(0.2),
+                    overlayColor: Colors.white.withValues(alpha: 0.2),
                   ),
                   child: Slider(
                     value: state.currentZoom,

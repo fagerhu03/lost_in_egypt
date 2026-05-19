@@ -519,7 +519,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                       ? CachedNetworkImage(
                           imageUrl: place.imagePath,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(
+                          placeholder: (_, _) => Container(
                             color: primary.withValues(alpha: 0.08),
                             child: Center(
                               child: SizedBox(
@@ -530,7 +530,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                               ),
                             ),
                           ),
-                          errorWidget: (_, __, ___) => Container(
+                          errorWidget: (_, _, _) => Container(
                             color: primary.withValues(alpha: 0.06),
                             child: Icon(Icons.image_not_supported_outlined,
                                 color: secondaryTextColor, size: 36),

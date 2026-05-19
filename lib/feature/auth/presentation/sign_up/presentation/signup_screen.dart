@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/login/presentation/login_screen.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
@@ -12,8 +13,7 @@ import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
 class SignupScreen extends StatefulWidget {
-  final bool isGuidePreselected;
-  const SignupScreen({super.key, this.isGuidePreselected = false});
+  const SignupScreen({super.key});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -23,14 +23,12 @@ class _SignupScreenState extends State<SignupScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPassController = TextEditingController();
 
   final _firstNameFocus = FocusNode();
   final _lastNameFocus = FocusNode();
   final _emailFocus = FocusNode();
-  final _phoneFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _confirmPassFocus = FocusNode();
 
@@ -41,6 +39,15 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _selectedMonth;
   String? _selectedDay;
   String? _selectedYear;
+
+  // Phone number captured from IntlPhoneField (full E.164 form, e.g. "+201234567890")
+  // and the ISO 3166-1 alpha-2 country code (e.g. "EG"). Both written to
+  // Firestore at signup. The ISO code is what the recommendation engine reads
+  // for cold-start country-prior scoring — without it, new users get
+  // popularity-only rankings until they edit their profile.
+  String _completePhone = '';
+  String _isoCode = 'EG';
+  bool _phoneValid = false;
 
   static const _months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -67,13 +74,11 @@ class _SignupScreenState extends State<SignupScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPassController.dispose();
     _firstNameFocus.dispose();
     _lastNameFocus.dispose();
     _emailFocus.dispose();
-    _phoneFocus.dispose();
     _passwordFocus.dispose();
     _confirmPassFocus.dispose();
     super.dispose();
@@ -134,9 +139,8 @@ class _SignupScreenState extends State<SignupScreen> {
       return false;
     }
 
-    final phone = _phoneController.text.trim();
-    if (phone.isNotEmpty && !RegExp(r'^\+?[0-9]{7,15}$').hasMatch(phone)) {
-      _showError('Please enter a valid phone number (7–15 digits).');
+    if (!_phoneValid || _completePhone.isEmpty) {
+      _showError('Please enter a valid phone number.');
       return false;
     }
 
@@ -163,7 +167,8 @@ class _SignupScreenState extends State<SignupScreen> {
         birthMonth: _selectedMonth!,
         birthDay: _selectedDay!,
         birthYear: _selectedYear!,
-        phoneNumber: _phoneController.text.trim(),
+        phoneNumber: _completePhone,
+        nationalityCode: _isoCode,
       );
 
       if (mounted) {
@@ -369,17 +374,45 @@ class _SignupScreenState extends State<SignupScreen> {
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     focusNode: _emailFocus,
-                    onSubmitted: (_) => _phoneFocus.requestFocus(),
+                    onSubmitted: (_) => _passwordFocus.requestFocus(),
                   ),
                   SizedBox(height: 10.h),
 
-                  AuthTextField(
-                    hintText: 'Phone Number (optional)',
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    textInputAction: TextInputAction.next,
-                    focusNode: _phoneFocus,
-                    onSubmitted: (_) => _passwordFocus.requestFocus(),
+                  // Required — captures both the full phone number AND the
+                  // country (ISO alpha-2) for the recommendation engine's
+                  // cold-start path. Matches the look of the other inputs:
+                  // white fill, 12 r radius, olive border.
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: const Color(0xFF7A8450).withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: IntlPhoneField(
+                      initialCountryCode: 'EG',
+                      decoration: const InputDecoration(
+                        labelText: 'Phone Number',
+                        border: InputBorder.none,
+                      ),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: 'Marcellus',
+                        color: const Color(0xff634700),
+                      ),
+                      onChanged: (phone) {
+                        _completePhone = phone.completeNumber;
+                        _isoCode = phone.countryISOCode;
+                      },
+                      // The package itself validates length per-country; we
+                      // mirror that result so _validateForm can short-circuit.
+                      validator: (phone) {
+                        final ok = phone != null && phone.number.isNotEmpty;
+                        _phoneValid = ok;
+                        return null;
+                      },
+                    ),
                   ),
                   SizedBox(height: 10.h),
 

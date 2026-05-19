@@ -224,7 +224,7 @@ class HelpScreen extends StatelessWidget {
                     width: 34,
                     height: 34,
                     decoration: BoxDecoration(
-                      color: primary.withOpacity(0.12),
+                      color: primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(section.icon, size: 18, color: primary),
@@ -280,7 +280,7 @@ class _FaqTileState extends State<_FaqTile> {
         color: surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _expanded ? gold.withOpacity(0.35) : gold.withOpacity(0.12),
+          color: _expanded ? gold.withValues(alpha: 0.35) : gold.withValues(alpha: 0.12),
         ),
       ),
       child: InkWell(
@@ -318,7 +318,7 @@ class _FaqTileState extends State<_FaqTile> {
                   widget.faq.answer,
                   style: TextStyle(
                     fontSize: 13,
-                    color: onSurface.withOpacity(0.75),
+                    color: onSurface.withValues(alpha: 0.75),
                     height: 1.6,
                   ),
                 ),

@@ -74,8 +74,8 @@ class _ARBubbleOverlayState extends State<ARBubbleOverlay> {
                 height: isExpanded ? null : rect.height,
                 decoration: BoxDecoration(
                   color: isExpanded 
-                      ? Theme.of(context).colorScheme.surface.withOpacity(0.95)
-                      : Theme.of(context).colorScheme.primary.withOpacity(0.45),
+                      ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.95)
+                      : Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
                   border: Border.all(
                     color: isExpanded
                         ? Colors.transparent
@@ -85,7 +85,7 @@ class _ARBubbleOverlayState extends State<ARBubbleOverlay> {
                   borderRadius: BorderRadius.circular(isExpanded ? 12 : 6),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       blurRadius: isExpanded ? 8 : 4,
                       offset: const Offset(0, 2),
                     ),

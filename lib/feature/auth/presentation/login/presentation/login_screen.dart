@@ -29,6 +29,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool obscure = true;
 
+  // Apple Sign-In is hidden until we have an Apple Developer account.
+  // The data-source throws `operation-not-supported` if invoked — flip this
+  // to `true` once `sign_in_with_apple` is wired up.
+  static const bool _appleEnabled = false;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -255,18 +260,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(width: 20.w),
 
-                          GestureDetector(
-                            onTap: isLoading
-                                ? null
-                                : () => context
-                                    .read<LoginBloc>()
-                                    .add(LoginWithAppleSubmitted()),
-                            child: Image.asset(
-                              "assets/social/apple.png",
-                              height: 40.h,
+                          if (_appleEnabled) ...[
+                            GestureDetector(
+                              onTap: isLoading
+                                  ? null
+                                  : () => context
+                                      .read<LoginBloc>()
+                                      .add(LoginWithAppleSubmitted()),
+                              child: Image.asset(
+                                "assets/social/apple.png",
+                                height: 40.h,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 20.w),
+                            SizedBox(width: 20.w),
+                          ],
 
                           GestureDetector(
                             onTap: isLoading

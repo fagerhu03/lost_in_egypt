@@ -10,6 +10,13 @@ class MapFocusService {
   final ValueNotifier<int> tabSwitchNotifier = ValueNotifier<int>(0);
   final ValueNotifier<List<MapItem>?> pendingTripNotifier = ValueNotifier<List<MapItem>?>(null);
 
+  /// Currently visible tab index. HomeWrapper writes to this on every tab
+  /// change (taps + programmatic + PageView callbacks). MapScreen reads it
+  /// to decide whether to bootstrap MapBloc — preventing the Places API
+  /// cold-start fetch from firing during home→more transitions that animate
+  /// through the map tab.
+  final ValueNotifier<int> activeTabNotifier = ValueNotifier<int>(0);
+
   /// View-only route: shows all stop markers + fits camera bounds.
   /// Does NOT auto-request directions.
   final ValueNotifier<List<MapItem>?> viewRouteNotifier = ValueNotifier<List<MapItem>?>(null);

@@ -66,7 +66,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
     final titleColor = isDark ? AppColors.darkText : const Color(0xFF7A4B1D);
 
     final frameColor = isDark
-        ? AppColors.darkText.withOpacity(0.18)
+        ? AppColors.darkText.withValues(alpha: 0.18)
         : const Color(0xFFBDA47D);
 
     final double patternOpacity = isDark ? 0.6 : 0.6;
@@ -130,8 +130,8 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: isDark
-                              ? AppColors.darkBox.withOpacity(0.75)
-                              : Colors.white.withOpacity(0.75),
+                              ? AppColors.darkBox.withValues(alpha: 0.75)
+                              : Colors.white.withValues(alpha: 0.75),
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(15),
                             topRight: Radius.circular(15),
@@ -161,7 +161,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                                   : TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: isDark
-                                    ? AppColors.darkText.withOpacity(0.85)
+                                    ? AppColors.darkText.withValues(alpha: 0.85)
                                     : const Color(0xFF3F3A35),
                                 fontSize: 12,
                                 height: 1.35,
@@ -191,7 +191,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                             const SizedBox(height: 10),
                             SizedBox(
                               height: 320,
-                              child: _GuideToursList(guideId: widget.guide.id ?? ''),
+                              child: _GuideToursList(guideId: widget.guide.id),
                             ),
                             const Spacer(),
                             if (FirebaseAuth.instance.currentUser?.uid == widget.guide.id)
@@ -318,7 +318,7 @@ class _GuideHeaderCard extends StatelessWidget {
                     children: [
                       Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 16)),
                       const Icon(Icons.star, color: Colors.amber, size: 19),
-                      Text(' (${guide.reviewCount})', style: TextStyle(color: titleColor.withOpacity(0.7), fontSize: 14)),
+                      Text(' (${guide.reviewCount})', style: TextStyle(color: titleColor.withValues(alpha: 0.7), fontSize: 14)),
                     ],
                   ),
                 const SizedBox(height: 2),
@@ -362,7 +362,7 @@ class _InfoStrip extends StatelessWidget {
 
     final itemSubStyle = TextStyle(
       color: isDark
-          ? AppColors.darkText.withOpacity(0.6)
+          ? AppColors.darkText.withValues(alpha: 0.6)
           : const Color(0xFFB6A17F),
       fontSize: 12,
     );
@@ -372,7 +372,7 @@ class _InfoStrip extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(
           color: isDark
-              ? AppColors.darkText.withOpacity(0.18)
+              ? AppColors.darkText.withValues(alpha: 0.18)
               : const Color(0xFFBDA47D),
           width: 1.2,
         ),
@@ -419,7 +419,7 @@ class _InfoStrip extends StatelessWidget {
       width: 1,
       height: 38,
       color: isDark
-          ? AppColors.darkText.withOpacity(0.18)
+          ? AppColors.darkText.withValues(alpha: 0.18)
           : const Color(0xFFD0BEA2),
     );
   }
@@ -449,7 +449,7 @@ class _InfoItem extends StatelessWidget {
         Icon(
           icon,
           color: isDark
-              ? AppColors.darkText.withOpacity(0.8)
+              ? AppColors.darkText.withValues(alpha: 0.8)
               : const Color(0xFF9B7A4D),
           size: 24,
         ),
@@ -464,7 +464,7 @@ class _InfoItem extends StatelessWidget {
 class _PhotosRow extends StatefulWidget {
   final bool isDark;
 
-  const _PhotosRow({super.key, required this.isDark});
+  const _PhotosRow({required this.isDark});
 
   @override
   State<_PhotosRow> createState() => _PhotosRowState();
@@ -508,7 +508,7 @@ class _PhotosRowState extends State<_PhotosRow> {
     ];
 
     final arrowColor = widget.isDark
-        ? AppColors.darkText.withOpacity(0.9)
+        ? AppColors.darkText.withValues(alpha: 0.9)
         : const Color(0xFF7A4B1D);
 
     return SizedBox(
@@ -520,7 +520,7 @@ class _PhotosRowState extends State<_PhotosRow> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 44),
             itemCount: photos.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               return ClipRRect(
                 borderRadius: BorderRadius.circular(16),
@@ -556,7 +556,7 @@ class _PhotosRowState extends State<_PhotosRow> {
 class _GuideToursList extends StatefulWidget {
   final String guideId;
 
-  const _GuideToursList({super.key, required this.guideId});
+  const _GuideToursList({required this.guideId});
 
   @override
   State<_GuideToursList> createState() => _GuideToursListState();
@@ -591,7 +591,7 @@ class _GuideToursListState extends State<_GuideToursList> {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: tours.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                separatorBuilder: (_, _) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   return SizedBox(
                     width: 250,
