@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -6,6 +5,7 @@ import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/recommendation_service.dart';
 import '../../../../core/services/weather_controller.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 import '../../../../core/widgets/shimmer_loading_widget.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 import '../../domain/entities/tour_entity.dart';
@@ -637,27 +637,14 @@ class _RecommendedTourCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Image
-            if (tour.images.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: tour.images.first,
-                fit: BoxFit.cover,
-                placeholder: (_, _) => Container(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                ),
-                errorWidget: (_, _, _) => Container(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                  child: Icon(Icons.tour,
-                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                      size: 36),
-                ),
-              )
-            else
-              Container(
-                color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                child: Icon(Icons.tour,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                    size: 36),
-              ),
+            ShimmerImage(
+              url: tour.images.isNotEmpty ? tour.images.first : null,
+              fit: BoxFit.cover,
+              fallbackIcon: Icons.tour,
+              fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
+              fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
+              fallbackIconSize: 36,
+            ),
             // Gradient overlay
             const DecoratedBox(
               decoration: BoxDecoration(

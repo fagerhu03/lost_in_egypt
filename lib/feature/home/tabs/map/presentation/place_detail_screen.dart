@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +8,8 @@ import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
 import 'package:lost_in_egypt/core/widgets/weather_banner.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
@@ -446,40 +447,24 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                                     ),
                                   );
                                 },
-                                child: CachedNetworkImage(
-                                  imageUrl: widget.place.imagePaths[index],
+                                child: ShimmerImage(
+                                  url: widget.place.imagePaths[index],
                                   fit: BoxFit.cover,
-                                  placeholder: (_, _) => ShimmerLoadingWidget.rectangular(height: 220.h),
-                                  errorWidget: (_, _, _) => Container(
-                                    color: Colors.grey.withValues(alpha: 0.15),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.image_not_supported_outlined,
-                                              color: Colors.grey.withValues(alpha: 0.5), size: 50.r),
-                                          SizedBox(height: 8.h),
-                                          Text('Photo not available',
-                                              style: TextStyle(
-                                                  color: Colors.grey.withValues(alpha: 0.6),
-                                                  fontSize: 12.sp)),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                                  fallbackIcon: Icons.image_not_supported_outlined,
+                                  fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.15),
+                                  fallbackIconColor: Colors.grey.withValues(alpha: 0.5),
+                                  fallbackIconSize: 50.r,
                                 ),
                               );
                             },
                           )
                         : widget.place.imagePath.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: widget.place.imagePath,
+                            ? ShimmerImage(
+                                url: widget.place.imagePath,
                                 fit: BoxFit.cover,
-                                placeholder: (_, _) => ShimmerLoadingWidget.rectangular(height: 220.h),
-                                errorWidget: (_, _, _) => Container(
-                                  color: Colors.grey.withValues(alpha: 0.15),
-                                  child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
-                                ),
+                                fallbackIcon: Icons.broken_image,
+                                fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.15),
+                                fallbackIconColor: Colors.grey,
                               )
                             : Container(
                                 color: primary.withValues(alpha: isDark ? 0.15 : 0.08),
@@ -881,27 +866,17 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(
+                                    ShimmerImage(
+                                      url: sp.item.imagePaths.isNotEmpty
+                                          ? sp.item.imagePaths.first
+                                          : null,
                                       height: 80.h,
                                       width: double.infinity,
-                                      child: sp.item.imagePaths.isNotEmpty
-                                          ? CachedNetworkImage(
-                                              imageUrl: sp.item.imagePaths.first,
-                                              fit: BoxFit.cover,
-                                              placeholder: (ctx, url) => Container(
-                                                color: primary.withValues(alpha: 0.08),
-                                              ),
-                                              errorWidget: (ctx, url, err) => Container(
-                                                color: primary.withValues(alpha: 0.06),
-                                                child: Icon(Icons.place,
-                                                    color: primary.withValues(alpha: 0.3)),
-                                              ),
-                                            )
-                                          : Container(
-                                              color: primary.withValues(alpha: 0.06),
-                                              child: Icon(Icons.place,
-                                                  color: primary.withValues(alpha: 0.3), size: 32.r),
-                                            ),
+                                      fit: BoxFit.cover,
+                                      fallbackIcon: Icons.place,
+                                      fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+                                      fallbackIconColor: primary.withValues(alpha: 0.3),
+                                      fallbackIconSize: 32.r,
                                     ),
                                     Padding(
                                       padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 4.h),
@@ -1278,16 +1253,11 @@ class _CommunityPostsSheet extends StatelessWidget {
                       final avatar = data['userAvatar'] as String? ?? '';
                       return ListTile(
                         contentPadding: EdgeInsets.symmetric(vertical: 8.h),
-                        leading: CircleAvatar(
+                        leading: ShimmerAvatar(
+                          url: avatar,
                           radius: 18.r,
-                          backgroundColor: primary.withValues(alpha: 0.15),
-                          child: avatar.isNotEmpty
-                              ? ClipOval(child: CachedNetworkImage(
-                                  imageUrl: avatar, width: 36.r, height: 36.r,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (ctx, url, err) => Icon(Icons.person, size: 16.r, color: primary),
-                                ))
-                              : Icon(Icons.person, size: 16.r, color: primary),
+                          iconSize: 16.r,
+                          fallbackBackgroundColor: primary.withValues(alpha: 0.15),
                         ),
                         title: Text(userName,
                           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp, color: textColor)),

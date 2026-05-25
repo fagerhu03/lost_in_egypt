@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../../../../core/widgets/shimmer_avatar.dart';
 import '../../navigator/widget/account_menu_button.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import '../domain/entities/community_post.dart';
@@ -862,9 +862,12 @@ class _CommunityScreenState extends State<CommunityScreen>
                 children: [
                   Text(medals[i], style: const TextStyle(fontSize: 18)),
                   const SizedBox(width: 8),
-                  sample.userAvatar.isNotEmpty
-                      ? CircleAvatar(radius: 14, backgroundImage: CachedNetworkImageProvider(sample.userAvatar))
-                      : CircleAvatar(radius: 14, backgroundColor: primary.withValues(alpha: 0.12), child: Icon(Icons.person, size: 14, color: primary)),
+                  ShimmerAvatar(
+                    url: sample.userAvatar,
+                    radius: 14,
+                    iconSize: 14,
+                    fallbackBackgroundColor: primary.withValues(alpha: 0.12),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -977,11 +980,12 @@ class _CommunityScreenState extends State<CommunityScreen>
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
+                ShimmerAvatar(
+                  url: _profileImageUrl,
                   radius: 18,
-                  backgroundColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-                  backgroundImage: (_profileImageUrl != null && _profileImageUrl!.isNotEmpty) ? CachedNetworkImageProvider(_profileImageUrl!) : null,
-                  child: (_profileImageUrl == null || _profileImageUrl!.isEmpty) ? Icon(Icons.person, size: 20, color: onSurface.withValues(alpha: 0.75)) : null,
+                  iconSize: 20,
+                  fallbackBackgroundColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+                  fallbackIconColor: onSurface.withValues(alpha: 0.75),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

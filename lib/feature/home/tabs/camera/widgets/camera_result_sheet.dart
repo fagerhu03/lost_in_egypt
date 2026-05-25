@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
@@ -201,24 +201,14 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
           controller: scrollController,
           padding: EdgeInsets.zero,
           children: [
-            ClipRRect(
+            ShimmerImage(
+              url: widget.place.imagePath,
+              height: 220.h,
+              width: double.infinity,
+              fit: BoxFit.cover,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-              child: SizedBox(
-                height: 220.h,
-                width: double.infinity,
-                child: CachedNetworkImage(
-                  imageUrl: widget.place.imagePath,
-                  fit: BoxFit.cover,
-                  placeholder: (_, _) => Container(
-                    color: Colors.grey[300],
-                    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  ),
-                  errorWidget: (_, _, _) => Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image),
-                  ),
-                ),
-              ),
+              fallbackIcon: Icons.broken_image,
+              fallbackBackgroundColor: Colors.grey[300],
             ),
             Padding(
               padding: EdgeInsets.all(24.r),
@@ -529,15 +519,11 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                           height: 80.h,
                                           width: double.infinity,
                                           child: p.imagePath.startsWith('http')
-                                              ? CachedNetworkImage(
-                                                  imageUrl: p.imagePath,
+                                              ? ShimmerImage(
+                                                  url: p.imagePath,
                                                   fit: BoxFit.cover,
-                                                  placeholder: (_, _) => Container(
-                                                      color: primary
-                                                          .withValues(alpha: 0.08)),
-                                                  errorWidget: (_, _, _) => Container(
-                                                      color: primary
-                                                          .withValues(alpha: 0.06)),
+                                                  fallbackBackgroundColor: primary
+                                                      .withValues(alpha: 0.06),
                                                 )
                                               : Image.asset(p.imagePath,
                                                   fit: BoxFit.cover),

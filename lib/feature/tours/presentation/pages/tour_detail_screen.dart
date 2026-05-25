@@ -4,6 +4,8 @@ import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'full_screen_tour_map_screen.dart';
@@ -216,11 +218,11 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     ? Stack(
                         fit: StackFit.expand,
                         children: [
-                          CachedNetworkImage(
-                            imageUrl: tour.images.first,
+                          ShimmerImage(
+                            url: tour.images.first,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                            errorWidget: (context, url, error) => Container(color: Theme.of(context).colorScheme.surfaceContainerHighest, child: const Icon(Icons.image_not_supported)),
+                            fallbackIcon: Icons.image_not_supported,
+                            fallbackBackgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                           ),
                           // Dark gradient overlay to ensure text visibility
                           DecoratedBox(
@@ -748,11 +750,10 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
     final displayName = '${guide.firstName} ${guide.lastName}'.trim();
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
+      leading: ShimmerAvatar(
+        url: guide.profileImageUrl,
         radius: 24,
-        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-        backgroundImage: guide.profileImageUrl.isNotEmpty ? CachedNetworkImageProvider(guide.profileImageUrl) : null,
-        child: guide.profileImageUrl.isEmpty ? const Icon(Icons.person) : null,
+        fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
       ),
       title: Text(displayName.isNotEmpty ? displayName : 'Your Guide', style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: guide.reviewCount > 0
@@ -875,11 +876,11 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                       // Avatar
                       GestureDetector(
                         onTap: () => _navigateToReviewerProfile(context, userId),
-                        child: CircleAvatar(
+                        child: ShimmerAvatar(
+                          url: userImage,
                           radius: 20,
-                          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                          backgroundImage: userImage != null && userImage.isNotEmpty ? CachedNetworkImageProvider(userImage) : null,
-                          child: userImage == null || userImage.isEmpty ? const Icon(Icons.person, size: 20) : null,
+                          iconSize: 20,
+                          fallbackBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1287,27 +1288,14 @@ class _SimilarTourCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (tour.images.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: tour.images.first,
-                fit: BoxFit.cover,
-                placeholder: (_, _) => Container(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                ),
-                errorWidget: (_, _, _) => Container(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                  child: Icon(Icons.tour,
-                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                      size: 36),
-                ),
-              )
-            else
-              Container(
-                color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                child: Icon(Icons.tour,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                    size: 36),
-              ),
+            ShimmerImage(
+              url: tour.images.isNotEmpty ? tour.images.first : null,
+              fit: BoxFit.cover,
+              fallbackIcon: Icons.tour,
+              fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
+              fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
+              fallbackIconSize: 36,
+            ),
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

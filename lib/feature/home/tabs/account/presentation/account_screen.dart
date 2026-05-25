@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
@@ -431,36 +431,19 @@ class _AccountScreenState extends State<AccountScreen> {
 
                                   // Profile Avatar (overlapping)
                                   Container(
-                                    width: 104.r,
-                                    height: 104.r,
+                                    padding: const EdgeInsets.all(3),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                           color: goldButtonColor, width: 3),
                                     ),
-                                    child: ClipOval(
-                                      child: profileUrl.isNotEmpty
-                                          ? CachedNetworkImage(
-                                              imageUrl: profileUrl,
-                                              fit: BoxFit.cover,
-                                              width: 104.r,
-                                              height: 104.r,
-                                              errorWidget: (_, _, _) =>
-                                                  Container(
-                                                color: surface,
-                                                child: Icon(Icons.person,
-                                                    size: 60.r,
-                                                    color: onSurface
-                                                        .withValues(alpha: 0.5)),
-                                              ),
-                                            )
-                                          : Container(
-                                              color: surface,
-                                              child: Icon(Icons.person,
-                                                  size: 60.r,
-                                                  color: onSurface
-                                                      .withValues(alpha: 0.5)),
-                                            ),
+                                    child: ShimmerAvatar(
+                                      url: profileUrl,
+                                      radius: 49.r,
+                                      iconSize: 60.r,
+                                      fallbackBackgroundColor: surface,
+                                      fallbackIconColor:
+                                          onSurface.withValues(alpha: 0.5),
                                     ),
                                   ),
                                 ],

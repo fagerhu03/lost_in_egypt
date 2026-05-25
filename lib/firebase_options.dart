@@ -52,6 +52,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '435450589544',
     projectId: 'lost-in-egypt-elasly',
     authDomain: 'lost-in-egypt-elasly.firebaseapp.com',
+    databaseURL: 'https://lost-in-egypt-elasly-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'lost-in-egypt-elasly.firebasestorage.app',
   );
 
@@ -60,6 +61,7 @@ class DefaultFirebaseOptions {
     appId: '1:435450589544:android:3ec27d857a05cca1f0e6dd',
     messagingSenderId: '435450589544',
     projectId: 'lost-in-egypt-elasly',
+    databaseURL: 'https://lost-in-egypt-elasly-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'lost-in-egypt-elasly.firebasestorage.app',
   );
 
@@ -68,6 +70,7 @@ class DefaultFirebaseOptions {
     appId: '1:435450589544:ios:31a31fd75d91234bf0e6dd',
     messagingSenderId: '435450589544',
     projectId: 'lost-in-egypt-elasly',
+    databaseURL: 'https://lost-in-egypt-elasly-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'lost-in-egypt-elasly.firebasestorage.app',
     androidClientId: '435450589544-bsnrckjus7h0evbt5eetckipretuquri.apps.googleusercontent.com',
     iosClientId: '435450589544-0ri6hl54s9tusfehkkc4kl7ffs3ji0db.apps.googleusercontent.com',

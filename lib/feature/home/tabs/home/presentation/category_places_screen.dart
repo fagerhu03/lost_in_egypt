@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../../theme/theme.dart';
+import '../../../../../core/widgets/shimmer_image.dart';
 import '../data/datasources/local_places_service.dart';
 import '../data/models/map_item_models.dart';
 import './place_details_screen.dart';
@@ -516,25 +516,13 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                   width: double.infinity,
                   height: 160,
                   child: place.imagePath.startsWith('http')
-                      ? CachedNetworkImage(
-                          imageUrl: place.imagePath,
+                      ? ShimmerImage(
+                          url: place.imagePath,
                           fit: BoxFit.cover,
-                          placeholder: (_, _) => Container(
-                            color: primary.withValues(alpha: 0.08),
-                            child: Center(
-                              child: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                    color: primary, strokeWidth: 2),
-                              ),
-                            ),
-                          ),
-                          errorWidget: (_, _, _) => Container(
-                            color: primary.withValues(alpha: 0.06),
-                            child: Icon(Icons.image_not_supported_outlined,
-                                color: secondaryTextColor, size: 36),
-                          ),
+                          fallbackIcon: Icons.image_not_supported_outlined,
+                          fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+                          fallbackIconColor: secondaryTextColor,
+                          fallbackIconSize: 36,
                         )
                       : Image.asset(place.imagePath, fit: BoxFit.cover),
                 ),

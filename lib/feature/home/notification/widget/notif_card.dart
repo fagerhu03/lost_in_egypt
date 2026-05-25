@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/shimmer_avatar.dart';
+
 class NotifCard extends StatelessWidget {
   final bool isRead;
   final String senderName;
@@ -59,19 +61,12 @@ class NotifCard extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: onAvatarTap,
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: primary.withValues(alpha: 0.12),
-                  ),
-                  child: ClipOval(
-                    child: avatarUrl != null
-                        ? Image.network(avatarUrl!, fit: BoxFit.cover)
-                        : Icon(Icons.person,
-                            color: onSurface.withValues(alpha: 0.65)),
-                  ),
+                child: ShimmerAvatar(
+                  url: avatarUrl,
+                  radius: 17,
+                  iconSize: 20,
+                  fallbackBackgroundColor: primary.withValues(alpha: 0.12),
+                  fallbackIconColor: onSurface.withValues(alpha: 0.65),
                 ),
               ),
               const SizedBox(width: 10),

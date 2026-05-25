@@ -1,11 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../tours/domain/entities/tour_entity.dart';
 import '../../../tours/presentation/pages/tour_detail_screen.dart';
 import '../../../../core/services/currency_controller.dart';
 import '../../../../core/services/currency_service.dart';
-import '../../../../core/widgets/shimmer_loading_widget.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 
 class TourCard extends StatelessWidget {
   final TourEntity tour;
@@ -46,21 +45,15 @@ class TourCard extends StatelessWidget {
             // Image Banner
             Hero(
               tag: 'tour_image_${tour.id}',
-              child: ClipRRect(
+              child: ShimmerImage(
+                url: tour.images.isNotEmpty ? tour.images.first : null,
+                height: 180,
+                width: double.infinity,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                child: SizedBox(
-                  height: 180,
-                  width: double.infinity,
-                  child: tour.images.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: tour.images.first,
-                          fit: BoxFit.cover,
-                          placeholder: (_, _) =>
-                              const ShimmerLoadingWidget.rectangular(height: 180),
-                          errorWidget: (_, _, _) => _buildPlaceholderImage(),
-                        )
-                      : _buildPlaceholderImage(),
-                ),
+                fallbackIcon: Icons.image_not_supported,
+                fallbackBackgroundColor: Colors.grey[300],
+                fallbackIconColor: Colors.grey[600],
+                fallbackIconSize: 50,
               ),
             ),
             
@@ -208,12 +201,4 @@ class TourCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholderImage() {
-    return Container(
-      color: Colors.grey.withValues(alpha: 0.2),
-      child: const Center(
-        child: Icon(Icons.landscape, size: 48, color: Colors.grey),
-      ),
-    );
-  }
 }

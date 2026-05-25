@@ -1233,7 +1233,7 @@ exports.resetTasteVector = onCall(async (request) => {
  * Only users who have at least 1 signal are processed (signalCount > 0 filter).
  */
 exports.decayTasteVectors = onSchedule(
-  { schedule: "0 3 * * *", timeZone: "UTC" },
+  { schedule: "0 3 * * *", timeZone: "UTC", region: "europe-west1" },
   async () => {
     const snapshot = await db().collection("users")
       .where("signalCount", ">", 0)
@@ -1292,7 +1292,7 @@ exports.decayTasteVectors = onSchedule(
  * to 100k+, we'd want to shard this or move to ALS/matrix factorisation.
  */
 exports.rebuildPlaceNeighbors = onSchedule(
-  { schedule: "0 4 * * *", timeZone: "UTC" },
+  { schedule: "0 4 * * *", timeZone: "UTC", region: "europe-west1" },
   async () => {
     const sinceMs = Date.now() - 90 * 24 * 60 * 60 * 1000; // 90 days ago
     const since = admin.firestore.Timestamp.fromMillis(sinceMs);
@@ -1398,7 +1398,7 @@ exports.rebuildPlaceNeighbors = onSchedule(
  * night's decay), so the averaged vectors already reflect the latest decay.
  */
 exports.rebuildCountryPriors = onSchedule(
-  { schedule: "0 2 * * 0", timeZone: "UTC" }, // Sunday 2:00 AM UTC
+  { schedule: "0 2 * * 0", timeZone: "UTC", region: "europe-west1" }, // Sunday 2:00 AM UTC
   async () => {
     const byCountry = new Map(); // code → { sum: {key: total}, count: int }
     const usersSnap = await db().collection("users")

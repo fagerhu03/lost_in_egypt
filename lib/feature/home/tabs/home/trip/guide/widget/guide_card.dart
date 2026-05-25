@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
 import '../../../../../../auth/data/models/user.dart';
 
@@ -55,33 +56,17 @@ class GuideCard extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  Container(
+                  ShimmerImage(
+                    url: guide.profileImageUrl,
                     width: 82,
                     height: 82,
-                    clipBehavior: Clip.hardEdge,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      gradient: LinearGradient(
-                        colors: isDark
-                            ? const [Color(0xFF3E2C1E), Color(0xFF2A2119)]
-                            : const [Color(0xFF7A4B1D), Color(0xFF4B3021)],
-                      ),
-                    ),
-                    child: guide.profileImageUrl.isNotEmpty
-                        ? Image.network(
-                            guide.profileImageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => const Icon(
-                              Icons.person,
-                              color: Color(0xFFEDE9D9),
-                              size: 52,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.person,
-                            color: Color(0xFFEDE9D9),
-                            size: 52,
-                          ),
+                    borderRadius: BorderRadius.circular(14),
+                    fallbackIcon: Icons.person,
+                    fallbackBackgroundColor: isDark
+                        ? const Color(0xFF3E2C1E)
+                        : const Color(0xFF7A4B1D),
+                    fallbackIconColor: const Color(0xFFEDE9D9),
+                    fallbackIconSize: 52,
                   ),
                   Positioned(
                     top: 4,

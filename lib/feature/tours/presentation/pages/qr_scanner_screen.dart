@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/utils/error_handler.dart';
+import '../../../../core/widgets/shimmer_avatar.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({super.key});
@@ -190,11 +190,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 // Tourist info
                 Row(
                   children: [
-                    CircleAvatar(
+                    ShimmerAvatar(
+                      url: avatar,
                       radius: 30,
-                      child: (avatar != null && avatar.isNotEmpty)
-                          ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 60, height: 60, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, size: 28)))
-                          : const Icon(Icons.person, size: 28),
+                      iconSize: 28,
                     ),
                     const SizedBox(width: 14),
                     Column(

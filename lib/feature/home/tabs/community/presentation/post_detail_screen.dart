@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -16,6 +15,8 @@ import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal
 import '../../../../auth/data/models/user.dart';
 import '../../account/presentation/account_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
+import '../../../../../core/widgets/shimmer_avatar.dart';
+import '../../../../../core/widgets/shimmer_image.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final CommunityPost post;
@@ -383,12 +384,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             children: [
               GestureDetector(
                 onTap: () => _navigateToProfile(ownerId),
-                child: CircleAvatar(
+                child: ShimmerAvatar(
+                  url: avatar,
                   radius: 12,
-                  backgroundColor: onSurface.withValues(alpha: 0.08),
-                  child: avatar.isNotEmpty
-                      ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 24, height: 24, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 14, color: primary)))
-                      : Icon(Icons.person, size: 14, color: primary),
+                  iconSize: 14,
                 ),
               ),
               const SizedBox(width: 8),
@@ -584,9 +583,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ClipRRect(
+                                ShimmerImage(
+                                  url: images[0],
+                                  height: 90,
+                                  width: 130,
                                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                  child: Image.network(images[0], height: 90, width: 130, fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(height: 90, color: onSurface.withValues(alpha: 0.06))),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.fromLTRB(8, 6, 8, 4),
@@ -667,12 +668,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               child: Row(
                 children: [
                   // Current user avatar
-                  CircleAvatar(
+                  ShimmerAvatar(
+                    url: _currentUserAvatar,
                     radius: 14,
-                    backgroundColor: onSurface.withValues(alpha: 0.08),
-                    child: _currentUserAvatar != null && _currentUserAvatar!.isNotEmpty
-                        ? ClipOval(child: CachedNetworkImage(imageUrl: _currentUserAvatar!, width: 28, height: 28, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 16, color: primary)))
-                        : Icon(Icons.person, size: 16, color: primary),
+                    iconSize: 16,
                   ),
                   const SizedBox(width: 8),
                   // Text field
@@ -746,12 +745,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 }
                 return Row(
                   children: [
-                    CircleAvatar(
+                    ShimmerAvatar(
+                      url: authorAvatar,
                       radius: 14,
-                      backgroundColor: onSurface.withValues(alpha: 0.08),
-                      child: authorAvatar.isNotEmpty
-                          ? ClipOval(child: CachedNetworkImage(imageUrl: authorAvatar, width: 28, height: 28, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 16, color: primary)))
-                          : Icon(Icons.person, size: 16, color: primary),
+                      iconSize: 16,
                     ),
                     const SizedBox(width: 8),
                     Flexible(child: Text(authorName, style: TextStyle(color: onSurface, fontSize: 15, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),

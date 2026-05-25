@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../auth/data/models/user.dart';
+import '../../../../../core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_model.dart';
 import '../../../../../core/widgets/universal_report_dialog.dart';
@@ -196,17 +196,18 @@ class PublicProfileScreen extends StatelessWidget {
                               ),
                             ),
                             Container(
-                              width: 100,
-                              height: 100,
-                              clipBehavior: Clip.antiAlias,
+                              padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: surface,
                                 border: Border.all(color: cardColor, width: 4),
                               ),
-                              child: profileUrl.isNotEmpty
-                                  ? CachedNetworkImage(imageUrl: profileUrl, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5)))
-                                  : Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5)),
+                              child: ShimmerAvatar(
+                                url: profileUrl,
+                                radius: 46,
+                                iconSize: 60,
+                                fallbackBackgroundColor: surface,
+                                fallbackIconColor: onSurface.withValues(alpha: 0.5),
+                              ),
                             ),
                           ],
                         ),

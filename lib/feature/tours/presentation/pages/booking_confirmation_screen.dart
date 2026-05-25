@@ -7,8 +7,8 @@ import '../../domain/entities/booking_entity.dart';
 import '../../domain/usecases/book_tour_usecase.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../data/datasources/paymob_api_service.dart';
 import '../../../../feature/home/notification/domain/services/local_notification_service.dart';
@@ -456,18 +456,17 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     // Tour info
                     Row(
                       children: [
-                        ClipRRect(
+                        ShimmerImage(
+                          url: widget.tour.images.isNotEmpty
+                              ? widget.tour.images.first
+                              : null,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
                           borderRadius: BorderRadius.circular(12),
-                          child: widget.tour.images.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: widget.tour.images.first, 
-                                  width: 60, 
-                                  height: 60, 
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                                  errorWidget: (context, url, err) => Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest, child: const Icon(Icons.landscape)),
-                                )
-                              : Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest, child: const Icon(Icons.landscape)),
+                          fallbackIcon: Icons.landscape,
+                          fallbackBackgroundColor:
+                              Theme.of(context).colorScheme.surfaceContainerHighest,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -884,26 +883,14 @@ class _BookingSimilarTourCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (tour.images.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: tour.images.first,
-                fit: BoxFit.cover,
-                placeholder: (_, _) => Container(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.08)),
-                errorWidget: (_, _, _) => Container(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                  child: Icon(Icons.tour,
-                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                      size: 36),
-                ),
-              )
-            else
-              Container(
-                color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                child: Icon(Icons.tour,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                    size: 36),
-              ),
+            ShimmerImage(
+              url: tour.images.isNotEmpty ? tour.images.first : null,
+              fit: BoxFit.cover,
+              fallbackIcon: Icons.tour,
+              fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
+              fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
+              fallbackIconSize: 36,
+            ),
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

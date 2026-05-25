@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../bloc/create_tour_cubit.dart';
 import '../bloc/create_tour_state.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/core/utils/map_style_helper.dart';
@@ -643,21 +643,14 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     children: [
                       ..._existingImages.map((url) => Stack(
                             children: [
-                              CachedNetworkImage(
-                                imageUrl: url,
+                              ShimmerImage(
+                                url: url,
                                 width: 80,
                                 height: 80,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  width: 80, height: 80,
-                                  color: Colors.grey.withValues(alpha: 0.2),
-                                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  width: 80, height: 80,
-                                  color: Colors.grey.withValues(alpha: 0.2),
-                                  child: const Icon(Icons.error, size: 20),
-                                ),
+                                fallbackIcon: Icons.error,
+                                fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.2),
+                                fallbackIconSize: 20,
                               ),
                               Positioned(
                                 right: 0,

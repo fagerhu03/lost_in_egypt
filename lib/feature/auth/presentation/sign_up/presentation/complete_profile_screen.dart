@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lost_in_egypt/feature/auth/data/repository_impl/auth_repository_impl.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+import 'package:lost_in_egypt/core/utils/dob_validator.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
@@ -20,87 +21,22 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   String? _selectedDay;
   String? _selectedYear;
 
-  final List<String> _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
+  static const List<String> _months = DobValidator.months;
 
-  List<String> get _days => List<String>.generate(31, (i) => (i + 1).toString());
+  List<String> get _days =>
+      DobValidator.daysFor(monthName: _selectedMonth, year: _selectedYear);
 
-  List<String> get _years {
-    final int currentYear = DateTime.now().year;
-    return List<String>.generate(100, (i) => (currentYear - i).toString());
-  }
-
-  int _calculateAge(DateTime birthDate) {
-    final now = DateTime.now();
-    int age = now.year - birthDate.year;
-
-    if (now.month < birthDate.month ||
-        (now.month == birthDate.month && now.day < birthDate.day)) {
-      age--;
-    }
-
-    return age;
-  }
+  List<String> get _years => DobValidator.yearsList();
 
   Future<void> _handleFinalize() async {
-    if (_selectedMonth == null || _selectedDay == null || _selectedYear == null) {
+    final dobResult = DobValidator.validate(
+      monthName: _selectedMonth,
+      day: _selectedDay,
+      year: _selectedYear,
+    );
+    if (dobResult.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select your Date of Birth")),
-      );
-      return;
-    }
-
-    try {
-      final int day = int.parse(_selectedDay!);
-      final int year = int.parse(_selectedYear!);
-      final int monthIndex = _months.indexOf(_selectedMonth!) + 1; // 1–12
-
-      // Months that never have 31 days
-      const monthsWith30Days = ['April', 'June', 'September', 'November'];
-
-      // 1) February cannot have 30 or 31
-      if (_selectedMonth == 'February' && (day == 30 || day == 31)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("February cannot have 30 or 31 days.")),
-        );
-        return;
-      }
-
-      // 2) Months that cannot have 31 days
-      if (day == 31 &&
-          (monthsWith30Days.contains(_selectedMonth) ||
-              _selectedMonth == 'February')) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("The selected month cannot have 31 days.")),
-        );
-        return;
-      }
-
-      final DateTime dob = DateTime(year, monthIndex, day);
-
-      // General safety: ensure the constructed date is valid
-      if (dob.year != year || dob.month != monthIndex || dob.day != day) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select a valid Date of Birth")),
-        );
-        return;
-      }
-
-      // Age must be at least 16
-      final int age = _calculateAge(dob);
-      if (age < 16) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("You must be at least 16 years old to use this app."),
-          ),
-        );
-        return;
-      }
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a valid Date of Birth")),
+        SnackBar(content: Text(dobResult.error!)),
       );
       return;
     }

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
@@ -827,32 +827,18 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             // Full-bleed image
             imagePath.startsWith('http')
-                ? CachedNetworkImage(
-                    imageUrl: imagePath,
+                ? ShimmerImage(
+                    url: imagePath,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(
-                      color: primary.withValues(alpha: 0.08),
-                      child: Center(
-                        child: SizedBox(
-                          width: 20.r,
-                          height: 20.r,
-                          child: CircularProgressIndicator(
-                            color: primary,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      color: primary.withValues(alpha: 0.06),
-                      child: Icon(Icons.image_not_supported_outlined,
-                          color: primary.withValues(alpha: 0.3), size: 32.r),
-                    ),
+                    fallbackIcon: Icons.image_not_supported_outlined,
+                    fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+                    fallbackIconColor: primary.withValues(alpha: 0.3),
+                    fallbackIconSize: 32.r,
                   )
                 : Image.asset(
                     imagePath,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       color: primary.withValues(alpha: 0.06),
                       child: Icon(Icons.image_not_supported_outlined,
                           color: primary.withValues(alpha: 0.3), size: 32.r),
@@ -1054,27 +1040,13 @@ class _HomeScreenState extends State<HomeScreen>
           fit: StackFit.expand,
           children: [
             place.imagePath.startsWith('http')
-                ? CachedNetworkImage(
-                    imageUrl: place.imagePath,
+                ? ShimmerImage(
+                    url: place.imagePath,
                     fit: BoxFit.cover,
-                    placeholder: (_, _) => Container(
-                      color: primary.withValues(alpha: 0.08),
-                      child: Center(
-                        child: SizedBox(
-                          width: 20.r,
-                          height: 20.r,
-                          child: CircularProgressIndicator(
-                            color: primary,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                    errorWidget: (_, _, _) => Container(
-                      color: primary.withValues(alpha: 0.06),
-                      child: Icon(Icons.image_not_supported_outlined,
-                          color: primary.withValues(alpha: 0.3), size: 32.r),
-                    ),
+                    fallbackIcon: Icons.image_not_supported_outlined,
+                    fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+                    fallbackIconColor: primary.withValues(alpha: 0.3),
+                    fallbackIconSize: 32.r,
                   )
                 : Image.asset(place.imagePath, fit: BoxFit.cover),
             // Gradient overlay
@@ -1278,27 +1250,15 @@ class _HomeScreenState extends State<HomeScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(
+                          ShimmerImage(
+                            url: hasImage ? tour.images.first : null,
                             height: 120.h,
                             width: double.infinity,
-                            child: hasImage
-                                ? CachedNetworkImage(
-                                    imageUrl: tour.images.first,
-                                    fit: BoxFit.cover,
-                                    placeholder: (_, _) => Container(
-                                      color: primary.withValues(alpha: 0.08),
-                                    ),
-                                    errorWidget: (_, _, _) => Container(
-                                      color: primary.withValues(alpha: 0.06),
-                                      child: Icon(Icons.tour,
-                                          color: primary.withValues(alpha: 0.3)),
-                                    ),
-                                  )
-                                : Container(
-                                    color: primary.withValues(alpha: 0.06),
-                                    child: Icon(Icons.tour,
-                                        color: primary.withValues(alpha: 0.3), size: 40.r),
-                                  ),
+                            fit: BoxFit.cover,
+                            fallbackIcon: Icons.tour,
+                            fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+                            fallbackIconColor: primary.withValues(alpha: 0.3),
+                            fallbackIconSize: 40.r,
                           ),
                           Padding(
                             padding: EdgeInsets.fromLTRB(10.w, 8.h, 10.w, 8.h),

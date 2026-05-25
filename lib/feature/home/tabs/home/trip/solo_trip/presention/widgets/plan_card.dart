@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:lost_in_egypt/core/services/place_photos_service.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import '../../../../../../../../theme/theme.dart';
 import 'trip_theme.dart';
 
@@ -300,11 +300,9 @@ class _TripThumbnailState extends State<_TripThumbnail> {
               children: [
                 // Gradient sits behind the image as a colour-matched background
                 _GradientBox(theme: theme),
-                CachedNetworkImage(
-                  imageUrl: url,
+                ShimmerImage(
+                  url: url,
                   fit: BoxFit.cover,
-                  fadeInDuration: const Duration(milliseconds: 500),
-                  errorWidget: (_, _, _) => _GradientBox(theme: theme),
                 ),
                 // Subtle icon badge so the trip type is still visible
                 Positioned(

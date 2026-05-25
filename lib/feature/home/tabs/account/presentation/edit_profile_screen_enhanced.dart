@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import '../../camera/widgets/badge_unlock_dialog.dart';
@@ -791,28 +792,25 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       child: Stack(
         children: [
           Container(
-            width: 120,
-            height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: primary.withValues(alpha: 0.18),
               boxShadow: [shadow],
             ),
-            child: ClipOval(
-              child: _selectedImage != null
-                  ? Image.file(_selectedImage!, fit: BoxFit.cover)
-                  : (_currentUser?.profileImageUrl.isNotEmpty == true)
-                  ? Image.network(
-                _currentUser!.profileImageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (c, o, s) => Center(
-                  child: Icon(Icons.person, color: onSurface, size: 60),
-                ),
-              )
-                  : Center(
-                child: Icon(Icons.person, color: onSurface, size: 60),
-              ),
-            ),
+            child: _selectedImage != null
+                ? Container(
+                    width: 120,
+                    height: 120,
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                  )
+                : ShimmerAvatar(
+                    url: _currentUser?.profileImageUrl,
+                    radius: 60,
+                    iconSize: 60,
+                    fallbackBackgroundColor: primary.withValues(alpha: 0.18),
+                    fallbackIconColor: onSurface,
+                  ),
           ),
           Positioned(
             bottom: 0,

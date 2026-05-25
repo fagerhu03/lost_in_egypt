@@ -6,8 +6,9 @@ import '../../../../auth/data/models/user.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 import '../data/repositories/firebase_community_repository.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../account/presentation/account_screen.dart';
+import '../../../../../core/widgets/shimmer_avatar.dart';
+import '../../../../../core/widgets/shimmer_image.dart';
 import '../../../../../core/widgets/universal_report_dialog.dart';
 import '../../../../admin/data/models/report_model.dart';
 import '../../../../admin/domain/repositories/reports_repository.dart';
@@ -490,27 +491,10 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                   children: [
                     GestureDetector(
                       onTap: () => _navigateToProfile(),
-                      child: ClipOval(
-                        child: widget.post.userAvatar.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: widget.post.userAvatar,
-                                width: 34,
-                                height: 34,
-                                fit: BoxFit.cover,
-                                memCacheHeight: 150,
-                                memCacheWidth: 150,
-                                placeholder: (_, _) => Container(width: 34, height: 34, color: onSurface.withValues(alpha: 0.08)),
-                                errorWidget: (_, _, _) => Container(
-                                  width: 34, height: 34,
-                                  color: onSurface.withValues(alpha: 0.08),
-                                  child: Icon(Icons.person, size: 20, color: primary),
-                                ),
-                              )
-                            : Container(
-                                width: 34, height: 34,
-                                decoration: BoxDecoration(color: onSurface.withValues(alpha: 0.08), shape: BoxShape.circle),
-                                child: Icon(Icons.person, size: 20, color: primary),
-                              ),
+                      child: ShimmerAvatar(
+                        url: widget.post.userAvatar,
+                        radius: 17,
+                        iconSize: 20,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -797,10 +781,10 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
                               child: PageView.builder(
                                 itemCount: widget.post.images.length,
                                 onPageChanged: (i) => setState(() => _currentImageIndex = i),
-                                itemBuilder: (_, i) => Image.network(
-                                  widget.post.images[i],
+                                itemBuilder: (_, i) => ShimmerImage(
+                                  url: widget.post.images[i],
                                   fit: BoxFit.fitWidth,
-                                  errorBuilder: (c, e, s) => Container(height: 220, color: Colors.grey.shade200, child: const Icon(Icons.error)),
+                                  height: widget.isDetail ? 600 : 400,
                                 ),
                               ),
                             ),

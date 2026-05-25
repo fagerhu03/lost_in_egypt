@@ -314,6 +314,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
         planTitle: _plan.title,
         stopsCompleted: _plan.totalStops,
         completedStops: _plan.days.expand((d) => d.stops).toList(),
+        dataset: _dataset,
         onDone: () {
           Navigator.pop(ctx);
           Navigator.pop(context);
@@ -1018,12 +1019,14 @@ class _TourCompleteDialog extends StatefulWidget {
   final int stopsCompleted;
   final VoidCallback onDone;
   final List<SavedPlanStop> completedStops;
+  final List<MapItem> dataset;
 
   const _TourCompleteDialog({
     required this.planTitle,
     required this.stopsCompleted,
     required this.onDone,
     this.completedStops = const [],
+    this.dataset = const [],
   });
 
   @override
@@ -1052,26 +1055,76 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
-      final types = widget.completedStops
-          .map((s) => s.placeType)
-          .toSet()
-          .take(3)
+      if (widget.dataset.isEmpty) return;
+
+      // Resolve completed AI stops to real dataset MapItems so we can both
+      // (a) exclude them from the suggestion pool, and (b) use the last
+      // resolved stop's coords as the proximity anchor.
+      final completedIds = <String>{};
+      MapItem? anchorStop;
+      for (final stop in widget.completedStops) {
+        if (!stop.hasCoordinates) continue;
+        final match = DatasetResolver.resolve(
+          name: stop.name,
+          lat: stop.lat!,
+          lng: stop.lng!,
+          dataset: widget.dataset,
+        );
+        if (match != null) {
+          completedIds.add(match.id);
+          anchorStop = match;
+        }
+      }
+
+      // Anchor for proximity sort: last resolved stop, then first stop with
+      // coords, then Cairo centre as last resort.
+      double anchorLat = 30.0444;
+      double anchorLng = 31.2357;
+      if (anchorStop != null) {
+        anchorLat = anchorStop.coordinate.latitude;
+        anchorLng = anchorStop.coordinate.longitude;
+      } else {
+        final firstWithCoords =
+            widget.completedStops.where((s) => s.hasCoordinates).firstOrNull;
+        if (firstWithCoords != null) {
+          anchorLat = firstWithCoords.lat!;
+          anchorLng = firstWithCoords.lng!;
+        }
+      }
+
+      // Take the 50 nearest dataset entries that weren't just visited.
+      // Pre-filter is needed because the Cloud Function caps candidates at
+      // 200 — and we want the engine's similarity scoring to operate on a
+      // tight relevant pool, not the whole 500-item dataset.
+      final pool = widget.dataset
+          .where((m) => !completedIds.contains(m.id))
           .toList();
-      final candidates = types.map((t) => {
-        'placeId': t,
-        'name': t,
-        'types': [t],
-        'tags': <String>[],
-        'lat': 30.0444,
-        'lng': 31.2357,
-      }).toList();
+      pool.sort((a, b) {
+        final da = Geolocator.distanceBetween(anchorLat, anchorLng,
+            a.coordinate.latitude, a.coordinate.longitude);
+        final db = Geolocator.distanceBetween(anchorLat, anchorLng,
+            b.coordinate.latitude, b.coordinate.longitude);
+        return da.compareTo(db);
+      });
+      final candidates = pool.take(50).map((m) => {
+            'placeId': m.id,
+            'name': m.title,
+            'types': [m.category],
+            'tags': m.tags,
+            'lat': m.coordinate.latitude,
+            'lng': m.coordinate.longitude,
+          }).toList();
       if (candidates.isEmpty) return;
+
       final fn = FirebaseFunctions.instance.httpsCallable('recommendPlaces');
       final result = await fn.call({
         'candidates': candidates,
         'context': 'similar',
         'limit': 3,
-        'excludeSeen': true,
+        // 50-item pool is "small" by the project's threshold — letting the
+        // server filter against `soloPlanSeen` would drain it after a few
+        // completed tours.
+        'excludeSeen': false,
       });
       final ranked = (result.data['recommendations'] as List?) ?? [];
       final names = ranked

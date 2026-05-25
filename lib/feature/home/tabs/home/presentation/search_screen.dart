@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
 import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
@@ -446,23 +446,23 @@ class _PlaceResultTile extends StatelessWidget {
           child: Row(
             children: [
               // Thumbnail
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 64,
-                  height: 64,
-                  child: place.imagePath.startsWith('http')
-                      ? CachedNetworkImage(
-                          imageUrl: place.imagePath,
-                          fit: BoxFit.cover,
-                          placeholder: (_, _) => Container(color: onSurface.withValues(alpha: 0.08)),
-                          errorWidget: (_, _, _) => _PlaceholderIcon(primary: primary),
-                        )
-                      : place.imagePath.isNotEmpty
-                          ? Image.asset(place.imagePath, fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => _PlaceholderIcon(primary: primary))
-                          : _PlaceholderIcon(primary: primary),
-                ),
+              SizedBox(
+                width: 64,
+                height: 64,
+                child: place.imagePath.startsWith('http')
+                    ? ShimmerImage(
+                        url: place.imagePath,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(10),
+                        fallbackBackgroundColor: onSurface.withValues(alpha: 0.08),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: place.imagePath.isNotEmpty
+                            ? Image.asset(place.imagePath, fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => _PlaceholderIcon(primary: primary))
+                            : _PlaceholderIcon(primary: primary),
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -565,20 +565,21 @@ class _TourResultTile extends StatelessWidget {
           child: Row(
             children: [
               // Thumbnail
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 64,
-                  height: 64,
-                  child: tour.images.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: tour.images.first,
-                          fit: BoxFit.cover,
-                          placeholder: (_, _) => Container(color: onSurface.withValues(alpha: 0.08)),
-                          errorWidget: (_, _, _) => _PlaceholderIcon(primary: primary, icon: Icons.tour),
-                        )
-                      : _PlaceholderIcon(primary: primary, icon: Icons.tour),
-                ),
+              SizedBox(
+                width: 64,
+                height: 64,
+                child: tour.images.isNotEmpty
+                    ? ShimmerImage(
+                        url: tour.images.first,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(10),
+                        fallbackIcon: Icons.tour,
+                        fallbackBackgroundColor: onSurface.withValues(alpha: 0.08),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: _PlaceholderIcon(primary: primary, icon: Icons.tour),
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(

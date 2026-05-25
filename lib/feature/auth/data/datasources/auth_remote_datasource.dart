@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../models/user.dart'; // ✅ Make sure this imports the NEW UserModel
@@ -263,17 +264,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     int year = int.parse(birthYear);
     DateTime parsedBirthDate = DateTime(year, monthIndex, day);
 
-    String firstName = "Apple";
-    String lastName = "User";
+    // Default to the email local-part (e.g. "ahmed@gmail.com" → "ahmed") when
+    // the OAuth provider didn't return a displayName. Previously this fell back
+    // to literal "Apple User" — mislabelling every Google/Facebook user without
+    // a displayName. Apple sign-in is hidden behind `_appleEnabled = false`
+    // today (see `login_screen.dart`), so the Apple-specific branch was dead.
+    String firstName = '';
+    String lastName = '';
 
     if (user.displayName != null && user.displayName!.isNotEmpty) {
-      final names = user.displayName!.split(" ");
+      final names = user.displayName!.trim().split(RegExp(r'\s+'));
       firstName = names.first;
-      if (names.length > 1) lastName = names.sublist(1).join(" ");
-    } else if (user.email == "apple.demo@lostinegypt.com") {
-      firstName = "Apple";
-      lastName = "Demo";
+      if (names.length > 1) lastName = names.sublist(1).join(' ');
+    } else if (user.email != null && user.email!.contains('@')) {
+      firstName = user.email!.split('@').first;
     }
+
+    if (firstName.isEmpty) firstName = 'User';
 
     final newUser = UserModel(
       id: user.uid,
@@ -307,25 +314,36 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw Exception('This account has been disabled by administrators.');
       }
       return UserModel.fromMap(data, doc.id);
-    } else {
-      // Create default shell if missing
-      final currentUser = firebaseAuth.currentUser;
-      return UserModel(
-        id: uid,
-        email: currentUser?.email ?? '',
-        firstName: currentUser?.displayName?.split(' ').first ?? 'User',
-        lastName: '',
-        birthDate: DateTime.now(),
-        role: 'tourist',
-        profileImageUrl: currentUser?.photoURL ?? '',
-        phoneNumber: '',
-        nationality: '',
-        isNotificationsEnabled: true,
-        isDarkMode: false,
-        language: 'English',
-        createdAt: DateTime.now(),
-      );
     }
+
+    // Missing user doc — happens after a partial signup, a manual wipe, or an
+    // account that pre-dates the Firestore-doc-on-signup contract. Previously
+    // we returned an in-memory shell and never persisted it, so every getProfile
+    // re-built the same ghost forever. Now we write the shell once so the next
+    // call reads the real doc and subsequent profile-edit flows merge into it.
+    debugPrint('⚠️ getUserProfile: missing Firestore doc for $uid — '
+        'persisting shell so the user is functional');
+    final currentUser = firebaseAuth.currentUser;
+    final shell = UserModel(
+      id: uid,
+      email: currentUser?.email ?? '',
+      firstName: currentUser?.displayName?.split(' ').first ?? 'User',
+      lastName: '',
+      birthDate: DateTime.now(),
+      role: 'tourist',
+      profileImageUrl: currentUser?.photoURL ?? '',
+      phoneNumber: '',
+      nationality: '',
+      isNotificationsEnabled: true,
+      isDarkMode: false,
+      language: 'English',
+      createdAt: DateTime.now(),
+    );
+    await firestore
+        .collection('users')
+        .doc(uid)
+        .set(shell.toMap(), SetOptions(merge: true));
+    return shell;
   }
 
   // ✅ NEW: Correct Update Profile Implementation

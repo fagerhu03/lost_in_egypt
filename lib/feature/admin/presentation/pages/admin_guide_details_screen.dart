@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:lost_in_egypt/feature/auth/domain/entities/user_entity.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
+import 'package:lost_in_egypt/feature/auth/domain/entities/user_entity.dart';
 
 class AdminGuideDetailsScreen extends StatelessWidget {
   final UserEntity applicant;
@@ -61,10 +63,10 @@ class AdminGuideDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  CircleAvatar(
+                  ShimmerAvatar(
+                    url: applicant.profileImageUrl,
                     radius: 50,
-                    backgroundImage: CachedNetworkImageProvider(applicant.profileImageUrl),
-                    child: null,
+                    iconSize: 50,
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -145,14 +147,11 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Expanded(
-                              child: ClipRRect(
+                              child: ShimmerImage(
+                                url: docUrl,
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                child: CachedNetworkImage(
-                                  imageUrl: docUrl,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                  errorWidget: (context, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
-                                ),
+                                fallbackIcon: Icons.broken_image,
+                                fallbackIconColor: Colors.grey,
                               ),
                             ),
                             Container(

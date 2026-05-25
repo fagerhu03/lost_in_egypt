@@ -13,6 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/core/models/solo_plan.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/active_tour_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/marker_filter_service.dart';
@@ -1075,13 +1076,13 @@ class _MapScreenViewState extends State<MapScreenView>
                                       fit: StackFit.expand,
                                       children: [
                                         // Background image
-                                        Image.network(
-                                          item.imagePaths.first,
+                                        ShimmerImage(
+                                          url: item.imagePaths.first,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, _, _) => Container(
-                                            color: onSurface.withValues(alpha: 0.1),
-                                            child: Icon(Icons.place, color: primary, size: 28),
-                                          ),
+                                          fallbackIcon: Icons.place,
+                                          fallbackBackgroundColor: onSurface.withValues(alpha: 0.1),
+                                          fallbackIconColor: primary,
+                                          fallbackIconSize: 28,
                                         ),
                                         // Gradient overlay
                                         Container(

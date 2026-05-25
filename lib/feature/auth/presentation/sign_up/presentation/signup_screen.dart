@@ -9,6 +9,7 @@ import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_field.dart';
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+import 'package:lost_in_egypt/core/utils/dob_validator.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
 
@@ -49,25 +50,12 @@ class _SignupScreenState extends State<SignupScreen> {
   String _isoCode = 'EG';
   bool _phoneValid = false;
 
-  static const _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
+  static const _months = DobValidator.months;
 
-  List<String> get _days {
-    if (_selectedMonth == null || _selectedYear == null) {
-      return List.generate(31, (i) => '${i + 1}');
-    }
-    final monthIndex = _months.indexOf(_selectedMonth!) + 1;
-    final year = int.tryParse(_selectedYear!) ?? DateTime.now().year;
-    final daysInMonth = DateUtils.getDaysInMonth(year, monthIndex);
-    return List.generate(daysInMonth, (i) => '${i + 1}');
-  }
+  List<String> get _days =>
+      DobValidator.daysFor(monthName: _selectedMonth, year: _selectedYear);
 
-  List<String> get _years {
-    final now = DateTime.now();
-    return List.generate(85, (i) => '${now.year - 16 - i}');
-  }
+  List<String> get _years => DobValidator.yearsList();
 
   @override
   void dispose() {
@@ -96,27 +84,13 @@ class _SignupScreenState extends State<SignupScreen> {
       return false;
     }
 
-    if (_selectedMonth == null || _selectedDay == null || _selectedYear == null) {
-      _showError('Please select your date of birth.');
-      return false;
-    }
-
-    final year = int.tryParse(_selectedYear!);
-    final day = int.tryParse(_selectedDay!);
-    if (year == null || day == null) {
-      _showError('Invalid date of birth.');
-      return false;
-    }
-
-    final now = DateTime.now();
-    final monthIndex = _months.indexOf(_selectedMonth!) + 1;
-    final dob = DateTime(year, monthIndex, day);
-    int age = now.year - dob.year;
-    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
-      age--;
-    }
-    if (age < 16) {
-      _showError('You must be at least 16 years old to sign up.');
+    final dobResult = DobValidator.validate(
+      monthName: _selectedMonth,
+      day: _selectedDay,
+      year: _selectedYear,
+    );
+    if (dobResult.error != null) {
+      _showError(dobResult.error!);
       return false;
     }
 

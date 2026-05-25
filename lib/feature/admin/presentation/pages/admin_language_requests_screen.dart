@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 
 class AdminLanguageRequestsScreen extends StatelessWidget {
   const AdminLanguageRequestsScreen({super.key});
@@ -203,9 +204,9 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
                                     Expanded(
                                       child: GestureDetector(
                                         onTap: () => _showImageDialog(context, guideLicenseUrl),
-                                        child: ClipRRect(
+                                        child: ShimmerImage(
+                                          url: guideLicenseUrl,
                                           borderRadius: BorderRadius.circular(8),
-                                          child: Image.network(guideLicenseUrl, fit: BoxFit.cover),
                                         ),
                                       ),
                                     ),
@@ -215,9 +216,9 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
                                     Expanded(
                                       child: GestureDetector(
                                         onTap: () => _showImageDialog(context, idCardUrl),
-                                        child: ClipRRect(
+                                        child: ShimmerImage(
+                                          url: idCardUrl,
                                           borderRadius: BorderRadius.circular(8),
-                                          child: Image.network(idCardUrl, fit: BoxFit.cover),
                                         ),
                                       ),
                                     ),

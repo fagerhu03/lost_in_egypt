@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class TripPlannerSheet extends StatefulWidget {
@@ -614,23 +615,16 @@ class _SuggestionTile extends StatelessWidget {
       ),
       child: ListTile(
         dense: true,
-        leading: Container(
+        leading: ShimmerImage(
+          url: item.imagePaths.isNotEmpty ? item.imagePaths.first : null,
           width: 36.r,
           height: 36.r,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.r),
-            color: onSurface.withValues(alpha: 0.06),
-            image: item.imagePaths.isNotEmpty
-                ? DecorationImage(
-                    image: NetworkImage(item.imagePaths.first),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: item.imagePaths.isEmpty
-              ? Icon(Icons.place_outlined,
-                  color: primary.withValues(alpha: 0.5), size: 18.r)
-              : null,
+          borderRadius: BorderRadius.circular(8.r),
+          fit: BoxFit.cover,
+          fallbackIcon: Icons.place_outlined,
+          fallbackBackgroundColor: onSurface.withValues(alpha: 0.06),
+          fallbackIconColor: primary.withValues(alpha: 0.5),
+          fallbackIconSize: 18.r,
         ),
         title: Text(
           item.title,

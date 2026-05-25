@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class SavedPlacesSheet extends StatefulWidget {
@@ -183,27 +183,17 @@ class _SavedPlacesSheetState extends State<SavedPlacesSheet> {
                                     padding: EdgeInsets.all(10.r),
                                     child: Row(
                                       children: [
-                                        ClipRRect(
+                                        ShimmerImage(
+                                          url: place.imagePaths.isNotEmpty
+                                              ? place.imagePaths.first
+                                              : null,
+                                          width: 70.r,
+                                          height: 70.r,
                                           borderRadius: BorderRadius.circular(12.r),
-                                          child: SizedBox(
-                                            width: 70.r,
-                                            height: 70.r,
-                                            child: place.imagePaths.isNotEmpty
-                                                ? CachedNetworkImage(
-                                                    imageUrl: place.imagePaths.first,
-                                                    fit: BoxFit.cover,
-                                                    errorWidget: (ctx, url, err) => Container(
-                                                      color: primary.withValues(alpha: 0.08),
-                                                      child: Icon(Icons.place,
-                                                          color: primary.withValues(alpha: 0.4)),
-                                                    ),
-                                                  )
-                                                : Container(
-                                                    color: primary.withValues(alpha: 0.08),
-                                                    child: Icon(Icons.place,
-                                                        color: primary.withValues(alpha: 0.4)),
-                                                  ),
-                                          ),
+                                          fit: BoxFit.cover,
+                                          fallbackIcon: Icons.place,
+                                          fallbackBackgroundColor: primary.withValues(alpha: 0.08),
+                                          fallbackIconColor: primary.withValues(alpha: 0.4),
                                         ),
                                         SizedBox(width: 14.w),
                                         Expanded(

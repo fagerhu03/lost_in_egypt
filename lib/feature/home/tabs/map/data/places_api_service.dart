@@ -13,6 +13,26 @@ class PlacesApiService {
 
   PlacesApiService({required this.apiKey});
 
+  /// Master kill-switch. When `true`, every billed entry point short-circuits
+  /// without hitting `places.googleapis.com`. Set from `main.dart` via
+  /// `PLACES_API_DISABLED=true` in `.env`. Used during development to test
+  /// non-Places features without burning quota / billing.
+  ///
+  /// Behavior when on:
+  ///   • `searchMultipleQueries` THROWS → `MapRepository` falls through its
+  ///     cache chain to the bundled asset (500 landmarks still render).
+  ///   • All other entry points return empty/null gracefully.
+  static bool disabled = false;
+
+  static Never _throwBlocked(String method) {
+    debugPrint('🛑 PLACES API BLOCKED ($method) — kill-switch is on');
+    throw StateError('PlacesApiService disabled via PLACES_API_DISABLED');
+  }
+
+  static void _logBlocked(String method) {
+    debugPrint('🛑 PLACES API BLOCKED ($method) — kill-switch is on');
+  }
+
   // ── Global API call tracker ──
   static int _totalApiCalls = 0;
   static int get totalApiCalls => _totalApiCalls;
@@ -90,6 +110,11 @@ class PlacesApiService {
 
     final body = jsonEncode(bodyMap);
 
+    if (disabled) {
+      _logBlocked('textSearch query="$query"');
+      return [];
+    }
+
     if (kDebugMode) {
       _logApiCall('textSearch', 'query="$query", type=$includedType');
     }
@@ -130,6 +155,11 @@ class PlacesApiService {
   Future<({double lat, double lng})?> findPlaceLocation(String query) async {
     final cached = _locationCache[query];
     if (cached != null) return cached;
+
+    if (disabled) {
+      _logBlocked('findPlaceLocation query="$query"');
+      return null;
+    }
 
     const url = 'https://places.googleapis.com/v1/places:searchText';
     // Basic field mask only — keeps cost at $0.017/call (vs $0.032 for Advanced)
@@ -181,6 +211,11 @@ class PlacesApiService {
     final cached = _fullCache[query];
     if (cached != null) return cached;
 
+    if (disabled) {
+      _logBlocked('findPlaceFull query="$query"');
+      return null;
+    }
+
     const url = 'https://places.googleapis.com/v1/places:searchText';
     final fieldMask = [
       'places.id',
@@ -231,6 +266,13 @@ class PlacesApiService {
   Future<List<Map<String, dynamic>>> searchMultipleQueries(
     List<PlacesSearchQuery> queries,
   ) async {
+    if (disabled) {
+      // Throw so MapRepository's try/catch falls through to the bundled-asset
+      // path (500 landmarks). Returning [] would corrupt the disk cache by
+      // saving an empty list on top of any prior valid snapshot.
+      _throwBlocked('searchMultipleQueries (${queries.length} queries)');
+    }
+
     final allPlaces = <Map<String, dynamic>>[];
     final seenIds = <String>{};
     const int chunkSize = 5;
@@ -335,6 +377,11 @@ class PlacesApiService {
         }
       }
     } catch (_) {}
+
+    if (disabled) {
+      _logBlocked('nearbySearch lat=$lat lng=$lng types=$includedTypes');
+      return [];
+    }
 
     const url = 'https://places.googleapis.com/v1/places:searchNearby';
 
@@ -441,6 +488,11 @@ class PlacesApiService {
         }
       }
     } catch (_) {}
+
+    if (disabled) {
+      _logBlocked('getPlaceDetails placeId=$placeId');
+      return null;
+    }
 
     if (kDebugMode) {
       _logApiCall('getPlaceDetails', 'placeId=$placeId');

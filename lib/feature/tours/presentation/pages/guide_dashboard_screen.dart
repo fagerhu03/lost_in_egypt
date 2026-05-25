@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 import '../bloc/guide_tours_cubit.dart';
 import '../bloc/guide_tours_state.dart';
 import '../bloc/create_tour_cubit.dart';
@@ -279,9 +280,14 @@ class _GuideTourCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  tour.images.isNotEmpty
-                      ? Image.network(tour.images.first, fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: Colors.grey[300]))
-                      : Container(color: Theme.of(context).colorScheme.surfaceContainerHighest, child: Center(child: Icon(Icons.landscape, size: 48, color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)))),
+                  ShimmerImage(
+                    url: tour.images.isNotEmpty ? tour.images.first : null,
+                    fit: BoxFit.cover,
+                    fallbackIcon: Icons.landscape,
+                    fallbackBackgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    fallbackIconColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+                    fallbackIconSize: 48,
+                  ),
                   // Gradient overlay
                   Positioned(
                     bottom: 0,

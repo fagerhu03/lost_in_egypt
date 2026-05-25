@@ -13,7 +13,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import '../../../../feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:http/http.dart' as http;
-import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/widgets/shimmer_avatar.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 import '../../data/models/tour_model.dart';
 import '../../../auth/data/models/user.dart';
 import '../../../../feature/home/tabs/community/presentation/universal_profile_screen.dart';
@@ -242,16 +243,14 @@ class _BookingCard extends StatelessWidget {
               children: [
                 ListTile(
                   contentPadding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                  leading: ClipRRect(
+                  leading: ShimmerImage(
+                    url: imageUrl,
+                    width: 56,
+                    height: 56,
                     borderRadius: BorderRadius.circular(10),
-                    child: imageUrl != null
-                        ? CachedNetworkImage(imageUrl: imageUrl, width: 56, height: 56, fit: BoxFit.cover)
-                        : Container(
-                            width: 56,
-                            height: 56,
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: Icon(Icons.landscape, color: theme.colorScheme.onSurfaceVariant),
-                          ),
+                    fallbackIcon: Icons.landscape,
+                    fallbackBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    fallbackIconColor: theme.colorScheme.onSurfaceVariant,
                   ),
                   title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   subtitle: location.isNotEmpty
@@ -801,12 +800,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             expandedHeight: 220,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: imageUrl != null
-                  ? CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover)
-                  : Container(
-                      color: theme.colorScheme.primaryContainer,
-                      child: Icon(Icons.landscape, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
-                    ),
+              background: ShimmerImage(
+                url: imageUrl,
+                fit: BoxFit.cover,
+                fallbackIcon: Icons.landscape,
+                fallbackBackgroundColor: theme.colorScheme.primaryContainer,
+                fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
+                fallbackIconSize: 80,
+              ),
             ),
           ),
 
@@ -1211,11 +1212,9 @@ class _GuideRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
           children: [
-            CircleAvatar(
+            ShimmerAvatar(
+              url: avatar,
               radius: 24,
-              child: (avatar != null && avatar.isNotEmpty)
-                  ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 48, height: 48, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person)))
-                  : const Icon(Icons.person),
             ),
             const SizedBox(width: 12),
             Column(

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/constants/event_categories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
 import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/presentation/event_details_screen.dart';
 
@@ -279,19 +279,17 @@ class _EventCard extends StatelessWidget {
                       height: 180.h,
                       width: double.infinity,
                       child: event.imagePath.startsWith('http')
-                          ? CachedNetworkImage(
-                              imageUrl: event.imagePath,
+                          ? ShimmerImage(
+                              url: event.imagePath,
                               fit: BoxFit.cover,
-                              placeholder: (_, __) =>
-                                  Container(color: onSurface.withValues(alpha: 0.06)),
-                              errorWidget: (_, __, ___) =>
-                                  _ImageError(primary: primary),
+                              fallbackBackgroundColor:
+                                  onSurface.withValues(alpha: 0.06),
                             )
                           : event.imagePath.isNotEmpty
                               ? Image.asset(
                                   event.imagePath,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
+                                  errorBuilder: (_, _, _) =>
                                       _ImageError(primary: primary),
                                 )
                               : _ImageError(primary: primary),

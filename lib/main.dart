@@ -28,6 +28,7 @@ import 'feature/auth/presentation/login/bloc/login_bloc.dart';
 import 'feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 import 'feature/onboarding/onboarding_screen.dart';
 import 'feature/home/notification/domain/services/local_notification_service.dart';
+import 'feature/home/tabs/map/data/places_api_service.dart';
 
 // ✅ add these imports for saved theme
 import 'feature/tours/presentation/pages/map_picker_screen.dart';
@@ -46,6 +47,18 @@ void main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     debugPrint("WARNING: .env file not found, Maps API might fail if not injected via CLI.");
+  }
+
+  // Dev kill-switch — when `PLACES_API_DISABLED=true` is in `.env`, every
+  // PlacesApiService entry point short-circuits and MapRepository falls
+  // through to the bundled 500-landmark asset. Lets us test the rest of the
+  // app without burning Places API quota.
+  PlacesApiService.disabled =
+      (dotenv.env['PLACES_API_DISABLED'] ?? '').toLowerCase() == 'true';
+  if (PlacesApiService.disabled) {
+    debugPrint('🛑 PLACES API KILL-SWITCH IS ON '
+        '(PLACES_API_DISABLED=true). All Places API calls will be blocked '
+        'this session. Remove the flag from .env to re-enable.');
   }
 
   try {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 
@@ -215,12 +215,11 @@ class _AttendeeCardState extends State<_AttendeeCard> {
                     );
                   }
                 : null,
-            leading: CircleAvatar(
+            leading: ShimmerAvatar(
+              url: profileUrl,
               radius: 24,
-              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-              child: profileUrl.isNotEmpty
-                  ? ClipOval(child: CachedNetworkImage(imageUrl: profileUrl, width: 48, height: 48, fit: BoxFit.cover, errorWidget: (_, _, _) => Icon(Icons.person, color: theme.colorScheme.primary)))
-                  : Icon(Icons.person, color: theme.colorScheme.primary),
+              fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+              fallbackIconColor: theme.colorScheme.primary,
             ),
             title: Text(name.isNotEmpty ? name : 'Unknown User', style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(

@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:dartz/dartz.dart' as dartz;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -227,22 +228,18 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
       children: [
         // Avatar
         Container(
-          width: 100,
-          height: 100,
+          padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: theme.colorScheme.surface,
             border: Border.all(color: titleColor.withValues(alpha: 0.5), width: 3),
-            image: widget.user.profileImageUrl.isNotEmpty 
-              ? DecorationImage(
-                  image: CachedNetworkImageProvider(widget.user.profileImageUrl),
-                  fit: BoxFit.cover,
-                )
-              : null,
           ),
-          child: widget.user.profileImageUrl.isEmpty
-              ? Icon(Icons.person, size: 60, color: onSurface.withValues(alpha: 0.5))
-              : null,
+          child: ShimmerAvatar(
+            url: widget.user.profileImageUrl,
+            radius: 47,
+            iconSize: 60,
+            fallbackBackgroundColor: theme.colorScheme.surface,
+            fallbackIconColor: onSurface.withValues(alpha: 0.5),
+          ),
         ),
         const SizedBox(height: 16),
         Text(
@@ -533,11 +530,15 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
                 border: Border.all(color: titleColor.withValues(alpha: 0.3), width: 2),
                 color: isDark ? const Color(0xFF3E2C1E) : const Color(0xFF7A4B1D),
               ),
-              child: ClipRRect(
+              child: ShimmerImage(
+                url: guide.profileImageUrl,
+                width: 90,
+                height: 90,
                 borderRadius: BorderRadius.circular(16),
-                child: guide.profileImageUrl.isNotEmpty
-                    ? CachedNetworkImage(imageUrl: guide.profileImageUrl, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, color: Colors.white70, size: 50))
-                    : const Icon(Icons.person, color: Colors.white70, size: 50),
+                fallbackIcon: Icons.person,
+                fallbackBackgroundColor: isDark ? const Color(0xFF3E2C1E) : const Color(0xFF7A4B1D),
+                fallbackIconColor: Colors.white70,
+                fallbackIconSize: 50,
               ),
             ),
             Positioned(
@@ -698,12 +699,11 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
+                  ShimmerAvatar(
+                    url: userImage,
                     radius: 18,
-                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
-                    child: (userImage != null && userImage.isNotEmpty)
-                        ? ClipOval(child: CachedNetworkImage(imageUrl: userImage, width: 36, height: 36, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, size: 18)))
-                        : const Icon(Icons.person, size: 18),
+                    iconSize: 18,
+                    fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
                   ),
                   const SizedBox(width: 10),
                   Expanded(

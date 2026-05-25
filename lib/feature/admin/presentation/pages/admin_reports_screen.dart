@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
+import '../../../../core/widgets/shimmer_avatar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/reports_repository.dart';
@@ -248,10 +248,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
       case ReportType.guide:
         return Row(
           children: [
-            CircleAvatar(
-              child: data['profileImageUrl']?.isNotEmpty == true
-                  ? ClipOval(child: CachedNetworkImage(imageUrl: data['profileImageUrl'], width: 40, height: 40, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person)))
-                  : const Icon(Icons.person),
+            ShimmerAvatar(
+              url: data['profileImageUrl'] as String?,
+              radius: 20,
             ),
             const SizedBox(width: 12),
             Expanded(child: Text('${data['firstName']} ${data['lastName']}\nRole: ${data['role']}')),

@@ -1,10 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
-import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
@@ -179,21 +178,19 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                                   ),
                                 );
                               },
-                              child: CachedNetworkImage(
-                                imageUrl: widget.place.imagePaths[index],
+                              child: ShimmerImage(
+                                url: widget.place.imagePaths[index],
                                 fit: BoxFit.cover,
-                                placeholder: (_, _) => const ShimmerLoadingWidget.rectangular(height: 280),
-                                errorWidget: (_, _, _) => Container(color: Colors.grey.withValues(alpha: 0.15)),
+                                fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.15),
                               ),
                             );
                           },
                         )
                       : widget.place.imagePath.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: widget.place.imagePath,
+                          ? ShimmerImage(
+                              url: widget.place.imagePath,
                               fit: BoxFit.cover,
-                              placeholder: (_, _) => const ShimmerLoadingWidget.rectangular(height: 280),
-                              errorWidget: (_, _, _) => Container(color: Colors.grey.withValues(alpha: 0.15)),
+                              fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.15),
                             )
                           : Container(color: primary.withValues(alpha: isDark ? 0.15 : 0.08)),
                   
