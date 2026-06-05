@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen>
             .map((d) => EventModel.fromMap(d.data(), d.id))
             .toList();
       } catch (e) {
-        print("Firestore events error: $e");
+        debugPrint("Firestore events error: $e");
       }
       
       final merged = firestoreEvents;
@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen>
         final bLive = b.source == 'passboard' || b.source == 'eventbrite';
         if (aLive && !bLive) return -1;
         if (!aLive && bLive) return 1;
-        return (b.importance ?? 5).compareTo(a.importance ?? 5);
+        return b.importance.compareTo(a.importance);
       });
 
       if (!mounted) return;

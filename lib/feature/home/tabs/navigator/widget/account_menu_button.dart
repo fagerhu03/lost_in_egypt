@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../account/presentation/account_screen.dart';
 import '../../../../../core/di/service_locator.dart';
 import '../../../notification/domain/repositories/notifications_repository.dart';
@@ -71,15 +72,15 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                   (userSnapshot.data!.data() as Map<String, dynamic>)['role'] == 'admin';
 
               return PopupMenuButton<String>(
-                offset: const Offset(0, 50),
+                offset: Offset(0, 50.h),
                 color: surface,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
 
           child: Container(
-            width: 44,
-            height: 44,
+            width: 44.r,
+            height: 44.r,
             decoration: BoxDecoration(
               color: avatarBg,
               shape: BoxShape.circle,
@@ -92,8 +93,8 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 44.r,
+                  height: 44.r,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -105,7 +106,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                         : null,
                   ),
                   child: (widget.profileImageUrl == null || widget.profileImageUrl!.isEmpty)
-                      ? Icon(Icons.person, size: 26, color: onSurface.withValues(alpha: 0.9))
+                      ? Icon(Icons.person, size: 26.r, color: onSurface.withValues(alpha: 0.9))
                       : null,
                 ),
 
@@ -114,8 +115,8 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                     top: 0,
                     right: 0,
                     child: Container(
-                      width: 12,
-                      height: 12,
+                      width: 12.r,
+                      height: 12.r,
                       decoration: const BoxDecoration(
                         color: Colors.red,
                         shape: BoxShape.circle,
@@ -184,8 +185,8 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                 value: 'account',
                 child: Row(
                   children: [
-                    Icon(Icons.person_outline, color: iconColor, size: 20),
-                    const SizedBox(width: 10),
+                    Icon(Icons.person_outline, color: iconColor, size: 20.r),
+                    SizedBox(width: 10.w),
                     Text(
                       "My Account",
                       style: textStyle.copyWith(fontWeight: FontWeight.bold),
@@ -200,8 +201,8 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                   value: 'guide_dashboard',
                   child: Row(
                     children: [
-                      Icon(Icons.dashboard_customize, color: iconColor, size: 20),
-                      const SizedBox(width: 10),
+                      Icon(Icons.dashboard_customize, color: iconColor, size: 20.r),
+                      SizedBox(width: 10.w),
                       Text(
                         "Guide Dashboard",
                         style: textStyle.copyWith(fontWeight: FontWeight.bold),
@@ -217,8 +218,8 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                   value: 'admin_dashboard',
                   child: Row(
                     children: [
-                      Icon(Icons.admin_panel_settings, color: Colors.red.shade400, size: 20),
-                      const SizedBox(width: 10),
+                      Icon(Icons.admin_panel_settings, color: Colors.red.shade400, size: 20.r),
+                      SizedBox(width: 10.w),
                       Text(
                         "Admin Dashboard",
                         style: textStyle.copyWith(color: Colors.red.shade400, fontWeight: FontWeight.bold),
@@ -237,26 +238,26 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                     Row(
                       children: [
                         Icon(Icons.notifications_outlined,
-                            color: iconColor, size: 20),
-                        const SizedBox(width: 10),
+                            color: iconColor, size: 20.r),
+                        SizedBox(width: 10.w),
                         Text("Notification Centre", style: textStyle),
                       ],
                     ),
                     if (unreadCount > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6.w,
+                          vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Text(
                           badgeText,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 10.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -269,8 +270,8 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                 value: 'logout',
                 child: Row(
                   children: [
-                    const Icon(Icons.logout, color: Colors.red, size: 20),
-                    const SizedBox(width: 10),
+                    Icon(Icons.logout, color: Colors.red, size: 20.r),
+                    SizedBox(width: 10.w),
                     Text("Sign Out", style: textStyle),
                   ],
                 ),

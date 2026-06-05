@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/empty_notifications_view.dart';
@@ -167,14 +168,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
                 repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => const SizedBox.shrink(),
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
           ),
 
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+              padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 16.h),
               child: Column(
                 children: [
                   Row(
@@ -182,7 +183,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(Icons.arrow_back_ios_new,
-                            color: onSurface, size: 18),
+                            color: onSurface, size: 18.r),
                       ),
                       const Spacer(),
                       Text(
@@ -191,29 +192,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           color: onSurface,
                           fontFamily: "Marcellus",
                           fontWeight: FontWeight.w600,
-                          fontSize: 18,
+                          fontSize: 18.sp,
                         ),
                       ),
                       const Spacer(),
-                      const SizedBox(width: 42),
+                      SizedBox(width: 42.w),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
 
                   Align(
                     alignment: Alignment.center,
                     child: Material(
                       color: primary.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                       clipBehavior: Clip.hardEdge,
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14.r),
                         onTap: () => NotificationSettingsSheet.open(context),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 14.w, vertical: 8.h),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                             border:
                                 Border.all(color: primary.withValues(alpha: 0.25)),
                           ),
@@ -223,7 +224,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               color: primary,
                               fontFamily: "Marcellus",
                               fontWeight: FontWeight.w600,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                             ),
                           ),
                         ),
@@ -231,7 +232,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   Expanded(
                     child: StreamBuilder<List<NotificationEntity>>(
@@ -256,36 +257,36 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         return ListView(
                           padding: EdgeInsets.zero,
                           children: [
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4.h),
                             Padding(
                               padding:
-                                  const EdgeInsets.only(left: 6, bottom: 8),
+                                  EdgeInsets.only(left: 6.w, bottom: 8.h),
                               child: Text(
                                 "Previously",
                                 style: TextStyle(
                                   color: onSurface,
                                   fontFamily: "Marcellus",
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
                             ),
 
                             ...notifications.map((notif) {
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
+                                padding: EdgeInsets.only(bottom: 10.h),
                                 child: Dismissible(
                                   key: ValueKey(notif.id),
                                   direction: DismissDirection.endToStart,
                                   background: Container(
                                     alignment: Alignment.centerRight,
                                     padding:
-                                        const EdgeInsets.only(right: 18),
+                                        EdgeInsets.only(right: 18.w),
                                     decoration: BoxDecoration(
                                       color:
                                           Colors.red.withValues(alpha: 0.85),
                                       borderRadius:
-                                          BorderRadius.circular(16),
+                                          BorderRadius.circular(16.r),
                                     ),
                                     child: const Icon(Icons.delete,
                                         color: Colors.white),
@@ -316,18 +317,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               );
                             }),
 
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Center(
                               child: Text(
                                 "Marking notifications?",
                                 style: TextStyle(
                                   color: onSurface.withValues(alpha: 0.75),
                                   fontFamily: "Marcellus",
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6.h),
                             Center(
                               child: InkWell(
                                 onTap: () =>
@@ -337,7 +338,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   style: TextStyle(
                                     color: primary,
                                     fontFamily: "Marcellus",
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

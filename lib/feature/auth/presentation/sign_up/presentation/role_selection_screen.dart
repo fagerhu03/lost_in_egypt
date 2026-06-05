@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 
@@ -38,33 +39,33 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 60),
+              SizedBox(height: 60.h),
 
               // LOGO
               Center(
                 child: Image.asset(
                   "assets/logo/logo_colorful_comp.png",
-                  height: 140,
+                  height: 140.h,
                 ),
               ),
 
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
 
               Text(
                 "Are you a...",
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 22.sp,
                   fontFamily: "Marcellus",
                   color: textColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
 
-              const SizedBox(height: 50),
+              SizedBox(height: 50.h),
 
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -92,7 +93,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       // Guide Card
                       Expanded(
                         child: _RoleCard(
@@ -120,7 +121,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: 60.h),
             ],
           ),
         ),
@@ -153,11 +154,11 @@ class _RoleCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
-        height: isSelected ? 320 : 250,
-        margin: EdgeInsets.only(bottom: isSelected ? 0 : 30),
+        height: (isSelected ? 320 : 250).h,
+        margin: EdgeInsets.only(bottom: (isSelected ? 0 : 30).h),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
               color: shadowColor,
@@ -172,17 +173,17 @@ class _RoleCard extends StatelessWidget {
             Text(
               isSelected ? title.toUpperCase() : title,
               style: TextStyle(
-                fontSize: isSelected ? 20 : 16,
+                fontSize: (isSelected ? 20 : 16).sp,
                 fontFamily: "Marcellus",
                 color: textColor,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              height: isSelected ? 120 : 80,
-              width: isSelected ? 120 : 80,
+              height: (isSelected ? 120 : 80).r,
+              width: (isSelected ? 120 : 80).r,
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage(imagePath),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../feature/admin/data/models/report_model.dart';
 import '../../feature/admin/domain/repositories/reports_repository.dart';
@@ -132,9 +133,9 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(20.r),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -145,7 +146,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
               children: [
                 Text(
                   _getDialogTitle(),
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -155,12 +156,12 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16.h),
+            Text(
               'Why are you reporting this?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // Use Flexible and SingleChildScrollView so it doesn't overflow
             Flexible(
@@ -180,7 +181,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                       child: Column(
                         children: _reasons.map((reason) {
                           return RadioListTile<String>(
-                            title: Text(reason, style: const TextStyle(fontSize: 14)),
+                            title: Text(reason, style: TextStyle(fontSize: 14.sp)),
                             value: reason,
                             contentPadding: EdgeInsets.zero,
                             visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
@@ -189,50 +190,50 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                         }).toList(),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     TextField(
                       controller: _descriptionController,
                       maxLines: 3,
                       decoration: InputDecoration(
                         hintText: 'Additional details (optional)',
-                        hintStyle: const TextStyle(fontSize: 14),
+                        hintStyle: TextStyle(fontSize: 14.sp),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                           borderSide: const BorderSide(color: Colors.grey),
                         ),
-                        contentPadding: const EdgeInsets.all(12),
+                        contentPadding: EdgeInsets.all(12.r),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            
+            SizedBox(height: 20.h),
+
             // Submit Button
             SizedBox(
-              height: 48,
+              height: 48.h,
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitReport,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFC79A00),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
+                    ? SizedBox(
+                        height: 20.r,
+                        width: 20.r,
+                        child: const CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text(
+                    : Text(
                         'Submit Report',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                       ),
               ),
             ),

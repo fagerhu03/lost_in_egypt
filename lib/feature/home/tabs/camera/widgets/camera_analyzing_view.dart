@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
 import '../presentation/bloc/camera_state.dart';
 
@@ -56,11 +57,11 @@ class CameraAnalyzingView extends StatelessWidget {
                 );
               },
               child: Container(
-                margin: const EdgeInsets.all(24),
-                padding: const EdgeInsets.all(24),
+                margin: EdgeInsets.all(24.r),
+                padding: EdgeInsets.all(24.r),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFE6A44A).withValues(alpha: 0.2),
@@ -73,12 +74,12 @@ class CameraAnalyzingView extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const CircularProgressIndicator(color: Color(0xFFE6A44A)),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Text(
                       state.message,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,

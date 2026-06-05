@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../account/domain/badge_model.dart';
 import 'dart:math' as math;
 
@@ -76,11 +77,11 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
       child: Material(
         color: Colors.transparent,
         child: Container(
-          width: 310,
-          padding: const EdgeInsets.all(32),
+          width: 310.w,
+          padding: EdgeInsets.all(32.r),
           decoration: BoxDecoration(
             color: cardColor,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(28.r),
             border: Border.all(
               color: isDark ? Colors.white12 : goldButtonColor.withValues(alpha: 0.3),
               width: 1,
@@ -99,14 +100,14 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
               Text(
                 "New Badge Unlocked!",
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 22.sp,
                   fontWeight: FontWeight.bold,
                   fontFamily: "Marcellus",
                   color: textColor,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               // Animated Glowing Badge Icon
               AnimatedBuilder(
@@ -115,8 +116,8 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                   return Transform.scale(
                     scale: _pulseAnimation.value,
                     child: Container(
-                      width: 110,
-                      height: 110,
+                      width: 110.r,
+                      height: 110.r,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: goldButtonColor.withValues(alpha: 0.15),
@@ -137,8 +138,8 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                           Transform.rotate(
                             angle: _pulseController.value * 2 * math.pi,
                             child: Container(
-                              width: 90,
-                              height: 90,
+                              width: 90.r,
+                              height: 90.r,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: SweepGradient(
@@ -152,7 +153,7 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                             ),
                           ),
                           // The Badge Icon itself
-                          Icon(widget.badge.iconData, color: goldButtonColor, size: 55),
+                          Icon(widget.badge.iconData, color: goldButtonColor, size: 55.r),
                         ],
                       ),
                     ),
@@ -160,11 +161,11 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                 },
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
               Text(
                 widget.badge.name,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 24.sp,
                   fontWeight: FontWeight.w600,
                   fontFamily: "Marcellus",
                   color: textColor,
@@ -172,21 +173,21 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Text(
                 widget.badge.description,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   color: bodyTextColor,
                   height: 1.4,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 36),
+              SizedBox(height: 36.h),
 
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 52.h,
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
@@ -194,13 +195,13 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                     foregroundColor: Colors.black87,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Awesome!",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

@@ -1,33 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'home_state.dart';
 import '../../domain/usecases/get_user_profile_usecase.dart';
-import '../../domain/usecases/get_events_stream_usecase.dart';
 import '../../domain/usecases/get_popular_places_usecase.dart';
 import '../../domain/usecases/get_popular_tours_stream_usecase.dart';
-
-import '../../domain/usecases/sync_live_events_usecase.dart';
 import '../../data/datasources/serp_api_service.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   final GetUserProfileUseCase _getUserProfileUseCase;
-  final GetEventsStreamUseCase _getEventsStreamUseCase;
   final GetPopularPlacesUseCase _getPopularPlacesUseCase;
   final GetPopularToursStreamUseCase _getPopularToursStreamUseCase;
-  final SyncLiveEventsUseCase _syncLiveEventsUseCase;
 
   HomeCubit({
     required GetUserProfileUseCase getUserProfileUseCase,
-    required GetEventsStreamUseCase getEventsStreamUseCase,
     required GetPopularPlacesUseCase getPopularPlacesUseCase,
     required GetPopularToursStreamUseCase getPopularToursStreamUseCase,
-    required SyncLiveEventsUseCase syncLiveEventsUseCase,
   })  : _getUserProfileUseCase = getUserProfileUseCase,
-        _getEventsStreamUseCase = getEventsStreamUseCase,
         _getPopularPlacesUseCase = getPopularPlacesUseCase,
         _getPopularToursStreamUseCase = getPopularToursStreamUseCase,
-        _syncLiveEventsUseCase = syncLiveEventsUseCase,
         super(const HomeInitial());
 
   Future<void> loadHomeData() async {
@@ -50,7 +42,7 @@ class HomeCubit extends Cubit<HomeState> {
     // 3. Get events — try fetching fresh from API, fall back to local cache
     final serpApi = SerpApiService();
     Future<List<EventModel>> eventsFuture = serpApi.fetchEvents().catchError((e) {
-      print('Live fetch failed, loading cache: $e');
+      debugPrint('Live fetch failed, loading cache: $e');
       return serpApi.getLocalEvents();
     });
     

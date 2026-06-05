@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
@@ -82,26 +83,26 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
+              padding: EdgeInsets.symmetric(horizontal: 30.w),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "One Last Step",
                     style: TextStyle(
-                      fontSize: 24,
-                      color: Color(0xff634700),
+                      fontSize: 24.sp,
+                      color: const Color(0xff634700),
                       fontFamily: "Marcellus",
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  const Text(
+                  SizedBox(height: 15.h),
+                  Text(
                     "We need your birthdate to customize your journey in Egypt.",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontFamily: "Marcellus"),
+                    style: TextStyle(fontSize: 16.sp, fontFamily: "Marcellus"),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30.h),
                   
                   Row(
                     children: [
@@ -113,7 +114,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                           (v) => setState(() => _selectedMonth = v),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       Expanded(
                         child: _dropdown(
                           _days,
@@ -122,7 +123,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                           (v) => setState(() => _selectedDay = v),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       Expanded(
                         child: _dropdown(
                           _years,
@@ -134,25 +135,25 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     ],
                   ),
             
-                  const SizedBox(height: 40),
-            
+                  SizedBox(height: 40.h),
+
                   GestureDetector(
                     onTap: _isLoading ? null : _handleFinalize,
                     child: Container(
                       width: double.infinity,
-                      height: 50,
+                      height: 50.h,
                       decoration: BoxDecoration(
                         color: const Color(0xFFD6A00F),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Center(
-                        child: _isLoading 
+                        child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.black87)
-                          : const Text(
+                          : Text(
                             "Complete Setup",
                             style: TextStyle(
                               color: Colors.black87,
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                               fontFamily: "Marcellus",
                             ),
@@ -178,9 +179,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF7A8450).withValues(alpha: 0.70),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,

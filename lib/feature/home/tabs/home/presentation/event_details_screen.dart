@@ -596,14 +596,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             imageUrl: widget.event.imagePath,
             width: double.infinity,
             fit: BoxFit.fitWidth,
-            placeholder: (_, __) => Container(
+            placeholder: (_, _) => Container(
               height: 300,
               color: Colors.grey.shade900,
               child: const Center(
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
-            errorWidget: (_, __, ___) => Container(
+            errorWidget: (_, _, _) => Container(
               height: 300,
               color: Colors.grey.shade800,
               child: const Center(
@@ -615,7 +615,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             widget.event.imagePath,
             width: double.infinity,
             fit: BoxFit.fitWidth,
-            errorBuilder: (_, __, ___) => Container(
+            errorBuilder: (_, _, _) => Container(
               height: 300,
               color: Colors.grey.shade800,
               child: const Center(
@@ -875,7 +875,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
               physics: const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.zero,
               itemCount: reviews.length,
-              separatorBuilder: (_, __) => Divider(
+              separatorBuilder: (_, _) => Divider(
                 color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
                 height: 32,
               ),

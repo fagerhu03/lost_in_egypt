@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -184,49 +185,49 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
               ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.r),
               decoration: BoxDecoration(
                 color: goldColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.phonelink_lock,
-                size: 50,
+                size: 50.r,
                 color: goldColor,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             Text(
               _codeSent ? "Enter Code" : "Verify Phone Number",
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: "Marcellus",
-                fontSize: 24,
+                fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF714611),
+                color: const Color(0xFF714611),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               _codeSent
                   ? "We sent a text message to $_completePhoneNumber with your verification code. Valid for 10 minutes."
                   : "To keep our community safe, please verify your phone number before posting.",
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: Colors.grey, fontSize: 14.sp),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             if (!_codeSent)
               IntlPhoneField(
                 decoration: InputDecoration(
                   labelText: 'Phone Number',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   filled: true,
                   fillColor: Colors.white,
@@ -243,35 +244,35 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                 length: 6,
                 controller: _otpController,
                 defaultPinTheme: PinTheme(
-                  width: 50,
-                  height: 60,
+                  width: 50.w,
+                  height: 60.h,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(color: Colors.grey.shade300),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 22,
+                  textStyle: TextStyle(
+                    fontSize: 22.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF714611),
+                    color: const Color(0xFF714611),
                   ),
                 ),
                 focusedPinTheme: PinTheme(
-                  width: 50,
-                  height: 60,
+                  width: 50.w,
+                  height: 60.h,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(color: goldColor, width: 2),
                   ),
                 ),
               ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
 
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 50.h,
               child: ElevatedButton(
                 onPressed: _isLoading
                     ? null
@@ -280,14 +281,14 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                   backgroundColor: goldColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
                 child: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
+                    ? SizedBox(
+                        width: 20.r,
+                        height: 20.r,
+                        child: const CircularProgressIndicator(
                           color: Colors.white,
                           strokeWidth: 2,
                         ),

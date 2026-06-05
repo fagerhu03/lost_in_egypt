@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../presentation/bloc/camera_cubit.dart';
 import '../presentation/bloc/camera_state.dart';
 
@@ -19,34 +20,34 @@ class CameraErrorView extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.r),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   state.isApiKeyError ? Icons.key_off : Icons.error_outline,
                   color: Colors.red,
-                  size: 64,
+                  size: 64.r,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   state.isApiKeyError ? 'Configuration Error' : 'Error',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   state.message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -55,9 +56,9 @@ class CameraErrorView extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE6A44A),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                        padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
                       ),
-                      child: const Text('Try Again', style: TextStyle(fontSize: 16)),
+                      child: Text('Try Again', style: TextStyle(fontSize: 16.sp)),
                     ),
                   ],
                 ),

@@ -149,7 +149,7 @@ class _AdminEventEditorScreenState extends State<AdminEventEditorScreen> {
             _sectionLabel('Category & Location', onSurface),
             // Category dropdown
             DropdownButtonFormField<String>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: _inputDecoration('Category', Icons.category),
               items: EventCategories.assignable.map((cat) {
                 return DropdownMenuItem(
@@ -162,7 +162,7 @@ class _AdminEventEditorScreenState extends State<AdminEventEditorScreen> {
             SizedBox(height: 12.h),
             // City dropdown
             DropdownButtonFormField<String>(
-              value: _selectedCity,
+              initialValue: _selectedCity,
               decoration: _inputDecoration('City', Icons.location_city),
               items: EventCategories.cities
                   .where((c) => c != 'All Cities')
@@ -217,7 +217,7 @@ class _AdminEventEditorScreenState extends State<AdminEventEditorScreen> {
               subtitle: Text('Happens regularly (nightly, weekly, etc.)',
                   style: TextStyle(color: onSurface.withValues(alpha: 0.5), fontSize: 12.sp)),
               value: _isRecurring,
-              activeColor: primary,
+              activeThumbColor: primary,
               onChanged: (v) => setState(() => _isRecurring = v),
               contentPadding: EdgeInsets.zero,
             ),

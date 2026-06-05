@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
@@ -221,8 +222,8 @@ class _CameraScreenState extends State<CameraScreen> {
                       ),
                       if (_focusPoint != null)
                         Positioned(
-                          left: _focusPoint!.dx - 30,
-                          top: _focusPoint!.dy - 30,
+                          left: _focusPoint!.dx - 30.r,
+                          top: _focusPoint!.dy - 30.r,
                           child: TweenAnimationBuilder<double>(
                             key: ValueKey(_focusPoint),
                             tween: Tween(begin: 1.2, end: 1.0),
@@ -235,8 +236,8 @@ class _CameraScreenState extends State<CameraScreen> {
                                   duration: const Duration(milliseconds: 300),
                                   opacity: _showFocusIndicator ? 1.0 : 0.0,
                                   child: Container(
-                                    width: 60,
-                                    height: 60,
+                                    width: 60.r,
+                                    height: 60.r,
                                     decoration: BoxDecoration(
                                       border: Border.all(color: Colors.amber, width: 2),
                                       shape: BoxShape.rectangle,
@@ -260,9 +261,9 @@ class _CameraScreenState extends State<CameraScreen> {
           // Zoom slider
           if (!showGalleryImage && controller != null && controller.value.isInitialized && state.minZoom < state.maxZoom)
             Positioned(
-              right: 16,
-              bottom: 180,
-              top: 220,
+              right: 16.w,
+              bottom: 180.h,
+              top: 220.h,
               child: RotatedBox(
                 quarterTurns: 3,
                 child: SliderTheme(
@@ -271,7 +272,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     activeTrackColor: Colors.white,
                     inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
                     thumbColor: Colors.white,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10.r),
                     overlayColor: Colors.white.withValues(alpha: 0.2),
                   ),
                   child: Slider(
@@ -318,10 +319,10 @@ class _CameraScreenState extends State<CameraScreen> {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.r),
             decoration: BoxDecoration(
               color: cardColor,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24.r),
               border: Border.all(color: goldColor, width: 2),
               boxShadow: [
                 BoxShadow(
@@ -338,41 +339,41 @@ class _CameraScreenState extends State<CameraScreen> {
                 Icon(
                   isAnswered ? (isCorrect ? Icons.auto_awesome : Icons.warning_amber_rounded) : Icons.help_outline_rounded,
                   color: isAnswered ? (isCorrect ? goldColor : Colors.red) : goldColor,
-                  size: 48,
+                  size: 48.r,
                 ),
-                const SizedBox(height: 16),
-                
+                SizedBox(height: 16.h),
+
                 // Title
                 Text(
-                  isAnswered 
+                  isAnswered
                       ? (isCorrect ? "You May Pass 🦁" : "Incorrect, Mortal 🌪️")
                       : "The Sphinx's Riddle 🦁",
                   style: TextStyle(
                     fontFamily: "Marcellus",
                     color: isAnswered ? (isCorrect ? textColor : Colors.red) : textColor,
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                
+                SizedBox(height: 16.h),
+
                 // Content
                 Text(
                   isAnswered
-                      ? (isCorrect 
-                          ? "Your wisdom equals the ancients. The Sphinx permits your journey to continue." 
+                      ? (isCorrect
+                          ? "Your wisdom equals the ancients. The Sphinx permits your journey to continue."
                           : "The sands of time will swallow your ignorance. Return when you have learned.")
                       : "\"What walks on four legs in the morning, two at noon, and three in the evening?\"",
                   style: TextStyle(
                     color: bodyTextColor,
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontFamily: isAnswered ? null : "Marcellus",
                     fontStyle: isAnswered ? FontStyle.normal : FontStyle.italic,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
                 
                 // Actions
                 if (isAnswered)
@@ -381,8 +382,8 @@ class _CameraScreenState extends State<CameraScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryBtnBg,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                       ),
                       onPressed: () {
                         // Capture a valid top-level context BEFORE we pop the dialog
@@ -402,7 +403,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       },
                       child: Text(
                         "Continue",
-                        style: TextStyle(color: primaryBtnText, fontWeight: FontWeight.bold, fontSize: 16),
+                        style: TextStyle(color: primaryBtnText, fontWeight: FontWeight.bold, fontSize: 16.sp),
                       ),
                     ),
                   )
@@ -413,21 +414,21 @@ class _CameraScreenState extends State<CameraScreen> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: secondaryBtnBg,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                             side: BorderSide(color: secondaryBtnText.withValues(alpha: 0.3), width: 1),
                           ),
                           onPressed: () => setState(() { isAnswered = true; isCorrect = false; }),
                           child: Text("An Animal", style: TextStyle(color: secondaryBtnText)),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       Expanded(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: secondaryBtnBg,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                             side: BorderSide(color: secondaryBtnText.withValues(alpha: 0.3), width: 1),
                           ),
                           onPressed: () async {

@@ -211,7 +211,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               await FirebaseFirestore.instance.collection('events').doc(docId).delete();
-              if (mounted) {
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('"$title" deleted')),
                 );
@@ -303,7 +303,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
                 final result = await callable.call({'eventUrl': url});
                 final data = result.data as Map<String, dynamic>;
 
-                if (mounted) {
+                if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(data['message'] ?? 'Event imported!'),
@@ -312,7 +312,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
                   );
                 }
               } catch (e) {
-                if (mounted) {
+                if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Import failed: $e'),
@@ -382,12 +382,12 @@ class _AdminEventTile extends StatelessWidget {
                         ? CachedNetworkImage(
                             imageUrl: event.imagePath,
                             fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => _placeholder(),
+                            errorWidget: (_, _, _) => _placeholder(),
                           )
                         : event.imagePath.isNotEmpty
                             ? Image.asset(event.imagePath,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _placeholder())
+                                errorBuilder: (_, _, _) => _placeholder())
                             : _placeholder(),
                   ),
                 ),

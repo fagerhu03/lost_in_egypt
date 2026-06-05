@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
 import '../presentation/bloc/camera_cubit.dart';
 import '../presentation/bloc/camera_state.dart';
@@ -29,11 +30,11 @@ class CameraNoLandmarkView extends StatelessWidget {
             ),
           Center(
             child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(24),
+              margin: EdgeInsets.all(24.r),
+              padding: EdgeInsets.all(24.r),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.r),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -41,9 +42,9 @@ class CameraNoLandmarkView extends StatelessWidget {
                   Icon(
                     Icons.search_off,
                     color: Theme.of(context).colorScheme.primary,
-                    size: 64,
+                    size: 64.r,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     state.identifiedLabel != null
                         ? 'We found "${state.identifiedLabel}" but it\'s not in our database'
@@ -51,10 +52,10 @@ class CameraNoLandmarkView extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   ElevatedButton(
                     onPressed: () => cubit.resetToReady(),
                     style: ElevatedButton.styleFrom(

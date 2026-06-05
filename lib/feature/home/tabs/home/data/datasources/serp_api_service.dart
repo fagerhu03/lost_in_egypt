@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/map_item_models.dart';
@@ -97,13 +98,13 @@ class SerpApiService {
                 seenNormalized.add(normalized);
                 allEvents.add(event);
               } catch (e) {
-                print('Error parsing event: $e');
+                debugPrint('Error parsing event: $e');
               }
             }
           }
         }
       } catch (e) {
-        print('SerpApi Error on query "$query": $e');
+        debugPrint('SerpApi Error on query "$query": $e');
       }
     }
 
@@ -162,7 +163,7 @@ class SerpApiService {
           }
         }
       } catch (e) {
-        print('Serper enrichment error for "${event.title}": $e');
+        debugPrint('Serper enrichment error for "${event.title}": $e');
       }
 
       // If we still have a map screenshot or asset path, it means both failed
@@ -199,7 +200,7 @@ class SerpApiService {
       final jsonList = events.map((e) => e.toJsonMap()).toList();
       await prefs.setString(_storageKey, jsonEncode(jsonList));
     } catch (e) {
-      print('Failed to save events locally: $e');
+      debugPrint('Failed to save events locally: $e');
     }
   }
 
@@ -215,7 +216,7 @@ class SerpApiService {
             .toList();
       }
     } catch (e) {
-      print('Failed to load local events: $e');
+      debugPrint('Failed to load local events: $e');
     }
     return [];
   }

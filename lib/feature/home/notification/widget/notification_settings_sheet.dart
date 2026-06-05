@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -95,42 +96,42 @@ class _SheetBodyState extends State<_SheetBody> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 46,
-              height: 5,
+              width: 46.w,
+              height: 5.h,
               decoration: BoxDecoration(
                 color: onSurface.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(999.r),
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14.h),
             Text(
               "Notification Preferences",
               style: TextStyle(
                 color: onSurface,
                 fontFamily: "Marcellus",
                 fontWeight: FontWeight.w700,
-                fontSize: 16,
+                fontSize: 16.sp,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               "Choose what you want to be notified about.",
               style: TextStyle(
                 color: onSurface.withValues(alpha: 0.65),
                 fontFamily: "Marcellus",
-                fontSize: 12,
+                fontSize: 12.sp,
               ),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: Center(child: CircularProgressIndicator()),
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 32.h),
+                child: const Center(child: CircularProgressIndicator()),
               )
             else ...[
               _ToggleTile(
@@ -144,9 +145,9 @@ class _SheetBodyState extends State<_SheetBody> {
                   _save();
                 },
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Divider(color: onSurface.withValues(alpha: 0.10), height: 1),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Opacity(
                 opacity: _masterEnabled ? 1.0 : 0.4,
                 child: Column(
@@ -162,7 +163,7 @@ class _SheetBodyState extends State<_SheetBody> {
                         _save();
                       },
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     _ToggleTile(
                       icon: Icons.people_alt_rounded,
                       title: "Community",
@@ -174,7 +175,7 @@ class _SheetBodyState extends State<_SheetBody> {
                         _save();
                       },
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     _ToggleTile(
                       icon: Icons.star_rounded,
                       title: "Reviews",
@@ -186,7 +187,7 @@ class _SheetBodyState extends State<_SheetBody> {
                         _save();
                       },
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     _ToggleTile(
                       icon: Icons.verified_user_rounded,
                       title: "Guide Updates",
@@ -198,7 +199,7 @@ class _SheetBodyState extends State<_SheetBody> {
                         _save();
                       },
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     _ToggleTile(
                       icon: Icons.auto_awesome_rounded,
                       title: "AI Discovery",
@@ -213,17 +214,17 @@ class _SheetBodyState extends State<_SheetBody> {
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               SizedBox(
                 width: double.infinity,
-                height: 46,
+                height: 46.h,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12.r)),
                     elevation: 4,
                   ),
                   child: const Text(
@@ -266,24 +267,24 @@ class _ToggleTile extends StatelessWidget {
     final surface = theme.colorScheme.surface;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: primary.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 36.r,
+            height: 36.r,
             decoration: BoxDecoration(
               color: primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, color: primary, size: 18),
+            child: Icon(icon, color: primary, size: 18.r),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,13 +294,13 @@ class _ToggleTile extends StatelessWidget {
                         color: onSurface,
                         fontFamily: "Marcellus",
                         fontWeight: FontWeight.w700,
-                        fontSize: 13)),
-                const SizedBox(height: 2),
+                        fontSize: 13.sp)),
+                SizedBox(height: 2.h),
                 Text(subtitle,
                     style: TextStyle(
                         color: onSurface.withValues(alpha: 0.60),
                         fontFamily: "Marcellus",
-                        fontSize: 11)),
+                        fontSize: 11.sp)),
               ],
             ),
           ),

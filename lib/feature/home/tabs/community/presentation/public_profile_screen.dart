@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../auth/data/models/user.dart';
 import '../../../../../core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
@@ -46,7 +47,7 @@ class PublicProfileScreen extends StatelessWidget {
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
                 repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => const SizedBox.shrink(),
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
           ),
@@ -54,12 +55,12 @@ class PublicProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     children: [
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: Icon(Icons.arrow_back_ios_new, color: onSurface, size: 20),
+                        child: Icon(Icons.arrow_back_ios_new, color: onSurface, size: 20.r),
                       ),
                       const Spacer(),
                       PopupMenuButton<String>(
@@ -75,13 +76,13 @@ class PublicProfileScreen extends StatelessWidget {
                           }
                         },
                         itemBuilder: (context) => [
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'report',
                             child: Row(
                               children: [
-                                Icon(Icons.flag, color: Colors.orange, size: 20),
-                                SizedBox(width: 8),
-                                Text('Report Profile'),
+                                Icon(Icons.flag, color: Colors.orange, size: 20.r),
+                                SizedBox(width: 8.w),
+                                const Text('Report Profile'),
                               ],
                             ),
                           ),
@@ -92,7 +93,7 @@ class PublicProfileScreen extends StatelessWidget {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -100,11 +101,11 @@ class PublicProfileScreen extends StatelessWidget {
                           alignment: Alignment.topCenter,
                           children: [
                             Container(
-                              margin: const EdgeInsets.only(top: 50),
+                              margin: EdgeInsets.only(top: 50.h),
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 color: cardColor,
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(24.r),
                                 border: isDark ? Border.all(color: borderColor) : null,
                                 boxShadow: isDark ? [] : [
                                   BoxShadow(
@@ -116,47 +117,47 @@ class PublicProfileScreen extends StatelessWidget {
                               ),
                               child: Column(
                                 children: [
-                                  const SizedBox(height: 60),
+                                  SizedBox(height: 60.h),
                                   Text(
                                     displayName,
                                     style: TextStyle(
                                       color: isDark ? onSurface : const Color(0xFF6B3A28),
-                                      fontSize: 22,
+                                      fontSize: 22.sp,
                                       fontFamily: "Marcellus",
                                     ),
                                   ),
                                   if (user.bio.isNotEmpty) ...[
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8.h),
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                                       child: Text(
                                         user.bio,
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                           color: onSurface.withValues(alpha: 0.7),
-                                          fontSize: 14,
+                                          fontSize: 14.sp,
                                         ),
                                       ),
                                     ),
                                   ],
-                                  const SizedBox(height: 16),
+                                  SizedBox(height: 16.h),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                                    margin: EdgeInsets.symmetric(horizontal: 16.w),
                                     decoration: BoxDecoration(
                                       color: isDark ? Colors.black26 : Colors.white.withValues(alpha: 0.6),
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(16.r),
                                     ),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Icon(Icons.place, color: Colors.amber, size: 18),
-                                        const SizedBox(width: 8),
+                                        Icon(Icons.place, color: Colors.amber, size: 18.r),
+                                        SizedBox(width: 8.w),
                                         Text(
                                           "$trueVisitedCount Places Visited",
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 14.sp,
                                             fontWeight: FontWeight.bold,
                                             color: onSurface.withValues(alpha: 0.8),
                                           ),
@@ -164,10 +165,10 @@ class PublicProfileScreen extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 20),
+                                  SizedBox(height: 20.h),
                                   Container(
                                     width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    padding: EdgeInsets.symmetric(horizontal: 12.w),
                                     child: Builder(
                                       builder: (context) {
                                         final displayBadges = BadgeConstants.allBadges.where((b) {
@@ -176,8 +177,8 @@ class PublicProfileScreen extends StatelessWidget {
                                         
                                         return Wrap(
                                           alignment: WrapAlignment.center,
-                                          spacing: 6,
-                                          runSpacing: 10,
+                                          spacing: 6.w,
+                                          runSpacing: 10.h,
                                           children: List.generate(
                                             displayBadges.length,
                                             (index) {
@@ -191,20 +192,20 @@ class PublicProfileScreen extends StatelessWidget {
                                       }
                                     ),
                                   ),
-                                  const SizedBox(height: 20),
+                                  SizedBox(height: 20.h),
                                 ],
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.all(4),
+                              padding: EdgeInsets.all(4.r),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(color: cardColor, width: 4),
                               ),
                               child: ShimmerAvatar(
                                 url: profileUrl,
-                                radius: 46,
-                                iconSize: 60,
+                                radius: 46.r,
+                                iconSize: 60.r,
                                 fallbackBackgroundColor: surface,
                                 fallbackIconColor: onSurface.withValues(alpha: 0.5),
                               ),
@@ -228,8 +229,8 @@ class PublicProfileScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 44,
-          height: 44,
+          width: 44.r,
+          height: 44.r,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isUnlocked
@@ -241,17 +242,17 @@ class PublicProfileScreen extends StatelessWidget {
             ),
           ),
           child: isUnlocked
-              ? Icon(badge.iconData, color: Colors.amber, size: 22)
-              : const Icon(Icons.lock, color: Colors.grey, size: 18),
+              ? Icon(badge.iconData, color: Colors.amber, size: 22.r)
+              : Icon(Icons.lock, color: Colors.grey, size: 18.r),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         SizedBox(
-          width: 64,
+          width: 64.w,
           child: Text(
             badge.name,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 10.sp,
               fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
               color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
             ),

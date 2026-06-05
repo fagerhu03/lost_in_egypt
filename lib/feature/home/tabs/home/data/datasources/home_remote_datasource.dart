@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'serp_api_service.dart';
 
 abstract class HomeRemoteDataSource {
@@ -50,9 +51,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       }
       
       await batch.commit();
-      print('Synced ${events.length} events from SerpApi to Firestore.');
+      debugPrint('Synced ${events.length} events from SerpApi to Firestore.');
     } catch (e) {
-      print('Failed to sync events: $e');
+      debugPrint('Failed to sync events: $e');
     }
   }
 }

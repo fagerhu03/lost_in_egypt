@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
@@ -57,7 +58,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
                 repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => const SizedBox.shrink(),
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
           ),
@@ -67,12 +68,12 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
               children: [
                 // Top App Bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     children: [
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: Icon(Icons.arrow_back_ios_new, color: titleColor, size: 22),
+                        child: Icon(Icons.arrow_back_ios_new, color: titleColor, size: 22.r),
                       ),
                       Expanded(
                         child: Text(
@@ -80,7 +81,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: titleColor,
-                            fontSize: 18,
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.w600,
                             fontFamily: 'Marcellus',
                           ),
@@ -100,27 +101,27 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                             }
                           },
                           itemBuilder: (context) => [
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'report',
                               child: Row(
                                 children: [
-                                  Icon(Icons.flag, color: Colors.orange, size: 20),
-                                  SizedBox(width: 8),
-                                  Text('Report Profile'),
+                                  Icon(Icons.flag, color: Colors.orange, size: 20.r),
+                                  SizedBox(width: 8.w),
+                                  const Text('Report Profile'),
                                 ],
                               ),
                             ),
                           ],
                         )
                       else
-                        const SizedBox(width: 24), // Placeholder to balance back button
+                        SizedBox(width: 24.w), // Placeholder to balance back button
                     ],
                   ),
                 ),
                 // Main Content with About/Posts tabs
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -138,14 +139,14 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                                 labelColor: titleColor,
                                 unselectedLabelColor: titleColor.withValues(alpha: 0.45),
                                 indicatorColor: theme.colorScheme.primary,
-                                labelStyle: const TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, fontSize: 14),
+                                labelStyle: TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, fontSize: 14.sp),
                                 tabs: const [Tab(text: 'About'), Tab(text: 'Posts')],
                               ),
                               Expanded(
                                 child: TabBarView(
                                   children: [
                                     SingleChildScrollView(
-                                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+                                      padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 40.h),
                                       child: widget.user.isVerifiedGuide
                                           ? _buildGuideProfile(context, titleColor)
                                           : _buildTouristProfile(context, titleColor),
@@ -190,18 +191,18 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.post_add_outlined, size: 52, color: onSurface.withValues(alpha: 0.2)),
-                const SizedBox(height: 12),
-                Text('No posts yet', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: onSurface.withValues(alpha: 0.45))),
+                Icon(Icons.post_add_outlined, size: 52.r, color: onSurface.withValues(alpha: 0.2)),
+                SizedBox(height: 12.h),
+                Text('No posts yet', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16.sp, color: onSurface.withValues(alpha: 0.45))),
               ],
             ),
           );
         }
         final posts = docs.map((d) => CommunityPostModel.fromSnapshot(d)).toList();
         return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 32),
+          padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 32.h),
           itemCount: posts.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 10),
+          separatorBuilder: (_, _) => SizedBox(height: 10.h),
           itemBuilder: (context, i) {
             final post = posts[i];
             return CommunityPostCard(
@@ -228,50 +229,50 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
       children: [
         // Avatar
         Container(
-          padding: const EdgeInsets.all(3),
+          padding: EdgeInsets.all(3.r),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: titleColor.withValues(alpha: 0.5), width: 3),
           ),
           child: ShimmerAvatar(
             url: widget.user.profileImageUrl,
-            radius: 47,
-            iconSize: 60,
+            radius: 47.r,
+            iconSize: 60.r,
             fallbackBackgroundColor: theme.colorScheme.surface,
             fallbackIconColor: onSurface.withValues(alpha: 0.5),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         Text(
           displayName,
           style: TextStyle(
             color: titleColor,
-            fontSize: 24,
+            fontSize: 24.sp,
             fontFamily: "Marcellus",
             fontWeight: FontWeight.bold,
           ),
         ),
         if (widget.user.username.isNotEmpty) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             '@${widget.user.username}',
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
-              fontSize: 14,
+              fontSize: 14.sp,
               fontFamily: "Marcellus",
             ),
           ),
         ],
         if (widget.user.bio.isNotEmpty) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             widget.user.bio,
             textAlign: TextAlign.center,
-            style: TextStyle(color: onSurface.withValues(alpha: 0.8), fontSize: 14),
+            style: TextStyle(color: onSurface.withValues(alpha: 0.8), fontSize: 14.sp),
           ),
         ],
         if (widget.user.instagramHandle.isNotEmpty || widget.user.twitterHandle.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -286,7 +287,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                   ),
                 ),
               if (widget.user.instagramHandle.isNotEmpty && widget.user.twitterHandle.isNotEmpty)
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
               if (widget.user.twitterHandle.isNotEmpty)
                 _SocialIconButton(
                   icon: Icons.link,
@@ -300,22 +301,22 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             ],
           ),
         ],
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: titleColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.place, color: Colors.amber, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.place, color: Colors.amber, size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 "$trueVisitedCount Places Visited",
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
                   color: titleColor,
                 ),
@@ -323,25 +324,25 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
             'Achievements',
-            style: TextStyle(color: titleColor, fontSize: 20, fontFamily: "Marcellus", fontWeight: FontWeight.bold),
+            style: TextStyle(color: titleColor, fontSize: 20.sp, fontFamily: "Marcellus", fontWeight: FontWeight.bold),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         Builder(
           builder: (context) {
             final displayBadges = BadgeConstants.allBadges.where((b) {
               return !b.isSecret || widget.user.visitedLandmarks.contains(b.id);
             }).toList();
-            
+
             return Wrap(
               alignment: WrapAlignment.center,
-              spacing: 12,
-              runSpacing: 16,
+              spacing: 12.w,
+              runSpacing: 16.h,
               children: List.generate(
                 displayBadges.length,
                 (index) {
@@ -366,23 +367,23 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _UniversalGuideHeaderCard(guide: widget.user),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _UniversalInfoStrip(guide: widget.user),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
         Text(
           'About Me',
-          style: TextStyle(color: titleColor, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
+          style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
-          widget.user.bio.isNotEmpty 
-            ? widget.user.bio 
+          widget.user.bio.isNotEmpty
+            ? widget.user.bio
             : 'This guide has not provided a bio yet. Contact them to learn more about their experiences and offerings.',
           maxLines: _expandedBio ? null : 4,
           overflow: _expandedBio ? TextOverflow.visible : TextOverflow.ellipsis,
           style: TextStyle(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.85),
-            fontSize: 14,
+            fontSize: 14.sp,
             height: 1.4,
           ),
         ),
@@ -390,15 +391,15 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           GestureDetector(
             onTap: () => setState(() => _expandedBio = !_expandedBio),
             child: Padding(
-              padding: const EdgeInsets.only(top: 4.0),
+              padding: EdgeInsets.only(top: 4.h),
               child: Text(
                 _expandedBio ? 'View less' : 'View more',
-                style: TextStyle(color: titleColor, fontSize: 13, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                style: TextStyle(color: titleColor, fontSize: 13.sp, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
               ),
             ),
           ),
         if (widget.user.instagramHandle.isNotEmpty || widget.user.twitterHandle.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
               if (widget.user.instagramHandle.isNotEmpty)
@@ -412,7 +413,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                   ),
                 ),
               if (widget.user.instagramHandle.isNotEmpty && widget.user.twitterHandle.isNotEmpty)
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
               if (widget.user.twitterHandle.isNotEmpty)
                 _SocialIconButton(
                   icon: Icons.link,
@@ -426,41 +427,41 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             ],
           ),
         ],
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
         Text(
           'Hosted Tours',
-          style: TextStyle(color: titleColor, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
+          style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         SizedBox(
-          height: 400,
+          height: 400.h,
           child: _UniversalGuideToursList(guideId: widget.user.id),
         ),
         // Reviews section
         if (widget.user.reviewCount > 0) ...[
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           Text(
             'Traveler Reviews',
-            style: TextStyle(color: titleColor, fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
+            style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _UniversalGuideReviews(guideId: widget.user.id),
         ],
         if (FirebaseAuth.instance.currentUser?.uid == widget.user.id) ...[
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           SizedBox(
             width: double.infinity,
-            height: 50,
+            height: 50.h,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: titleColor,
                 foregroundColor: isDark ? Colors.black : Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
               ),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreenEnhanced()));
               },
-              child: const Text('Edit Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: Text('Edit Profile', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -473,8 +474,8 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 50,
-          height: 50,
+          width: 50.r,
+          height: 50.r,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isUnlocked
@@ -486,17 +487,17 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             ),
           ),
           child: isUnlocked
-              ? Icon(badge.iconData, color: Colors.amber, size: 24)
-              : const Icon(Icons.lock, color: Colors.grey, size: 20),
+              ? Icon(badge.iconData, color: Colors.amber, size: 24.r)
+              : Icon(Icons.lock, color: Colors.grey, size: 20.r),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         SizedBox(
-          width: 70,
+          width: 70.w,
           child: Text(
             badge.name,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 10.sp,
               fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
               color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
             ),
@@ -523,74 +524,74 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
         Stack(
           children: [
             Container(
-              width: 90,
-              height: 90,
+              width: 90.r,
+              height: 90.r,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(18.r),
                 border: Border.all(color: titleColor.withValues(alpha: 0.3), width: 2),
                 color: isDark ? const Color(0xFF3E2C1E) : const Color(0xFF7A4B1D),
               ),
               child: ShimmerImage(
                 url: guide.profileImageUrl,
-                width: 90,
-                height: 90,
-                borderRadius: BorderRadius.circular(16),
+                width: 90.r,
+                height: 90.r,
+                borderRadius: BorderRadius.circular(16.r),
                 fallbackIcon: Icons.person,
                 fallbackBackgroundColor: isDark ? const Color(0xFF3E2C1E) : const Color(0xFF7A4B1D),
                 fallbackIconColor: Colors.white70,
-                fallbackIconSize: 50,
+                fallbackIconSize: 50.r,
               ),
             ),
             Positioned(
-              top: 4,
-              right: 4,
+              top: 4.h,
+              right: 4.w,
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(4.r),
                 decoration: BoxDecoration(color: isDark ? Colors.black54 : Colors.white, shape: BoxShape.circle),
-                child: const Icon(Icons.verified, color: Colors.blue, size: 14),
+                child: Icon(Icons.verified, color: Colors.blue, size: 14.r),
               ),
             ),
           ],
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '${guide.firstName} ${guide.lastName}'.trim(),
-                style: TextStyle(fontSize: 24, color: titleColor, fontWeight: FontWeight.bold, height: 1.1),
+                style: TextStyle(fontSize: 24.sp, color: titleColor, fontWeight: FontWeight.bold, height: 1.1),
               ),
               if (guide.username.isNotEmpty) ...[
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   '@${guide.username}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontFamily: "Marcellus",
                   ),
                 ),
               ],
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               if (guide.reviewCount == 0)
-                Text("New Guide", style: TextStyle(color: titleColor, fontSize: 14, fontWeight: FontWeight.w600))
-              else 
+                Text("New Guide", style: TextStyle(color: titleColor, fontSize: 14.sp, fontWeight: FontWeight.w600))
+              else
                 Row(
                   children: [
-                    Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 15, fontWeight: FontWeight.bold)),
-                    const Icon(Icons.star, color: Colors.amber, size: 18),
-                    Text(' (${guide.reviewCount} reviews)', style: TextStyle(color: titleColor.withValues(alpha: 0.7), fontSize: 13)),
+                    Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 15.sp, fontWeight: FontWeight.bold)),
+                    Icon(Icons.star, color: Colors.amber, size: 18.r),
+                    Text(' (${guide.reviewCount} reviews)', style: TextStyle(color: titleColor.withValues(alpha: 0.7), fontSize: 13.sp)),
                   ],
                 ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               Row(
                 children: [
-                  Icon(Icons.location_on, size: 16, color: titleColor.withValues(alpha: 0.8)),
-                  const SizedBox(width: 4),
+                  Icon(Icons.location_on, size: 16.r, color: titleColor.withValues(alpha: 0.8)),
+                  SizedBox(width: 4.w),
                   Text(
                     guide.nationality.isNotEmpty ? guide.nationality : 'Egypt',
-                    style: TextStyle(fontSize: 14, color: titleColor.withValues(alpha: 0.8)),
+                    style: TextStyle(fontSize: 14.sp, color: titleColor.withValues(alpha: 0.8)),
                   ),
                 ],
               ),
@@ -615,20 +616,20 @@ class _UniversalInfoStrip extends StatelessWidget {
     final subColor = isDark ? AppColors.darkText.withValues(alpha: 0.6) : const Color(0xFFB6A17F);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border.all(color: borderColor, width: 1.5),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Expanded(child: _buildInfoItem(Icons.language, guide.certifiedLanguages.isNotEmpty ? guide.certifiedLanguages.join(', ') : 'EN/AR', 'Languages', titleColor, subColor)),
-          Container(width: 1, height: 40, color: borderColor),
+          Container(width: 1, height: 40.h, color: borderColor),
           Expanded(child: _buildInfoItem(Icons.verified_user, 'Licensed', 'Status', titleColor, subColor)),
-          Container(width: 1, height: 40, color: borderColor),
+          Container(width: 1, height: 40.h, color: borderColor),
           Expanded(child: _buildInfoItem(Icons.star_half_rounded, guide.reviewCount == 0 ? 'New' : guide.rating.toStringAsFixed(1), 'Rating', titleColor, subColor)),
         ],
       ),
@@ -638,10 +639,10 @@ class _UniversalInfoStrip extends StatelessWidget {
   Widget _buildInfoItem(IconData icon, String title, String subtitle, Color titleColor, Color subColor) {
     return Column(
       children: [
-        Icon(icon, color: titleColor.withValues(alpha: 0.8), size: 24),
-        const SizedBox(height: 4),
-        Text(title, style: TextStyle(color: titleColor, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
-        Text(subtitle, style: TextStyle(color: subColor, fontSize: 11)),
+        Icon(icon, color: titleColor.withValues(alpha: 0.8), size: 24.r),
+        SizedBox(height: 4.h),
+        Text(title, style: TextStyle(color: titleColor, fontSize: 13.sp, fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text(subtitle, style: TextStyle(color: subColor, fontSize: 11.sp)),
       ],
     );
   }
@@ -689,11 +690,11 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
             final createdAt = (d['createdAt'] as Timestamp?)?.toDate();
 
             return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(14),
+              margin: EdgeInsets.only(bottom: 10.h),
+              padding: EdgeInsets.all(14.r),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.06)),
               ),
               child: Row(
@@ -701,11 +702,11 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
                 children: [
                   ShimmerAvatar(
                     url: userImage,
-                    radius: 18,
-                    iconSize: 18,
+                    radius: 18.r,
+                    iconSize: 18.r,
                     fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -713,14 +714,14 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
                         Row(
                           children: [
                             Text(userName,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp)),
                             const Spacer(),
                             Row(
                               children: List.generate(
                                 5,
                                 (i) => Icon(
                                   i < rating ? Icons.star : Icons.star_border,
-                                  size: 12,
+                                  size: 12.r,
                                   color: Colors.amber,
                                 ),
                               ),
@@ -728,18 +729,18 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
                           ],
                         ),
                         if (text.isNotEmpty) ...[
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(text,
                               style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.75))),
                         ],
                         if (createdAt != null) ...[
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
                             '${createdAt.day}/${createdAt.month}/${createdAt.year}',
                             style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 11.sp,
                                 color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                           ),
                         ],
@@ -753,7 +754,7 @@ class _UniversalGuideReviewsState extends State<_UniversalGuideReviews> {
             if (hasMore)
               TextButton.icon(
                 onPressed: () => setState(() => _limit += _pageSize),
-                icon: const Icon(Icons.expand_more, size: 18),
+                icon: Icon(Icons.expand_more, size: 18.r),
                 label: const Text('Show more reviews'),
               ),
           ],
@@ -796,9 +797,9 @@ class _UniversalGuideToursListState extends State<_UniversalGuideToursList> {
                 scrollDirection: Axis.horizontal,
                 itemCount: tours.length,
                 clipBehavior: Clip.none,
-                separatorBuilder: (_, _) => const SizedBox(width: 16),
+                separatorBuilder: (_, _) => SizedBox(width: 16.w),
                 itemBuilder: (context, index) {
-                  return SizedBox(width: 250, child: TourCard(tour: tours[index]));
+                  return SizedBox(width: 250.w, child: TourCard(tour: tours[index]));
                 },
               );
             },
@@ -827,24 +828,24 @@ class _SocialIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(20.r),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(width: 6),
+            Icon(icon, color: color, size: 16.r),
+            SizedBox(width: 6.w),
             Text(
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
