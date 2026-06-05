@@ -120,15 +120,26 @@ class _MapScreenViewState extends State<MapScreenView>
   final FocusNode _searchFocusNode = FocusNode();
 
   // ── Nearby-place nudge (Phase 7H.2) ───────────────────────────────────────
-  // Separate position stream that runs whenever the map tab is visible — NOT
+  // Separate position stream that runs ONLY while the map tab is active — NOT
   // the live-navigation stream (_positionStream). Surfaces a non-intrusive
   // floating card when the user passes near a high-scoring place they haven't
-  // been nudged about before.
+  // been nudged about before. Also works during live navigation.
+  //
+  // Tuning constants — empirically picked, change with care.
+  static const double _kNudgeScoreThreshold = 0.65; // engine returns [-1, 1]; > 0.65 = strong taste match
+  static const double _kNudgeMaxDistanceM = 800;    // hard cap so the card never fires for places out of practical walking range
+  static const double _kNudgePrefilterRadiusM = 2000; // pre-filter window before sending to engine
+  static const int _kNudgeCandidatePoolSize = 30;   // top-N closest to send to engine
+  static const Duration _kNudgeThrottle = Duration(seconds: 60);
+  static const Duration _kNudgeAutoDismiss = Duration(seconds: 8);
+  static const int _kNudgedHistoryCap = 200; // FIFO eviction for the per-session "already-nudged" set
+
   StreamSubscription<Position>? _nudgeStream;
   _NearbyNudgeData? _activeNudge;
   Timer? _nudgeDismissTimer;
-  final Set<String> _nudgedPlaceIds = {};
-  DateTime? _lastNudgeEval;
+  // LinkedHashSet keeps insertion order so we can evict the oldest entry first.
+  final Set<String> _nudgedPlaceIds = <String>{};
+  DateTime? _lastNudgeShown;
   bool _evaluatingNudge = false;
   
   double _sheetExtent = 0.55;
@@ -210,7 +221,13 @@ class _MapScreenViewState extends State<MapScreenView>
     MapFocusService.instance.tourStopNotifier.addListener(_onTourStopRequested);
     MapFocusService.instance.viewRouteNotifier.addListener(_onViewRouteRequested);
 
-    _startNudgeMonitor();
+    // Nudge monitor — gated on the active-tab notifier so GPS only burns
+    // power while the map is actually visible. MapScreen's lazy gate guarantees
+    // we're here BECAUSE the map tab activated, so kick off immediately too.
+    MapFocusService.instance.activeTabNotifier.addListener(_onMapTabActiveChanged);
+    if (MapFocusService.instance.activeTabNotifier.value == 2) {
+      _startNudgeMonitor();
+    }
 
     // Rebuild markers now that custom icons are loaded
     if (mounted) {
@@ -301,58 +318,73 @@ class _MapScreenViewState extends State<MapScreenView>
   /// Background position stream that fires every ~200 m and asks the
   /// recommendation engine if any nearby place is a strong taste match worth
   /// surfacing as a floating nudge card. Independent of the live-navigation
-  /// stream (`_positionStream`) which only runs when navigation is active.
+  /// stream (`_positionStream`) so it can run with or without active routing.
+  /// Auto-pauses when the user leaves the map tab (see [_onMapTabActiveChanged]).
   void _startNudgeMonitor() {
-    _nudgeStream?.cancel();
+    if (_nudgeStream != null) return; // already running
     _nudgeStream = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.medium,
         distanceFilter: 200,
       ),
-    ).listen((pos) => _evaluateNudge(pos), onError: (_) {});
+    ).listen(
+      (pos) => _evaluateNudge(pos),
+      onError: (e) => debugPrint('Nudge stream error: $e'),
+    );
+  }
+
+  void _stopNudgeMonitor() {
+    _nudgeStream?.cancel();
+    _nudgeStream = null;
+  }
+
+  /// Pause the GPS stream when the user is on another tab — the nudge UI
+  /// is invisible there anyway, so running GPS just drains battery and burns
+  /// recommendation-engine quota.
+  void _onMapTabActiveChanged() {
+    final onMapTab = MapFocusService.instance.activeTabNotifier.value == 2;
+    if (onMapTab) {
+      _startNudgeMonitor();
+    } else {
+      _stopNudgeMonitor();
+    }
   }
 
   Future<void> _evaluateNudge(Position pos) async {
     if (!mounted || _evaluatingNudge) return;
-    // Extra throttle: at most one engine call per 60 s even if the position
-    // stream fires rapidly (rare, but happens on indoor → outdoor transitions).
-    final now = DateTime.now();
-    if (_lastNudgeEval != null &&
-        now.difference(_lastNudgeEval!) < const Duration(seconds: 60)) {
-      return;
-    }
-    _evaluatingNudge = true;
-    _lastNudgeEval = now;
     try {
+      _evaluatingNudge = true;
       final allItems = context.read<MapBloc>().state.allItemsCache;
       if (allItems.isEmpty) return;
 
-      // Pre-filter to items within 2 km of current position
+      // Skip if the user is already looking at any place in the detail sheet —
+      // a nudge for "the place you're currently reading about" is noise.
+      final currentlyOpen = context.read<MapBloc>().state.selectedPlace?.id;
+
+      // Pre-filter to items within prefilter radius. Compute distance once
+      // per item and reuse it for both the filter and the subsequent sort.
+      final distances = <String, double>{};
       final nearby = <MapItem>[];
       for (final item in allItems) {
         if (_nudgedPlaceIds.contains(item.id)) continue;
+        if (item.id == currentlyOpen) continue;
         final d = Geolocator.distanceBetween(
           pos.latitude, pos.longitude,
           item.coordinate.latitude, item.coordinate.longitude,
         );
-        if (d <= 2000) nearby.add(item);
+        if (d <= _kNudgePrefilterRadiusM) {
+          distances[item.id] = d;
+          nearby.add(item);
+        }
       }
       if (nearby.isEmpty) return;
 
-      // Cap at 30 closest by distance for the engine call
-      nearby.sort((a, b) {
-        final da = Geolocator.distanceBetween(pos.latitude, pos.longitude,
-            a.coordinate.latitude, a.coordinate.longitude);
-        final db = Geolocator.distanceBetween(pos.latitude, pos.longitude,
-            b.coordinate.latitude, b.coordinate.longitude);
-        return da.compareTo(db);
-      });
-      final pool = nearby.take(30).toList();
+      // Sort by memoised distance — no Haversine inside the comparator.
+      nearby.sort((a, b) => distances[a.id]!.compareTo(distances[b.id]!));
+      final pool = nearby.take(_kNudgeCandidatePoolSize).toList();
 
       final candidates = pool.map((i) {
-        // userRatingCount lives on PlaceModel concretely — pull it where
-        // available, default to 0 otherwise. Popularity is a minor weight.
-        final urc = (i is PlaceModel) ? i.userRatingCount : 0;
+        final urc = i is PlaceModel ? i.userRatingCount : 0;
         return <String, dynamic>{
           'placeId': i.id,
           'name': i.title,
@@ -376,20 +408,34 @@ class _MapScreenViewState extends State<MapScreenView>
       if (!mounted || result == null || result.recommendations.isEmpty) return;
 
       final top = result.recommendations.first;
-      if (top.score <= 0.65) return;
+      if (top.score <= _kNudgeScoreThreshold) return;
 
       final item = pool.firstWhere((i) => i.id == top.placeId,
           orElse: () => pool.first);
-      final distanceM = Geolocator.distanceBetween(
-        pos.latitude, pos.longitude,
-        item.coordinate.latitude, item.coordinate.longitude,
-      );
-      if (distanceM > 800) return;
+      final distanceM = distances[item.id]
+          ?? Geolocator.distanceBetween(
+            pos.latitude, pos.longitude,
+            item.coordinate.latitude, item.coordinate.longitude,
+          );
+      if (distanceM > _kNudgeMaxDistanceM) return;
       if (_nudgedPlaceIds.contains(item.id)) return;
 
+      // Throttle ticks only AFTER a real nudge displays — a stretch of failed
+      // evaluations shouldn't gate a subsequent good one.
+      final now = DateTime.now();
+      if (_lastNudgeShown != null &&
+          now.difference(_lastNudgeShown!) < _kNudgeThrottle) {
+        return;
+      }
+      _lastNudgeShown = now;
+
+      // Cap history to prevent unbounded growth across long sessions.
       _nudgedPlaceIds.add(item.id);
+      while (_nudgedPlaceIds.length > _kNudgedHistoryCap) {
+        _nudgedPlaceIds.remove(_nudgedPlaceIds.first);
+      }
       _nudgeDismissTimer?.cancel();
-      _nudgeDismissTimer = Timer(const Duration(seconds: 8), () {
+      _nudgeDismissTimer = Timer(_kNudgeAutoDismiss, () {
         if (mounted) setState(() => _activeNudge = null);
       });
       setState(() {
@@ -399,6 +445,8 @@ class _MapScreenViewState extends State<MapScreenView>
           reason: top.reasons.isNotEmpty ? top.reasons.first : null,
         );
       });
+    } catch (e, st) {
+      debugPrint('Nudge evaluation failed: $e\n$st');
     } finally {
       _evaluatingNudge = false;
     }
@@ -412,8 +460,9 @@ class _MapScreenViewState extends State<MapScreenView>
   @override
   void dispose() {
     WeatherController.weather.removeListener(_onWeatherChanged);
+    MapFocusService.instance.activeTabNotifier.removeListener(_onMapTabActiveChanged);
     _positionStream?.cancel();
-    _nudgeStream?.cancel();
+    _stopNudgeMonitor();
     _nudgeDismissTimer?.cancel();
     MapFocusService.instance.focusedItemNotifier.removeListener(_onFocusRequested);
     MapFocusService.instance.pendingTripNotifier.removeListener(_onPendingTrip);
@@ -1272,19 +1321,22 @@ class _MapScreenViewState extends State<MapScreenView>
                   ),
                 ),
 
-              // Nearby place nudge — surfaces when user passes a high-scoring
-              // taste-matched place. Hidden during navigation/trip flows.
+              // Nearby place nudge — surfaces when the user passes a
+              // high-scoring taste-matched place. Hidden during search and
+              // active trip flows (those are explicit user intents). Stays
+              // visible during navigation but slides down to avoid the
+              // top-of-screen turn-by-turn instructions panel.
               if (_activeNudge != null &&
                   !state.isSearchActive &&
-                  !state.isNavigationMode &&
                   !_isTripActive)
                 Positioned(
-                  top: 110,
+                  top: state.isLiveNavigating ? 168 : 110,
                   left: 0,
                   right: 0,
                   child: Center(
                     child: _NearbyNudgeCard(
                       data: _activeNudge!,
+                      compact: state.isLiveNavigating,
                       onTap: () {
                         final item = _activeNudge!.item;
                         _dismissNudge();
@@ -1997,104 +2049,390 @@ class _NearbyNudgeData {
   });
 }
 
-class _NearbyNudgeCard extends StatelessWidget {
+class _NearbyNudgeCard extends StatefulWidget {
   final _NearbyNudgeData data;
   final VoidCallback onTap;
   final VoidCallback onDismiss;
+  /// Compact variant — used during live navigation so the card doesn't
+  /// dominate the screen while the user is following directions.
+  final bool compact;
 
   const _NearbyNudgeCard({
     required this.data,
     required this.onTap,
     required this.onDismiss,
+    this.compact = false,
   });
 
+  @override
+  State<_NearbyNudgeCard> createState() => _NearbyNudgeCardState();
+}
+
+class _NearbyNudgeCardState extends State<_NearbyNudgeCard>
+    with TickerProviderStateMixin {
+  /// One-shot entrance: drops in from above with a spring-y overshoot + fades in.
+  late final AnimationController _entranceCtrl;
+  late final Animation<double> _entranceScale;
+  late final Animation<double> _entranceFade;
+  late final Animation<Offset> _entranceSlide;
+
+  /// Continuous pulse on the AI sparkle icon — never stops while the card is alive.
+  late final AnimationController _pulseCtrl;
+
+  /// One-shot diagonal shimmer sweep across the card on first display.
+  late final AnimationController _shimmerCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _entranceCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    );
+    _entranceScale = CurvedAnimation(parent: _entranceCtrl, curve: Curves.elasticOut);
+    _entranceFade = CurvedAnimation(parent: _entranceCtrl, curve: const Interval(0, 0.55, curve: Curves.easeOut));
+    _entranceSlide = Tween<Offset>(
+      begin: const Offset(0, -0.35),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOutCubic));
+    _entranceCtrl.forward();
+
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+
+    _shimmerCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _entranceCtrl.dispose();
+    _pulseCtrl.dispose();
+    _shimmerCtrl.dispose();
+    super.dispose();
+  }
+
   String get _distanceLabel {
-    final m = data.distanceM;
-    if (m < 100) return '${m.round()} m away';
-    if (m < 1000) return '${(m / 10).round() * 10} m away';
-    return '${(m / 1000).toStringAsFixed(1)} km away';
+    final m = widget.data.distanceM;
+    if (m < 100) return '${m.round()} m';
+    if (m < 1000) return '${(m / 10).round() * 10} m';
+    return '${(m / 1000).toStringAsFixed(1)} km';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
-    final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
 
-    return Material(
-      color: Colors.transparent,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
-          decoration: BoxDecoration(
-            color: surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: primary.withValues(alpha: 0.4)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
+    // Gold-leaning gradient that pops against both the map and the dark theme.
+    final gradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: isDark
+          ? [const Color(0xFF1A2A38), const Color(0xFF243B4F), const Color(0xFF2B1F0D)]
+          : [const Color(0xFFFFF7DC), const Color(0xFFFFE8B5), const Color(0xFFFFD27A)],
+    );
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+
+    final card = SlideTransition(
+      position: _entranceSlide,
+      child: FadeTransition(
+        opacity: _entranceFade,
+        child: ScaleTransition(
+          scale: _entranceScale,
+          alignment: Alignment.topCenter,
+          child: AnimatedBuilder(
+            animation: _pulseCtrl,
+            builder: (context, child) {
+              // Glow strength oscillates with the pulse — most visible while idle.
+              final glow = 0.35 + (_pulseCtrl.value * 0.35);
+              return DecoratedBox(
                 decoration: BoxDecoration(
-                  color: primary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.auto_awesome, size: 16, color: primary),
-              ),
-              const SizedBox(width: 10),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 220),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      data.item.title,
-                      style: TextStyle(
-                        color: onSurface,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Marcellus',
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primary.withValues(alpha: glow * 0.55),
+                      blurRadius: 24,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 6),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      data.reason != null
-                          ? '${data.reason} · $_distanceLabel'
-                          : _distanceLabel,
-                      style: TextStyle(
-                        color: onSurface.withValues(alpha: 0.65),
-                        fontSize: 11,
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.18),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: child!,
+              );
+            },
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: widget.onTap,
+                splashColor: primary.withValues(alpha: 0.15),
+                highlightColor: primary.withValues(alpha: 0.08),
+                child: Stack(
+                  children: [
+                    // Gradient fill underneath everything.
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(gradient: gradient),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                    // One-shot diagonal shimmer sweep on appear.
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: AnimatedBuilder(
+                          animation: _shimmerCtrl,
+                          builder: (context, _) {
+                            return CustomPaint(
+                              painter: _ShimmerSweepPainter(
+                                progress: _shimmerCtrl.value,
+                                color: Colors.white.withValues(alpha: 0.45),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    // Inner content
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: widget.compact ? 12 : 14,
+                        vertical: widget.compact ? 10 : 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          _PulsingSparkle(controller: _pulseCtrl, primary: primary),
+                          const SizedBox(width: 12),
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: widget.compact ? 200 : 230),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Small-caps AI label
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: primary.withValues(alpha: isDark ? 0.30 : 0.18),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        'AI PICK',
+                                        style: TextStyle(
+                                          color: isDark ? const Color(0xFFFFD27A) : primary,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 1.1,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Icon(Icons.directions_walk_rounded,
+                                        size: 12, color: textColor.withValues(alpha: 0.6)),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      _distanceLabel,
+                                      style: TextStyle(
+                                        color: textColor.withValues(alpha: 0.7),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: widget.compact ? 2 : 4),
+                                Text(
+                                  widget.data.item.title,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: widget.compact ? 14 : 15,
+                                    fontWeight: FontWeight.w800,
+                                    fontFamily: 'Marcellus',
+                                    height: 1.15,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (!widget.compact && widget.data.reason != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    widget.data.reason!,
+                                    style: TextStyle(
+                                      color: textColor.withValues(alpha: 0.7),
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Tap-affordance arrow
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 18,
+                            color: textColor.withValues(alpha: 0.55),
+                          ),
+                          // Dismiss
+                          InkResponse(
+                            onTap: widget.onDismiss,
+                            radius: 18,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 16,
+                                color: textColor.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.close, size: 16, color: onSurface.withValues(alpha: 0.5)),
-                padding: const EdgeInsets.only(left: 4),
-                constraints: const BoxConstraints(),
-                tooltip: 'Dismiss',
-                onPressed: onDismiss,
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
+
+    // Subtle outer halo — the pulsing primary glow already covers most of it,
+    // but a tiny `onSurface`-tinted ring keeps the card readable against pale
+    // tiles in light mode.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: onSurface.withValues(alpha: 0.04)),
+        ),
+        child: card,
+      ),
+    );
   }
+}
+
+/// Sparkle icon that breathes between two scales + tints — the recognisable
+/// "AI is thinking" signal across the app.
+class _PulsingSparkle extends StatelessWidget {
+  final AnimationController controller;
+  final Color primary;
+  const _PulsingSparkle({required this.controller, required this.primary});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final t = controller.value;
+        final scale = 0.92 + (t * 0.16);
+        final ringAlpha = 0.22 + (t * 0.28);
+        return SizedBox(
+          width: 36,
+          height: 36,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outer pulsing ring
+              Container(
+                width: 36 - (t * 4),
+                height: 36 - (t * 4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: primary.withValues(alpha: ringAlpha),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              // Inner filled circle
+              Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        primary,
+                        primary.withValues(alpha: 0.65),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primary.withValues(alpha: 0.45 + t * 0.35),
+                        blurRadius: 10 + t * 6,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Diagonal white-band sweep painted across the card body on first appear.
+/// `progress` 0..1 moves the band from off-left to off-right.
+class _ShimmerSweepPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  _ShimmerSweepPainter({required this.progress, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0 || progress >= 1) return;
+    final bandWidth = size.width * 0.35;
+    final travel = size.width + bandWidth;
+    final centerX = -bandWidth / 2 + (travel * progress);
+
+    final shader = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        color.withValues(alpha: 0),
+        color,
+        color.withValues(alpha: 0),
+      ],
+      stops: const [0.0, 0.5, 1.0],
+    ).createShader(Rect.fromLTWH(centerX - bandWidth / 2, 0, bandWidth, size.height));
+
+    final paint = Paint()..shader = shader;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ShimmerSweepPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

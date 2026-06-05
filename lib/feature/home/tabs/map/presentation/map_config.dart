@@ -14,7 +14,7 @@ class MapConfig {
     zoom: 10,
   );
 
-  static const int markerSize = 120;
+  static const int markerSize = 50;
 
   static const Set<String> excludedCategories = {
     'sports',

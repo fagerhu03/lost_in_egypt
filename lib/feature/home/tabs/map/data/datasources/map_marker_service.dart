@@ -1,7 +1,5 @@
-import 'dart:ui' as ui;
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter/foundation.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
@@ -32,9 +30,11 @@ class MapMarkerService {
       // Load all icons in parallel for faster startup
       final futures = pinNames.map((pinName) async {
         try {
-          final icon = await _loadPngMarkerIcon(
+          // Natively scale markers based on device pixel ratio
+          final icon = await BitmapDescriptor.asset(
+            const ImageConfiguration(),
             'assets/pins/$pinName.png',
-            MapConfig.markerSize,
+            width: MapConfig.markerSize.toDouble(),
           );
           _markerIcons[pinName] = icon;
         } catch (e) {
@@ -77,32 +77,6 @@ class MapMarkerService {
         _markerIcons[name] = BitmapDescriptor.defaultMarker;
       }
     }
-  }
-
-  Future<BitmapDescriptor> _loadPngMarkerIcon(
-    String assetPath,
-    int width,
-  ) async {
-    final ByteData data = await rootBundle.load(assetPath);
-
-    final ui.Codec codec = await ui.instantiateImageCodec(
-      data.buffer.asUint8List(),
-      targetWidth: width,
-    );
-
-    final ui.FrameInfo frameInfo = await codec.getNextFrame();
-
-    final ByteData? byteData = await frameInfo.image.toByteData(
-      format: ui.ImageByteFormat.png,
-    );
-
-    frameInfo.image.dispose();
-
-    if (byteData == null) {
-      throw Exception('Failed to convert image to bytes');
-    }
-
-    return BitmapDescriptor.bytes(byteData.buffer.asUint8List());
   }
 
   BitmapDescriptor getMarkerIconByCategory(MapItem item, bool isSelected) {
