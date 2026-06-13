@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
@@ -35,14 +36,14 @@ class TourAttendeesScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-                  const SizedBox(height: 12),
+                  Icon(Icons.error_outline, size: 48.r, color: theme.colorScheme.error),
+                  SizedBox(height: 12.h),
                   const Text('Error loading attendees'),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     'A Firestore index may be needed.\nCheck debug console for the link.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                    style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                   ),
                 ],
               ),
@@ -58,14 +59,14 @@ class TourAttendeesScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.people_outline, size: 80, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
-                  const SizedBox(height: 16),
-                  Text('No bookings yet', style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
-                  const SizedBox(height: 8),
+                  Icon(Icons.people_outline, size: 80.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
+                  SizedBox(height: 16.h),
+                  Text('No bookings yet', style: TextStyle(fontSize: 18.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                  SizedBox(height: 8.h),
                   Text(
                     'When travelers book this tour,\nthey\'ll appear here.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
+                    style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
                   ),
                 ],
               ),
@@ -73,42 +74,42 @@ class TourAttendeesScreen extends StatelessWidget {
           }
 
           return ListView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.r),
             children: [
               // Summary header
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.r),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [primary.withValues(alpha: 0.15), primary.withValues(alpha: 0.05)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _statItem('${confirmed.length}', 'Confirmed', Colors.green),
-                    Container(width: 1, height: 40, color: primary.withValues(alpha: 0.2)),
+                    Container(width: 1, height: 40.h, color: primary.withValues(alpha: 0.2)),
                     _statItem('${cancelled.length}', 'Cancelled', Colors.red),
-                    Container(width: 1, height: 40, color: primary.withValues(alpha: 0.2)),
+                    Container(width: 1, height: 40.h, color: primary.withValues(alpha: 0.2)),
                     _statItem('${bookings.length}', 'Total', primary),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               if (confirmed.isNotEmpty) ...[
-                Text('Confirmed (${confirmed.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.colorScheme.onSurface)),
-                const SizedBox(height: 12),
+                Text('Confirmed (${confirmed.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: theme.colorScheme.onSurface)),
+                SizedBox(height: 12.h),
                 ...confirmed.map((doc) => _AttendeeCard(bookingData: doc.data() as Map<String, dynamic>, bookingId: doc.id)),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
               ],
 
               if (cancelled.isNotEmpty) ...[
-                Text('Cancelled (${cancelled.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red)),
-                const SizedBox(height: 12),
+                Text('Cancelled (${cancelled.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: Colors.red)),
+                SizedBox(height: 12.h),
                 ...cancelled.map((doc) => _AttendeeCard(bookingData: doc.data() as Map<String, dynamic>, bookingId: doc.id, isCancelled: true)),
               ],
             ],
@@ -121,8 +122,8 @@ class TourAttendeesScreen extends StatelessWidget {
   Widget _statItem(String value, String label, Color color) {
     return Column(
       children: [
-        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: TextStyle(fontSize: 12, color: color.withValues(alpha: 0.8))),
+        Text(value, style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold, color: color)),
+        Text(label, style: TextStyle(fontSize: 12.sp, color: color.withValues(alpha: 0.8))),
       ],
     );
   }
@@ -170,13 +171,13 @@ class _AttendeeCardState extends State<_AttendeeCard> {
 
     if (_loading) {
       return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
         ),
-        child: const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+        child: Center(child: SizedBox(height: 20.h, width: 20.w, child: const CircularProgressIndicator(strokeWidth: 2))),
       );
     }
 
@@ -189,10 +190,10 @@ class _AttendeeCardState extends State<_AttendeeCard> {
     final paymentStatus = widget.bookingData['paymentStatus'] ?? 'none';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.06)),
         boxShadow: [
           BoxShadow(
@@ -205,7 +206,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
       child: Column(
         children: [
           ListTile(
-            contentPadding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            contentPadding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 0),
             onTap: _userData != null && userId.isNotEmpty
                 ? () {
                     final userModel = UserModel.fromMap(_userData!, userId);
@@ -217,7 +218,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
                 : null,
             leading: ShimmerAvatar(
               url: profileUrl,
-              radius: 24,
+              radius: 24.r,
               fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
               fallbackIconColor: theme.colorScheme.primary,
             ),
@@ -226,34 +227,34 @@ class _AttendeeCardState extends State<_AttendeeCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (username.isNotEmpty)
-                  Text('@$username', style: TextStyle(fontSize: 12, color: theme.colorScheme.primary.withValues(alpha: 0.8), fontWeight: FontWeight.w500)),
+                  Text('@$username', style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.primary.withValues(alpha: 0.8), fontWeight: FontWeight.w500)),
                 if (email.isNotEmpty)
-                  Text(email, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+                  Text(email, style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                 if (phone.isNotEmpty)
-                  Text(phone, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+                  Text(phone, style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
               ],
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: paymentStatus == 'paid' ? Colors.green.withValues(alpha: 0.12) : Colors.orange.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
                     paymentStatus == 'paid' ? 'PAID' : 'PENDING',
                     style: TextStyle(
                       color: paymentStatus == 'paid' ? Colors.green : Colors.orange,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 if (_userData != null) ...[
-                  const SizedBox(width: 4),
-                  Icon(Icons.chevron_right, size: 18,
+                  SizedBox(width: 4.w),
+                  Icon(Icons.chevron_right, size: 18.r,
                       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
                 ],
               ],
@@ -261,7 +262,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
           ),
           // Action buttons
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
+            padding: EdgeInsets.fromLTRB(12.w, 4.h, 12.w, 10.h),
             child: Row(
               children: [
                 if (phone.isNotEmpty)
@@ -284,18 +285,18 @@ class _AttendeeCardState extends State<_AttendeeCard> {
   Widget _actionButton(IconData icon, String label, VoidCallback onTap, {Color? color}) {
     final c = color ?? Theme.of(context).colorScheme.primary;
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
+      padding: EdgeInsets.only(right: 8.w),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: c),
-              const SizedBox(width: 4),
-              Text(label, style: TextStyle(fontSize: 12, color: c, fontWeight: FontWeight.w600)),
+              Icon(icon, size: 16.r, color: c),
+              SizedBox(width: 4.w),
+              Text(label, style: TextStyle(fontSize: 12.sp, color: c, fontWeight: FontWeight.w600)),
             ],
           ),
         ),

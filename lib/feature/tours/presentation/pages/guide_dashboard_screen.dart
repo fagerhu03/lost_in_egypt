@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -89,24 +90,24 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.tour, size: 80, color: onSurface.withValues(alpha: 0.2)),
-                    const SizedBox(height: 16),
-                    Text('No tours yet', style: TextStyle(fontSize: 20, color: onSurface.withValues(alpha: 0.5))),
-                    const SizedBox(height: 8),
-                    Text('Create your first tour!', style: TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.35))),
+                    Icon(Icons.tour, size: 80.r, color: onSurface.withValues(alpha: 0.2)),
+                    SizedBox(height: 16.h),
+                    Text('No tours yet', style: TextStyle(fontSize: 20.sp, color: onSurface.withValues(alpha: 0.5))),
+                    SizedBox(height: 8.h),
+                    Text('Create your first tour!', style: TextStyle(fontSize: 14.sp, color: onSurface.withValues(alpha: 0.35))),
                   ],
                 ),
               );
             }
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
               children: [
                 // ── Earnings Summary ──
                 _EarningsSummary(tours: tours),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
 
-                Text('Your Tours (${tours.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: onSurface)),
-                const SizedBox(height: 12),
+                Text('Your Tours (${tours.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp, color: onSurface)),
+                SizedBox(height: 12.h),
 
                 ...tours.map((tour) => _GuideTourCard(
                   tour: tour,
@@ -192,23 +193,23 @@ class _EarningsSummary extends StatelessWidget {
         }
 
         return Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20.r),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [primary.withValues(alpha: 0.15), primary.withValues(alpha: 0.05)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(color: primary.withValues(alpha: 0.1)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _statItem('${tours.length}', 'Tours', Icons.tour, primary),
-              Container(width: 1, height: 50, color: primary.withValues(alpha: 0.15)),
+              Container(width: 1, height: 50.h, color: primary.withValues(alpha: 0.15)),
               _statItem('$totalBookings', 'Bookings', Icons.confirmation_number, Colors.green),
-              Container(width: 1, height: 50, color: primary.withValues(alpha: 0.15)),
+              Container(width: 1, height: 50.h, color: primary.withValues(alpha: 0.15)),
               ValueListenableBuilder<String>(
                 valueListenable: CurrencyController.currency,
                 builder: (_, currency, _) => FutureBuilder<double>(
@@ -233,10 +234,10 @@ class _EarningsSummary extends StatelessWidget {
   Widget _statItem(String value, String label, IconData icon, Color color) {
     return Column(
       children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 6),
-        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: TextStyle(fontSize: 12, color: color.withValues(alpha: 0.7))),
+        Icon(icon, color: color, size: 24.r),
+        SizedBox(height: 6.h),
+        Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: color)),
+        Text(label, style: TextStyle(fontSize: 12.sp, color: color.withValues(alpha: 0.7))),
       ],
     );
   }
@@ -256,10 +257,10 @@ class _GuideTourCard extends StatelessWidget {
     final primary = theme.colorScheme.primary;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.06)),
         boxShadow: [
           BoxShadow(
@@ -274,9 +275,9 @@ class _GuideTourCard extends StatelessWidget {
         children: [
           // Image + overlay info
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
             child: SizedBox(
-              height: 140,
+              height: 140.h,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -286,7 +287,7 @@ class _GuideTourCard extends StatelessWidget {
                     fallbackIcon: Icons.landscape,
                     fallbackBackgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                     fallbackIconColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
-                    fallbackIconSize: 48,
+                    fallbackIconSize: 48.r,
                   ),
                   // Gradient overlay
                   Positioned(
@@ -294,7 +295,7 @@ class _GuideTourCard extends StatelessWidget {
                     left: 0,
                     right: 0,
                     child: Container(
-                      height: 60,
+                      height: 60.h,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
@@ -306,13 +307,13 @@ class _GuideTourCard extends StatelessWidget {
                   ),
                   // Price tag
                   Positioned(
-                    top: 10,
-                    right: 10,
+                    top: 10.h,
+                    right: 10.w,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: primary,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: ValueListenableBuilder<String>(
                         valueListenable: CurrencyController.currency,
@@ -324,7 +325,7 @@ class _GuideTourCard extends StatelessWidget {
                                 : snap.hasError
                                     ? 'EGP ${tour.price.toStringAsFixed(0)} ΓÜá'
                                     : 'EGP ${tour.price.toStringAsFixed(0)}',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp),
                           ),
                         ),
                       ),
@@ -332,12 +333,12 @@ class _GuideTourCard extends StatelessWidget {
                   ),
                   // Title overlay
                   Positioned(
-                    bottom: 8,
-                    left: 12,
-                    right: 12,
+                    bottom: 8.h,
+                    left: 12.w,
+                    right: 12.w,
                     child: Text(
                       tour.title,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16.sp),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -349,30 +350,30 @@ class _GuideTourCard extends StatelessWidget {
 
           // Info row
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+            padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 8.h),
             child: Row(
               children: [
                 _infoChip(Icons.calendar_today, DateFormat('MMM d').format(tour.meetingTime), theme),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 _infoChip(Icons.people, '${tour.maxAttendees} max', theme),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 _infoChip(Icons.repeat, tour.frequency, theme),
                 const Spacer(),
                 if (tour.reviewCount > 0)
                   Row(
                     children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 16),
-                      Text(' ${tour.rating.toStringAsFixed(1)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: theme.colorScheme.onSurface)),
+                      Icon(Icons.star, color: Colors.amber, size: 16.r),
+                      Text(' ${tour.rating.toStringAsFixed(1)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: theme.colorScheme.onSurface)),
                     ],
                   )
                 else
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.tertiary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(6.r),
                     ),
-                    child: Text('NEW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: theme.colorScheme.tertiary)),
+                    child: Text('NEW', style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: theme.colorScheme.tertiary)),
                   ),
               ],
             ),
@@ -388,23 +389,23 @@ class _GuideTourCard extends StatelessWidget {
             builder: (context, snap) {
               if (snap.hasError) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: EdgeInsets.symmetric(horizontal: 14.w),
                   child: AppErrorWidget(message: 'Could not load bookings.', icon: Icons.book_outlined),
                 );
               }
               final count = snap.data?.docs.length ?? 0;
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: (count > 0 ? Colors.green : Colors.grey).withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
                     count > 0 ? '📌 $count confirmed booking${count == 1 ? '' : 's'}' : 'No bookings yet',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                       color: count > 0 ? Colors.green : theme.colorScheme.onSurface.withValues(alpha: 0.4),
                     ),
@@ -414,11 +415,11 @@ class _GuideTourCard extends StatelessWidget {
             },
           ),
 
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
 
           // Action buttons
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+            padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 10.h),
             child: Row(
               children: [
                 _actionButton(context, Icons.visibility, 'View', () {
@@ -458,9 +459,9 @@ class _GuideTourCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-        const SizedBox(width: 3),
-        Text(label, style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+        Icon(icon, size: 13.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+        SizedBox(width: 3.w),
+        Text(label, style: TextStyle(fontSize: 11.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
       ],
     );
   }
@@ -470,14 +471,14 @@ class _GuideTourCard extends StatelessWidget {
     return Expanded(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: EdgeInsets.symmetric(vertical: 8.h),
           child: Column(
             children: [
-              Icon(icon, size: 20, color: c),
-              const SizedBox(height: 2),
-              Text(label, style: TextStyle(fontSize: 10, color: c, fontWeight: FontWeight.w600)),
+              Icon(icon, size: 20.r, color: c),
+              SizedBox(height: 2.h),
+              Text(label, style: TextStyle(fontSize: 10.sp, color: c, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -489,7 +490,7 @@ class _GuideTourCard extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: const Text('Delete Tour'),
         content: Text('Are you sure you want to delete "${tour.title}"? This cannot be undone.'),
         actions: [

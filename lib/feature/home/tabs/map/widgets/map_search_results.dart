@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 
@@ -28,11 +29,11 @@ class MapSearchResults extends StatelessWidget {
 
     if (searchResults.isEmpty && hasSearchText) {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.all(20.r),
         decoration: BoxDecoration(
           color: surface.withValues(alpha: isDark ? 0.94 : 0.98),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
               color: shadowColor,
@@ -50,14 +51,14 @@ class MapSearchResults extends StatelessWidget {
             Icon(
               Icons.search_off_rounded,
               color: onSurface.withValues(alpha: 0.4),
-              size: 20,
+              size: 20.r,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(
               'No places found',
               style: TextStyle(
                 color: onSurface.withValues(alpha: 0.5),
-                fontSize: 14,
+                fontSize: 14.sp,
               ),
             ),
           ],
@@ -68,11 +69,11 @@ class MapSearchResults extends StatelessWidget {
     if (searchResults.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      constraints: const BoxConstraints(maxHeight: 300),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      constraints: BoxConstraints(maxHeight: 300.h),
       decoration: BoxDecoration(
         color: surface.withValues(alpha: isDark ? 0.94 : 0.98),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
           BoxShadow(
             color: shadowColor,
@@ -85,13 +86,13 @@ class MapSearchResults extends StatelessWidget {
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         child: ListView.separated(
           padding: EdgeInsets.zero,
           shrinkWrap: true,
           itemCount: searchResults.length,
           separatorBuilder: (_, _) => Divider(
-            height: 1,
+            height: 1.h,
             color: onSurface.withValues(alpha: 0.07),
           ),
           itemBuilder: (context, index) {
@@ -107,23 +108,23 @@ class MapSearchResults extends StatelessWidget {
             return InkWell(
               onTap: () => onSearchResultTapped(item),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 child: Row(
                   children: [
                     Container(
-                      width: 36,
-                      height: 36,
+                      width: 36.r,
+                      height: 36.r,
                       decoration: BoxDecoration(
                         color: primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       alignment: Alignment.center,
                       child: Text(
                         categoryIcon,
-                        style: const TextStyle(fontSize: 18),
+                        style: TextStyle(fontSize: 18.sp),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,18 +133,18 @@ class MapSearchResults extends StatelessWidget {
                             item.title,
                             style: TextStyle(
                               color: onSurface,
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             item.category.toUpperCase(),
                             style: TextStyle(
                               color: primary.withValues(alpha: 0.8),
-                              fontSize: 11,
+                              fontSize: 11.sp,
                               fontWeight: FontWeight.w500,
                               letterSpacing: 0.5,
                             ),
@@ -154,7 +155,7 @@ class MapSearchResults extends StatelessWidget {
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       color: onSurface.withValues(alpha: 0.25),
-                      size: 14,
+                      size: 14.r,
                     ),
                   ],
                 ),

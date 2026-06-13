@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../tours/presentation/pages/create_tour_screen.dart';
 
 class UpcomingBookingsScreen extends StatelessWidget {
@@ -29,18 +30,18 @@ class UpcomingBookingsScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_available, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
-            const SizedBox(height: 16),
-            const Text(
+            Icon(Icons.event_available, size: 80.r, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+            SizedBox(height: 16.h),
+            Text(
               'No Upcoming Bookings',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               'When tourists book your tours, they will appear here.',
-              style: TextStyle(fontSize: 14, color: isDark ? Colors.white70 : Colors.black54),
+              style: TextStyle(fontSize: 14.sp, color: isDark ? Colors.white70 : Colors.black54),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../manager/trip_planner_controller.dart';
 import '../widgets/quiz_scaffold.dart';
 
@@ -32,7 +33,7 @@ class TripTimeStep extends StatelessWidget {
             activeColor: const Color(0xFFF59E0B),
             onTap: () => controller.toggleTripTime('Day'),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           _TimeCard(
             label: 'Night',
             emoji: '🌙',
@@ -79,7 +80,7 @@ class _TimeCard extends StatelessWidget {
             color: isSelected
                 ? activeColor.withValues(alpha: 0.12)
                 : surfaceBg,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: isSelected ? activeColor : textColor.withValues(alpha: 0.12),
               width: isSelected ? 2 : 1,
@@ -90,26 +91,26 @@ class _TimeCard extends StatelessWidget {
             children: [
               Text(
                 emoji,
-                style: const TextStyle(fontSize: 52),
+                style: TextStyle(fontSize: 52.sp),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 22.sp,
                   fontWeight: FontWeight.w700,
                   color: isSelected ? activeColor : textColor,
                   fontFamily: 'Marcellus',
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: Text(
                   description,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     height: 1.5,
                     color: isSelected
                         ? activeColor.withValues(alpha: 0.8)

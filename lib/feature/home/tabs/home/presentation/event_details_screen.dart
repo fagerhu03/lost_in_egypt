@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -143,7 +144,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 // ── Content ──
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -156,39 +157,39 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                               widget.event.title,
                               style: TextStyle(
                                 color: textColor,
-                                fontSize: 28,
+                                fontSize: 28.sp,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: "Marcellus",
                                 height: 1.2,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           _buildLikePill(isDark, secondaryTextColor),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
 
                       // Venue subtitle
                       if (widget.event.venueName.isNotEmpty)
                         Row(
                           children: [
                             Icon(Icons.location_city,
-                                size: 16, color: primary),
-                            const SizedBox(width: 6),
+                                size: 16.r, color: primary),
+                            SizedBox(width: 6.w),
                             Expanded(
                               child: Text(
                                 widget.event.venueName,
                                 style: TextStyle(
                                   color: secondaryTextColor,
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       
                       // Live Rating Row
                       StreamBuilder<DocumentSnapshot>(
@@ -209,29 +210,29 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                           
                           return Row(
                             children: [
-                              Icon(Icons.star_rounded, color: Colors.amber.shade700, size: 20),
-                              const SizedBox(width: 6),
+                              Icon(Icons.star_rounded, color: Colors.amber.shade700, size: 20.r),
+                              SizedBox(width: 6.w),
                               Text(
                                 rating.toStringAsFixed(1),
                                 style: TextStyle(
                                   color: textColor,
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6.w),
                               Text(
                                 "($reviewCount reviews)",
                                 style: TextStyle(
                                   color: secondaryTextColor,
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                 ),
                               ),
                             ],
                           );
                         },
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
 
                       // ── Date & Time Card (full width) ──
                       _buildSectionCard(
@@ -239,15 +240,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: EdgeInsets.all(12.r),
                               decoration: BoxDecoration(
                                 color: primary.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(14.r),
                               ),
                               child: Icon(Icons.calendar_today,
-                                  color: primary, size: 24),
+                                  color: primary, size: 24.r),
                             ),
-                            const SizedBox(width: 16),
+                            SizedBox(width: 16.w),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment:
@@ -257,12 +258,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                     "DATE & TIME",
                                     style: TextStyle(
                                       color: primary,
-                                      fontSize: 11,
+                                      fontSize: 11.sp,
                                       fontWeight: FontWeight.w700,
                                       letterSpacing: 1.2,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  SizedBox(height: 4.h),
                                   (() {
                                     final cairoTime = tz.TZDateTime.from(widget.event.date, tz.getLocation('Africa/Cairo'));
                                     return Column(
@@ -272,16 +273,16 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                           DateFormat('EEEE, d MMMM yyyy').format(cairoTime),
                                           style: TextStyle(
                                             color: textColor,
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        const SizedBox(height: 2),
+                                        SizedBox(height: 2.h),
                                         Text(
                                           "${DateFormat('hh:mm a').format(cairoTime)} (Cairo Time)",
                                           style: TextStyle(
                                             color: secondaryTextColor,
-                                            fontSize: 14,
+                                            fontSize: 14.sp,
                                           ),
                                         ),
                                       ],
@@ -293,7 +294,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
 
                       // ── Location Card (full width, tappable) ──
                       GestureDetector(
@@ -308,15 +309,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: EdgeInsets.all(12.r),
                                 decoration: BoxDecoration(
                                   color: primary.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(14.r),
                                 ),
                                 child: Icon(Icons.location_on,
-                                    color: primary, size: 24),
+                                    color: primary, size: 24.r),
                               ),
-                              const SizedBox(width: 16),
+                              SizedBox(width: 16.w),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment:
@@ -326,12 +327,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                       "LOCATION",
                                       style: TextStyle(
                                         color: primary,
-                                        fontSize: 11,
+                                        fontSize: 11.sp,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    SizedBox(height: 4.h),
                                     Text(
                                       widget.event.locationAddress
                                               .isNotEmpty
@@ -345,7 +346,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                                   : "Egypt"),
                                       style: TextStyle(
                                         color: textColor,
-                                        fontSize: 16,
+                                        fontSize: 16.sp,
                                         fontWeight: FontWeight.bold,
                                       ),
                                       maxLines: 2,
@@ -356,12 +357,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                             .isNotEmpty)
                                       Padding(
                                         padding:
-                                            const EdgeInsets.only(top: 2),
+                                            EdgeInsets.only(top: 2.h),
                                         child: Text(
                                           widget.event.city,
                                           style: TextStyle(
                                             color: secondaryTextColor,
-                                            fontSize: 14,
+                                            fontSize: 14.sp,
                                           ),
                                         ),
                                       ),
@@ -369,23 +370,23 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 8),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 14.w, vertical: 8.h),
                                 decoration: BoxDecoration(
                                   color: primary,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(20.r),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(Icons.map_outlined,
-                                        color: primary.computeLuminance() > 0.5 ? Colors.black : Colors.white, size: 16),
-                                    const SizedBox(width: 6),
+                                        color: primary.computeLuminance() > 0.5 ? Colors.black : Colors.white, size: 16.r),
+                                    SizedBox(width: 6.w),
                                     Text(
                                       "Map",
                                       style: TextStyle(
                                         color: primary.computeLuminance() > 0.5 ? Colors.black : Colors.white,
-                                        fontSize: 13,
+                                        fontSize: 13.sp,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -396,14 +397,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
 
                       // ── Tags & Source row ──
                       if (widget.event.tags.isNotEmpty ||
                           widget.event.source.isNotEmpty)
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: 8.w,
+                          runSpacing: 8.h,
                           children: [
                             // Category chip
                             if (widget.event.eventCategory.isNotEmpty)
@@ -430,54 +431,54 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                         ),
                       if (widget.event.tags.isNotEmpty ||
                           widget.event.source.isNotEmpty)
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
 
                       // ── Divider ──
                       Divider(
                         color: (isDark ? Colors.white : Colors.black)
                             .withValues(alpha: 0.08),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
 
                       // ── Description ──
                       Text(
                         "About this Event",
                         style: TextStyle(
                           color: textColor,
-                          fontSize: 22,
+                          fontSize: 22.sp,
                           fontWeight: FontWeight.bold,
                           fontFamily: "Marcellus",
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Text(
                         widget.event.description.isNotEmpty
                             ? widget.event.description
                             : "Join us for an unforgettable experience! This event brings together the best of culture, entertainment, and community in Egypt. Secure your tickets now and be part of something amazing.",
                         style: TextStyle(
                           color: secondaryTextColor,
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           height: 1.6,
                         ),
                       ),
 
                       // ── Share row ──
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       Divider(
                         color: (isDark ? Colors.white : Colors.black)
                             .withValues(alpha: 0.08),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Row(
                         children: [
                           Icon(Icons.share_outlined,
-                              color: secondaryTextColor, size: 20),
-                          const SizedBox(width: 8),
+                              color: secondaryTextColor, size: 20.r),
+                          SizedBox(width: 8.w),
                           Text(
                             "Share this event",
                             style: TextStyle(
                               color: secondaryTextColor,
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -489,13 +490,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                               child: Row(
                                 children: [
                                   Icon(Icons.open_in_new,
-                                      color: primary, size: 18),
-                                  const SizedBox(width: 6),
+                                      color: primary, size: 18.r),
+                                  SizedBox(width: 6.w),
                                   Text(
                                     "View on ${widget.event.source.isNotEmpty ? widget.event.source[0].toUpperCase() + widget.event.source.substring(1) : 'Web'}",
                                     style: TextStyle(
                                       color: primary,
-                                      fontSize: 14,
+                                      fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -504,7 +505,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                             ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       // ── Post to Community button ──
                       GestureDetector(
                         onTap: () {
@@ -517,7 +518,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                         },
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+                          padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 18.w),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
@@ -527,7 +528,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(16.r),
                             boxShadow: [
                               BoxShadow(
                                 color: primary.withValues(alpha: 0.35),
@@ -539,30 +540,30 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.people_alt_rounded,
-                                  color: Colors.white, size: 20),
-                              const SizedBox(width: 10),
-                              const Text(
+                              Icon(Icons.people_alt_rounded,
+                                  color: Colors.white, size: 20.r),
+                              SizedBox(width: 10.w),
+                              Text(
                                 "Post to Community",
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 15,
+                                  fontSize: 15.sp,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.3,
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              const Icon(Icons.arrow_forward_rounded,
-                                  color: Colors.white70, size: 18),
+                              SizedBox(width: 10.w),
+                              Icon(Icons.arrow_forward_rounded,
+                                  color: Colors.white70, size: 18.r),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 32),
-                      
+                      SizedBox(height: 32.h),
+
                       // ── Reviews Section ──
                       _buildReviewsSection(isDark, primary, textColor, secondaryTextColor),
-                      const SizedBox(height: 120),
+                      SizedBox(height: 120.h),
                     ],
                   ),
                 ),
@@ -572,8 +573,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
           // ── Floating back button ──
           Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 16,
+            top: MediaQuery.of(context).padding.top + 8.h,
+            left: 16.w,
             child: CircleAvatar(
               backgroundColor: Colors.black.withValues(alpha: 0.45),
               child: IconButton(
@@ -597,17 +598,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             width: double.infinity,
             fit: BoxFit.fitWidth,
             placeholder: (_, _) => Container(
-              height: 300,
+              height: 300.h,
               color: Colors.grey.shade900,
               child: const Center(
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
             errorWidget: (_, _, _) => Container(
-              height: 300,
+              height: 300.h,
               color: Colors.grey.shade800,
-              child: const Center(
-                child: Icon(Icons.event, color: Colors.white54, size: 64),
+              child: Center(
+                child: Icon(Icons.event, color: Colors.white54, size: 64.r),
               ),
             ),
           )
@@ -616,10 +617,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             width: double.infinity,
             fit: BoxFit.fitWidth,
             errorBuilder: (_, _, _) => Container(
-              height: 300,
+              height: 300.h,
               color: Colors.grey.shade800,
-              child: const Center(
-                child: Icon(Icons.event, color: Colors.white54, size: 64),
+              child: Center(
+                child: Icon(Icons.event, color: Colors.white54, size: 64.r),
               ),
             ),
           );
@@ -632,7 +633,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           left: 0,
           right: 0,
           bottom: 0,
-          height: 80,
+          height: 80.h,
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -654,14 +655,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     return GestureDetector(
       onTap: _toggleLike,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: _isLiked
               ? Colors.red.withValues(alpha: 0.1)
               : (isDark
                   ? Colors.white.withValues(alpha: 0.08)
                   : Colors.black.withValues(alpha: 0.05)),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
           border: Border.all(
             color: _isLiked
                 ? Colors.red.withValues(alpha: 0.25)
@@ -677,15 +678,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
               child: Icon(
                 _isLiked ? Icons.favorite : Icons.favorite_border,
                 color: _isLiked ? Colors.redAccent : secondaryTextColor,
-                size: 22,
+                size: 22.r,
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6.w),
             Text(
               '$_likeCount',
               style: TextStyle(
                 color: _isLiked ? Colors.redAccent : secondaryTextColor,
-                fontSize: 15,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -700,12 +701,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     required Widget child,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: isDark
             ? Colors.white.withValues(alpha: 0.05)
             : Colors.black.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color:
               (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
@@ -717,17 +718,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
   Widget _buildChip(String label, Color primary) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: primary.withValues(alpha: 0.2)),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: primary,
-          fontSize: 12,
+          fontSize: 12.sp,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.5,
         ),
@@ -741,7 +742,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
           decoration: BoxDecoration(
             color: bg.withValues(alpha: 0.85),
             border: Border(
@@ -764,7 +765,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                       style: TextStyle(
                         color: (isDark ? Colors.white : Colors.black)
                             .withValues(alpha: 0.6),
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
                     Text(
@@ -773,14 +774,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                           : "See Listing",
                       style: TextStyle(
                         color: primary,
-                        fontSize: 22,
+                        fontSize: 22.sp,
                         fontWeight: FontWeight.bold,
                         fontFamily: "Marcellus",
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 20),
+                SizedBox(width: 20.w),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
@@ -797,9 +798,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primary,
                       foregroundColor: primary.computeLuminance() > 0.5 ? Colors.black : Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                       elevation: 0,
                     ),
@@ -807,8 +808,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                       widget.event.ticketLink.isNotEmpty
                           ? "Get Tickets"
                           : "RSVP Now",
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -833,14 +834,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
               "Reviews",
               style: TextStyle(
                 color: textColor,
-                fontSize: 22,
+                fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
                 fontFamily: "Marcellus",
               ),
             ),
             TextButton.icon(
               onPressed: () => AddEventReviewSheet.show(context, widget.event),
-              icon: Icon(Icons.add_comment, color: primary, size: 18),
+              icon: Icon(Icons.add_comment, color: primary, size: 18.r),
               label: Text(
                 "Write a Review",
                 style: TextStyle(
@@ -851,7 +852,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         StreamBuilder<List<EventReviewModel>>(
           stream: EventReviewsService.getEventReviews(widget.event.id),
           builder: (context, snapshot) {
@@ -862,7 +863,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
             if (reviews.isEmpty) {
               return Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  padding: EdgeInsets.symmetric(vertical: 20.h),
                   child: Text(
                     "No reviews yet. Be the first to review!",
                     style: TextStyle(color: secondaryTextColor),
@@ -877,7 +878,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
               itemCount: reviews.length,
               separatorBuilder: (_, _) => Divider(
                 color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
-                height: 32,
+                height: 32.h,
               ),
               itemBuilder: (context, index) {
                 final review = reviews[index];
@@ -887,12 +888,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 16,
+                          radius: 16.r,
                           backgroundColor: primary.withValues(alpha: 0.2),
                           backgroundImage: review.userImage.isNotEmpty ? NetworkImage(review.userImage) : null,
-                          child: review.userImage.isEmpty ? Icon(Icons.person, size: 20, color: primary) : null,
+                          child: review.userImage.isEmpty ? Icon(Icons.person, size: 20.r, color: primary) : null,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -902,15 +903,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                 style: TextStyle(
                                   color: textColor,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              SizedBox(height: 2.h),
                               Text(
                                 DateFormat('MMM d, yyyy').format(review.createdAt),
                                 style: TextStyle(
                                   color: secondaryTextColor,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
                             ],
@@ -921,19 +922,19 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                             return Icon(
                               starIndex < review.rating ? Icons.star : Icons.star_border,
                               color: Colors.amber,
-                              size: 16,
+                              size: 16.r,
                             );
                           }),
                         ),
                       ],
                     ),
                     if (review.comment.isNotEmpty) ...[
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Text(
                         review.comment,
                         style: TextStyle(
                           color: textColor.withValues(alpha: 0.9),
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           height: 1.4,
                         ),
                       ),

@@ -9,6 +9,7 @@ import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/onboarding/onboarding_screen.dart';
@@ -59,10 +60,12 @@ class _AuthGateState extends State<AuthGate> {
       }
       ThemeController.setDark(userModel?.isDarkMode ?? false);
       CurrencyController.setCurrency(userModel?.preferredCurrency ?? 'EGP');
+      LocaleController.setLanguage(userModel?.language);
     } catch (_) {
       // fallback if fetch fails
       ThemeController.setDark(false);
       CurrencyController.setCurrency('EGP');
+      LocaleController.setLanguage('English');
     }
 
     // ── FCM token registration (Non-blocking) ────────────────────────────
@@ -125,6 +128,7 @@ class _AuthGateState extends State<AuthGate> {
           _hasUsername = true;
           _quizCompleted = true;
           CurrencyController.setCurrency('EGP');
+          LocaleController.setLanguage('English');
           // ThemeController.setDark(false);
 
           return const OnboardingScreen();

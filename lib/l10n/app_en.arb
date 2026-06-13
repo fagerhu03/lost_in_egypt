@@ -1,0 +1,102 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Lost in Egypt",
+  "@appTitle": {
+    "description": "Application name."
+  },
+
+  "navHome": "Home",
+  "@navHome": {
+    "description": "Bottom navigation tab label for the Home tab."
+  },
+  "navCommunity": "Community",
+  "@navCommunity": {
+    "description": "Bottom navigation tab label for the Community tab."
+  },
+  "navMap": "Map",
+  "@navMap": {
+    "description": "Bottom navigation tab label for the Map tab."
+  },
+  "navCamera": "Camera",
+  "@navCamera": {
+    "description": "Bottom navigation tab label for the Camera tab."
+  },
+  "navMore": "More",
+  "@navMore": {
+    "description": "Bottom navigation tab label for the More tab."
+  },
+
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Generic Cancel button."
+  },
+  "commonReset": "Reset",
+  "@commonReset": {
+    "description": "Generic Reset button."
+  },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title of the Settings screen."
+  },
+  "settingsSelectLanguage": "Select Language",
+  "@settingsSelectLanguage": {
+    "description": "Settings tile to choose the app language."
+  },
+  "settingsDisplayCurrency": "Display Currency",
+  "@settingsDisplayCurrency": {
+    "description": "Settings tile to choose the preferred display currency."
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Settings tile to toggle light/dark theme."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Name of the English language, shown in the language toggle."
+  },
+  "languageArabic": "العربية",
+  "@languageArabic": {
+    "description": "Name of the Arabic language, shown in the language toggle (endonym)."
+  },
+
+  "settingsResetBadges": "Reset Badges (Debug)",
+  "@settingsResetBadges": {
+    "description": "Debug-only settings tile that clears earned badges."
+  },
+  "settingsBadgesResetSuccess": "Badges successfully reset!",
+  "@settingsBadgesResetSuccess": {
+    "description": "Confirmation snackbar after badges are reset."
+  },
+  "settingsResetTasteSignals": "Reset Taste Signals (Debug)",
+  "@settingsResetTasteSignals": {
+    "description": "Debug-only settings tile that clears recommendation signals."
+  },
+  "settingsResetTasteSignalsTitle": "Reset Taste Signals?",
+  "@settingsResetTasteSignalsTitle": {
+    "description": "Title of the confirmation dialog for resetting taste signals."
+  },
+  "settingsResetTasteSignalsBody": "This clears every personalisation signal recorded for you — saved likes, dismissals, quiz answers, visit history. Recommendations will reset to defaults until you interact again.",
+  "@settingsResetTasteSignalsBody": {
+    "description": "Body text of the reset-taste-signals confirmation dialog."
+  },
+  "settingsTasteSignalsReset": "Taste signals reset.",
+  "@settingsTasteSignalsReset": {
+    "description": "Confirmation snackbar after taste signals are reset."
+  },
+  "settingsTasteSignalsResetError": "Couldn't reset signals. Try again.",
+  "@settingsTasteSignalsResetError": {
+    "description": "Error snackbar when resetting taste signals fails."
+  },
+  "settingsVersion": "Version {version}",
+  "@settingsVersion": {
+    "description": "App version label at the bottom of the Settings screen.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "1.0.0"
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import '../bloc/apply_guide_cubit.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
@@ -81,34 +82,34 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         InkWell(
           onTap: () => _pickImage(onPicked),
           child: Container(
-            height: 120,
+            height: 120.h,
             width: double.infinity,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: imageFile != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                     child: Image.file(imageFile, fit: BoxFit.cover),
                   )
-                : const Center(
+                : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.upload_file, size: 40, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text('Tap to upload image', style: TextStyle(color: Colors.grey)),
+                        Icon(Icons.upload_file, size: 40.r, color: Colors.grey),
+                        SizedBox(height: 8.h),
+                        const Text('Tap to upload image', style: TextStyle(color: Colors.grey)),
                       ],
                     ),
                   ),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
       ],
     );
   }
@@ -153,17 +154,17 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
           final isLoading = state is ApplyGuideLoading;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.r),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
+                  Text(
                     'To ensure user safety, all guides must provide official Egyptian credentials.',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   TextFormField(
                     controller: _motaController,
@@ -173,7 +174,7 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
                     ),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   TextFormField(
                     controller: _syndicateController,
@@ -183,7 +184,7 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
                     ),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   TextFormField(
                     controller: _languagesController,
@@ -194,7 +195,7 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
                     ),
                     validator: (v) => v!.isEmpty ? 'Required' : null,
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   _buildImagePicker('MOTA License Photo', _motaImage, (f) => _motaImage = f),
                   _buildImagePicker('Syndicate Card Photo', _syndicateImage, (f) => _syndicateImage = f),
@@ -206,15 +207,15 @@ class _ApplyGuideScreenState extends State<ApplyGuideScreen> {
                   ElevatedButton(
                     onPressed: isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
                     ),
-                    child: isLoading 
-                        ? const SizedBox(
-                            width: 24, 
-                            height: 24, 
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                    child: isLoading
+                        ? SizedBox(
+                            width: 24.r,
+                            height: 24.r,
+                            child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
-                        : const Text('Submit Application', style: TextStyle(fontSize: 18)),
+                        : Text('Submit Application', style: TextStyle(fontSize: 18.sp)),
                   ),
                 ],
               ),

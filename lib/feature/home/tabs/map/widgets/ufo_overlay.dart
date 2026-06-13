@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class UfoOverlay extends StatefulWidget {
   const UfoOverlay({super.key});
@@ -75,11 +76,11 @@ class _UfoOverlayState extends State<UfoOverlay> with SingleTickerProviderStateM
               Positioned(
                 left: width * _horizontalAnimation.value,
                 top: height * _verticalAnimation.value,
-                child: const Text(
+                child: Text(
                   "🛸",
                   style: TextStyle(
-                    fontSize: 64,
-                    shadows: [
+                    fontSize: 64.sp,
+                    shadows: const [
                       Shadow(
                         color: Colors.greenAccent,
                         blurRadius: 20,

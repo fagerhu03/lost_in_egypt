@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
@@ -340,18 +341,18 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.r),
               decoration: BoxDecoration(
                 color: const Color(0xFFC79A00).withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle, color: Color(0xFFC79A00), size: 64),
+              child: Icon(Icons.check_circle, color: const Color(0xFFC79A00), size: 64.r),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             const Text('Booking Confirmed!', textAlign: TextAlign.center),
           ],
         ),
@@ -361,9 +362,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             Text(
               'Your spot on "${widget.tour.title}" is reserved!',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15),
+              style: TextStyle(fontSize: 15.sp),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             ValueListenableBuilder<String>(
               valueListenable: CurrencyController.currency,
               builder: (context, currency, _) {
@@ -377,7 +378,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                             : 'EGP ${_totalPrice.toStringAsFixed(0)}';
                     return Text(
                       '$label paid successfully.',
-                      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
+                      style: TextStyle(fontSize: 14.sp, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                     );
                   },
                 );
@@ -392,8 +393,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               FilledButton(
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFC79A00),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
                 ),
                 onPressed: () {
                   Navigator.of(context).popUntil((route) => route.isFirst);
@@ -405,7 +406,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 child: const Text('View My Bookings',
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               TextButton(
                 onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
                 child: const Text('Back to Home'),
@@ -424,7 +425,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         content: Text(message),
         backgroundColor: isError ? Colors.red : null,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
       ),
     );
   }
@@ -443,13 +444,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       body: Stack(
         children: [
           ListView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 160),
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 160.h),
             children: [
               // ── Order Summary ──
               _buildSectionTitle('Order Summary'),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.r),
                 decoration: _cardDecoration(theme, isDark),
                 child: Column(
                   children: [
@@ -460,24 +461,24 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           url: widget.tour.images.isNotEmpty
                               ? widget.tour.images.first
                               : null,
-                          width: 60,
-                          height: 60,
+                          width: 60.r,
+                          height: 60.r,
                           fit: BoxFit.cover,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                           fallbackIcon: Icons.landscape,
                           fallbackBackgroundColor:
                               Theme.of(context).colorScheme.surfaceContainerHighest,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(widget.tour.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              const SizedBox(height: 4),
+                              Text(widget.tour.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp)),
+                              SizedBox(height: 4.h),
                               Text(
                                 widget.tour.meetingLocationName,
-                                style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                                style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -486,20 +487,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         ),
                       ],
                     ),
-                    const Divider(height: 24),
+                    Divider(height: 24.h),
                     // Quantity selector
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Guests', style: TextStyle(fontSize: 15)),
+                        Text('Guests', style: TextStyle(fontSize: 15.sp)),
                         Row(
                           children: [
                             _quantityButton(Icons.remove, () {
                               if (_quantity > 1) setState(() => _quantity--);
                             }),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text('$_quantity', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              child: Text('$_quantity', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
                             ),
                             _quantityButton(Icons.add, () {
                               if (_quantity < widget.tour.maxAttendees) setState(() => _quantity++);
@@ -508,7 +509,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         ),
                       ],
                     ),
-                    const Divider(height: 24),
+                    Divider(height: 24.h),
                     // Price breakdown
                     ValueListenableBuilder<String>(
                       valueListenable: CurrencyController.currency,
@@ -532,7 +533,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                 Text('$_quantity × $unitLabel'),
                                 Text(
                                   totalLabel,
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primary),
+                                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: primary),
                                 ),
                               ],
                             );
@@ -544,11 +545,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 ),
               ),
 
-              const SizedBox(height: 28),
+              SizedBox(height: 28.h),
 
               // ── Payment Method ──
               _buildSectionTitle('Payment Method'),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               RadioGroup<String>(
                 groupValue: _selectedPaymentMethod,
                 onChanged: (val) {
@@ -593,7 +594,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
               // Wallet phone input
               if (_selectedPaymentMethod == 'wallet') ...[
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 TextField(
                   controller: _walletPhoneController,
                   keyboardType: TextInputType.phone,
@@ -603,30 +604,30 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     labelText: 'Wallet Phone Number',
                     hintText: '01XXXXXXXXX',
                     prefixIcon: const Icon(Icons.phone),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r)),
                     filled: true,
                     fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   ),
                 ),
               ],
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // ── Security Badge ──
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14.r),
                 decoration: BoxDecoration(
                   color: primary.withValues(alpha: isDark ? 0.08 : 0.04),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.verified_user, color: primary, size: 20),
-                    const SizedBox(width: 10),
+                    Icon(Icons.verified_user, color: primary, size: 20.r),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
                         'Payments are processed securely by Paymob. Your card details are never stored locally.',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+                        style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                     ),
                   ],
@@ -635,16 +636,16 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
               // ── Because you booked X, you might enjoy these tours ──
               if (_loadingSimilar || _similarTours.isNotEmpty) ...[
-                const SizedBox(height: 28),
+                SizedBox(height: 28.h),
                 Row(
                   children: [
-                    Icon(Icons.auto_awesome, size: 16, color: primary),
-                    const SizedBox(width: 8),
+                    Icon(Icons.auto_awesome, size: 16.r, color: primary),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
                         'Because you booked this, you might enjoy',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                           color: theme.colorScheme.onSurface,
                           fontFamily: 'Marcellus',
@@ -653,26 +654,26 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 SizedBox(
-                  height: 160,
+                  height: 160.h,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _loadingSimilar ? 2 : _similarTours.length,
                     itemBuilder: (_, i) {
                       if (_loadingSimilar) {
                         return Container(
-                          width: 220,
-                          margin: const EdgeInsets.only(right: 12),
+                          width: 220.w,
+                          margin: EdgeInsets.only(right: 12.w),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.06),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(16.r),
                           ),
                         );
                       }
                       return Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                        padding: EdgeInsets.only(right: 12.w),
                         child: _BookingSimilarTourCard(tour: _similarTours[i]),
                       );
                     },
@@ -686,13 +687,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           if (_isLoading)
             Container(
               color: Colors.black54,
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.white),
-                    SizedBox(height: 16),
-                    Text('Processing payment...', style: TextStyle(color: Colors.white, fontSize: 16)),
+                    const CircularProgressIndicator(color: Colors.white),
+                    SizedBox(height: 16.h),
+                    Text('Processing payment...', style: TextStyle(color: Colors.white, fontSize: 16.sp)),
                   ],
                 ),
               ),
@@ -700,7 +701,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         ],
       ),
       bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.r),
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
           boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -4))],
@@ -727,17 +728,17 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Total', style: TextStyle(fontSize: 16)),
+                              Text('Total', style: TextStyle(fontSize: 16.sp)),
                               Text(
                                 displayLabel,
-                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: primary),
+                                style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: primary),
                               ),
                             ],
                           ),
                           if (showEgpNote)
                             Text(
                               'Charged as EGP ${_totalPrice.toStringAsFixed(0)} via Paymob',
-                              style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                              style: TextStyle(fontSize: 11.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                             ),
                         ],
                       );
@@ -745,20 +746,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               SizedBox(
                 width: double.infinity,
-                height: 54,
+                height: 54.h,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                     elevation: 0,
                   ),
                   onPressed: _isLoading ? null : _processPayment,
                   icon: const Icon(Icons.lock),
-                  label: const Text('Pay Securely', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  label: Text('Pay Securely', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -769,13 +770,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
+    return Text(title, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold));
   }
 
   BoxDecoration _cardDecoration(ThemeData theme, bool isDark) {
     return BoxDecoration(
       color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.08)),
       boxShadow: [
         BoxShadow(
@@ -795,8 +796,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          padding: EdgeInsets.all(8.r),
+          child: Icon(icon, size: 18.r, color: Theme.of(context).colorScheme.primary),
         ),
       ),
     );
@@ -816,10 +817,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       child: Opacity(
         opacity: enabled ? 1.0 : 0.4,
         child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
+          margin: EdgeInsets.only(bottom: 10.h),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
             border: Border.all(
               color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.08),
               width: isSelected ? 2 : 1,
@@ -829,22 +830,22 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           title: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.r),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? theme.colorScheme.primary.withValues(alpha: 0.1)
                       : theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(icon, color: isSelected ? theme.colorScheme.primary : Colors.grey, size: 22),
+                child: Icon(icon, color: isSelected ? theme.colorScheme.primary : Colors.grey, size: 22.r),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: theme.colorScheme.onSurface)),
-                    Text(subtitle, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                    Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp, color: theme.colorScheme.onSurface)),
+                    Text(subtitle, style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                   ],
                 ),
               ),
@@ -873,9 +874,9 @@ class _BookingSimilarTourCard extends StatelessWidget {
         MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
       ),
       child: Container(
-        width: 220,
+        width: 220.w,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           color: theme.colorScheme.surface,
           border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.08)),
         ),
@@ -889,7 +890,7 @@ class _BookingSimilarTourCard extends StatelessWidget {
               fallbackIcon: Icons.tour,
               fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
               fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
-              fallbackIconSize: 36,
+              fallbackIconSize: 36.r,
             ),
             const DecoratedBox(
               decoration: BoxDecoration(
@@ -903,24 +904,24 @@ class _BookingSimilarTourCard extends StatelessWidget {
             ),
             if (tour.rating > 0)
               Positioned(
-                top: 8,
-                right: 8,
+                top: 8.h,
+                right: 8.w,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: Colors.amber.shade700,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, size: 12, color: Colors.white),
-                      const SizedBox(width: 2),
+                      Icon(Icons.star_rounded, size: 12.r, color: Colors.white),
+                      SizedBox(width: 2.w),
                       Text(
                         tour.rating.toStringAsFixed(1),
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: Colors.white,
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -928,14 +929,14 @@ class _BookingSimilarTourCard extends StatelessWidget {
                 ),
               ),
             Positioned(
-              bottom: 10,
-              left: 10,
-              right: 10,
+              bottom: 10.h,
+              left: 10.w,
+              right: 10.w,
               child: Text(
                 tour.title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Marcellus',
                   height: 1.2,

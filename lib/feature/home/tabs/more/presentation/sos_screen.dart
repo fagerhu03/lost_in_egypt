@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -213,7 +214,7 @@ class _SOSScreenState extends State<SOSScreen> {
     // Full-width featured chips first
     for (final dial in featured) {
       widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
+        padding: EdgeInsets.only(bottom: 10.h),
         child: _DialChip(
           dialNumber: dial,
           onTap: () => _call(dial.number, context),
@@ -225,7 +226,7 @@ class _SOSScreenState extends State<SOSScreen> {
     for (int i = 0; i < standard.length; i += 2) {
       final isLast = i + 1 >= standard.length;
       widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
+        padding: EdgeInsets.only(bottom: 10.h),
         child: isLast
             ? _DialChip(
                 dialNumber: standard[i],
@@ -239,7 +240,7 @@ class _SOSScreenState extends State<SOSScreen> {
                       onTap: () => _call(standard[i].number, context),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: _DialChip(
                       dialNumber: standard[i + 1],
@@ -272,11 +273,11 @@ class _SOSScreenState extends State<SOSScreen> {
         foregroundColor: onSurface,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
+        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 40.h),
         children: [
           // ── Find Nearest Help ──────────────────────────────────────────────
           _SectionHeader(label: "Find Nearest Help", onSurface: onSurface),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
 
           // Category tabs
           Row(
@@ -285,7 +286,7 @@ class _SOSScreenState extends State<SOSScreen> {
               final selected = _selectedCategory == i;
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(right: i < _categories.length - 1 ? 8 : 0),
+                  padding: EdgeInsets.only(right: i < _categories.length - 1 ? 8.w : 0),
                   child: GestureDetector(
                     onTap: () {
                       setState(() => _selectedCategory = i);
@@ -293,22 +294,22 @@ class _SOSScreenState extends State<SOSScreen> {
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: EdgeInsets.symmetric(vertical: 10.h),
                       decoration: BoxDecoration(
                         color: selected
                             ? cat.color
                             : cat.color.withValues(alpha: isDark ? 0.15 : 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Column(
                         children: [
                           Icon(cat.icon,
-                              color: selected ? Colors.white : cat.color, size: 20),
-                          const SizedBox(height: 4),
+                              color: selected ? Colors.white : cat.color, size: 20.r),
+                          SizedBox(height: 4.h),
                           Text(
                             cat.label,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 11.sp,
                               fontWeight: FontWeight.w600,
                               color: selected ? Colors.white : cat.color,
                             ),
@@ -322,7 +323,7 @@ class _SOSScreenState extends State<SOSScreen> {
             }),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // Find / Retry button
           SizedBox(
@@ -330,41 +331,41 @@ class _SOSScreenState extends State<SOSScreen> {
             child: ElevatedButton.icon(
               onPressed: (_locating || _searching) ? null : _findHelp,
               icon: (_locating || _searching)
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
+                  ? SizedBox(
+                      width: 18.w,
+                      height: 18.h,
+                      child: const CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.my_location_rounded, size: 20),
+                  : Icon(Icons.my_location_rounded, size: 20.r),
               label: Text(
                 _position == null
                     ? "Find Nearest ${_categories[_selectedCategory].label}"
                     : "Refresh — ${_categories[_selectedCategory].label}",
-                style: const TextStyle(fontFamily: 'Marcellus', fontSize: 15),
+                style: TextStyle(fontFamily: 'Marcellus', fontSize: 15.sp),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _categories[_selectedCategory].color,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14.r)),
               ),
             ),
           ),
 
           // Location status
           if (_position != null) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Row(
               children: [
                 Icon(Icons.location_on_rounded,
-                    size: 14,
+                    size: 14.r,
                     color: Colors.green.shade600),
-                const SizedBox(width: 4),
+                SizedBox(width: 4.w),
                 Text(
                   "Using your current location",
                   style: TextStyle(
-                      fontSize: 12, color: onSurface.withValues(alpha: 0.55)),
+                      fontSize: 12.sp, color: onSurface.withValues(alpha: 0.55)),
                 ),
               ],
             ),
@@ -372,15 +373,15 @@ class _SOSScreenState extends State<SOSScreen> {
 
           // Error state
           if (_searchError != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             _ErrorBanner(message: _searchError!, onSurface: onSurface),
           ],
 
           // Results
           if (_results.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             ..._results.map((r) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: EdgeInsets.only(bottom: 10.h),
                   child: _NearbyCard(
                     result: r,
                     categoryColor: _categories[_selectedCategory].color,
@@ -396,21 +397,21 @@ class _SOSScreenState extends State<SOSScreen> {
                 )),
           ],
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // ── Emergency Dial Numbers ─────────────────────────────────────────
           _SectionHeader(label: "Emergency Numbers", onSurface: onSurface),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // 2-column rows, last chip full-width
           ..._buildDialGrid(context),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             "These are Egypt's official emergency numbers. "
             "Tourist Police (126) has English-speaking operators.",
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: onSurface.withValues(alpha: 0.5),
               height: 1.5,
             ),
@@ -495,7 +496,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) => Text(
         label,
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 16.sp,
           fontFamily: 'Marcellus',
           fontWeight: FontWeight.w700,
           color: onSurface,
@@ -510,20 +511,20 @@ class _ErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: Colors.orange.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.info_outline, color: Colors.orange, size: 18),
-            const SizedBox(width: 10),
+            Icon(Icons.info_outline, color: Colors.orange, size: 18.r),
+            SizedBox(width: 10.w),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(fontSize: 13, color: Colors.orange, height: 1.4),
+                style: TextStyle(fontSize: 13.sp, color: Colors.orange, height: 1.4),
               ),
             ),
           ],
@@ -555,10 +556,10 @@ class _NearbyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14.r),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: categoryColor.withValues(alpha: 0.2), width: 1.2),
         boxShadow: [
           BoxShadow(
@@ -574,15 +575,15 @@ class _NearbyCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 42.r,
+            height: 42.r,
             decoration: BoxDecoration(
               color: categoryColor.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(categoryIcon, color: categoryColor, size: 20),
+            child: Icon(categoryIcon, color: categoryColor, size: 20.r),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,32 +591,32 @@ class _NearbyCard extends StatelessWidget {
                 Text(
                   result.name,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
                     color: onSurface,
                     fontFamily: 'Marcellus',
                   ),
                 ),
                 if (result.address.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     result.address,
                     style: TextStyle(
-                        fontSize: 11, color: onSurface.withValues(alpha: 0.55)),
+                        fontSize: 11.sp, color: onSurface.withValues(alpha: 0.55)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
                     Icon(Icons.near_me_rounded,
-                        size: 12, color: categoryColor),
-                    const SizedBox(width: 4),
+                        size: 12.r, color: categoryColor),
+                    SizedBox(width: 4.w),
                     Text(
                       result.distanceLabel,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                         color: categoryColor,
                       ),
@@ -628,7 +629,7 @@ class _NearbyCard extends StatelessWidget {
                         color: categoryColor,
                         onTap: onCall!,
                       ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     _ActionButton(
                       icon: Icons.map_outlined,
                       label: "Map",
@@ -663,19 +664,19 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) => GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 13, color: color),
-              const SizedBox(width: 4),
+              Icon(icon, size: 13.r, color: color),
+              SizedBox(width: 4.w),
               Text(label,
                   style: TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+                      fontSize: 12.sp, fontWeight: FontWeight.w600, color: color)),
             ],
           ),
         ),
@@ -693,21 +694,21 @@ class _DialChip extends StatelessWidget {
     final featured = dialNumber.isFeatured;
     return Material(
       color: dialNumber.color,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(14.r),
       clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: onTap,
         splashColor: Colors.white.withValues(alpha: 0.2),
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: featured ? 18 : 14,
+            horizontal: 16.w,
+            vertical: featured ? 18.h : 14.h,
           ),
           child: Row(
             children: [
               Container(
-                width: featured ? 46 : 36,
-                height: featured ? 46 : 36,
+                width: featured ? 46.r : 36.r,
+                height: featured ? 46.r : 36.r,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
@@ -715,10 +716,10 @@ class _DialChip extends StatelessWidget {
                 child: Icon(
                   Icons.phone_rounded,
                   color: Colors.white,
-                  size: featured ? 22 : 18,
+                  size: featured ? 22.r : 18.r,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,7 +731,7 @@ class _DialChip extends StatelessWidget {
                         Text(
                           dialNumber.number,
                           style: TextStyle(
-                            fontSize: featured ? 28 : 22,
+                            fontSize: featured ? 28.sp : 22.sp,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             fontFamily: 'Marcellus',
@@ -738,18 +739,18 @@ class _DialChip extends StatelessWidget {
                           ),
                         ),
                         if (featured) ...[
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10.w),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 3),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 7.w, vertical: 3.h),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.22),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(6.r),
                             ),
-                            child: const Text(
+                            child: Text(
                               'FOR TOURISTS',
                               style: TextStyle(
-                                fontSize: 9,
+                                fontSize: 9.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                                 letterSpacing: 0.6,
@@ -762,7 +763,7 @@ class _DialChip extends StatelessWidget {
                     Text(
                       dialNumber.label,
                       style: TextStyle(
-                        fontSize: featured ? 13 : 11,
+                        fontSize: featured ? 13.sp : 11.sp,
                         fontWeight:
                             featured ? FontWeight.w600 : FontWeight.normal,
                         color: Colors.white.withValues(alpha: 0.9),
@@ -770,11 +771,11 @@ class _DialChip extends StatelessWidget {
                       ),
                     ),
                     if (featured && dialNumber.subtitle != null) ...[
-                      const SizedBox(height: 3),
+                      SizedBox(height: 3.h),
                       Text(
                         dialNumber.subtitle!,
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 10.sp,
                           color: Colors.white.withValues(alpha: 0.72),
                           height: 1.3,
                         ),
@@ -784,7 +785,7 @@ class _DialChip extends StatelessWidget {
                 ),
               ),
               if (featured)
-                const Icon(Icons.star_rounded, color: Colors.white70, size: 20),
+                Icon(Icons.star_rounded, color: Colors.white70, size: 20.r),
             ],
           ),
         ),

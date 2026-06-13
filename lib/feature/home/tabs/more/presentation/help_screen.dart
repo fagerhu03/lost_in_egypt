@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // ── Section model ─────────────────────────────────────────────────────────────
 class _Section {
@@ -209,31 +210,31 @@ class HelpScreen extends StatelessWidget {
         foregroundColor: onSurface,
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 40.h),
         itemCount: _sections.length,
         itemBuilder: (context, si) {
           final section = _sections[si];
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (si > 0) const SizedBox(height: 24),
+              if (si > 0) SizedBox(height: 24.h),
               // Section header
               Row(
                 children: [
                   Container(
-                    width: 34,
-                    height: 34,
+                    width: 34.r,
+                    height: 34.r,
                     decoration: BoxDecoration(
                       color: primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: Icon(section.icon, size: 18, color: primary),
+                    child: Icon(section.icon, size: 18.r, color: primary),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Text(
                     section.title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontFamily: 'Marcellus',
                       fontWeight: FontWeight.w700,
                       color: primary,
@@ -241,9 +242,9 @@ class HelpScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               ...section.faqs.asMap().entries.map((e) => Padding(
-                    padding: EdgeInsets.only(bottom: e.key < section.faqs.length - 1 ? 8 : 0),
+                    padding: EdgeInsets.only(bottom: e.key < section.faqs.length - 1 ? 8.h : 0),
                     child: _FaqTile(faq: e.value, primary: primary),
                   )),
             ],
@@ -278,16 +279,16 @@ class _FaqTileState extends State<_FaqTile> {
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: _expanded ? gold.withValues(alpha: 0.35) : gold.withValues(alpha: 0.12),
         ),
       ),
       child: InkWell(
         onTap: () => setState(() => _expanded = !_expanded),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -297,27 +298,27 @@ class _FaqTileState extends State<_FaqTile> {
                     child: Text(
                       widget.faq.question,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                         color: onSurface,
                         fontFamily: 'Marcellus',
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Icon(
                     _expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
                     color: gold,
-                    size: 22,
+                    size: 22.r,
                   ),
                 ],
               ),
               if (_expanded) ...[
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 Text(
                   widget.faq.answer,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: onSurface.withValues(alpha: 0.75),
                     height: 1.6,
                   ),

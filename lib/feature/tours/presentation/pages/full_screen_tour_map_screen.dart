@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -78,9 +79,9 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
         backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.85),
         elevation: 0,
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black87),
-        toolbarHeight: 60,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        toolbarHeight: 60.h,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24.r)),
         ),
       ),
       body: Stack(
@@ -107,11 +108,11 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
               _mapController = controller;
             },
           ),
-          
+
           // Custom zoom controls
           Positioned(
-            right: 16,
-            top: 100,
+            right: 16.w,
+            top: 100.h,
             child: Column(
               children: [
                 FloatingActionButton.small(
@@ -120,7 +121,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                   onPressed: () => _mapController?.animateCamera(CameraUpdate.zoomIn()),
                   child: Icon(Icons.add, color: theme.colorScheme.primary),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 FloatingActionButton.small(
                   heroTag: 'zoom_out',
                   backgroundColor: theme.colorScheme.surface,
@@ -135,11 +136,11 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
+              margin: EdgeInsets.all(16.r),
+              padding: EdgeInsets.all(20.r),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(24.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
@@ -156,89 +157,89 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(8.r),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.location_on, color: theme.colorScheme.primary),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Meeting Point',
-                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.bold),
                             ),
                             Text(
                               widget.tour.meetingLocationName,
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w800),
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Divider(height: 1),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    child: Divider(height: 1.h),
                   ),
                   Text(
                     'Destinations You Will Visit:',
-                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 8.w,
+                    runSpacing: 8.h,
                     children: widget.tour.destinations.map((dest) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.05)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.place, size: 14, color: theme.colorScheme.primary),
-                          const SizedBox(width: 4),
-                          Text(dest, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          Icon(Icons.place, size: 14.r, color: theme.colorScheme.primary),
+                          SizedBox(width: 4.w),
+                          Text(dest, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp)),
                         ],
                       ),
                     )).toList(),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   // Two action buttons: Explore + Navigate Route
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 50.h,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                       ),
                       onPressed: _navigateToMainMap,
                       icon: const Icon(Icons.explore),
-                      label: const Text('Explore in Main Map', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      label: Text('Explore in Main Map', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 50.h,
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: theme.colorScheme.primary,
                         side: BorderSide(color: theme.colorScheme.primary, width: 2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                       ),
                       onPressed: _navigateAsTripRoute,
                       icon: const Icon(Icons.route_rounded),
-                      label: const Text('Navigate Tour Route', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      label: Text('Navigate Tour Route', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -278,9 +279,9 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
 
       for (int i = 0; i < widget.tour.destinations.length; i++) {
         final destName = widget.tour.destinations[i];
-        
+
         final results = await placesApi.textSearch(query: "$destName Egypt", maxResultCount: 1);
-        
+
         GeoPoint coord = GeoPoint(
           widget.tour.meetingLatitude + (i + 1) * 0.001,
           widget.tour.meetingLongitude + (i + 1) * 0.001,

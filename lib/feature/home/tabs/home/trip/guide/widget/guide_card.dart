@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
 import '../../../../../../auth/data/models/user.dart';
@@ -24,14 +25,14 @@ class GuideCard extends StatelessWidget {
         : AppColors.lightText.withValues(alpha: 0.55);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
         // ✅ Brighter box in light mode
         color: isDark
             ? AppColors.darkBox.withValues(alpha: 0.65)
             : Color(0xffFFFEF0),
 
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
 
         border: Border.all(
           color: isDark
@@ -58,22 +59,22 @@ class GuideCard extends StatelessWidget {
                 children: [
                   ShimmerImage(
                     url: guide.profileImageUrl,
-                    width: 82,
-                    height: 82,
-                    borderRadius: BorderRadius.circular(14),
+                    width: 82.r,
+                    height: 82.r,
+                    borderRadius: BorderRadius.circular(14.r),
                     fallbackIcon: Icons.person,
                     fallbackBackgroundColor: isDark
                         ? const Color(0xFF3E2C1E)
                         : const Color(0xFF7A4B1D),
                     fallbackIconColor: const Color(0xFFEDE9D9),
-                    fallbackIconSize: 52,
+                    fallbackIconSize: 52.r,
                   ),
                   Positioned(
-                    top: 4,
-                    right: 4,
+                    top: 4.h,
+                    right: 4.w,
                     child: Container(
-                      width: 18,
-                      height: 18,
+                      width: 18.r,
+                      height: 18.r,
                       decoration: BoxDecoration(
                         color: isDark ? Colors.black54 : Colors.white,
                         shape: BoxShape.circle,
@@ -81,13 +82,13 @@ class GuideCard extends StatelessWidget {
                       child: Icon(
                         Icons.favorite,
                         color: Colors.red.shade300,
-                        size: 12,
+                        size: 12.r,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,39 +96,39 @@ class GuideCard extends StatelessWidget {
                     Text(
                       '${guide.firstName} ${guide.lastName}'.trim(),
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 28.sp,
                         color: titleColor,
                         height: 0.95,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     if (guide.reviewCount == 0)
                       Text(
-                        "New Guide", 
-                        style: TextStyle(color: titleColor, fontSize: 14, fontWeight: FontWeight.w600)
+                        "New Guide",
+                        style: TextStyle(color: titleColor, fontSize: 14.sp, fontWeight: FontWeight.w600)
                       )
-                    else 
+                    else
                       Row(
                         children: [
-                          Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 16)),
-                          const Icon(Icons.star, color: Colors.amber, size: 18),
-                          Text(' (${guide.reviewCount})', style: TextStyle(color: labelColor, fontSize: 14)),
+                          Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 16.sp)),
+                          Icon(Icons.star, color: Colors.amber, size: 18.r),
+                          Text(' (${guide.reviewCount})', style: TextStyle(color: labelColor, fontSize: 14.sp)),
                         ],
                       ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Row(
                       children: [
                         Icon(
                           Icons.location_on,
-                          size: 15,
+                          size: 15.r,
                           color: titleColor,
                         ),
-                        const SizedBox(width: 2),
+                        SizedBox(width: 2.w),
                         Text(
                           guide.nationality.isNotEmpty ? guide.nationality : 'Egypt',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 20.sp,
                             color: titleColor,
                             height: 0.95,
                           ),
@@ -140,14 +141,14 @@ class GuideCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Divider(
-            height: 1,
+            height: 1.h,
             color: isDark
                 ? AppColors.darkText.withValues(alpha: 0.15)
                 : AppColors.lightText.withValues(alpha: 0.15),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Row(
             children: [
               Expanded(
@@ -155,7 +156,7 @@ class GuideCard extends StatelessWidget {
                   'Language',
                   style: TextStyle(
                     color: labelColor,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ),
@@ -165,13 +166,13 @@ class GuideCard extends StatelessWidget {
                   textAlign: TextAlign.end,
                   style: TextStyle(
                     color: titleColor,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Row(
             children: [
               Expanded(
@@ -179,7 +180,7 @@ class GuideCard extends StatelessWidget {
                   'Available Time',
                   style: TextStyle(
                     color: labelColor,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ),
@@ -189,7 +190,7 @@ class GuideCard extends StatelessWidget {
                   textAlign: TextAlign.end,
                   style: TextStyle(
                     color: titleColor,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ),

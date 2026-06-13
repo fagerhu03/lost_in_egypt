@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../core/widgets/shimmer_avatar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -146,13 +147,13 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Report Context:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 8),
+                Text('Report Context:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp)),
+                SizedBox(height: 8.h),
                 Text('Reason: ${report.reason}'),
                 Text('Description: ${report.description?.isEmpty ?? true ? 'None' : report.description!}'),
-                const Divider(height: 24),
-                const Text('Reported Content Preview:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 8),
+                Divider(height: 24.h),
+                Text('Reported Content Preview:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp)),
+                SizedBox(height: 8.h),
                 FutureBuilder<DocumentSnapshot>(
                   future: _fetchReportedContentDoc(report),
                   builder: (context, snapshot) {
@@ -164,12 +165,12 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
                     }
 
                     final data = snapshot.data!.data() as Map<String, dynamic>;
-                    
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildContentSnippet(report, data),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         ElevatedButton.icon(
                           icon: const Icon(Icons.open_in_new),
                           label: const Text('Go to Content'),
@@ -182,12 +183,12 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
                     );
                   },
                 ),
-                const Divider(height: 24),
+                Divider(height: 24.h),
                 // Reporter meta
-                Text('Reporter ID: ${report.reporterId}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                Text('Target ID: ${report.reportedItemId}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                Text('Reporter ID: ${report.reporterId}', style: TextStyle(fontSize: 10.sp, color: Colors.grey)),
+                Text('Target ID: ${report.reportedItemId}', style: TextStyle(fontSize: 10.sp, color: Colors.grey)),
                 if (report.reportedItemOwnerId != null)
-                  Text('Owner ID: ${report.reportedItemOwnerId}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                  Text('Owner ID: ${report.reportedItemOwnerId}', style: TextStyle(fontSize: 10.sp, color: Colors.grey)),
               ],
             ),
           ),
@@ -250,9 +251,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
           children: [
             ShimmerAvatar(
               url: data['profileImageUrl'] as String?,
-              radius: 20,
+              radius: 20.r,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(child: Text('${data['firstName']} ${data['lastName']}\nRole: ${data['role']}')),
           ],
         );
@@ -310,12 +311,12 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
     return RefreshIndicator(
       onRefresh: _fetchReports,
       child: ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.r),
         itemCount: filtered.length,
         itemBuilder: (context, index) {
           final report = filtered[index];
           return Card(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: EdgeInsets.only(bottom: 12.h),
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: _getColorForType(report.reportedItemType).withValues(alpha: 0.2),
@@ -400,12 +401,12 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> with SingleTick
                   : RefreshIndicator(
                       onRefresh: _fetchReports,
                       child: ListView.builder(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12.r),
                         itemCount: _allReports.length,
                         itemBuilder: (context, index) {
                           final report = _allReports[index];
                           return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
+                            margin: EdgeInsets.only(bottom: 12.h),
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: _getColorForType(report.reportedItemType).withValues(alpha: 0.2),

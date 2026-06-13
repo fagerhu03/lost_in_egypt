@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/widget/guide_card.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
@@ -162,7 +163,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
   void _showFilterSheet(BuildContext context, double maxTourPrice) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    
+
     RangeValues tempPrice = _priceRange;
     double tempRating = _minRating;
     String? tempFrequency = _selectedFrequency;
@@ -175,17 +176,17 @@ class _GuideBodyViewState extends State<GuideBodyView> {
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
-                  const SizedBox(height: 20),
+                  Center(child: Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2.r)))),
+                  SizedBox(height: 20.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Filters', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                      Text('Filters', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
                       TextButton(
                         onPressed: () {
                           setSheetState(() {
@@ -198,12 +199,12 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   if (_tabIndex == 0) ...[
                     // Price Range (Tours only)
-                    Text('Price Range', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-                    const SizedBox(height: 8),
+                    Text('Price Range', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                    SizedBox(height: 8.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -220,38 +221,38 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                       labels: RangeLabels('${tempPrice.start.round()}', '${tempPrice.end.round()}'),
                       onChanged: (v) => setSheetState(() => tempPrice = v),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                   ],
 
                   // Minimum Rating (Both)
-                  Text('Minimum Rating', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-                  const SizedBox(height: 8),
+                  Text('Minimum Rating', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
                       for (int i = 1; i <= 5; i++)
                         GestureDetector(
                           onTap: () => setSheetState(() => tempRating = tempRating == i.toDouble() ? 0 : i.toDouble()),
                           child: Padding(
-                            padding: const EdgeInsets.only(right: 4),
+                            padding: EdgeInsets.only(right: 4.w),
                             child: Icon(
                               i <= tempRating ? Icons.star : Icons.star_border,
                               color: Colors.amber,
-                              size: 32,
+                              size: 32.r,
                             ),
                           ),
                         ),
                       if (tempRating > 0)
-                        Text(' ${tempRating.toInt()}+ stars', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13)),
+                        Text(' ${tempRating.toInt()}+ stars', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13.sp)),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   if (_tabIndex == 0) ...[
                     // Frequency (Tours only)
-                    Text('Frequency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-                    const SizedBox(height: 8),
+                    Text('Frequency', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                    SizedBox(height: 8.h),
                     Wrap(
-                      spacing: 8,
+                      spacing: 8.w,
                       children: ['Daily', 'Weekly', 'Weekends', 'One-Time'].map((f) {
                         final isSelected = tempFrequency == f;
                         return ChoiceChip(
@@ -262,18 +263,18 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                   ],
 
                   // Apply
                   SizedBox(
                     width: double.infinity,
-                    height: 52,
+                    height: 52.h,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                       ),
                       onPressed: () {
                         setState(() {
@@ -287,7 +288,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                         });
                         Navigator.pop(ctx);
                       },
-                      child: const Text('Apply Filters', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text('Apply Filters', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -305,7 +306,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
-    
+
     final baseBg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final maxTourPrice = 10000.0; // Assume 10000 max
 
@@ -327,7 +328,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
               children: [
                 // ── Search & Header bar ──
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 8, 16, 10),
+                  padding: EdgeInsets.fromLTRB(4.w, 8.h, 16.w, 10.h),
                   child: Row(
                     children: [
                       IconButton(
@@ -336,11 +337,11 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                       ),
                       Expanded(
                         child: Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          height: 48.h,
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
                           decoration: BoxDecoration(
                             color: primary.withValues(alpha: isDark ? 0.25 : 0.18),
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(30.r),
                             border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)),
                           ),
                           child: TextField(
@@ -352,12 +353,12 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                               hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontFamily: "Marcellus"),
                               border: InputBorder.none,
                               prefixIcon: Icon(Icons.search, color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85)),
-                              prefixIconConstraints: const BoxConstraints(minWidth: 32),
+                              prefixIconConstraints: BoxConstraints(minWidth: 32.w),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       // Filter Button
                       Container(
                         decoration: BoxDecoration(
@@ -374,7 +375,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           onPressed: () => _showFilterSheet(context, maxTourPrice),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       AccountMenuButton(profileImageUrl: _profileImageUrl, onSignOut: _handleSignOut),
                     ],
                   ),
@@ -383,13 +384,13 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                 // ── Active Filter Chips Row ──
                 if (_activeFilters.isNotEmpty || _sortOption != _SortOption.newest)
                   SizedBox(
-                    height: 44,
+                    height: 44.h,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       children: [
                         PopupMenuButton<_SortOption>(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                           onSelected: (v) => setState(() => _sortOption = v),
                           itemBuilder: (_) => [
                             const PopupMenuItem(value: _SortOption.newest, child: Text('Newest First')),
@@ -401,18 +402,18 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                             ],
                           ],
                           child: Chip(
-                            avatar: Icon(Icons.sort, size: 16, color: primary),
-                            label: Text(_sortLabel(), style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w600)),
+                            avatar: Icon(Icons.sort, size: 16.r, color: primary),
+                            label: Text(_sortLabel(), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
                             backgroundColor: primary.withValues(alpha: 0.08),
                             side: BorderSide(color: primary.withValues(alpha: 0.2)),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         if (_activeFilters.contains('price') && _tabIndex == 0)
                           Padding(
-                            padding: const EdgeInsets.only(right: 8),
+                            padding: EdgeInsets.only(right: 8.w),
                             child: InputChip(
-                              label: Text('EGP ${_priceRange.start.round()}-${_priceRange.end.round()}', style: const TextStyle(fontSize: 12)),
+                              label: Text('EGP ${_priceRange.start.round()}-${_priceRange.end.round()}', style: TextStyle(fontSize: 12.sp)),
                               onDeleted: () => setState(() => _activeFilters.remove('price')),
                               backgroundColor: primary.withValues(alpha: 0.08),
                               side: BorderSide(color: primary.withValues(alpha: 0.2)),
@@ -420,10 +421,10 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           ),
                         if (_activeFilters.contains('rating'))
                           Padding(
-                            padding: const EdgeInsets.only(right: 8),
+                            padding: EdgeInsets.only(right: 8.w),
                             child: InputChip(
-                              avatar: const Icon(Icons.star, color: Colors.amber, size: 16),
-                              label: Text('${_minRating.toInt()}+', style: const TextStyle(fontSize: 12)),
+                              avatar: Icon(Icons.star, color: Colors.amber, size: 16.r),
+                              label: Text('${_minRating.toInt()}+', style: TextStyle(fontSize: 12.sp)),
                               onDeleted: () => setState(() { _activeFilters.remove('rating'); _minRating = 0; }),
                               backgroundColor: primary.withValues(alpha: 0.08),
                               side: BorderSide(color: primary.withValues(alpha: 0.2)),
@@ -431,9 +432,9 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           ),
                         if (_activeFilters.contains('frequency') && _selectedFrequency != null && _tabIndex == 0)
                           Padding(
-                            padding: const EdgeInsets.only(right: 8),
+                            padding: EdgeInsets.only(right: 8.w),
                             child: InputChip(
-                              label: Text(_selectedFrequency!, style: const TextStyle(fontSize: 12)),
+                              label: Text(_selectedFrequency!, style: TextStyle(fontSize: 12.sp)),
                               onDeleted: () => setState(() { _activeFilters.remove('frequency'); _selectedFrequency = null; }),
                               backgroundColor: primary.withValues(alpha: 0.08),
                               side: BorderSide(color: primary.withValues(alpha: 0.2)),
@@ -445,12 +446,12 @@ class _GuideBodyViewState extends State<GuideBodyView> {
 
                 // ── Tabs Header ──
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 8.h),
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.all(4.r),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [BoxShadow(color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.black.withValues(alpha: 0.08), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
                     child: Row(
@@ -464,7 +465,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                             child: GuideTripTypeTab(title: 'Tours', selected: _tabIndex == 0),
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Expanded(
                           child: GestureDetector(
                             onTap: () => setState(() {
@@ -508,10 +509,10 @@ class _GuideBodyViewState extends State<GuideBodyView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 80, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
-          const SizedBox(height: 20),
-          Text('No $queryType found', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
+          Icon(Icons.search_off, size: 80.r, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
+          SizedBox(height: 20.h),
+          Text('No $queryType found', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
+          SizedBox(height: 8.h),
           const Text('Try adjusting your search query or filters.'),
         ],
       ),
@@ -527,9 +528,9 @@ class _GuideBodyViewState extends State<GuideBodyView> {
           final filtered = _applyToursFiltersAndSort(state.tours);
           if (filtered.isEmpty) return _buildEmptyState('tours');
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+            padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 24.h),
             itemCount: filtered.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 14),
+            separatorBuilder: (_, _) => SizedBox(height: 14.h),
             itemBuilder: (context, index) => TourCard(tour: filtered[index]),
           );
         }
@@ -553,13 +554,13 @@ class _GuideBodyViewState extends State<GuideBodyView> {
         if (filteredGuides.isEmpty) return _buildEmptyState('guides');
 
         return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+          padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 24.h),
           itemCount: filteredGuides.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 14),
+          separatorBuilder: (_, _) => SizedBox(height: 14.h),
           itemBuilder: (context, index) {
             final user = filteredGuides[index];
             return InkWell(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => UniversalProfileScreen(user: user)));
               },

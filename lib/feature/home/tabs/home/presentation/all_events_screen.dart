@@ -100,7 +100,7 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
           style: TextStyle(
             color: onSurface,
             fontFamily: 'Marcellus',
-            fontSize: 22,
+            fontSize: 22.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -147,22 +147,22 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.event_busy, size: 60, color: primary.withValues(alpha: 0.25)),
-                  const SizedBox(height: 16),
+                  Icon(Icons.event_busy, size: 60.r, color: primary.withValues(alpha: 0.25)),
+                  SizedBox(height: 16.h),
                   Text(
                     'No events right now',
                     style: TextStyle(
                       color: onSurface.withValues(alpha: 0.5),
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontFamily: 'Marcellus',
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     'Check back soon for upcoming events in Egypt.',
                     style: TextStyle(
                       color: onSurface.withValues(alpha: 0.35),
-                      fontSize: 13,
+                      fontSize: 13.sp,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -174,12 +174,12 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
           final hasMore = docs.length == _limit;
 
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 32.h),
             itemCount: docs.length + (hasMore ? 1 : 0),
             itemBuilder: (context, i) {
               if (i == docs.length) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
                   child: Center(
                     child: TextButton(
                       onPressed: () => setState(() => _limit += _pageSize),
@@ -542,7 +542,7 @@ class _ImageError extends StatelessWidget {
       color: primary.withValues(alpha: 0.08),
       child: Center(
         child: Icon(Icons.image_not_supported_outlined,
-            color: primary.withValues(alpha: 0.3), size: 40),
+            color: primary.withValues(alpha: 0.3), size: 40.r),
       ),
     );
   }

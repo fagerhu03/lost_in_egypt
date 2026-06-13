@@ -1,0 +1,30 @@
+{
+  "@@locale": "ar",
+
+  "appTitle": "تائه في مصر",
+
+  "navHome": "الرئيسية",
+  "navCommunity": "المجتمع",
+  "navMap": "الخريطة",
+  "navCamera": "الكاميرا",
+  "navMore": "المزيد",
+
+  "commonCancel": "إلغاء",
+  "commonReset": "إعادة تعيين",
+
+  "settingsTitle": "الإعدادات",
+  "settingsSelectLanguage": "اختر اللغة",
+  "settingsDisplayCurrency": "عملة العرض",
+  "settingsTheme": "المظهر",
+  "languageEnglish": "English",
+  "languageArabic": "العربية",
+
+  "settingsResetBadges": "إعادة تعيين الشارات (تصحيح)",
+  "settingsBadgesResetSuccess": "تمت إعادة تعيين الشارات بنجاح!",
+  "settingsResetTasteSignals": "إعادة تعيين تفضيلاتك (تصحيح)",
+  "settingsResetTasteSignalsTitle": "إعادة تعيين تفضيلاتك؟",
+  "settingsResetTasteSignalsBody": "سيؤدي هذا إلى مسح كل إشارات التخصيص المسجَّلة لك — الإعجابات المحفوظة والتجاهلات وإجابات الاختبار وسجل الزيارات. ستعود التوصيات إلى الوضع الافتراضي حتى تتفاعل مرة أخرى.",
+  "settingsTasteSignalsReset": "تمت إعادة تعيين التفضيلات.",
+  "settingsTasteSignalsResetError": "تعذّر إعادة التعيين. حاول مرة أخرى.",
+  "settingsVersion": "الإصدار {version}"
+}

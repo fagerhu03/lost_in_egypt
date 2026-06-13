@@ -14,7 +14,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/theme/app_theme.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -173,31 +176,48 @@ class MyApp extends StatelessWidget {
       child: ValueListenableBuilder<ThemeMode>(
         valueListenable: ThemeController.mode,
         builder: (context, mode, _) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Lost in Egypt',
+          return ValueListenableBuilder<Locale>(
+            valueListenable: LocaleController.locale,
+            builder: (context, locale, _) {
+              return MaterialApp(
+                debugShowCheckedModeBanner: false,
+                onGenerateTitle: (context) =>
+                    AppLocalizations.of(context).appTitle,
 
-            theme: AppTheme.light.copyWith(
-              textTheme:
-                  ThemeData.light().textTheme.apply(fontFamily: 'Marcellus'),
-            ),
-            darkTheme: AppTheme.dark.copyWith(
-              textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Marcellus'),
-            ),
+                locale: locale,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: AppLocalizations.supportedLocales,
 
-            themeMode: mode,
+                theme: AppTheme.light.copyWith(
+                  textTheme: ThemeData.light()
+                      .textTheme
+                      .apply(fontFamily: 'Marcellus'),
+                ),
+                darkTheme: AppTheme.dark.copyWith(
+                  textTheme:
+                      ThemeData.dark().textTheme.apply(fontFamily: 'Marcellus'),
+                ),
 
-            home: AuthGate(),
+                themeMode: mode,
 
-            routes: {
-              '/onboarding': (context) => const OnboardingScreen(),
-              '/login': (context) => BlocProvider<LoginBloc>(
-                    create: (_) => di.sl<LoginBloc>(),
-                    child: const LoginScreen(),
-                  ),
-              '/signup': (context) => const SignupScreen(),
-              '/home': (context) => HomeWrapper(),
-              '/map_picker': (context) => const MapPickerScreen(),
+                home: AuthGate(),
+
+                routes: {
+                  '/onboarding': (context) => const OnboardingScreen(),
+                  '/login': (context) => BlocProvider<LoginBloc>(
+                        create: (_) => di.sl<LoginBloc>(),
+                        child: const LoginScreen(),
+                      ),
+                  '/signup': (context) => const SignupScreen(),
+                  '/home': (context) => HomeWrapper(),
+                  '/map_picker': (context) => const MapPickerScreen(),
+                },
+              );
             },
           );
         },

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
@@ -135,28 +137,31 @@ class _SettingsScreenState extends State<SettingsScreen>
       CurrencyService.instance.invalidateCache();
     }
 
+    if (key == 'lang') {
+      // Flip the app locale live (RTL handled automatically for Arabic).
+      LocaleController.setLanguage(value as String);
+    }
+
     if (mounted) setState(() => _currentUser = updatedUser);
     await _repository.updateSetting(updatedUser, key, value);
   }
 
   Future<void> _resetTasteSignals() async {
+    final l = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reset Taste Signals?',
-            style: TextStyle(fontFamily: 'Marcellus')),
-        content: const Text(
-          "This clears every personalisation signal recorded for you — "
-          "saved likes, dismissals, quiz answers, visit history. "
-          "Recommendations will reset to defaults until you interact again.",
-        ),
+        title: Text(l.settingsResetTasteSignalsTitle,
+            style: const TextStyle(fontFamily: 'Marcellus')),
+        content: Text(l.settingsResetTasteSignalsBody),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l.commonCancel)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Reset', style: TextStyle(color: Colors.red)),
+            child: Text(l.commonReset,
+                style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -167,16 +172,16 @@ class _SettingsScreenState extends State<SettingsScreen>
       await RecommendationService.resetTasteVector();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Taste signals reset.'),
+        SnackBar(
+          content: Text(l.settingsTasteSignalsReset),
           backgroundColor: Colors.green,
         ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Couldn't reset signals. Try again."),
+        SnackBar(
+          content: Text(l.settingsTasteSignalsResetError),
           backgroundColor: Colors.red,
         ),
       );
@@ -186,6 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final textColor = theme.colorScheme.onSurface;
     final isDark = theme.brightness == Brightness.dark;
     final patternOpacity = isDark ? 0.1 : 0.4;
@@ -220,7 +226,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                             size: 20.r, color: textColor),
                       ),
                       Text(
-                        "Settings",
+                        l.settingsTitle,
                         style: TextStyle(
                           fontSize: 30.sp,
                           fontFamily: "Marcellus",
@@ -245,12 +251,15 @@ class _SettingsScreenState extends State<SettingsScreen>
                             // Language
                             _buildTile(
                               icon: Icons.language_rounded,
-                              title: "Select Language",
+                              title: l.settingsSelectLanguage,
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    _currentUser?.language ?? "English",
+                                    (_currentUser?.language ?? "English") ==
+                                            "Arabic"
+                                        ? l.languageArabic
+                                        : l.languageEnglish,
                                     style: TextStyle(
                                       color: theme.colorScheme.primary,
                                       fontWeight: FontWeight.w600,
@@ -280,7 +289,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                             // Currency
                             _buildTile(
                               icon: Icons.currency_exchange_rounded,
-                              title: "Display Currency",
+                              title: l.settingsDisplayCurrency,
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -307,7 +316,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                             // Theme toggle
                             _buildTile(
                               icon: Icons.palette_outlined,
-                              title: "Theme",
+                              title: l.settingsTheme,
                               trailing: ValueListenableBuilder<ThemeMode>(
                                 valueListenable: ThemeController.mode,
                                 builder: (context, mode, _) {
@@ -394,7 +403,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                             // Debug Reset Button
                             _buildTile(
                               icon: Icons.warning_amber_rounded,
-                              title: "Reset Badges (Debug)",
+                              title: l.settingsResetBadges,
                               trailing: const SizedBox.shrink(),
                               iconColor: Colors.red,
                               iconBgColor: Colors.red.withValues(alpha: 0.12),
@@ -407,9 +416,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                                           'visitedLandmarks', <String>[]);
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        const SnackBar(
+                                        SnackBar(
                                           content: Text(
-                                              "Badges successfully reset!"),
+                                              l.settingsBadgesResetSuccess),
                                           backgroundColor: Colors.green,
                                         ),
                                       );
@@ -420,7 +429,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                             // Debug Reset Taste Vector
                             _buildTile(
                               icon: Icons.psychology_outlined,
-                              title: "Reset Taste Signals (Debug)",
+                              title: l.settingsResetTasteSignals,
                               trailing: const SizedBox.shrink(),
                               iconColor: Colors.red,
                               iconBgColor: Colors.red.withValues(alpha: 0.12),
@@ -439,7 +448,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                                 child: Padding(
                                   padding: EdgeInsets.all(16.r),
                                   child: Text(
-                                    "Version 1.0.0",
+                                    l.settingsVersion('1.0.0'),
                                     style: TextStyle(
                                       color: textColor.withValues(alpha: 0.5),
                                       fontFamily: "Marcellus",

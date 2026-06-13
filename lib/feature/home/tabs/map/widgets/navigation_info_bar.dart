@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 
 class NavigationInfoBar extends StatelessWidget {
@@ -34,10 +35,10 @@ class NavigationInfoBar extends StatelessWidget {
         : Colors.black.withValues(alpha: 0.15);
 
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: shadowColor,
@@ -56,19 +57,19 @@ class NavigationInfoBar extends StatelessWidget {
           // ─── DRAG HANDLE ──────────────────────
           Center(
             child: Container(
-              margin: const EdgeInsets.only(top: 10),
-              width: 40,
-              height: 4,
+              margin: EdgeInsets.only(top: 10.h),
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: onSurface.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
           ),
 
           // ─── TRAVEL MODE SELECTOR ─────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 0),
             child: Row(
               children: [
                 _buildModeChip(
@@ -81,7 +82,7 @@ class NavigationInfoBar extends StatelessWidget {
                   onSurface: onSurface,
                   isDark: isDark,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 _buildModeChip(
                   context: context,
                   icon: Icons.directions_walk_rounded,
@@ -92,7 +93,7 @@ class NavigationInfoBar extends StatelessWidget {
                   onSurface: onSurface,
                   isDark: isDark,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 _buildModeChip(
                   context: context,
                   icon: Icons.directions_transit_rounded,
@@ -113,12 +114,12 @@ class NavigationInfoBar extends StatelessWidget {
                     onTap: onClose,
                     customBorder: const CircleBorder(),
                     child: SizedBox(
-                      width: 36,
-                      height: 36,
+                      width: 36.r,
+                      height: 36.r,
                       child: Icon(
                         Icons.close_rounded,
                         color: onSurface.withValues(alpha: 0.6),
-                        size: 20,
+                        size: 20.r,
                       ),
                     ),
                   ),
@@ -130,24 +131,24 @@ class NavigationInfoBar extends StatelessWidget {
           // ─── LOADING INDICATOR ────────────────
           if (isLoadingRoute)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
-                    width: 18,
-                    height: 18,
+                    width: 18.w,
+                    height: 18.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: primary,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Text(
                     'Finding route...',
                     style: TextStyle(
                       color: onSurface.withValues(alpha: 0.6),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
                 ],
@@ -157,7 +158,7 @@ class NavigationInfoBar extends StatelessWidget {
           // ─── ROUTE INFO ───────────────────────
           if (!isLoadingRoute)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 0),
               child: Row(
                 children: [
                   // Duration
@@ -167,16 +168,16 @@ class NavigationInfoBar extends StatelessWidget {
                       Text(
                         routeInfo.duration,
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
                           color: primary,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         routeInfo.distance,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           color: onSurface.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w500,
                         ),
@@ -188,18 +189,18 @@ class NavigationInfoBar extends StatelessWidget {
                   if (routeInfo.steps.isNotEmpty)
                     Material(
                       color: onSurface.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                       clipBehavior: Clip.hardEdge,
                       child: InkWell(
                         onTap: onShowSteps,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
                           ),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                             border: Border.all(
                               color: onSurface.withValues(alpha: 0.1),
                             ),
@@ -210,14 +211,14 @@ class NavigationInfoBar extends StatelessWidget {
                               Icon(
                                 Icons.list_alt_rounded,
                                 color: onSurface.withValues(alpha: 0.7),
-                                size: 18,
+                                size: 18.r,
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6.w),
                               Text(
                                 '${routeInfo.steps.length} steps',
                                 style: TextStyle(
                                   color: onSurface.withValues(alpha: 0.7),
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -233,26 +234,26 @@ class NavigationInfoBar extends StatelessWidget {
           // ─── START NAVIGATION BUTTON ──────────
           if (!isLoadingRoute)
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.r),
               child: SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 50.h,
                 child: ElevatedButton.icon(
                   onPressed: onStartNavigation,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                     elevation: 4,
                     shadowColor: primary.withValues(alpha: 0.4),
                   ),
-                  icon: const Icon(Icons.navigation_rounded, size: 22),
-                  label: const Text(
+                  icon: Icon(Icons.navigation_rounded, size: 22.r),
+                  label: Text(
                     'Start Navigation',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -278,16 +279,16 @@ class NavigationInfoBar extends StatelessWidget {
       color: isSelected
           ? primary.withValues(alpha: isDark ? 0.25 : 0.12)
           : Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(10.r),
       clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: () => onModeChanged(mode),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
             border: Border.all(
               color: isSelected
                   ? primary.withValues(alpha: 0.5)
@@ -299,14 +300,14 @@ class NavigationInfoBar extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 18,
+                size: 18.r,
                 color: isSelected ? primary : onSurface.withValues(alpha: 0.5),
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected ? primary : onSurface.withValues(alpha: 0.5),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -80,7 +81,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         _darkMapStyle = _lightMapStyle;
       }
     }
-    
+
     if (mounted) {
       setState(() {});
     }
@@ -150,8 +151,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
 
           // Custom my-location FAB (bottom-right, above the confirm button when shown)
           Positioned(
-            right: 16,
-            bottom: _selectedLocation != null ? 200 : 32,
+            right: 16.w,
+            bottom: _selectedLocation != null ? 200.h : 32.h,
             child: Material(
               elevation: 4,
               shape: const CircleBorder(),
@@ -160,31 +161,31 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                 customBorder: const CircleBorder(),
                 onTap: _zoomToUserLocation,
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12.r),
                   child: Icon(
                     Icons.my_location_rounded,
                     color: const Color(0xFFC79A00),
-                    size: 22,
+                    size: 22.r,
                   ),
                 ),
               ),
             ),
           ),
-          
+
           Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
-            left: 16,
-            right: 16,
+            top: MediaQuery.of(context).padding.top + 16.h,
+            left: 16.w,
+            right: 16.w,
             child: Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.r),
                 boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
               ),
-              child: _isLoadingPlaces 
-                ? const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Center(child: CircularProgressIndicator()),
+              child: _isLoadingPlaces
+                ? Padding(
+                    padding: EdgeInsets.all(16.r),
+                    child: const Center(child: CircularProgressIndicator()),
                   )
                 : Autocomplete<MapItem>(
                     optionsViewBuilder: (context, onSelected, options) {
@@ -196,12 +197,12 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                           elevation: 4,
                           color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r),
                             side: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
                           ),
                           child: SizedBox(
-                            height: 200,
-                            width: MediaQuery.of(context).size.width - 32,
+                            height: 200.h,
+                            width: MediaQuery.of(context).size.width - 32.w,
                             child: ListView.builder(
                               padding: EdgeInsets.zero,
                               itemCount: options.length,
@@ -210,7 +211,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                                 return InkWell(
                                   onTap: () => onSelected(option),
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
+                                    padding: EdgeInsets.all(16.r),
                                     child: Text(option.title, style: TextStyle(color: textColor)),
                                   ),
                                 );
@@ -251,7 +252,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                           ),
                           suffixIcon: const Icon(Icons.search),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                          contentPadding: EdgeInsets.symmetric(vertical: 16.h),
                         ),
                       );
                     },
@@ -261,14 +262,14 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
 
           if (_selectedLocation == null)
             Positioned(
-              top: MediaQuery.of(context).padding.top + 90,
-              left: 16,
-              right: 16,
+              top: MediaQuery.of(context).padding.top + 90.h,
+              left: 16.w,
+              right: 16.w,
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12.r),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
                 ),
                 child: const Text(
@@ -281,20 +282,20 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
 
           if (_selectedLocation != null)
             Positioned(
-              bottom: 100,
-              left: 16,
-              right: 16,
+              bottom: 100.h,
+              left: 16.w,
+              right: 16.w,
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.r),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.location_on, color: Color(0xFFC79A00), size: 32),
-                    const SizedBox(width: 12),
+                    Icon(Icons.location_on, color: const Color(0xFFC79A00), size: 32.r),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,12 +303,12 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                         children: [
                           Text(
                             _selectedAddress ?? 'Selected Location',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
                             '${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12.sp),
                           ),
                         ],
                       ),
@@ -319,26 +320,26 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
 
           if (_selectedLocation != null)
             Positioned(
-              bottom: 32,
-              left: 32,
-              right: 32,
+              bottom: 32.h,
+              left: 32.w,
+              right: 32.w,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop({
                     'lat': _selectedLocation!.latitude,
                     'lng': _selectedLocation!.longitude,
-                    'name': _selectedAddress ?? 'Custom Pin Location', 
+                    'name': _selectedAddress ?? 'Custom Pin Location',
                   });
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  padding: EdgeInsets.symmetric(vertical: 18.h),
                   backgroundColor: const Color(0xFFC79A00),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                   elevation: 6,
                 ),
-                child: const Text(
+                child: Text(
                   'Confirm Location',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
             ),

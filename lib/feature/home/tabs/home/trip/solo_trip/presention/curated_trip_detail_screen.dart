@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
 import 'package:lost_in_egypt/core/models/curated_trip.dart';
 import 'package:path_provider/path_provider.dart';
@@ -197,7 +198,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
           backgroundColor: AppColors.lightPrimaryButton,
           behavior: SnackBarBehavior.floating,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
     } catch (_) {
@@ -208,7 +209,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
     } finally {
@@ -240,7 +241,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
     } finally {
@@ -270,28 +271,28 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
             slivers: [
               // ── Hero ─────────────────────────────────────────────────────
               SliverAppBar(
-                expandedHeight: 300,
+                expandedHeight: 300.h,
                 pinned: true,
                 backgroundColor: bgColor,
                 leading: Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.r),
                   child: CircleAvatar(
                     backgroundColor: Colors.black.withValues(alpha: 0.45),
                     child: IconButton(
-                      icon: const Icon(Icons.chevron_left_rounded,
-                          color: Colors.white, size: 26),
+                      icon: Icon(Icons.chevron_left_rounded,
+                          color: Colors.white, size: 26.r),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
                 ),
                 actions: [
                   Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(8.r),
                     child: CircleAvatar(
                       backgroundColor: Colors.black.withValues(alpha: 0.45),
                       child: IconButton(
-                        icon: const Icon(Icons.map_outlined,
-                            color: Colors.white, size: 20),
+                        icon: Icon(Icons.map_outlined,
+                            color: Colors.white, size: 20.r),
                         tooltip: 'View full route on map',
                         onPressed: _viewFullRoute,
                       ),
@@ -329,11 +330,11 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                       // Depth circles — only shown when no photo yet
                       if (_photoUrl == null) ...[
                         Positioned(
-                          top: -40,
-                          right: -40,
+                          top: -40.h,
+                          right: -40.w,
                           child: Container(
-                            width: 200,
-                            height: 200,
+                            width: 200.r,
+                            height: 200.r,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white.withValues(alpha: 0.06),
@@ -341,11 +342,11 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                           ),
                         ),
                         Positioned(
-                          bottom: 60,
-                          left: -30,
+                          bottom: 60.h,
+                          left: -30.w,
                           child: Container(
-                            width: 140,
-                            height: 140,
+                            width: 140.r,
+                            height: 140.r,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white.withValues(alpha: 0.05),
@@ -382,27 +383,27 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                       ),
                       // Title & bestFor overlaid on the image
                       Positioned(
-                        left: 20,
-                        right: 20,
-                        bottom: 20,
+                        left: 20.w,
+                        right: 20.w,
+                        bottom: 20.h,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (trip.bestFor.isNotEmpty)
                               Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
+                                margin: EdgeInsets.only(bottom: 8.h),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w, vertical: 4.h),
                                 decoration: BoxDecoration(
                                   color: gold.withValues(alpha: 0.25),
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(20.r),
                                   border: Border.all(
                                       color: gold.withValues(alpha: 0.5)),
                                 ),
                                 child: Text(
                                   '🧭 Best for: ${trip.bestFor}',
-                                  style: const TextStyle(
-                                    fontSize: 12,
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -410,18 +411,18 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                               ),
                             Text(
                               trip.title,
-                              style: const TextStyle(
-                                fontSize: 26,
+                              style: TextStyle(
+                                fontSize: 26.sp,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
                                 fontFamily: 'Marcellus',
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4.h),
                             Text(
                               trip.tagline,
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 13.sp,
                                 color: Colors.white.withValues(alpha: 0.85),
                                 height: 1.3,
                               ),
@@ -437,7 +438,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
               // ── Body ─────────────────────────────────────────────────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                  padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 100.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -446,8 +447,8 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                         slideAnim: _slideAnim(0),
                         fadeAnim: _fadeAnim(0),
                         child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: 8.w,
+                          runSpacing: 8.h,
                           children: [
                             _Pill(
                                 icon: Icons.schedule_outlined,
@@ -468,7 +469,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
 
                       // Hear the Story button
                       _AnimatedSection(
@@ -477,11 +478,11 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                         child: GestureDetector(
                           onTap: () => _showStorySheet(context),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 11),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 11.h),
                             decoration: BoxDecoration(
                               color: gold.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14.r),
                               border: Border.all(
                                   color: gold.withValues(alpha: 0.3)),
                             ),
@@ -489,12 +490,12 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.auto_stories_outlined,
-                                    size: 17, color: gold),
-                                const SizedBox(width: 8),
+                                    size: 17.r, color: gold),
+                                SizedBox(width: 8.w),
                                 Text(
                                   'Hear the Story',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 14.sp,
                                     fontWeight: FontWeight.w600,
                                     color: gold,
                                     fontFamily: 'Marcellus',
@@ -505,7 +506,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
 
                       // Highlights
                       _AnimatedSection(
@@ -517,27 +518,27 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                             Text(
                               'Highlights',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 18.sp,
                                 fontWeight: FontWeight.w600,
                                 color: textColor,
                                 fontFamily: 'Marcellus',
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             ...trip.highlights.map(
                               (h) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
+                                padding: EdgeInsets.only(bottom: 8.h),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Icon(Icons.check_circle_outline_rounded,
-                                        size: 18, color: gold),
-                                    const SizedBox(width: 10),
+                                        size: 18.r, color: gold),
+                                    SizedBox(width: 10.w),
                                     Expanded(
                                       child: Text(
                                         h,
                                         style: TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 14.sp,
                                           color: textColor.withValues(alpha: 0.8),
                                           height: 1.4,
                                         ),
@@ -550,7 +551,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
 
                       // Itinerary header + full route button
                       _AnimatedSection(
@@ -561,7 +562,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                             Text(
                               'Itinerary',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 18.sp,
                                 fontWeight: FontWeight.w600,
                                 color: textColor,
                                 fontFamily: 'Marcellus',
@@ -571,26 +572,26 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                             TextButton.icon(
                               onPressed: _viewFullRoute,
                               icon: Icon(Icons.map_outlined,
-                                  size: 16, color: gold),
+                                  size: 16.r, color: gold),
                               label: Text(
                                 'Full route',
                                 style: TextStyle(
                                     color: gold,
-                                    fontSize: 13,
+                                    fontSize: 13.sp,
                                     fontWeight: FontWeight.w600),
                               ),
                               style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12.w, vertical: 6.h),
                                 backgroundColor: gold.withValues(alpha: 0.1),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20)),
+                                    borderRadius: BorderRadius.circular(20.r)),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14.h),
 
                       // Days
                       ...trip.days.asMap().entries.map((entry) {
@@ -625,7 +626,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
             bottom: 0,
             child: Container(
               padding: EdgeInsets.fromLTRB(
-                  20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+                  20.w, 12.h, 20.w, MediaQuery.of(context).padding.bottom + 12.h),
               decoration: BoxDecoration(
                 color: bgColor,
                 boxShadow: [
@@ -643,15 +644,15 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                     child: OutlinedButton.icon(
                       onPressed: (_saving || _isSaved) ? null : _savePlan,
                       icon: _saving
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2))
+                          ? SizedBox(
+                              width: 16.w,
+                              height: 16.h,
+                              child: const CircularProgressIndicator(strokeWidth: 2))
                           : Icon(
                               _isSaved
                                   ? Icons.bookmark_rounded
                                   : Icons.bookmark_outline_rounded,
-                              size: 18,
+                              size: 18.r,
                               color: gold,
                             ),
                       label: Text(
@@ -661,43 +662,43 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                       ),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: gold, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14.r)),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   // Start Tour
                   Expanded(
                     flex: 2,
                     child: ElevatedButton.icon(
                       onPressed: _starting ? null : _startTour,
                       icon: _starting
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
+                          ? SizedBox(
+                              width: 16.w,
+                              height: 16.h,
+                              child: const CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
                           : Icon(
                               _isActive
                                   ? Icons.directions_walk_rounded
                                   : Icons.play_arrow_rounded,
-                              size: 20,
+                              size: 20.r,
                               color: Colors.white),
                       label: Text(
                         _isActive ? 'Continue Tour' : 'Start Tour',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 15,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: gold,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14.r)),
                         elevation: 0,
                       ),
                     ),
@@ -752,21 +753,21 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: gold.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: gold.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: gold),
-          const SizedBox(width: 5),
+          Icon(icon, size: 14.r, color: gold),
+          SizedBox(width: 5.w),
           Text(
             label,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 13.sp,
               color: gold,
               fontWeight: FontWeight.w500,
             ),
@@ -806,17 +807,17 @@ class _DaySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: EdgeInsets.only(bottom: 12.h),
           padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
           decoration: BoxDecoration(
             color: gold.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
           child: Text(
             day.label,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w700,
               color: gold,
               fontFamily: 'Marcellus',
@@ -840,7 +841,7 @@ class _DaySection extends StatelessWidget {
             ),
           );
         }),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
       ],
     );
   }
@@ -873,12 +874,12 @@ class _StopRow extends StatelessWidget {
         children: [
           // Timeline column
           SizedBox(
-            width: 36,
+            width: 36.w,
             child: Column(
               children: [
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: 32.r,
+                  height: 32.r,
                   decoration: BoxDecoration(
                     color: gold.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
@@ -886,7 +887,7 @@ class _StopRow extends StatelessWidget {
                   ),
                   child: Icon(
                     _iconForType(stop.type),
-                    size: 16,
+                    size: 16.r,
                     color: gold,
                   ),
                 ),
@@ -894,23 +895,23 @@ class _StopRow extends StatelessWidget {
                   Expanded(
                     child: Container(
                       width: 1.5,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      margin: EdgeInsets.symmetric(vertical: 4.h),
                       color: gold.withValues(alpha: 0.25),
                     ),
                   ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           // Stop card
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 16.h),
               child: Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14.r),
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,7 +922,7 @@ class _StopRow extends StatelessWidget {
                           child: Text(
                             stop.name,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               color: textColor,
                               fontFamily: 'Marcellus',
@@ -929,22 +930,22 @@ class _StopRow extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
                             color: gold.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.schedule_outlined,
-                                  size: 12, color: gold),
-                              const SizedBox(width: 3),
+                                  size: 12.r, color: gold),
+                              SizedBox(width: 3.w),
                               Text(
                                 stop.estimatedDuration,
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 11.sp,
                                   color: gold,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -954,25 +955,25 @@ class _StopRow extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6.h),
                     Text(
                       stop.description,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         color: textColor.withValues(alpha: 0.7),
                         height: 1.45,
                       ),
                     ),
                     if (stop.hasCoordinates) ...[
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
                       GestureDetector(
                         onTap: onNavigate,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 7),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 7.h),
                           decoration: BoxDecoration(
                             color: gold.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(20.r),
                             border:
                                 Border.all(color: gold.withValues(alpha: 0.3)),
                           ),
@@ -980,12 +981,12 @@ class _StopRow extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.navigation_rounded,
-                                  size: 14, color: gold),
-                              const SizedBox(width: 6),
+                                  size: 14.r, color: gold),
+                              SizedBox(width: 6.w),
                               Text(
                                 'Navigate here',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   color: gold,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -1137,28 +1138,28 @@ class _TripStorySheetState extends State<_TripStorySheet> {
         child: ListView(
           controller: scrollController,
           padding: EdgeInsets.fromLTRB(
-              24, 20, 24, MediaQuery.of(context).padding.bottom + 28),
+              24.w, 20.h, 24.w, MediaQuery.of(context).padding.bottom + 28.h),
           children: [
             Center(
               child: Container(
-                width: 36,
-                height: 4,
+                width: 36.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: textColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Row(
               children: [
-                Icon(Icons.auto_stories_outlined, color: gold, size: 20),
-                const SizedBox(width: 8),
+                Icon(Icons.auto_stories_outlined, color: gold, size: 20.r),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     widget.tripTitle,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
                       fontFamily: 'Marcellus',
                       color: textColor,
@@ -1167,22 +1168,22 @@ class _TripStorySheetState extends State<_TripStorySheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             if (_loading)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
+                padding: EdgeInsets.symmetric(vertical: 32.h),
                 child: Center(
                   child: Column(
                     children: [
                       SizedBox(
-                        width: 28,
-                        height: 28,
+                        width: 28.w,
+                        height: 28.h,
                         child: CircularProgressIndicator(strokeWidth: 2, color: gold),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Text(
                         'Summoning the story…',
-                        style: TextStyle(fontSize: 13, color: textColor.withValues(alpha: 0.5)),
+                        style: TextStyle(fontSize: 13.sp, color: textColor.withValues(alpha: 0.5)),
                       ),
                     ],
                   ),
@@ -1190,14 +1191,14 @@ class _TripStorySheetState extends State<_TripStorySheet> {
               )
             else if (_error)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: EdgeInsets.symmetric(vertical: 24.h),
                 child: Column(
                   children: [
                     Text(
                       'The spirits of history are silent right now.',
-                      style: TextStyle(fontSize: 14, color: textColor.withValues(alpha: 0.6)),
+                      style: TextStyle(fontSize: 14.sp, color: textColor.withValues(alpha: 0.6)),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     TextButton(
                       onPressed: _fetchStory,
                       child: Text('Try again', style: TextStyle(color: gold)),
@@ -1209,12 +1210,12 @@ class _TripStorySheetState extends State<_TripStorySheet> {
               Text(
                 _story ?? '',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   color: textColor.withValues(alpha: 0.85),
                   height: 1.65,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               Row(
                 children: [
                   Expanded(
@@ -1222,9 +1223,9 @@ class _TripStorySheetState extends State<_TripStorySheet> {
                       onPressed: _loadingAudio ? null : _handleAudioButton,
                       icon: _loadingAudio
                           ? SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
+                              width: 18.w,
+                              height: 18.h,
+                              child: const CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : Icon(
@@ -1234,7 +1235,7 @@ class _TripStorySheetState extends State<_TripStorySheet> {
                                       ? Icons.play_arrow_rounded
                                       : Icons.headphones_rounded,
                               color: Colors.white,
-                              size: 20,
+                              size: 20.r,
                             ),
                       label: Text(
                         _loadingAudio
@@ -1248,14 +1249,14 @@ class _TripStorySheetState extends State<_TripStorySheet> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: gold,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                         elevation: 0,
                       ),
                     ),
                   ),
                   if (_audioFilePath != null) ...[
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     IconButton.filled(
                       onPressed: _loadingAudio ? null : _handleReplay,
                       icon: const Icon(Icons.replay_rounded),
@@ -1263,7 +1264,7 @@ class _TripStorySheetState extends State<_TripStorySheet> {
                       style: IconButton.styleFrom(
                         backgroundColor: gold.withValues(alpha: 0.15),
                         foregroundColor: gold,
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12.r),
                       ),
                     ),
                   ],
@@ -1285,8 +1286,8 @@ class _HeroIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 100,
-      height: 100,
+      width: 100.r,
+      height: 100.r,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white.withValues(alpha: 0.18),
@@ -1302,7 +1303,7 @@ class _HeroIcon extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(theme.icon, color: Colors.white, size: 46),
+      child: Icon(theme.icon, color: Colors.white, size: 46.r),
     );
   }
 }

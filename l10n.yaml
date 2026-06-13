@@ -1,0 +1,11 @@
+# Configuration for `flutter gen-l10n`.
+# Generates lib/l10n/app_localizations.dart (+ per-locale files) from the ARB
+# files in lib/l10n. Imported via:
+#   import 'package:lost_in_egypt/l10n/app_localizations.dart';
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+# Non-null getter so call sites read `AppLocalizations.of(context).key`
+# without a `!` (the delegate is always registered in MaterialApp).
+nullable-getter: false

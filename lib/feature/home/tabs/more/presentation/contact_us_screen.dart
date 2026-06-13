@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -44,29 +45,29 @@ class ContactUsScreen extends StatelessWidget {
         foregroundColor: onSurface,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 32.h),
         children: [
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Center(
-            child: Icon(Icons.support_agent_rounded, size: 72, color: primary),
+            child: Icon(Icons.support_agent_rounded, size: 72.r, color: primary),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             "We're here to help",
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 22.sp,
               fontFamily: 'Marcellus',
               color: onSurface,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             "Reach out through any of the channels below and we'll get back to you as soon as possible.",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.65), height: 1.5),
+            style: TextStyle(fontSize: 14.sp, color: onSurface.withValues(alpha: 0.65), height: 1.5),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           _ContactTile(
             icon: Icons.email_outlined,
@@ -78,7 +79,7 @@ class ContactUsScreen extends StatelessWidget {
             onTap: () => _launch("mailto:$supportEmail", context),
             onLongPress: () => _copyEmail(context, supportEmail),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _ContactTile(
             icon: Icons.chat_bubble_outline_rounded,
             title: "WhatsApp",
@@ -88,7 +89,7 @@ class ContactUsScreen extends StatelessWidget {
             primary: const Color(0xFF25D366),
             onTap: () => _launch("https://wa.me/201000000000", context),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _ContactTile(
             icon: Icons.camera_alt_outlined,
             title: "Instagram",
@@ -98,19 +99,19 @@ class ContactUsScreen extends StatelessWidget {
             primary: const Color(0xFFE1306C),
             onTap: () => _launch("https://instagram.com/lostinegypt.app", context),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           Divider(color: onSurface.withValues(alpha: 0.1)),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             "Response times",
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 15.sp,
               fontWeight: FontWeight.w600,
               fontFamily: 'Marcellus',
               color: onSurface,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           _ResponseRow(label: "Email", time: "Within 24 hours", onSurface: onSurface),
           _ResponseRow(label: "WhatsApp", time: "Within a few hours", onSurface: onSurface),
           _ResponseRow(label: "Instagram DMs", time: "1–2 business days", onSurface: onSurface),
@@ -146,43 +147,43 @@ class _ContactTile extends StatelessWidget {
     final gold = Theme.of(context).colorScheme.primary;
     return Material(
       color: surface,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(14.r),
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: gold.withValues(alpha: 0.15)),
           ),
           child: Row(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 38.r,
+                height: 38.r,
                 decoration: BoxDecoration(
                   color: primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(icon, color: primary, size: 20),
+                child: Icon(icon, color: primary, size: 20.r),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: 14.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 15.sp,
                           fontFamily: 'Marcellus',
                           color: onSurface,
                         )),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(subtitle,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 13.sp,
                           color: onSurface.withValues(alpha: 0.6),
                         )),
                   ],
@@ -206,14 +207,14 @@ class _ResponseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 14, color: onSurface.withValues(alpha: 0.7))),
+          Text(label, style: TextStyle(fontSize: 14.sp, color: onSurface.withValues(alpha: 0.7))),
           Text(time,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: onSurface,
                 fontWeight: FontWeight.w500,
               )),

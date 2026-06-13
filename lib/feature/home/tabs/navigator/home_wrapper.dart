@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import '../../../../theme/theme.dart';
 import '../camera/presentation/camera_screen.dart';
@@ -31,7 +32,6 @@ class _HomeWrapperState extends State<HomeWrapper>
   bool _isNavBarVisible = true;
 
   late List<Widget> _pages;
-  late List<TabItem> _navItems;
 
   @override
   void initState() {
@@ -44,14 +44,6 @@ class _HomeWrapperState extends State<HomeWrapper>
       const MapScreen(),
       const CameraScreen(),
       MoreScreen(),
-    ];
-
-    _navItems = const [
-      TabItem(icon: Icons.home_filled, title: "Home"),
-      TabItem(icon: Icons.people_rounded, title: "Community"),
-      TabItem(icon: Icons.location_pin, title: "Map"),
-      TabItem(icon: Icons.camera_alt_rounded, title: "Camera"),
-      TabItem(icon: Icons.more_horiz, title: "More"),
     ];
 
     MapFocusService.instance.tabSwitchNotifier.addListener(_handleTabSwitch);
@@ -86,7 +78,19 @@ class _HomeWrapperState extends State<HomeWrapper>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
+
+    // Built in build() (not initState) so the labels re-localise when the
+    // locale flips — HomeWrapper's static GlobalKey preserves State across
+    // AuthGate rebuilds, so an initState-built list would stay stale.
+    final navItems = <TabItem>[
+      TabItem(icon: Icons.home_filled, title: l.navHome),
+      TabItem(icon: Icons.people_rounded, title: l.navCommunity),
+      TabItem(icon: Icons.location_pin, title: l.navMap),
+      TabItem(icon: Icons.camera_alt_rounded, title: l.navCamera),
+      TabItem(icon: Icons.more_horiz, title: l.navMore),
+    ];
 
     // ✅ navbar background from AppColors in dark mode
     final bg = isDark
@@ -170,7 +174,7 @@ class _HomeWrapperState extends State<HomeWrapper>
                   activeColor: primary,
                   color: inactive,
                   elevation: 0,
-                  items: _navItems,
+                  items: navItems,
                   onTap: (i) {
                     setState(() {
                       index = i;

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
 import '../../../navigator/widget/account_menu_button.dart';
@@ -94,7 +95,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
+                    padding: EdgeInsets.fromLTRB(10.w, 8.h, 10.w, 12.h),
                     child: Row(
                       children: [
                         IconButton(
@@ -102,7 +103,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                           icon: Icon(
                             Icons.chevron_left_rounded,
                             color: titleColor,
-                            size: 30,
+                            size: 30.r,
                           ),
                         ),
                         Expanded(
@@ -111,7 +112,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: titleColor,
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -125,35 +126,35 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       child: Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: isDark
                               ? AppColors.darkBox.withValues(alpha: 0.75)
                               : Colors.white.withValues(alpha: 0.75),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(15),
-                            topRight: Radius.circular(15),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(15.r),
+                            topRight: Radius.circular(15.r),
                           ),
                           border: Border.all(color: frameColor, width: 1),
                         ),
-                        padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+                        padding: EdgeInsets.fromLTRB(8.w, 12.h, 8.w, 12.h),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _GuideHeaderCard(guide: widget.guide),
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12.h),
                             _InfoStrip(guide: widget.guide),
-                            const SizedBox(height: 20),
+                            SizedBox(height: 20.h),
                             Text(
                               'Brief Trip',
-                              style: TextStyle(color: titleColor, fontSize: 24),
+                              style: TextStyle(color: titleColor, fontSize: 24.sp),
                             ),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6.h),
                             Text(
-                              widget.guide.bio.isNotEmpty 
-                                ? widget.guide.bio 
+                              widget.guide.bio.isNotEmpty
+                                ? widget.guide.bio
                                 : 'This guide has not provided a bio yet. Contact them to learn more about their experiences and offerings.',
                               maxLines: _expanded ? null : 4,
                               overflow: _expanded
@@ -163,7 +164,7 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                                 color: isDark
                                     ? AppColors.darkText.withValues(alpha: 0.85)
                                     : const Color(0xFF3F3A35),
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 height: 1.35,
                               ),
                             ),
@@ -177,20 +178,20 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                                 _expanded ? 'View less' : 'View more',
                                 style: TextStyle(
                                   color: titleColor,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   decoration: TextDecoration.underline,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 18),
+                            SizedBox(height: 18.h),
                             Text(
                               'Hosted Tours',
-                              style: TextStyle(color: titleColor, fontSize: 24),
+                              style: TextStyle(color: titleColor, fontSize: 24.sp),
                             ),
-                            const SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             SizedBox(
-                              height: 320,
+                              height: 320.h,
                               child: _GuideToursList(guideId: widget.guide.id),
                             ),
                             const Spacer(),
@@ -209,24 +210,24 @@ class _GuideDetailsScreenState extends State<GuideDetailsScreen> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: btnBg,
                                     foregroundColor: Colors.black,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 14.h,
                                     ),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12.r),
                                     ),
                                     elevation: 0,
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'Edit Profile',
                                     style: TextStyle(
-                                      fontSize: 20,
+                                      fontSize: 20.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
                               ),
-                            const SizedBox(height: 30 ),
+                            SizedBox(height: 30.h),
                           ],
                         ),
                       ),
@@ -256,7 +257,7 @@ class _GuideHeaderCard extends StatelessWidget {
     final titleColor = isDark ? AppColors.darkText : const Color(0xFF7A4B1D);
 
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: EdgeInsets.all(10.r),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -264,23 +265,23 @@ class _GuideHeaderCard extends StatelessWidget {
             children: [
               ShimmerImage(
                 url: guide.profileImageUrl,
-                width: 84,
-                height: 84,
-                borderRadius: BorderRadius.circular(14),
+                width: 84.r,
+                height: 84.r,
+                borderRadius: BorderRadius.circular(14.r),
                 fit: BoxFit.cover,
                 fallbackIcon: Icons.person,
                 fallbackBackgroundColor: isDark
                     ? const Color(0xFF3E2C1E)
                     : const Color(0xFF7A4B1D),
                 fallbackIconColor: const Color(0xFFEDE9D9),
-                fallbackIconSize: 52,
+                fallbackIconSize: 52.r,
               ),
               Positioned(
-                top: 4,
-                right: 4,
+                top: 4.h,
+                right: 4.w,
                 child: Container(
-                  width: 18,
-                  height: 18,
+                  width: 18.r,
+                  height: 18.r,
                   decoration: BoxDecoration(
                     color: isDark ? Colors.black54 : Colors.white,
                     shape: BoxShape.circle,
@@ -288,13 +289,13 @@ class _GuideHeaderCard extends StatelessWidget {
                   child: Icon(
                     Icons.favorite,
                     color: Colors.red.shade300,
-                    size: 12,
+                    size: 12.r,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,31 +303,31 @@ class _GuideHeaderCard extends StatelessWidget {
                 Text(
                   '${guide.firstName} ${guide.lastName}'.trim(),
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     color: titleColor,
                     height: 0.95,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 if (guide.reviewCount == 0)
-                  Text("New Guide", style: TextStyle(color: titleColor, fontSize: 14, fontWeight: FontWeight.w600))
-                else 
+                  Text("New Guide", style: TextStyle(color: titleColor, fontSize: 14.sp, fontWeight: FontWeight.w600))
+                else
                   Row(
                     children: [
-                      Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 16)),
-                      const Icon(Icons.star, color: Colors.amber, size: 19),
-                      Text(' (${guide.reviewCount})', style: TextStyle(color: titleColor.withValues(alpha: 0.7), fontSize: 14)),
+                      Text('${guide.rating.toStringAsFixed(1)} ', style: TextStyle(color: titleColor, fontSize: 16.sp)),
+                      Icon(Icons.star, color: Colors.amber, size: 19.r),
+                      Text(' (${guide.reviewCount})', style: TextStyle(color: titleColor.withValues(alpha: 0.7), fontSize: 14.sp)),
                     ],
                   ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Row(
                   children: [
-                    Icon(Icons.location_on, size: 16, color: titleColor),
-                    const SizedBox(width: 2),
+                    Icon(Icons.location_on, size: 16.r, color: titleColor),
+                    SizedBox(width: 2.w),
                     Text(
                       guide.nationality.isNotEmpty ? guide.nationality : 'Egypt',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         color: titleColor,
                         height: 0.95,
                       ),
@@ -353,7 +354,7 @@ class _InfoStrip extends StatelessWidget {
 
     final itemTitleStyle = TextStyle(
       color: isDark ? AppColors.darkText : const Color(0xFF7A4B1D),
-      fontSize: 16,
+      fontSize: 16.sp,
       height: 0.95,
     );
 
@@ -361,11 +362,11 @@ class _InfoStrip extends StatelessWidget {
       color: isDark
           ? AppColors.darkText.withValues(alpha: 0.6)
           : const Color(0xFFB6A17F),
-      fontSize: 12,
+      fontSize: 12.sp,
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
       decoration: BoxDecoration(
         border: Border.all(
           color: isDark
@@ -373,7 +374,7 @@ class _InfoStrip extends StatelessWidget {
               : const Color(0xFFBDA47D),
           width: 1.2,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
       ),
       child: Row(
         children: [
@@ -414,7 +415,7 @@ class _InfoStrip extends StatelessWidget {
   Widget _divider(bool isDark) {
     return Container(
       width: 1,
-      height: 38,
+      height: 38.h,
       color: isDark
           ? AppColors.darkText.withValues(alpha: 0.18)
           : const Color(0xFFD0BEA2),
@@ -448,9 +449,9 @@ class _InfoItem extends StatelessWidget {
           color: isDark
               ? AppColors.darkText.withValues(alpha: 0.8)
               : const Color(0xFF9B7A4D),
-          size: 24,
+          size: 24.r,
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: 2.h),
         Text(title, style: titleStyle),
         Text(subtitle, style: subtitleStyle),
       ],
@@ -509,22 +510,22 @@ class _PhotosRowState extends State<_PhotosRow> {
         : const Color(0xFF7A4B1D);
 
     return SizedBox(
-      height: 120,
+      height: 120.h,
       child: Stack(
         children: [
           ListView.separated(
             controller: _controller,
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 44),
+            padding: EdgeInsets.symmetric(horizontal: 44.w),
             itemCount: photos.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
+            separatorBuilder: (_, _) => SizedBox(width: 12.w),
             itemBuilder: (context, index) {
               return ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.r),
                 child: Image(
                   image: ResizeImage(AssetImage(photos[index]), width: 220),
-                  width: 110,
-                  height: 110,
+                  width: 110.r,
+                  height: 110.r,
                   fit: BoxFit.cover,
                 ),
               );
@@ -534,14 +535,14 @@ class _PhotosRowState extends State<_PhotosRow> {
             alignment: Alignment.centerLeft,
             child: IconButton(
               onPressed: _scrollLeft,
-              icon: Icon(Icons.chevron_left, size: 34, color: arrowColor),
+              icon: Icon(Icons.chevron_left, size: 34.r, color: arrowColor),
             ),
           ),
           Align(
             alignment: Alignment.centerRight,
             child: IconButton(
               onPressed: _scrollRight,
-              icon: Icon(Icons.chevron_right, size: 34, color: arrowColor),
+              icon: Icon(Icons.chevron_right, size: 34.r, color: arrowColor),
             ),
           ),
         ],
@@ -576,7 +577,7 @@ class _GuideToursListState extends State<_GuideToursList> {
         if (snapshot.connectionState == ConnectionState.waiting) {
            return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (snapshot.hasData) {
           final result = snapshot.data!;
           return result.fold(
@@ -588,10 +589,10 @@ class _GuideToursListState extends State<_GuideToursList> {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: tours.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 16),
+                separatorBuilder: (_, _) => SizedBox(width: 16.w),
                 itemBuilder: (context, index) {
                   return SizedBox(
-                    width: 250,
+                    width: 250.w,
                     child: TourCard(tour: tours[index]),
                   );
                 },

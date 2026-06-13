@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class YourPlanScreen extends StatelessWidget {
   const YourPlanScreen({super.key});
@@ -22,11 +23,11 @@ class YourPlanScreen extends StatelessWidget {
         foregroundColor: onSurface,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 40.h),
         children: [
           // Current plan card
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.r),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
@@ -35,7 +36,7 @@ class YourPlanScreen extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               border: Border.all(color: primary.withValues(alpha: 0.4), width: 1.5),
               boxShadow: [
                 BoxShadow(
@@ -50,12 +51,12 @@ class YourPlanScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.workspace_premium_rounded, color: primary, size: 28),
-                    const SizedBox(width: 10),
+                    Icon(Icons.workspace_premium_rounded, color: primary, size: 28.r),
+                    SizedBox(width: 10.w),
                     Text(
                       "Explorer — Free",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontFamily: 'Marcellus',
                         color: primary,
                         fontWeight: FontWeight.bold,
@@ -63,39 +64,39 @@ class YourPlanScreen extends StatelessWidget {
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.green.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                       ),
-                      child: const Text(
+                      child: Text(
                         "Active",
-                        style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 12),
+                        style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 12.sp),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   "Your current plan — enjoy all the core features of Lost in Egypt at no cost.",
-                  style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.65), height: 1.5),
+                  style: TextStyle(fontSize: 13.sp, color: onSurface.withValues(alpha: 0.65), height: 1.5),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 28),
+          SizedBox(height: 28.h),
 
           Text(
             "What's included",
             style: TextStyle(
-              fontSize: 17,
+              fontSize: 17.sp,
               fontFamily: 'Marcellus',
               fontWeight: FontWeight.w700,
               color: onSurface,
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
 
           ...[
             (Icons.camera_alt_outlined, "AI Landmark Discovery", "Identify unlimited landmarks with your camera"),
@@ -117,15 +118,15 @@ class YourPlanScreen extends StatelessWidget {
                 isDark: isDark,
               )),
 
-          const SizedBox(height: 28),
+          SizedBox(height: 28.h),
           Divider(color: onSurface.withValues(alpha: 0.1)),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.r),
             decoration: BoxDecoration(
               color: surface,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
                   color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.06),
@@ -139,12 +140,12 @@ class YourPlanScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.rocket_launch_outlined, color: primary, size: 22),
-                    const SizedBox(width: 8),
+                    Icon(Icons.rocket_launch_outlined, color: primary, size: 22.r),
+                    SizedBox(width: 8.w),
                     Text(
                       "Coming soon",
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontFamily: 'Marcellus',
                         color: onSurface,
                         fontWeight: FontWeight.w600,
@@ -152,13 +153,13 @@ class YourPlanScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   "We're working on premium features including offline mode, "
                   "exclusive guided experiences, and advanced trip planning tools. "
                   "Stay tuned — and the core app will always remain free.",
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: onSurface.withValues(alpha: 0.65),
                     height: 1.55,
                   ),
@@ -194,33 +195,33 @@ class _FeatureRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 38.r,
+            height: 38.r,
             decoration: BoxDecoration(
               color: primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: primary, size: 18),
+            child: Icon(icon, color: primary, size: 18.r),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
                     style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600, color: onSurface)),
+                        fontSize: 14.sp, fontWeight: FontWeight.w600, color: onSurface)),
                 Text(subtitle,
-                    style: TextStyle(fontSize: 12, color: onSurface.withValues(alpha: 0.6), height: 1.4)),
+                    style: TextStyle(fontSize: 12.sp, color: onSurface.withValues(alpha: 0.6), height: 1.4)),
               ],
             ),
           ),
-          const Icon(Icons.check_circle, color: Colors.green, size: 18),
+          Icon(Icons.check_circle, color: Colors.green, size: 18.r),
         ],
       ),
     );

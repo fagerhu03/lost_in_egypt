@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/utils/map_style_helper.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
@@ -171,7 +172,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         slivers: [
           // Header Image
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 300.h,
             pinned: true,
             actions: [
               // Hide report button if the user is the guide who created the tour
@@ -189,13 +190,13 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     }
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'report',
                       child: Row(
                         children: [
-                          Icon(Icons.flag, color: Colors.orange, size: 20),
-                          SizedBox(width: 8),
-                          Text('Report Tour'),
+                          Icon(Icons.flag, color: Colors.orange, size: 20.r),
+                          SizedBox(width: 8.w),
+                          const Text('Report Tour'),
                         ],
                       ),
                     ),
@@ -248,7 +249,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
           // Content
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(20.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -270,7 +271,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                               return Text(
                                 label,
                                 style: TextStyle(
-                                  fontSize: 28,
+                                  fontSize: 28.sp,
                                   fontWeight: FontWeight.w900,
                                   color: theme.colorScheme.primary,
                                 ),
@@ -281,53 +282,53 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 24),
-                          const SizedBox(width: 4),
+                          Icon(Icons.star, color: Colors.amber, size: 24.r),
+                          SizedBox(width: 4.w),
                           Text(
                             tour.rating > 0 && !tour.rating.isNaN && !tour.rating.isInfinite
                               ? '${tour.rating.toStringAsFixed(1)} (${tour.reviewCount})'
                               : 'New',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Metadata Grid
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.r),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       children: [
                         _buildInfoRow(context, Icons.calendar_month, 'Date & Time', DateFormat('MMM d, yyyy - h:mm a').format(tour.meetingTime)),
-                        const Divider(height: 24),
+                        Divider(height: 24.h),
                         _buildInfoRow(context, Icons.people, 'Max Attendees', '${tour.maxAttendees} people'),
-                        const Divider(height: 24),
+                        Divider(height: 24.h),
                         _buildInfoRow(context, Icons.location_on, 'Location', tour.meetingLocationName),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-                  const Text('About This Tour', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 24.h),
+                  Text('About This Tour', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8.h),
                   Text(
                     tour.description,
-                    style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.8), height: 1.5),
+                    style: TextStyle(fontSize: 16.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.8), height: 1.5),
                   ),
 
-                  const SizedBox(height: 24),
-                  const Text('Destinations', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 24.h),
+                  Text('Destinations', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 12.h),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 8.w,
+                    runSpacing: 8.h,
                     children: tour.destinations.map((dest) => Chip(
                       label: Text(dest),
                       backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
@@ -335,13 +336,13 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   ),
 
                   // Map Preview
-                  const SizedBox(height: 24),
-                  const Text('Meetup Location & Route', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 24.h),
+                  Text('Meetup Location & Route', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 12.h),
                   Container(
-                    height: 200,
+                    height: 200.h,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
                     ),
                     clipBehavior: Clip.hardEdge,
@@ -381,20 +382,20 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                           ),
                         ),
                         Positioned(
-                          top: 8,
-                          right: 8,
+                          top: 8.h,
+                          right: 8.w,
                           child: Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: EdgeInsets.all(8.r),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(8.r),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.fullscreen, size: 20),
-                                SizedBox(width: 4),
-                                Text('Tap to expand', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                Icon(Icons.fullscreen, size: 20.r),
+                                SizedBox(width: 4.w),
+                                Text('Tap to expand', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -404,34 +405,34 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   ),
 
                   // Schedule Display
-                  const SizedBox(height: 24),
-                  const Text('Schedule', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 24.h),
+                  Text('Schedule', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 12.h),
                   _buildScheduleRow(context, tour.frequency),
 
                   // Image Gallery
                   if (tour.images.length > 1) ...[
-                    const SizedBox(height: 24),
-                    const Text('Gallery', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 24.h),
+                    Text('Gallery', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 12.h),
                     SizedBox(
-                      height: 140,
+                      height: 140.h,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: tour.images.length,
                         itemBuilder: (context, index) {
                           return Padding(
-                            padding: const EdgeInsets.only(right: 12.0),
+                            padding: EdgeInsets.only(right: 12.w),
                             child: Material(
                               color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               clipBehavior: Clip.hardEdge,
                               child: InkWell(
                                 onTap: () => _showGalleryViewer(context, tour.images, index),
                                 child: Ink.image(
                                   image: CachedNetworkImageProvider(tour.images[index]),
-                                  width: 160,
-                                  height: 140,
+                                  width: 160.w,
+                                  height: 140.h,
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -442,52 +443,52 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     ),
                   ],
 
-                  const SizedBox(height: 24),
-                  const Text('Your Guide', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 24.h),
+                  Text('Your Guide', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 12.h),
                   _GuideInfoTile(guideId: tour.guideId),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                   const Divider(),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   _ReviewsSection(tour: tour),
 
                   // ── You might also enjoy ─────────────────────────────────
                   if (_loadingSimilar || _similarTours.isNotEmpty) ...[
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
                     const Divider(),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Row(
                       children: [
                         Icon(Icons.auto_awesome,
-                            size: 18, color: theme.colorScheme.primary),
-                        const SizedBox(width: 8),
-                        const Text(
+                            size: 18.r, color: theme.colorScheme.primary),
+                        SizedBox(width: 8.w),
+                        Text(
                           'You might also enjoy',
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                              fontSize: 20.sp, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     SizedBox(
-                      height: 180,
+                      height: 180.h,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: _loadingSimilar ? 3 : _similarTours.length,
                         itemBuilder: (_, i) {
                           if (_loadingSimilar) {
                             return Padding(
-                              padding: const EdgeInsets.only(right: 12),
+                              padding: EdgeInsets.only(right: 12.w),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: const ShimmerLoadingWidget.rectangular(
-                                    width: 220, height: 180),
+                                borderRadius: BorderRadius.circular(16.r),
+                                child: ShimmerLoadingWidget.rectangular(
+                                    width: 220.w, height: 180.h),
                               ),
                             );
                           }
                           return Padding(
-                            padding: const EdgeInsets.only(right: 12),
+                            padding: EdgeInsets.only(right: 12.w),
                             child: _SimilarTourCard(tour: _similarTours[i]),
                           );
                         },
@@ -495,7 +496,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     ),
                   ],
 
-                  const SizedBox(height: 100), // padding for bottom bar
+                  SizedBox(height: 100.h), // padding for bottom bar
                 ],
               ),
             ),
@@ -503,7 +504,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         ],
       ),
       bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.r),
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
           boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -4))],
@@ -511,22 +512,22 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         child: FirebaseAuth.instance.currentUser?.uid == tour.guideId
             ? ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: Size.fromHeight(50.h),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   foregroundColor: theme.colorScheme.onSurfaceVariant,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                 ),
                 onPressed: null,
-                child: const Text('This is your tour', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text('This is your tour', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
               )
             : ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: Size.fromHeight(50.h),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   backgroundColor: theme.colorScheme.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                 ),
                 onPressed: () {
                    Navigator.push(
@@ -534,7 +535,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                      MaterialPageRoute(builder: (_) => BookingConfirmationScreen(tour: tour)),
                    );
                 },
-                child: const Text('Book Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text('Book Now', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
               ),
       ),
     );
@@ -545,20 +546,20 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.r),
           decoration: BoxDecoration(
             color: theme.colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           child: Icon(icon, color: theme.colorScheme.primary),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
-              Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(title, style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+              Text(value, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -570,13 +571,13 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
     if (frequency == 'One-Time') {
       return Text('This is a one-time tour.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)));
     }
-    
+
     final days = frequency.split(', ');
     final allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 8.w,
+      runSpacing: 8.h,
       children: allDays.map((day) {
         final isSelected = days.contains(day);
         return Chip(
@@ -587,7 +588,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
             side: BorderSide(
               color: isSelected ? Colors.transparent : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
             ),
@@ -661,28 +662,28 @@ class _GalleryViewerDialogState extends State<_GalleryViewerDialog> {
           ),
           // Close button
           Positioned(
-            top: 40,
-            right: 20,
+            top: 40.h,
+            right: 20.w,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 32),
+              icon: Icon(Icons.close, color: Colors.white, size: 32.r),
               onPressed: () => Navigator.pop(context),
             ),
           ),
           // Image counter
           Positioned(
-            bottom: 40,
+            bottom: 40.h,
             left: 0,
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: Colors.black54,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
                   '${_currentPage + 1} / ${widget.images.length}',
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -731,9 +732,9 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (_loading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: const Center(child: CircularProgressIndicator()),
       );
     }
     if (_guide == null) {
@@ -752,19 +753,19 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
       contentPadding: EdgeInsets.zero,
       leading: ShimmerAvatar(
         url: guide.profileImageUrl,
-        radius: 24,
+        radius: 24.r,
         fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
       ),
       title: Text(displayName.isNotEmpty ? displayName : 'Your Guide', style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: guide.reviewCount > 0
           ? Row(
               children: [
-                const Icon(Icons.star, color: Colors.amber, size: 14),
-                const SizedBox(width: 2),
-                Text('${guide.rating.toStringAsFixed(1)} (${guide.reviewCount} reviews)', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+                Icon(Icons.star, color: Colors.amber, size: 14.r),
+                SizedBox(width: 2.w),
+                Text('${guide.rating.toStringAsFixed(1)} (${guide.reviewCount} reviews)', style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
               ],
             )
-          : Text('Verified Guide', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+          : Text('Verified Guide', style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
         Navigator.push(
@@ -800,7 +801,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Reviews', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Reviews', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
             if (currentUid != null && currentUid != tour.guideId)
               FutureBuilder<QuerySnapshot>(
                 future: FirebaseFirestore.instance
@@ -814,14 +815,14 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                   if (!hasBooked) return const SizedBox.shrink();
                   return TextButton.icon(
                     onPressed: () => _showAddReviewDialog(context, tour.id),
-                    icon: const Icon(Icons.rate_review, size: 18),
+                    icon: Icon(Icons.rate_review, size: 18.r),
                     label: const Text('Write a Review'),
                   );
                 },
               ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('reviews')
@@ -838,10 +839,10 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
             final docs = snapshot.data?.docs ?? [];
             if (docs.isEmpty) {
               return Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24.r),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: const Center(
                   child: Text('No reviews yet. Be the first to review!', style: TextStyle(fontStyle: FontStyle.italic)),
@@ -857,7 +858,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: docs.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
+              separatorBuilder: (_, _) => Divider(height: 1.h),
               itemBuilder: (context, index) {
                 final reviewDoc = docs[index];
                 final data = reviewDoc.data() as Map<String, dynamic>;
@@ -867,9 +868,9 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                 final userId = data['userId'] as String?;
                 final userImage = data['userImage'] as String?;
                 final isOwnReview = userId == currentUid;
-                
+
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: EdgeInsets.symmetric(vertical: 8.h),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -878,12 +879,12 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                         onTap: () => _navigateToReviewerProfile(context, userId),
                         child: ShimmerAvatar(
                           url: userImage,
-                          radius: 20,
-                          iconSize: 20,
+                          radius: 20.r,
+                          iconSize: 20.r,
                           fallbackBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       // Review Content
                       Expanded(
                         child: Column(
@@ -894,7 +895,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                                 Expanded(
                                   child: GestureDetector(
                                     onTap: () => _navigateToReviewerProfile(context, userId),
-                                    child: Text(userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                    child: Text(userName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp)),
                                   ),
                                 ),
                                 Row(
@@ -902,19 +903,19 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                                   children: List.generate(5, (starIndex) {
                                     return Icon(
                                       starIndex < rating ? Icons.star : Icons.star_border,
-                                      size: 14,
+                                      size: 14.r,
                                       color: Colors.amber,
                                     );
                                   }),
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4.w),
                                 // Action menu
                                 _buildReviewActionMenu(context, reviewDoc.id, data, isOwnReview),
                               ],
                             ),
                             if (text.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(text, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 14)),
+                              SizedBox(height: 4.h),
+                              Text(text, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 14.sp)),
                             ],
                           ],
                         ),
@@ -940,7 +941,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
 
   Widget _buildReviewActionMenu(BuildContext context, String reviewDocId, Map<String, dynamic> data, bool isOwnReview) {
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, size: 18, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+      icon: Icon(Icons.more_vert, size: 18.r, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(),
       onSelected: (value) {
@@ -963,19 +964,19 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
       },
       itemBuilder: (context) => [
         if (isOwnReview) ...[
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'edit',
-            child: Row(children: [Icon(Icons.edit, size: 18), SizedBox(width: 8), Text('Edit Review')]),
+            child: Row(children: [Icon(Icons.edit, size: 18.r), SizedBox(width: 8.w), const Text('Edit Review')]),
           ),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'delete',
-            child: Row(children: [Icon(Icons.delete, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete Review', style: TextStyle(color: Colors.red))]),
+            child: Row(children: [Icon(Icons.delete, size: 18.r, color: Colors.red), SizedBox(width: 8.w), const Text('Delete Review', style: TextStyle(color: Colors.red))]),
           ),
         ],
         if (!isOwnReview)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'report',
-            child: Row(children: [Icon(Icons.flag, size: 18, color: Colors.orange), SizedBox(width: 8), Text('Report Review')]),
+            child: Row(children: [Icon(Icons.flag, size: 18.r, color: Colors.orange), SizedBox(width: 8.w), const Text('Report Review')]),
           ),
       ],
     );
@@ -1027,13 +1028,13 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                          icon: Icon(
                           index < selectedRating ? Icons.star : Icons.star_border,
                           color: Colors.amber,
-                          size: 32,
+                          size: 32.r,
                         ),
                         onPressed: () => setState(() => selectedRating = index + 1.0),
                       );
                     }),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   TextField(
                     controller: textController,
                     maxLines: 3,
@@ -1166,13 +1167,13 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                         icon: Icon(
                           index < selectedRating ? Icons.star : Icons.star_border,
                           color: Colors.amber,
-                          size: 32,
+                          size: 32.r,
                         ),
                         onPressed: () => setState(() => selectedRating = index + 1.0),
                       );
                     }),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   TextField(
                     controller: textController,
                     maxLines: 3,
@@ -1272,9 +1273,9 @@ class _SimilarTourCard extends StatelessWidget {
         MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
       ),
       child: Container(
-        width: 220,
+        width: 220.w,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           color: theme.colorScheme.surface,
           boxShadow: [
             BoxShadow(
@@ -1294,7 +1295,7 @@ class _SimilarTourCard extends StatelessWidget {
               fallbackIcon: Icons.tour,
               fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
               fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
-              fallbackIconSize: 36,
+              fallbackIconSize: 36.r,
             ),
             const DecoratedBox(
               decoration: BoxDecoration(
@@ -1308,24 +1309,24 @@ class _SimilarTourCard extends StatelessWidget {
             ),
             if (tour.rating > 0)
               Positioned(
-                top: 8,
-                right: 8,
+                top: 8.h,
+                right: 8.w,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: Colors.amber.shade700,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, size: 12, color: Colors.white),
-                      const SizedBox(width: 2),
+                      Icon(Icons.star_rounded, size: 12.r, color: Colors.white),
+                      SizedBox(width: 2.w),
                       Text(
                         tour.rating.toStringAsFixed(1),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1334,14 +1335,14 @@ class _SimilarTourCard extends StatelessWidget {
                 ),
               ),
             Positioned(
-              bottom: 10,
-              left: 10,
-              right: 10,
+              bottom: 10.h,
+              left: 10.w,
+              right: 10.w,
               child: Text(
                 tour.title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Marcellus',
                   height: 1.2,

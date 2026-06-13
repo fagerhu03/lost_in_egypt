@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/services/place_photos_service.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import '../../../../../../../../theme/theme.dart';
@@ -62,10 +63,10 @@ class PlanCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(14.r),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: isBestMatch
               ? Border.all(color: AppColors.lightPrimaryButton, width: 1.5)
               : null,
@@ -86,22 +87,22 @@ class PlanCard extends StatelessWidget {
                 children: [
                   if (isBestMatch)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: AppColors.lightPrimaryButton
                             .withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('✨', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 4),
+                          Text('✨', style: TextStyle(fontSize: 12.sp)),
+                          SizedBox(width: 4.w),
                           Text(
                             'Best for you',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
                               color: AppColors.lightPrimaryButton,
                               fontFamily: 'Marcellus',
@@ -110,15 +111,15 @@ class PlanCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                  if (isBestMatch && isSaved) const SizedBox(width: 6),
+                  if (isBestMatch && isSaved) SizedBox(width: 6.w),
                   if (isSaved)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: AppColors.lightPrimaryButton
                             .withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                           color: AppColors.lightPrimaryButton
                               .withValues(alpha: 0.3),
@@ -128,13 +129,13 @@ class PlanCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.bookmark_rounded,
-                              size: 12,
+                              size: 12.r,
                               color: AppColors.lightPrimaryButton),
-                          const SizedBox(width: 3),
+                          SizedBox(width: 3.w),
                           Text(
                             'Saved',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 11.sp,
                               fontWeight: FontWeight.w600,
                               color: AppColors.lightPrimaryButton,
                             ),
@@ -144,13 +145,13 @@ class PlanCard extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
             ],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                   child: heroTag != null
                       ? Hero(
                           tag: heroTag!,
@@ -158,10 +159,10 @@ class PlanCard extends StatelessWidget {
                         )
                       : _TripThumbnail(tripId: tripId, image: image),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 2),
+                    padding: EdgeInsets.only(top: 2.h),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -170,52 +171,52 @@ class PlanCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 17,
+                            fontSize: 17.sp,
                             fontWeight: FontWeight.w600,
                             color: titleColor,
                             fontFamily: 'Marcellus',
                           ),
                         ),
                         if (tagline != null) ...[
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
                             tagline!,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               color: subtitleColor,
                               height: 1.3,
                             ),
                           ),
                         ],
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
                         Row(
                           children: List.generate(
                             5,
                             (index) => Icon(
                               Icons.star,
-                              size: 16,
+                              size: 16.r,
                               color: index < rating
                                   ? AppColors.lightPrimaryButton
                                   : Colors.grey.shade300,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
                         Row(
                           children: [
                             Icon(
                               Icons.location_on_outlined,
-                              size: 14,
+                              size: 14.r,
                               color: subtitleColor,
                             ),
-                            const SizedBox(width: 2),
+                            SizedBox(width: 2.w),
                             Expanded(
                               child: Text(
                                 location,
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: subtitleColor,
                                 ),
                               ),
@@ -223,19 +224,19 @@ class PlanCard extends StatelessWidget {
                           ],
                         ),
                         if (durationLabel != null) ...[
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6.h),
                           Row(
                             children: [
                               Icon(
                                 Icons.schedule_outlined,
-                                size: 14,
+                                size: 14.r,
                                 color: subtitleColor,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4.w),
                               Text(
                                 durationLabel!,
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: subtitleColor,
                                 ),
                               ),
@@ -283,13 +284,13 @@ class _TripThumbnailState extends State<_TripThumbnail> {
   @override
   Widget build(BuildContext context) {
     if (widget.tripId == null) {
-      return Image.asset(widget.image, width: 140, height: 140, fit: BoxFit.cover);
+      return Image.asset(widget.image, width: 140.r, height: 140.r, fit: BoxFit.cover);
     }
 
     final theme = TripTheme.forId(widget.tripId!);
     return SizedBox(
-      width: 140,
-      height: 140,
+      width: 140.r,
+      height: 140.r,
       child: FutureBuilder<String?>(
         future: _photoFuture,
         builder: (context, snapshot) {
@@ -306,15 +307,15 @@ class _TripThumbnailState extends State<_TripThumbnail> {
                 ),
                 // Subtle icon badge so the trip type is still visible
                 Positioned(
-                  right: 8,
-                  bottom: 8,
+                  right: 8.w,
+                  bottom: 8.h,
                   child: Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: EdgeInsets.all(6.r),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.40),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(theme.icon, color: Colors.white, size: 13),
+                    child: Icon(theme.icon, color: Colors.white, size: 13.r),
                   ),
                 ),
               ],
@@ -334,8 +335,8 @@ class _GradientBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 140,
-      height: 140,
+      width: 140.r,
+      height: 140.r,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -346,11 +347,11 @@ class _GradientBox extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-            top: -16,
-            right: -16,
+            top: -16.h,
+            right: -16.w,
             child: Container(
-              width: 90,
-              height: 90,
+              width: 90.r,
+              height: 90.r,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: 0.08),
@@ -359,8 +360,8 @@ class _GradientBox extends StatelessWidget {
           ),
           Center(
             child: Container(
-              width: 60,
-              height: 60,
+              width: 60.r,
+              height: 60.r,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: 0.15),
@@ -369,7 +370,7 @@ class _GradientBox extends StatelessWidget {
                   width: 1.5,
                 ),
               ),
-              child: Icon(theme.icon, color: Colors.white, size: 28),
+              child: Icon(theme.icon, color: Colors.white, size: 28.r),
             ),
           ),
         ],

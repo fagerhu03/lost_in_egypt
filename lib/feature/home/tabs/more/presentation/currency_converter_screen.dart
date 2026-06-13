@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/currency_repository.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 
@@ -128,7 +129,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
           children: [
             SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -139,15 +140,15 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.arrow_back_ios_new,
-                          size: 20,
+                          size: 20.r,
                           color: textColor,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       Text(
                         "Currency Converter",
                         style: TextStyle(
-                          fontSize: 30,
+                          fontSize: 30.sp,
                           fontFamily: "Marcellus",
                           color: textColor.withValues(alpha: 0.75),
                           fontWeight: FontWeight.w500,
@@ -156,18 +157,18 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
 
                   // From Currency
                   Text(
                     "From",
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontFamily: "Marcellus",
                       color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   _buildCurrencyDropdown(
                     surfaceColor: surface,
                     textColor: textColor,
@@ -180,7 +181,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
 
                   // Swap Button
                   Center(
@@ -193,13 +194,13 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       child: InkWell(
                         onTap: _swapCurrencies,
                         customBorder: const CircleBorder(),
-                        child: const SizedBox(
-                          width: 50,
-                          height: 50,
+                        child: SizedBox(
+                          width: 50.r,
+                          height: 50.r,
                           child: Icon(
                             Icons.swap_vert,
                             color: Colors.white,
-                            size: 24,
+                            size: 24.r,
                           ),
                         ),
                       ),
@@ -210,12 +211,12 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                   Text(
                     "To",
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontFamily: "Marcellus",
                       color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   _buildCurrencyDropdown(
                     surfaceColor: surface,
                     textColor: textColor,
@@ -228,18 +229,18 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
 
                   // Amount Input
                   Text(
                     "Amount",
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontFamily: "Marcellus",
                       color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   TextField(
                     controller: _amountController,
                     keyboardType: const TextInputType.numberWithOptions(
@@ -253,12 +254,12 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       filled: true,
                       fillColor: surface,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 24.w,
+                        vertical: 16.h,
                       ),
                       suffixIcon: _amountController.text.isNotEmpty
                           ? IconButton(
@@ -277,7 +278,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     ),
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontFamily: "Marcellus",
                     ),
                     textInputAction: TextInputAction.done,
@@ -287,37 +288,37 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     }),
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
 
                   // Convert Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 56.h,
                     child: ElevatedButton(
                       onPressed: _isConverting ? null : _convert,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
                         disabledBackgroundColor: primary.withValues(alpha: 0.6),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                         ),
                         elevation: 4,
                       ),
                       child: _isConverting
-                          ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
+                          ? SizedBox(
+                        width: 24.w,
+                        height: 24.h,
+                        child: const CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
                             Colors.white,
                           ),
                           strokeWidth: 2,
                         ),
                       )
-                          : const Text(
+                          : Text(
                         "Convert",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontFamily: "Marcellus",
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -326,16 +327,16 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
 
                   // Result Section
                   if (_convertedAmount != null)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(24),
+                      padding: EdgeInsets.all(24.r),
                       decoration: BoxDecoration(
                         color: surface,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.08),
@@ -349,26 +350,26 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                           Text(
                             "Result",
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontFamily: "Marcellus",
                               color: textColor.withValues(alpha: 0.6),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12.h),
                           Text(
                             "${_convertedAmount!.toStringAsFixed(2)} $_toCurrency",
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: 28.sp,
                               fontFamily: "Marcellus",
                               color: textColor,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12.h),
                           Text(
                             "${_amountController.text} $_fromCurrency",
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontFamily: "Marcellus",
                               color: textColor.withValues(alpha: 0.5),
                             ),
@@ -394,7 +395,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
     return Container(
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -408,16 +409,16 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
         onChanged: onChanged,
         isExpanded: true,
         underline: const SizedBox(),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         items: currencies.map((currency) {
           return DropdownMenuItem<String>(
             value: currency,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
               child: Text(
                 currency,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontFamily: "Marcellus",
                   color: textColor,
                 ),

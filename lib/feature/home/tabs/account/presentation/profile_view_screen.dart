@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
@@ -108,7 +109,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
       )
           : ListView(
         padding:
-        const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
         children: [
           Center(
             child: Column(
@@ -120,23 +121,23 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                   ),
                   child: ShimmerAvatar(
                     url: _user!.profileImageUrl,
-                    radius: 54,
-                    iconSize: 48,
+                    radius: 54.r,
+                    iconSize: 48.r,
                     fallbackBackgroundColor: primary.withValues(alpha: 0.18),
                     fallbackIconColor: onSurface,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   '${_user!.firstName} ${_user!.lastName}',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 20.sp,
                     fontFamily: 'Marcellus',
                     color: onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 if (_user!.nationality.isNotEmpty)
                   Text(
                     _user!.nationality,
@@ -144,23 +145,23 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                       color: onSurface.withValues(alpha: 0.55),
                     ),
                   ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildBadge('Email', _user!.emailVerified),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     _buildBadge('Phone', _user!.phoneVerified),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildStat('Posts', _postCount, onSurface),
-                    const SizedBox(width: 24),
+                    SizedBox(width: 24.w),
                     _buildStat('Places', _user!.visitedLandmarks.length, onSurface),
-                    const SizedBox(width: 24),
+                    SizedBox(width: 24.w),
                     _buildStat('Role', 0, onSurface,
                         label: _user!.role.toUpperCase()),
                   ],
@@ -169,7 +170,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           if (_user!.bio.isNotEmpty)
             _sectionCard(
@@ -188,8 +189,8 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
             _sectionCard(
               title: 'Interests',
               child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 8.w,
+                runSpacing: 8.h,
                 children: _user!.interests
                     .map(
                       (i) => Chip(
@@ -246,7 +247,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                   style:
                   TextStyle(color: onSurface.withValues(alpha: 0.85)),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 if (_user!.phoneNumber.isNotEmpty)
                   Text(
                     _user!.phoneNumber,
@@ -265,11 +266,11 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           _sectionCard(
             title: 'Badges',
             child: SizedBox(
-              height: 100,
+              height: 100.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: BadgeConstants.allBadges.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 16),
+                separatorBuilder: (_, _) => SizedBox(width: 16.w),
                 itemBuilder: (context, index) {
                   final badge = BadgeConstants.allBadges[index];
                   final isUnlocked = _user!.visitedLandmarks.length >= badge.requiredVisits;
@@ -284,11 +285,11 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
             borderColor: borderColor,
           ),
 
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
 
           if (widget.uid == null || widget.uid == _currentUid)
             SizedBox(
-              height: 48,
+              height: 48.h,
               child: ElevatedButton(
                 onPressed: () => Navigator.pushNamed(
                     context, '/edit_profile_enhanced'),
@@ -300,7 +301,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                       ? Colors.white.withValues(alpha: 0.18)
                       : Colors.black.withValues(alpha: 0.22),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
                 child: const Text('Edit profile'),
@@ -320,11 +321,11 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
     required Color borderColor,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.all(14.r),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [shadow],
         border: Border.all(color: borderColor),
       ),
@@ -338,7 +339,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
               color: onSurface,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           child,
         ],
       ),
@@ -351,9 +352,9 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
         Icon(
           good ? Icons.check_circle : Icons.radio_button_unchecked,
           color: good ? Colors.green : Colors.grey,
-          size: 16,
+          size: 16.r,
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         Text(label, style: TextStyle(color: good ? Colors.green : Colors.grey)),
       ],
     );
@@ -369,7 +370,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
             color: onSurface,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Text(name, style: TextStyle(color: onSurface.withValues(alpha: 0.55))),
       ],
     );
@@ -377,7 +378,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
 
   Widget _buildSocialRow(String service, String handle, Color onSurface) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8.h),
       child: Row(
         children: [
           Text(
@@ -406,8 +407,8 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           alignment: Alignment.center,
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: 60.r,
+              height: 60.r,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isUnlocked
@@ -419,16 +420,16 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                 ),
               ),
               child: isUnlocked
-                  ? const Icon(Icons.star, color: Colors.amber, size: 30)
-                  : const Icon(Icons.lock, color: Colors.grey, size: 24),
+                  ? Icon(Icons.star, color: Colors.amber, size: 30.r)
+                  : Icon(Icons.lock, color: Colors.grey, size: 24.r),
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         Text(
           badge.name,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 10.sp,
             fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
             color: isUnlocked ? onSurface : onSurface.withValues(alpha: 0.5),
           ),

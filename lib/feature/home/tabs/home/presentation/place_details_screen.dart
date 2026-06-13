@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
@@ -153,7 +154,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 280,
+            expandedHeight: 280.h,
             pinned: true,
             iconTheme: IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
@@ -193,7 +194,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                               fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.15),
                             )
                           : Container(color: primary.withValues(alpha: isDark ? 0.15 : 0.08)),
-                  
+
                   Positioned.fill(
                     child: IgnorePointer(
                       child: DecoratedBox(
@@ -216,7 +217,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
 
                   if (widget.place.imagePaths.length > 1)
                     Positioned(
-                      bottom: 20,
+                      bottom: 20.h,
                       left: 0,
                       right: 0,
                       child: Row(
@@ -224,9 +225,9 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                         children: List.generate(
                           widget.place.imagePaths.length,
                           (index) => Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            width: _currentImageIndex == index ? 8 : 6,
-                            height: _currentImageIndex == index ? 8 : 6,
+                            margin: EdgeInsets.symmetric(horizontal: 3.w),
+                            width: _currentImageIndex == index ? 8.r : 6.r,
+                            height: _currentImageIndex == index ? 8.r : 6.r,
                             decoration: BoxDecoration(
                               color: _currentImageIndex == index
                                   ? Colors.white
@@ -244,7 +245,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
           SliverList(
             delegate: SliverChildListDelegate([
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -252,21 +253,21 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                       widget.place.title,
                       style: TextStyle(
                         fontFamily: "Marcellus",
-                        fontSize: 28,
+                        fontSize: 28.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
 
                     Row(
                       children: [
-                        const Icon(Icons.star, size: 18, color: Colors.amber),
+                        Icon(Icons.star, size: 18.r, color: Colors.amber),
                         Text(
                           " ${widget.place.rating}",
                           style: TextStyle(
                             color: onSurface.withValues(alpha: 0.65),
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -275,12 +276,12 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                              " (${widget.place.reviews.length}+ reviews)",
                              style: TextStyle(
                                color: onSurface.withValues(alpha: 0.5),
-                               fontSize: 12,
+                               fontSize: 12.sp,
                              ),
                            ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -325,17 +326,17 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                       ],
                     ),
 
-                    Divider(height: 40, thickness: 1, color: onSurface.withValues(alpha: 0.10)),
+                    Divider(height: 40.h, thickness: 1, color: onSurface.withValues(alpha: 0.10)),
 
                     Text(
                       "About",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Text(
                       widget.place.description.isNotEmpty
                           ? widget.place.description
@@ -343,10 +344,10 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                       style: TextStyle(
                         height: 1.6,
                         color: onSurface.withValues(alpha: 0.85),
-                        fontSize: 16,
+                        fontSize: 16.sp,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     if (widget.place.locationAddress.isNotEmpty)
                       _buildInfoTile(
@@ -389,24 +390,24 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                       ),
 
                     if (widget.place.reviews.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         "What Travelers Say",
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                           color: onSurface,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       ...widget.place.reviews.map((review) =>
                         _buildReviewCard(review, onSurface, primary, isDark),
                       ),
                     ],
 
-                    const SizedBox(height: 40),
+                    SizedBox(height: 40.h),
                   ],
                 ),
               ),
@@ -419,11 +420,11 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
 
   Widget _buildReviewCard(PlaceReview review, Color onSurface, Color primary, bool isDark) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: onSurface.withValues(alpha: isDark ? 0.05 : 0.03),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: onSurface.withValues(alpha: isDark ? 0.10 : 0.06),
         ),
@@ -434,18 +435,18 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
           Row(
             children: [
               CircleAvatar(
-                radius: 18,
+                radius: 18.r,
                 backgroundColor: primary.withValues(alpha: 0.15),
                 child: Text(
                   review.authorName.isNotEmpty ? review.authorName[0].toUpperCase() : '?',
                   style: TextStyle(
                     color: primary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -454,23 +455,23 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                       review.authorName,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                        fontSize: 15.sp,
                         color: onSurface,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Row(
                       children: [
                         ...List.generate(5, (i) => Icon(
                           i < review.rating.round() ? Icons.star : Icons.star_border,
-                          size: 14,
+                          size: 14.r,
                           color: Colors.amber,
                         )),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6.w),
                         Text(
                           review.relativeTime,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: onSurface.withValues(alpha: 0.6),
                           ),
                         ),
@@ -482,11 +483,11 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
             ],
           ),
           if (review.text.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(
               review.text,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 height: 1.5,
                 color: onSurface.withValues(alpha: 0.85),
               ),
@@ -504,17 +505,17 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
     required Color onSurface,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      padding: EdgeInsets.symmetric(vertical: 12.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: iconColor, size: 24),
-          const SizedBox(width: 16),
+          Icon(icon, color: iconColor, size: 24.r),
+          SizedBox(width: 16.w),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 color: onSurface.withValues(alpha: 0.85),
                 fontWeight: FontWeight.w500,
               ),
@@ -548,8 +549,8 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
       child: Column(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 56.r,
+            height: 56.r,
             decoration: BoxDecoration(
               color: bg,
               shape: BoxShape.circle,
@@ -559,16 +560,16 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
             child: Icon(
               icon,
               color: iconColor ?? (isPrimary ? Colors.white : primary),
-              size: 26,
+              size: 26.r,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             label,
             style: TextStyle(
               color: isPrimary ? primary : onSurface.withValues(alpha: 0.75),
               fontWeight: FontWeight.bold,
-              fontSize: 13,
+              fontSize: 13.sp,
             ),
           ),
         ],

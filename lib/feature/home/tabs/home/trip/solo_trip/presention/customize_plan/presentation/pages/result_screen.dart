@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:lost_in_egypt/core/models/solo_plan.dart';
@@ -315,7 +316,7 @@ class _LoadingView extends StatelessWidget {
     final textColor = isDark ? AppColors.darkText : AppColors.lightBox;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
+        padding: EdgeInsets.symmetric(horizontal: 40.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -323,36 +324,36 @@ class _LoadingView extends StatelessWidget {
               animation: anim,
               builder: (_, _) => Opacity(
                 opacity: anim.value,
-                child: Icon(Icons.map_outlined, size: 64, color: gold),
+                child: Icon(Icons.map_outlined, size: 64.r, color: gold),
               ),
             ),
-            const SizedBox(height: 28),
+            SizedBox(height: 28.h),
             Text(
               'Planning your trip…',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 22.sp,
                 fontWeight: FontWeight.w600,
                 fontFamily: 'Marcellus',
                 color: textColor,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(
               'Our AI guide is building a personalised day-by-day itinerary for you.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: textColor.withValues(alpha: 0.6),
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
             SizedBox(
-              width: 160,
+              width: 160.w,
               child: LinearProgressIndicator(
                 color: gold,
                 backgroundColor: gold.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
             ),
           ],
@@ -383,12 +384,12 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.r),
             child: Align(
               alignment: Alignment.centerLeft,
               child: IconButton(
                 icon: Icon(Icons.chevron_left_rounded,
-                    color: textColor, size: 28),
+                    color: textColor, size: 28.r),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -396,32 +397,32 @@ class _ErrorView extends StatelessWidget {
           Expanded(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
+                padding: EdgeInsets.symmetric(horizontal: 40.w),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.cloud_off_outlined, size: 56, color: gold),
-                    const SizedBox(height: 20),
+                    Icon(Icons.cloud_off_outlined, size: 56.r, color: gold),
+                    SizedBox(height: 20.h),
                     Text(
                       'Couldn\'t load your plan',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Marcellus',
                         color: textColor,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Text(
                       message,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: textColor.withValues(alpha: 0.6),
                         height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
                     ElevatedButton.icon(
                       onPressed: onRetry,
                       icon: const Icon(Icons.refresh_rounded),
@@ -429,10 +430,10 @@ class _ErrorView extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: gold,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 14),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 28.w, vertical: 14.h),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                            borderRadius: BorderRadius.circular(14.r)),
                       ),
                     ),
                   ],
@@ -486,7 +487,7 @@ class _PlanViewState extends State<_PlanView> {
           content: Text("Couldn't pin ${stop.name} on the map yet. Try again in a moment."),
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.red.shade700,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
       return;
@@ -632,7 +633,7 @@ class _PlanViewState extends State<_PlanView> {
           backgroundColor: gold,
           behavior: SnackBarBehavior.floating,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
     } catch (_) {
@@ -643,7 +644,7 @@ class _PlanViewState extends State<_PlanView> {
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
       );
     } finally {
@@ -662,7 +663,7 @@ class _PlanViewState extends State<_PlanView> {
           content: const Text('Could not start tour. Try again.'),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ));
         return;
       }
@@ -785,7 +786,7 @@ class _PlanViewState extends State<_PlanView> {
         content: const Text('Could not export itinerary. Try again.'),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       ));
     } finally {
       if (mounted) setState(() => _exporting = false);
@@ -852,12 +853,12 @@ class _PlanViewState extends State<_PlanView> {
           // ── Header ─────────────────────────────────────────────────────────
           Padding(
             padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
             child: Row(
               children: [
                 IconButton(
                   icon: Icon(Icons.chevron_left_rounded,
-                      color: textColor, size: 28),
+                      color: textColor, size: 28.r),
                   onPressed: () => Navigator.pop(context),
                 ),
                 const Spacer(),
@@ -865,8 +866,8 @@ class _PlanViewState extends State<_PlanView> {
                 IconButton(
                   icon: _saving
                       ? SizedBox(
-                          width: 18,
-                          height: 18,
+                          width: 18.w,
+                          height: 18.h,
                           child: CircularProgressIndicator(
                               strokeWidth: 2, color: gold),
                         )
@@ -875,7 +876,7 @@ class _PlanViewState extends State<_PlanView> {
                               ? Icons.bookmark_rounded
                               : Icons.bookmark_outline_rounded,
                           color: gold,
-                          size: 22,
+                          size: 22.r,
                         ),
                   tooltip: _isSaved ? 'Saved' : 'Save Plan',
                   onPressed: (_saving || _isSaved) ? null : () => _savePlan(context),
@@ -883,16 +884,16 @@ class _PlanViewState extends State<_PlanView> {
                 IconButton(
                   icon: _exporting
                       ? SizedBox(
-                          width: 18,
-                          height: 18,
+                          width: 18.w,
+                          height: 18.h,
                           child: CircularProgressIndicator(strokeWidth: 2, color: gold),
                         )
-                      : Icon(Icons.picture_as_pdf_outlined, color: textColor, size: 22),
+                      : Icon(Icons.picture_as_pdf_outlined, color: textColor, size: 22.r),
                   tooltip: 'Export PDF',
                   onPressed: _exporting ? null : () => _exportPdf(context),
                 ),
                 IconButton(
-                  icon: Icon(Icons.share_outlined, color: textColor, size: 22),
+                  icon: Icon(Icons.share_outlined, color: textColor, size: 22.r),
                   onPressed: () => Share.share(
                     '${plan.title}\n\n${plan.summary}\n\nPlanned with Lost in Egypt 🌍',
                   ),
@@ -904,7 +905,7 @@ class _PlanViewState extends State<_PlanView> {
           // ── Scrollable body ────────────────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 32.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -912,27 +913,27 @@ class _PlanViewState extends State<_PlanView> {
                   Text(
                     plan.title,
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 26.sp,
                       fontWeight: FontWeight.w700,
                       fontFamily: 'Marcellus',
                       color: textColor,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Text(
                     plan.summary,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: textColor.withValues(alpha: 0.65),
                       height: 1.45,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // Stats row
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 8.w,
+                    runSpacing: 8.h,
                     children: [
                       if (_dateRange.isNotEmpty)
                         _StatChip(
@@ -950,7 +951,7 @@ class _PlanViewState extends State<_PlanView> {
                             gold: gold),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // Per-day forecast strip — only when forecast is loaded and
                   // we know the trip start date. Each chip aligns to
@@ -971,7 +972,7 @@ class _PlanViewState extends State<_PlanView> {
                     },
                   ),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
 
                   // Day sections — interleave a transit card above any day
                   // that travels to a different city than the previous one.
@@ -997,7 +998,7 @@ class _PlanViewState extends State<_PlanView> {
                   // ── Discard / Start Tour CTAs ─────────────────────────────
                   if (!_isSaved)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: EdgeInsets.only(bottom: 8.h),
                       child: SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
@@ -1005,39 +1006,39 @@ class _PlanViewState extends State<_PlanView> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red.shade600,
                             side: BorderSide(color: Colors.red.shade300),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
+                                borderRadius: BorderRadius.circular(16.r)),
                           ),
                           child: const Text('Discard',
                               style: TextStyle(fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _startingTour ? null : () => _startTour(context),
                       icon: _startingTour
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
+                          ? SizedBox(
+                              width: 18.w,
+                              height: 18.h,
+                              child: const CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : Icon(
                               _savedPlan?.status == SoloPlanStatus.active
                                   ? Icons.directions_walk_rounded
                                   : Icons.play_arrow_rounded,
-                              size: 22,
+                              size: 22.r,
                             ),
                       label: Text(
                         _savedPlan?.status == SoloPlanStatus.active
                             ? 'Continue Tour'
                             : 'Start Tour',
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Marcellus',
                         ),
@@ -1046,9 +1047,9 @@ class _PlanViewState extends State<_PlanView> {
                         backgroundColor: gold,
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: gold.withValues(alpha: 0.5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                            borderRadius: BorderRadius.circular(16.r)),
                         elevation: 0,
                       ),
                     ),
@@ -1107,12 +1108,12 @@ class _DailyForecastStrip extends StatelessWidget {
     if (!hasAnyMatch) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 92,
+      height: 92.h,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
         itemCount: days.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => SizedBox(width: 10.w),
         itemBuilder: (_, i) {
           final day = days[i];
           final f = _forecastFor(day);
@@ -1154,11 +1155,11 @@ class _ForecastChip extends StatelessWidget {
     final accent = f?.severityColor ?? textColor.withValues(alpha: 0.3);
 
     return Container(
-      width: 92,
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      width: 92.w,
+      padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 10.h),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border(top: BorderSide(color: accent, width: 3)),
         boxShadow: [
           BoxShadow(
@@ -1174,41 +1175,41 @@ class _ForecastChip extends StatelessWidget {
           Text(
             'Day ${day.day}',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               fontWeight: FontWeight.w700,
               fontFamily: 'Marcellus',
               color: textColor.withValues(alpha: 0.85),
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2.h),
           if (f == null)
             Text(
               '—',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 color: textColor.withValues(alpha: 0.4),
               ),
             )
           else ...[
             Row(
               children: [
-                Icon(_iconFor(f), size: 16, color: accent),
-                const SizedBox(width: 4),
+                Icon(_iconFor(f), size: 16.r, color: accent),
+                SizedBox(width: 4.w),
                 Text(
                   '${f.maxFeelsLikeC.toStringAsFixed(0)}°',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
                     color: textColor,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: 2.h),
             Text(
               f.conditionLabel,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 10.sp,
                 color: accent,
                 fontWeight: FontWeight.w600,
               ),
@@ -1235,20 +1236,20 @@ class _StatChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: gold.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: gold.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: gold),
-          const SizedBox(width: 5),
+          Icon(icon, size: 13.r, color: gold),
+          SizedBox(width: 5.w),
           Text(label,
               style: TextStyle(
-                  fontSize: 13, color: gold, fontWeight: FontWeight.w500)),
+                  fontSize: 13.sp, color: gold, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -1273,11 +1274,11 @@ class _TransitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      margin: EdgeInsets.only(bottom: 14.h),
+      padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 14.h),
       decoration: BoxDecoration(
         color: gold.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
           color: gold.withValues(alpha: 0.25),
           style: BorderStyle.solid,
@@ -1288,13 +1289,13 @@ class _TransitCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.alt_route_rounded, size: 16, color: gold),
-              const SizedBox(width: 8),
+              Icon(Icons.alt_route_rounded, size: 16.r, color: gold),
+              SizedBox(width: 8.w),
               Expanded(
                 child: Text(
                   '${transit.from}  →  ${transit.to}',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                     color: gold,
                     fontFamily: 'Marcellus',
@@ -1304,19 +1305,19 @@ class _TransitCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             transit.mode,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w600,
               color: textColor,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Wrap(
-            spacing: 8,
-            runSpacing: 6,
+            spacing: 8.w,
+            runSpacing: 6.h,
             children: [
               if (transit.duration.isNotEmpty)
                 _TransitChip(
@@ -1333,18 +1334,18 @@ class _TransitCard extends StatelessWidget {
             ],
           ),
           if (transit.tip.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.lightbulb_outline_rounded,
-                    size: 14, color: textColor.withValues(alpha: 0.55)),
-                const SizedBox(width: 6),
+                    size: 14.r, color: textColor.withValues(alpha: 0.55)),
+                SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
                     transit.tip,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       height: 1.4,
                       color: textColor.withValues(alpha: 0.7),
                     ),
@@ -1373,20 +1374,20 @@ class _TransitChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: gold.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: gold),
-          const SizedBox(width: 4),
+          Icon(icon, size: 12.r, color: gold),
+          SizedBox(width: 4.w),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: gold,
               fontWeight: FontWeight.w600,
             ),
@@ -1420,16 +1421,16 @@ class _DayCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
           decoration: BoxDecoration(
             color: gold.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
           child: Text(
             day.label,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w700,
               color: gold,
               fontFamily: 'Marcellus',
@@ -1447,7 +1448,7 @@ class _DayCard extends StatelessWidget {
             onViewOnMap: () => onViewOnMap(e.value),
           );
         }),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
       ],
     );
   }
@@ -1484,40 +1485,40 @@ class _StopTile extends StatelessWidget {
         children: [
           // Timeline
           SizedBox(
-            width: 34,
+            width: 34.w,
             child: Column(
               children: [
                 Container(
-                  width: 30,
-                  height: 30,
+                  width: 30.r,
+                  height: 30.r,
                   decoration: BoxDecoration(
                     color: gold.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                     border: Border.all(color: gold, width: 1.5),
                   ),
-                  child: Icon(_iconFor(stop.placeType), size: 15, color: gold),
+                  child: Icon(_iconFor(stop.placeType), size: 15.r, color: gold),
                 ),
                 if (!isLast)
                   Expanded(
                     child: Container(
                       width: 1.5,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      margin: EdgeInsets.symmetric(vertical: 4.h),
                       color: gold.withValues(alpha: 0.25),
                     ),
                   ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           // Card
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 14.h),
               child: Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14.r),
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1529,30 +1530,30 @@ class _StopTile extends StatelessWidget {
                           child: Text(
                             stop.name,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               fontFamily: 'Marcellus',
                               color: textColor,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
                             color: gold.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.schedule_outlined,
-                                  size: 11, color: gold),
-                              const SizedBox(width: 3),
+                                  size: 11.r, color: gold),
+                              SizedBox(width: 3.w),
                               Text(hours,
                                   style: TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 11.sp,
                                       color: gold,
                                       fontWeight: FontWeight.w500)),
                             ],
@@ -1561,13 +1562,13 @@ class _StopTile extends StatelessWidget {
                       ],
                     ),
                     if (stop.reason.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 5.h),
                         decoration: BoxDecoration(
                           color: gold.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                           border: Border.all(
                               color: gold.withValues(alpha: 0.2), width: 1),
                         ),
@@ -1575,13 +1576,13 @@ class _StopTile extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(Icons.auto_awesome_outlined,
-                                size: 12, color: gold),
-                            const SizedBox(width: 5),
+                                size: 12.r, color: gold),
+                            SizedBox(width: 5.w),
                             Expanded(
                               child: Text(
                                 stop.reason,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   color: gold,
                                   fontWeight: FontWeight.w500,
                                   height: 1.4,
@@ -1593,28 +1594,28 @@ class _StopTile extends StatelessWidget {
                       ),
                     ],
                     if (stop.notes.isNotEmpty) ...[
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       Text(
                         stop.notes,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 13.sp,
                           color: textColor.withValues(alpha: 0.65),
                           height: 1.45,
                         ),
                       ),
                     ],
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     GestureDetector(
                       onTap: onViewOnMap,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.map_outlined, size: 14, color: gold),
-                          const SizedBox(width: 4),
+                          Icon(Icons.map_outlined, size: 14.r, color: gold),
+                          SizedBox(width: 4.w),
                           Text(
                             'View on Maps',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: gold,
                               fontWeight: FontWeight.w500,
                             ),

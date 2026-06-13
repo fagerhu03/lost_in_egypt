@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../bloc/admin_guide_cubit.dart';
@@ -44,9 +45,9 @@ class _AdminGuideApprovalScreenState extends State<AdminGuideApprovalScreen> {
               itemBuilder: (context, index) {
                 final guide = guides[index];
                 return Card(
-                  margin: const EdgeInsets.all(8.0),
+                  margin: EdgeInsets.all(8.r),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                     leading: const CircleAvatar(
                       backgroundColor: Color(0xFF714611),
                       child: Icon(Icons.person, color: Colors.white),
@@ -65,15 +66,15 @@ class _AdminGuideApprovalScreenState extends State<AdminGuideApprovalScreen> {
                           children: [
                             if (flagged)
                               Container(
-                                margin: const EdgeInsets.only(right: 6),
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                margin: EdgeInsets.only(right: 6.w),
+                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                                 decoration: BoxDecoration(
                                   color: risk == 'high' ? Colors.red.shade600 : Colors.orange.shade600,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Text(
                                   risk == 'high' ? '⚠ High Risk' : '⚠ Review',
-                                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                                  style: TextStyle(color: Colors.white, fontSize: 11.sp, fontWeight: FontWeight.w700),
                                 ),
                               ),
                             const Icon(Icons.chevron_right),

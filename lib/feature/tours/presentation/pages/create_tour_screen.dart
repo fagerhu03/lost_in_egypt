@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../bloc/create_tour_cubit.dart';
@@ -20,7 +21,7 @@ import 'package:lost_in_egypt/feature/home/notification/data/models/notification
 
 class CreateTourScreen extends StatefulWidget {
   final TourEntity? tourToEdit;
-  
+
   const CreateTourScreen({super.key, this.tourToEdit});
 
   @override
@@ -91,7 +92,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       _selectedLng = t.meetingLongitude;
       _existingImages = List.from(t.images);
       _selectedMeetingTime = t.meetingTime;
-      
+
       if (t.frequency != 'One-Time') {
         _selectedWeekdays.addAll(t.frequency.split(', '));
       }
@@ -308,7 +309,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.r),
             child: Form(
               key: _formKey,
               child: Column(
@@ -319,16 +320,16 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     decoration: const InputDecoration(labelText: 'Tour Title', border: OutlineInputBorder()),
                     validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   TextFormField(
                     controller: _descController,
                     decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
                     maxLines: 3,
                     validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Destinations (Max 5)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 16.h),
+                  Text('Destinations (Max 5)', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8.h),
                   if (_destinations.isNotEmpty)
                     ReorderableListView.builder(
                       shrinkWrap: true,
@@ -346,18 +347,18 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                           key: ValueKey(_destinations[index]),
                           color: Theme.of(context).colorScheme.surface,
                           elevation: 0,
-                          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                          margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 0),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r),
                             side: BorderSide(color: borderColor),
                           ),
                           child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
                             title: Text(_destinations[index], style: TextStyle(fontWeight: FontWeight.w500, color: textColor)),
                             leading: CircleAvatar(
-                              radius: 12,
+                              radius: 12.r,
                               backgroundColor: const Color(0xFFC79A00),
-                              child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                              child: Text('${index + 1}', style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.bold)),
                             ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
@@ -387,12 +388,12 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                         elevation: 4,
                                         color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(8.r),
                                           side: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
                                         ),
                                         child: SizedBox(
-                                          height: 200,
-                                          width: MediaQuery.of(context).size.width - 80,
+                                          height: 200.h,
+                                          width: MediaQuery.of(context).size.width - 80.w,
                                           child: ListView.builder(
                                             padding: EdgeInsets.zero,
                                             itemCount: options.length,
@@ -401,7 +402,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                               return InkWell(
                                                 onTap: () => onSelected(option),
                                                 child: Padding(
-                                                  padding: const EdgeInsets.all(16.0),
+                                                  padding: EdgeInsets.all(16.r),
                                                   child: Text(option.title, style: TextStyle(color: textColor)),
                                                 ),
                                               );
@@ -444,7 +445,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                   },
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                               IconButton(
                                 icon: const Icon(Icons.map_outlined),
                                 color: const Color(0xFFC79A00),
@@ -462,7 +463,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                               ),
                             ],
                           ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Row(
                     children: [
                       Expanded(
@@ -473,7 +474,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                           validator: (val) => val == null || val.isEmpty ? 'Required' : null,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       Expanded(
                         child: TextFormField(
                           controller: _maxAttendeesController,
@@ -484,47 +485,47 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   if (_selectedLat != null && _selectedLng != null)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Meeting Location', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
+                        Text('Meeting Location', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 8.h),
                         if (_selectedLocationName != null && _selectedLocationName!.isNotEmpty) ...[
                           Text(
                             _selectedLocationName!,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               color: isDark ? Colors.white : Colors.black87,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                         ],
                         if (_selectedAddress != null && _selectedAddress!.isNotEmpty) ...[
                           Text(
                             _selectedAddress!,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                         ],
                         Text(
                           '${_selectedLat!.toStringAsFixed(6)}, ${_selectedLng!.toStringAsFixed(6)}',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12.h),
                         Container(
-                          height: 160,
-                          margin: const EdgeInsets.only(bottom: 16),
+                          height: 160.h,
+                          margin: EdgeInsets.only(bottom: 16.h),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(color: borderColor),
                           ),
                           clipBehavior: Clip.hardEdge,
@@ -550,7 +551,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                 },
                               ),
                               Positioned(
-                                top: 8, right: 8,
+                                top: 8.h, right: 8.w,
                                 child: FloatingActionButton.small(
                                   heroTag: 'edit_map',
                                   onPressed: () async {
@@ -578,7 +579,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       trailing: const Icon(Icons.map, color: Color(0xFFC79A00)),
                       shape: RoundedRectangleBorder(
                         side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                       onTap: () async {
                         final result = await Navigator.pushNamed(context, '/map_picker');
@@ -592,7 +593,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                         }
                       },
                     ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   ListTile(
                     title: Text(_selectedMeetingTime == null
                         ? 'Select Meeting Time'
@@ -600,16 +601,16 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     trailing: const Icon(Icons.calendar_today),
                     shape: RoundedRectangleBorder(
                       side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                     onTap: _pickDateTime,
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Schedule Frequency (Days)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 16.h),
+                  Text('Schedule Frequency (Days)', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8.h),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
+                    spacing: 8.w,
+                    runSpacing: 4.h,
                     children: _weekdays.map((day) {
                       final isSelected = _selectedWeekdays.contains(day);
                       return ChoiceChip(
@@ -634,23 +635,23 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 24),
-                  Text(widget.tourToEdit != null ? 'Edit Tour Images' : 'Tour Images', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus")),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 24.h),
+                  Text(widget.tourToEdit != null ? 'Edit Tour Images' : 'Tour Images', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus")),
+                  SizedBox(height: 8.h),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 8.w,
+                    runSpacing: 8.h,
                     children: [
                       ..._existingImages.map((url) => Stack(
                             children: [
                               ShimmerImage(
                                 url: url,
-                                width: 80,
-                                height: 80,
+                                width: 80.r,
+                                height: 80.r,
                                 fit: BoxFit.cover,
                                 fallbackIcon: Icons.error,
                                 fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.2),
-                                fallbackIconSize: 20,
+                                fallbackIconSize: 20.r,
                               ),
                               Positioned(
                                 right: 0,
@@ -663,7 +664,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                   },
                                   child: Container(
                                     color: Colors.black54,
-                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                    child: Icon(Icons.close, color: Colors.white, size: 18.r),
                                   ),
                                 ),
                               ),
@@ -671,7 +672,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                           )),
                       ..._selectedImages.map((file) => Stack(
                             children: [
-                              Image.file(file, width: 80, height: 80, fit: BoxFit.cover),
+                              Image.file(file, width: 80.r, height: 80.r, fit: BoxFit.cover),
                               Positioned(
                                 right: 0,
                                 top: 0,
@@ -683,7 +684,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                   },
                                   child: Container(
                                     color: Colors.black54,
-                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                    child: Icon(Icons.close, color: Colors.white, size: 18.r),
                                   ),
                                 ),
                               ),
@@ -692,24 +693,24 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       GestureDetector(
                         onTap: _pickImages,
                         child: Container(
-                          width: 80,
-                          height: 80,
+                          width: 80.r,
+                          height: 80.r,
                           color: isDark ? Colors.white10 : Colors.grey.withAlpha(50),
                           child: Icon(Icons.add_a_photo, color: isDark ? Colors.white54 : Colors.grey),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                   ElevatedButton(
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
                       backgroundColor: const Color(0xFFC79A00),
                     ),
-                    child: Text(widget.tourToEdit != null ? 'Save Changes' : 'Create Tour', style: const TextStyle(fontSize: 18, color: Colors.white)),
+                    child: Text(widget.tourToEdit != null ? 'Save Changes' : 'Create Tour', style: TextStyle(fontSize: 18.sp, color: Colors.white)),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                 ],
               ),
             ),

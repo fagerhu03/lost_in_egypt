@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HieroglyphicsOverlay extends StatefulWidget {
   const HieroglyphicsOverlay({super.key});
@@ -84,15 +85,15 @@ class _HieroglyphicsOverlayState extends State<HieroglyphicsOverlay>
               builder: (context, val, child) {
                 return Opacity(
                   opacity: val,
-                  child: const Text(
+                  child: Text(
                     "CURSE RELEASED",
                     style: TextStyle(
                       fontFamily: "Marcellus",
-                      fontSize: 36,
-                      color: Color(0xFFC79A00),
+                      fontSize: 36.sp,
+                      color: const Color(0xFFC79A00),
                       letterSpacing: 8.0,
                       fontWeight: FontWeight.bold,
-                      shadows: [
+                      shadows: const [
                         Shadow(color: Colors.red, blurRadius: 20),
                         Shadow(color: Colors.amber, blurRadius: 40),
                       ],

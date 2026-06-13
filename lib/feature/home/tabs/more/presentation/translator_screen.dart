@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -230,7 +231,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
           children: [
             SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -242,34 +243,34 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.arrow_back_ios_new,
-                          size: 20,
+                          size: 20.r,
                           color: textColor,
                         ),
                       ),
                       Text(
                         "Translator",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 24.sp,
                           fontFamily: "Marcellus",
                           color: textColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 20),
+                      SizedBox(width: 20.w),
                     ],
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30.h),
 
                   // Offline Support Status
                   if (_isDownloadingModels)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.r),
                       decoration: BoxDecoration(
                         color: isDark
                             ? primary.withValues(alpha: 0.15)
                             : const Color(0xFFFFF3CD),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
                           color: primary,
                           width: 1,
@@ -278,8 +279,8 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 20.w,
+                            height: 20.h,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
@@ -287,12 +288,12 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: Text(
                               "Downloading translation models for offline use...",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 fontFamily: "Marcellus",
                                 color: textColor,
                               ),
@@ -305,25 +306,25 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                   if (!_isDownloadingModels && _translatedText.isEmpty)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.r),
                       decoration: BoxDecoration(
                         color: Colors.green.withValues(alpha: isDark ? 0.15 : 0.2),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(color: Colors.green, width: 1),
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.cloud_done,
                             color: Colors.green,
-                            size: 20,
+                            size: 20.r,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: Text(
                               "Works offline - models cached on device",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 fontFamily: "Marcellus",
                                 color: textColor,
                               ),
@@ -333,13 +334,13 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       ),
                     ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // Input/output container
                   Container(
                     decoration: BoxDecoration(
                       color: surface,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(24.r),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.08),
@@ -352,10 +353,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       children: [
                         // Source language dropdown and textbox
                         Padding(
-                          padding: const EdgeInsets.only(
-                            top: 12,
-                            left: 12,
-                            right: 12,
+                          padding: EdgeInsets.only(
+                            top: 12.h,
+                            left: 12.w,
+                            right: 12.w,
                           ),
                           child: _buildLanguageDropdown(
                             value: _sourceLanguage,
@@ -368,9 +369,9 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
                           ),
                           child: TextField(
                             controller: _sourceController,
@@ -385,12 +386,12 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                                 fontFamily: "Marcellus",
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(16.r),
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
                               fillColor: surface,
-                              contentPadding: const EdgeInsets.all(16),
+                              contentPadding: EdgeInsets.all(16.r),
                               suffixIcon: IconButton(
                                 onPressed: _isListening
                                     ? _stopListening
@@ -400,13 +401,13 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                                   color: _isListening
                                       ? Colors.red
                                       : textColor.withValues(alpha: 0.6),
-                                  size: 20,
+                                  size: 20.r,
                                 ),
                               ),
                             ),
                             style: TextStyle(
                               color: textColor,
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontFamily: "Marcellus",
                             ),
                             textInputAction: TextInputAction.done,
@@ -416,7 +417,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
                         // Swap button
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: EdgeInsets.symmetric(vertical: 8.h),
                           child: Material(
                             color: primary,
                             shape: const CircleBorder(),
@@ -426,13 +427,13 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             child: InkWell(
                               onTap: _swapLanguages,
                               customBorder: const CircleBorder(),
-                              child: const SizedBox(
-                                width: 44,
-                                height: 44,
+                              child: SizedBox(
+                                width: 44.r,
+                                height: 44.r,
                                 child: Icon(
                                   Icons.swap_vert,
                                   color: Colors.white,
-                                  size: 22,
+                                  size: 22.r,
                                 ),
                               ),
                             ),
@@ -441,10 +442,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
                         // Target language dropdown and textbox
                         Padding(
-                          padding: const EdgeInsets.only(
-                            top: 12,
-                            left: 12,
-                            right: 12,
+                          padding: EdgeInsets.only(
+                            top: 12.h,
+                            left: 12.w,
+                            right: 12.w,
                           ),
                           child: _buildLanguageDropdown(
                             value: _targetLanguage,
@@ -457,9 +458,9 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
                           ),
                           child: TextField(
                             controller: _targetController,
@@ -473,25 +474,25 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                                 fontFamily: "Marcellus",
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(16.r),
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
                               fillColor: surface,
-                              contentPadding: const EdgeInsets.all(16),
+                              contentPadding: EdgeInsets.all(16.r),
                               suffixIcon: IconButton(
                                 onPressed: () =>
                                     _speak(_translatedText, _targetLanguage),
                                 icon: Icon(
                                   Icons.volume_up,
                                   color: textColor.withValues(alpha: 0.9),
-                                  size: 20,
+                                  size: 20.r,
                                 ),
                               ),
                             ),
                             style: TextStyle(
                               color: textColor,
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontFamily: "Marcellus",
                             ),
                           ),
@@ -500,38 +501,38 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 35),
+                  SizedBox(height: 35.h),
 
                   // Translate Button
                   if (_sourceText.isNotEmpty)
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 56.h,
                       child: ElevatedButton(
                         onPressed: _isTranslating ? null : _translate,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primary,
                           disabledBackgroundColor: primary.withValues(alpha: 0.6),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(20.r),
                           ),
                           elevation: 4,
                         ),
                         child: _isTranslating
-                            ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
+                            ? SizedBox(
+                          width: 24.w,
+                          height: 24.h,
+                          child: const CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Colors.white,
                             ),
                             strokeWidth: 2,
                           ),
                         )
-                            : const Text(
+                            : Text(
                           "Translate",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontFamily: "Marcellus",
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
@@ -539,7 +540,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                 ],
               ),
             ),
@@ -558,7 +559,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     return Container(
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -572,16 +573,16 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         onChanged: (newLang) => onChanged(newLang!),
         isExpanded: true,
         underline: const SizedBox(),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         items: languages.keys.map((lang) {
           return DropdownMenuItem<String>(
             value: lang,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               child: Text(
                 lang,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontFamily: "Marcellus",
                   color: textColor,
                 ),
