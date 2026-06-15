@@ -794,4 +794,173 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get planComingSoonDesc =>
       'نعمل على ميزات مميزة تشمل وضع عدم الاتصال، وتجارب إرشادية حصرية، وأدوات متقدمة لتخطيط الرحلات. ترقّبوا — وسيبقى التطبيق الأساسي مجانيًا دائمًا.';
+
+  @override
+  String get profileViewTitle => 'الملف الشخصي';
+
+  @override
+  String get profileUserNotFound => 'لم يتم العثور على المستخدم';
+
+  @override
+  String get profileEmail => 'البريد الإلكتروني';
+
+  @override
+  String get profilePhone => 'الهاتف';
+
+  @override
+  String get profilePostsStat => 'المنشورات';
+
+  @override
+  String get profilePlacesStat => 'الأماكن';
+
+  @override
+  String get profileRole => 'الدور';
+
+  @override
+  String get profileRoleAdmin => 'مشرف';
+
+  @override
+  String get profileRoleVerifiedGuide => 'مرشد موثَّق';
+
+  @override
+  String get profileRoleTourist => 'سائح';
+
+  @override
+  String get profileAbout => 'نبذة';
+
+  @override
+  String get profileInterests => 'الاهتمامات';
+
+  @override
+  String get profileSocial => 'التواصل الاجتماعي';
+
+  @override
+  String get profileInstagram => 'إنستغرام';
+
+  @override
+  String get profileTwitter => 'تويتر';
+
+  @override
+  String get profileContact => 'معلومات التواصل';
+
+  @override
+  String get profileBadges => 'الشارات';
+
+  @override
+  String get editProfileTitle => 'تعديل الملف الشخصي';
+
+  @override
+  String get editPhotoUpdated => 'تم تحديث صورة الملف الشخصي ✅';
+
+  @override
+  String get editPhotoUploadError => 'حدث خطأ أثناء رفع الصورة. حاول مرة أخرى.';
+
+  @override
+  String get editPhoneMustVerify => 'يجب التحقق من رقم الهاتف قبل الحفظ';
+
+  @override
+  String get editInstagramRule =>
+      'إنستغرام: حروف وأرقام و. و_ فقط (30 كحد أقصى)';
+
+  @override
+  String get editTwitterRule =>
+      'تويتر/إكس: حروف وأرقام و. و_ فقط (15 كحد أقصى)';
+
+  @override
+  String get editUsernameEmpty => 'لا يمكن أن يكون اسم المستخدم فارغًا';
+
+  @override
+  String get editLangRequestTitle => 'طلب إضافة لغة';
+
+  @override
+  String get editLangRequestBody =>
+      'بموجب القانون المصري، يحتاج المرشدون إلى اعتماد رسمي للإرشاد بلغات معيّنة. يرجى إدخال اللغة التي ترغب في إضافتها. سيتحقق المشرف من سجلات النقابة/وزارة السياحة الخاصة بك.';
+
+  @override
+  String get editLangRequestHint => 'مثال: الإسبانية، الألمانية، الإيطالية';
+
+  @override
+  String get editLangSubmit => 'إرسال الطلب';
+
+  @override
+  String get editLangPending => 'لديك بالفعل طلب لغة قيد المراجعة.';
+
+  @override
+  String get editLangSubmitted => 'تم إرسال الطلب! سيراجعه المشرف قريبًا.';
+
+  @override
+  String get editProfileUpdated => 'تم تحديث الملف الشخصي ✅';
+
+  @override
+  String get editProfileCompletion => 'اكتمال الملف الشخصي';
+
+  @override
+  String get editSectionBasic => 'المعلومات الأساسية';
+
+  @override
+  String get editFullName => 'الاسم الكامل';
+
+  @override
+  String get editUsername => 'اسم المستخدم';
+
+  @override
+  String get editPhoneNumber => 'رقم الهاتف';
+
+  @override
+  String get editNationality => 'الجنسية';
+
+  @override
+  String get editSectionContact => 'معلومات التواصل';
+
+  @override
+  String get editSectionAbout => 'نبذة عنك';
+
+  @override
+  String get editBio => 'نبذة';
+
+  @override
+  String get editBioHint => 'أخبرنا عن نفسك...';
+
+  @override
+  String get editSectionSocial => 'روابط التواصل الاجتماعي (اختياري)';
+
+  @override
+  String get editSocialHint => 'اسم المستخدم (بدون @)';
+
+  @override
+  String get editTwitterLabel => 'تويتر/إكس';
+
+  @override
+  String get editSectionGuide => 'بيانات اعتماد المرشد';
+
+  @override
+  String get editCertifiedLangs => 'اللغات المعتمدة (مقفلة)';
+
+  @override
+  String get editNoCertifiedLangs => 'لا توجد لغات معتمدة بعد.';
+
+  @override
+  String get editRequestNewLang => 'طلب لغة جديدة';
+
+  @override
+  String get editSearchNationality => 'ابحث عن الجنسية';
+
+  @override
+  String get editUsernameHint => 'your_handle';
+
+  @override
+  String get editVerificationStatus => 'حالة التحقق';
+
+  @override
+  String get editVerificationEmailSent =>
+      'تم إرسال رسالة التحقق! تحقق من بريدك الوارد.';
+
+  @override
+  String get editResend => 'إعادة الإرسال';
+
+  @override
+  String get editVerifyNow => 'تحقّق الآن';
+
+  @override
+  String get editSaveChanges => 'حفظ التغييرات';
 }

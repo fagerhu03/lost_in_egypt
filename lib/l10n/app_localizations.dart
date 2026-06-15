@@ -1537,6 +1537,336 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We\'re working on premium features including offline mode, exclusive guided experiences, and advanced trip planning tools. Stay tuned — and the core app will always remain free.'**
   String get planComingSoonDesc;
+
+  /// Title of the read-only profile view screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileViewTitle;
+
+  /// Empty state when the requested profile does not exist.
+  ///
+  /// In en, this message translates to:
+  /// **'User not found'**
+  String get profileUserNotFound;
+
+  /// Label for the email verification badge / field.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get profileEmail;
+
+  /// Label for the phone verification badge / item.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get profilePhone;
+
+  /// Caption under the posts count on the profile stats row.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get profilePostsStat;
+
+  /// Caption under the visited-places count on the profile stats row.
+  ///
+  /// In en, this message translates to:
+  /// **'Places'**
+  String get profilePlacesStat;
+
+  /// Label for the user role stat / field.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get profileRole;
+
+  /// Role label: administrator.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get profileRoleAdmin;
+
+  /// Role label: verified guide.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Guide'**
+  String get profileRoleVerifiedGuide;
+
+  /// Role label: tourist / traveler.
+  ///
+  /// In en, this message translates to:
+  /// **'Tourist'**
+  String get profileRoleTourist;
+
+  /// Section header for the user's bio.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get profileAbout;
+
+  /// Section header / label for the user's interests.
+  ///
+  /// In en, this message translates to:
+  /// **'Interests'**
+  String get profileInterests;
+
+  /// Section header for the user's social links.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get profileSocial;
+
+  /// Instagram label / brand name.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram'**
+  String get profileInstagram;
+
+  /// Twitter label / brand name.
+  ///
+  /// In en, this message translates to:
+  /// **'Twitter'**
+  String get profileTwitter;
+
+  /// Section header for the user's contact details.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get profileContact;
+
+  /// Section header for the gamification badges row.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get profileBadges;
+
+  /// Header / button label for the edit-profile screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfileTitle;
+
+  /// Confirmation after the profile photo is uploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo updated ✅'**
+  String get editPhotoUpdated;
+
+  /// Error when the profile photo upload fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Error uploading photo. Please try again.'**
+  String get editPhotoUploadError;
+
+  /// Error when the user tries to save with an unverified new phone number.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number must be verified before saving'**
+  String get editPhoneMustVerify;
+
+  /// Validation error for an invalid Instagram handle.
+  ///
+  /// In en, this message translates to:
+  /// **'Instagram: letters, numbers, . and _ only (max 30)'**
+  String get editInstagramRule;
+
+  /// Validation error for an invalid Twitter/X handle.
+  ///
+  /// In en, this message translates to:
+  /// **'Twitter/X: letters, numbers, . and _ only (max 15)'**
+  String get editTwitterRule;
+
+  /// Validation error when the username field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Username cannot be empty'**
+  String get editUsernameEmpty;
+
+  /// Title of the dialog to request a new certified guide language.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Language Addition'**
+  String get editLangRequestTitle;
+
+  /// Explanation in the request-language dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'By Egyptian law, guides require official certification to guide in specific languages. Please enter the language you wish to add. An admin will verify your syndicate/MOTA records.'**
+  String get editLangRequestBody;
+
+  /// Hint for the language input in the request-language dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Spanish, German, Italian'**
+  String get editLangRequestHint;
+
+  /// Button that submits a language addition request.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Request'**
+  String get editLangSubmit;
+
+  /// Error when the user already has a pending language request.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a pending language request.'**
+  String get editLangPending;
+
+  /// Confirmation after a language addition request is submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Request submitted! An admin will review it shortly.'**
+  String get editLangSubmitted;
+
+  /// Confirmation after the profile is saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Updated ✅'**
+  String get editProfileUpdated;
+
+  /// Label above the profile completion progress bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Completion'**
+  String get editProfileCompletion;
+
+  /// Section header for basic profile fields.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Information'**
+  String get editSectionBasic;
+
+  /// Label for the full name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get editFullName;
+
+  /// Label for the username field.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get editUsername;
+
+  /// Label for the phone number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get editPhoneNumber;
+
+  /// Label for the nationality picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Nationality'**
+  String get editNationality;
+
+  /// Section header for contact fields.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Information'**
+  String get editSectionContact;
+
+  /// Section header for bio and interests.
+  ///
+  /// In en, this message translates to:
+  /// **'About You'**
+  String get editSectionAbout;
+
+  /// Label for the bio field.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get editBio;
+
+  /// Hint inside the bio field.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself...'**
+  String get editBioHint;
+
+  /// Section header for optional social links.
+  ///
+  /// In en, this message translates to:
+  /// **'Social Links (Optional)'**
+  String get editSectionSocial;
+
+  /// Hint inside the Instagram/Twitter handle fields.
+  ///
+  /// In en, this message translates to:
+  /// **'username (no @)'**
+  String get editSocialHint;
+
+  /// Label for the Twitter/X handle field.
+  ///
+  /// In en, this message translates to:
+  /// **'Twitter/X'**
+  String get editTwitterLabel;
+
+  /// Section header for verified-guide credentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide Credentials'**
+  String get editSectionGuide;
+
+  /// Label for the read-only certified languages field.
+  ///
+  /// In en, this message translates to:
+  /// **'Certified Languages (Locked)'**
+  String get editCertifiedLangs;
+
+  /// Placeholder when the guide has no certified languages.
+  ///
+  /// In en, this message translates to:
+  /// **'None certified yet.'**
+  String get editNoCertifiedLangs;
+
+  /// Button to request adding a new certified language.
+  ///
+  /// In en, this message translates to:
+  /// **'Request New Language'**
+  String get editRequestNewLang;
+
+  /// Hint in the nationality country-picker search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search nationality'**
+  String get editSearchNationality;
+
+  /// Placeholder example handle in the username field.
+  ///
+  /// In en, this message translates to:
+  /// **'your_handle'**
+  String get editUsernameHint;
+
+  /// Header of the verification status card.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Status'**
+  String get editVerificationStatus;
+
+  /// Confirmation after a verification email is resent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification email sent! Check your inbox.'**
+  String get editVerificationEmailSent;
+
+  /// Button to resend the email verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend'**
+  String get editResend;
+
+  /// Button to start phone verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify now'**
+  String get editVerifyNow;
+
+  /// Primary button that saves the edited profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get editSaveChanges;
 }
 
 class _AppLocalizationsDelegate

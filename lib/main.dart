@@ -58,10 +58,19 @@ void main() async {
   // app without burning Places API quota.
   PlacesApiService.disabled =
       (dotenv.env['PLACES_API_DISABLED'] ?? '').toLowerCase() == 'true';
+  final rawKillSwitch = dotenv.env['PLACES_API_DISABLED'];
   if (PlacesApiService.disabled) {
     debugPrint('🛑 PLACES API KILL-SWITCH IS ON '
         '(PLACES_API_DISABLED=true). All Places API calls will be blocked '
         'this session. Remove the flag from .env to re-enable.');
+  } else {
+    // Positive confirmation so a stale bundled .env (assets are baked in at
+    // build time — a hot reload / reinstalling the same APK keeps the old
+    // value) is obvious from the logs. Echoes the raw parsed value too.
+    debugPrint('✅ PLACES API ENABLED '
+        '(PLACES_API_DISABLED=${rawKillSwitch ?? '<unset>'}). Note: a fresh '
+        'API call only fires when memory + disk + Firestore caches all miss — '
+        '"0 API calls!" in the log means cached Places data is being served.');
   }
 
   try {

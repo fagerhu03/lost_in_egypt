@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class ProfileViewScreen extends StatefulWidget {
   final String? uid; // optional: view other user's profile if provided
@@ -65,6 +66,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -91,7 +93,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Profile', style: TextStyle(color: onSurface)),
+        title: Text(l10n.profileViewTitle, style: TextStyle(color: onSurface)),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: onSurface),
@@ -103,7 +105,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           : _user == null
           ? Center(
         child: Text(
-          'User not found',
+          l10n.profileUserNotFound,
           style: TextStyle(color: onSurface.withValues(alpha: 0.8)),
         ),
       )
@@ -149,21 +151,21 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildBadge('Email', _user!.emailVerified),
+                    _buildBadge(l10n.profileEmail, _user!.emailVerified),
                     SizedBox(width: 12.w),
-                    _buildBadge('Phone', _user!.phoneVerified),
+                    _buildBadge(l10n.profilePhone, _user!.phoneVerified),
                   ],
                 ),
                 SizedBox(height: 16.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildStat('Posts', _postCount, onSurface),
+                    _buildStat(l10n.profilePostsStat, _postCount, onSurface),
                     SizedBox(width: 24.w),
-                    _buildStat('Places', _user!.visitedLandmarks.length, onSurface),
+                    _buildStat(l10n.profilePlacesStat, _user!.visitedLandmarks.length, onSurface),
                     SizedBox(width: 24.w),
-                    _buildStat('Role', 0, onSurface,
-                        label: _user!.role.toUpperCase()),
+                    _buildStat(l10n.profileRole, 0, onSurface,
+                        label: _roleLabel(l10n).toUpperCase()),
                   ],
                 ),
               ],
@@ -174,7 +176,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
 
           if (_user!.bio.isNotEmpty)
             _sectionCard(
-              title: 'About',
+              title: l10n.profileAbout,
               child: Text(
                 _user!.bio,
                 style: TextStyle(color: onSurface.withValues(alpha: 0.85)),
@@ -187,7 +189,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
 
           if (_user!.interests.isNotEmpty)
             _sectionCard(
-              title: 'Interests',
+              title: l10n.profileInterests,
               child: Wrap(
                 spacing: 8.w,
                 runSpacing: 8.h,
@@ -214,18 +216,18 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
           if (_user!.instagramHandle.isNotEmpty ||
               _user!.twitterHandle.isNotEmpty)
             _sectionCard(
-              title: 'Social',
+              title: l10n.profileSocial,
               child: Column(
                 children: [
                   if (_user!.instagramHandle.isNotEmpty)
                     _buildSocialRow(
-                      'Instagram',
+                      l10n.profileInstagram,
                       _user!.instagramHandle,
                       onSurface,
                     ),
                   if (_user!.twitterHandle.isNotEmpty)
                     _buildSocialRow(
-                      'Twitter',
+                      l10n.profileTwitter,
                       _user!.twitterHandle,
                       onSurface,
                     ),
@@ -238,7 +240,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
             ),
 
           _sectionCard(
-            title: 'Contact',
+            title: l10n.profileContact,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -264,7 +266,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
 
           // --- GAMIFICATION BADGES ---
           _sectionCard(
-            title: 'Badges',
+            title: l10n.profileBadges,
             child: SizedBox(
               height: 100.h,
               child: ListView.separated(
@@ -304,7 +306,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                     borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
-                child: const Text('Edit profile'),
+                child: Text(l10n.editProfileTitle),
               ),
             ),
         ],
@@ -344,6 +346,17 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
         ],
       ),
     );
+  }
+
+  String _roleLabel(AppLocalizations l10n) {
+    switch (_user!.role) {
+      case 'admin':
+        return l10n.profileRoleAdmin;
+      case 'guide':
+        return l10n.profileRoleVerifiedGuide;
+      default:
+        return l10n.profileRoleTourist;
+    }
   }
 
   Widget _buildBadge(String label, bool good) {

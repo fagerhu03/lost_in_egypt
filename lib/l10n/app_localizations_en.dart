@@ -797,4 +797,175 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get planComingSoonDesc =>
       'We\'re working on premium features including offline mode, exclusive guided experiences, and advanced trip planning tools. Stay tuned — and the core app will always remain free.';
+
+  @override
+  String get profileViewTitle => 'Profile';
+
+  @override
+  String get profileUserNotFound => 'User not found';
+
+  @override
+  String get profileEmail => 'Email';
+
+  @override
+  String get profilePhone => 'Phone';
+
+  @override
+  String get profilePostsStat => 'Posts';
+
+  @override
+  String get profilePlacesStat => 'Places';
+
+  @override
+  String get profileRole => 'Role';
+
+  @override
+  String get profileRoleAdmin => 'Admin';
+
+  @override
+  String get profileRoleVerifiedGuide => 'Verified Guide';
+
+  @override
+  String get profileRoleTourist => 'Tourist';
+
+  @override
+  String get profileAbout => 'About';
+
+  @override
+  String get profileInterests => 'Interests';
+
+  @override
+  String get profileSocial => 'Social';
+
+  @override
+  String get profileInstagram => 'Instagram';
+
+  @override
+  String get profileTwitter => 'Twitter';
+
+  @override
+  String get profileContact => 'Contact';
+
+  @override
+  String get profileBadges => 'Badges';
+
+  @override
+  String get editProfileTitle => 'Edit profile';
+
+  @override
+  String get editPhotoUpdated => 'Profile photo updated ✅';
+
+  @override
+  String get editPhotoUploadError => 'Error uploading photo. Please try again.';
+
+  @override
+  String get editPhoneMustVerify =>
+      'Phone number must be verified before saving';
+
+  @override
+  String get editInstagramRule =>
+      'Instagram: letters, numbers, . and _ only (max 30)';
+
+  @override
+  String get editTwitterRule =>
+      'Twitter/X: letters, numbers, . and _ only (max 15)';
+
+  @override
+  String get editUsernameEmpty => 'Username cannot be empty';
+
+  @override
+  String get editLangRequestTitle => 'Request Language Addition';
+
+  @override
+  String get editLangRequestBody =>
+      'By Egyptian law, guides require official certification to guide in specific languages. Please enter the language you wish to add. An admin will verify your syndicate/MOTA records.';
+
+  @override
+  String get editLangRequestHint => 'e.g., Spanish, German, Italian';
+
+  @override
+  String get editLangSubmit => 'Submit Request';
+
+  @override
+  String get editLangPending => 'You already have a pending language request.';
+
+  @override
+  String get editLangSubmitted =>
+      'Request submitted! An admin will review it shortly.';
+
+  @override
+  String get editProfileUpdated => 'Profile Updated ✅';
+
+  @override
+  String get editProfileCompletion => 'Profile Completion';
+
+  @override
+  String get editSectionBasic => 'Basic Information';
+
+  @override
+  String get editFullName => 'Full name';
+
+  @override
+  String get editUsername => 'Username';
+
+  @override
+  String get editPhoneNumber => 'Phone number';
+
+  @override
+  String get editNationality => 'Nationality';
+
+  @override
+  String get editSectionContact => 'Contact Information';
+
+  @override
+  String get editSectionAbout => 'About You';
+
+  @override
+  String get editBio => 'Bio';
+
+  @override
+  String get editBioHint => 'Tell us about yourself...';
+
+  @override
+  String get editSectionSocial => 'Social Links (Optional)';
+
+  @override
+  String get editSocialHint => 'username (no @)';
+
+  @override
+  String get editTwitterLabel => 'Twitter/X';
+
+  @override
+  String get editSectionGuide => 'Guide Credentials';
+
+  @override
+  String get editCertifiedLangs => 'Certified Languages (Locked)';
+
+  @override
+  String get editNoCertifiedLangs => 'None certified yet.';
+
+  @override
+  String get editRequestNewLang => 'Request New Language';
+
+  @override
+  String get editSearchNationality => 'Search nationality';
+
+  @override
+  String get editUsernameHint => 'your_handle';
+
+  @override
+  String get editVerificationStatus => 'Verification Status';
+
+  @override
+  String get editVerificationEmailSent =>
+      'Verification email sent! Check your inbox.';
+
+  @override
+  String get editResend => 'Resend';
+
+  @override
+  String get editVerifyNow => 'Verify now';
+
+  @override
+  String get editSaveChanges => 'Save Changes';
 }

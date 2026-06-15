@@ -1063,5 +1063,227 @@
   "planComingSoonDesc": "We're working on premium features including offline mode, exclusive guided experiences, and advanced trip planning tools. Stay tuned — and the core app will always remain free.",
   "@planComingSoonDesc": {
     "description": "Description under the coming-soon section."
+  },
+
+  "profileViewTitle": "Profile",
+  "@profileViewTitle": {
+    "description": "Title of the read-only profile view screen."
+  },
+  "profileUserNotFound": "User not found",
+  "@profileUserNotFound": {
+    "description": "Empty state when the requested profile does not exist."
+  },
+  "profileEmail": "Email",
+  "@profileEmail": {
+    "description": "Label for the email verification badge / field."
+  },
+  "profilePhone": "Phone",
+  "@profilePhone": {
+    "description": "Label for the phone verification badge / item."
+  },
+  "profilePostsStat": "Posts",
+  "@profilePostsStat": {
+    "description": "Caption under the posts count on the profile stats row."
+  },
+  "profilePlacesStat": "Places",
+  "@profilePlacesStat": {
+    "description": "Caption under the visited-places count on the profile stats row."
+  },
+  "profileRole": "Role",
+  "@profileRole": {
+    "description": "Label for the user role stat / field."
+  },
+  "profileRoleAdmin": "Admin",
+  "@profileRoleAdmin": {
+    "description": "Role label: administrator."
+  },
+  "profileRoleVerifiedGuide": "Verified Guide",
+  "@profileRoleVerifiedGuide": {
+    "description": "Role label: verified guide."
+  },
+  "profileRoleTourist": "Tourist",
+  "@profileRoleTourist": {
+    "description": "Role label: tourist / traveler."
+  },
+  "profileAbout": "About",
+  "@profileAbout": {
+    "description": "Section header for the user's bio."
+  },
+  "profileInterests": "Interests",
+  "@profileInterests": {
+    "description": "Section header / label for the user's interests."
+  },
+  "profileSocial": "Social",
+  "@profileSocial": {
+    "description": "Section header for the user's social links."
+  },
+  "profileInstagram": "Instagram",
+  "@profileInstagram": {
+    "description": "Instagram label / brand name."
+  },
+  "profileTwitter": "Twitter",
+  "@profileTwitter": {
+    "description": "Twitter label / brand name."
+  },
+  "profileContact": "Contact",
+  "@profileContact": {
+    "description": "Section header for the user's contact details."
+  },
+  "profileBadges": "Badges",
+  "@profileBadges": {
+    "description": "Section header for the gamification badges row."
+  },
+  "editProfileTitle": "Edit profile",
+  "@editProfileTitle": {
+    "description": "Header / button label for the edit-profile screen."
+  },
+
+  "editPhotoUpdated": "Profile photo updated ✅",
+  "@editPhotoUpdated": {
+    "description": "Confirmation after the profile photo is uploaded."
+  },
+  "editPhotoUploadError": "Error uploading photo. Please try again.",
+  "@editPhotoUploadError": {
+    "description": "Error when the profile photo upload fails."
+  },
+  "editPhoneMustVerify": "Phone number must be verified before saving",
+  "@editPhoneMustVerify": {
+    "description": "Error when the user tries to save with an unverified new phone number."
+  },
+  "editInstagramRule": "Instagram: letters, numbers, . and _ only (max 30)",
+  "@editInstagramRule": {
+    "description": "Validation error for an invalid Instagram handle."
+  },
+  "editTwitterRule": "Twitter/X: letters, numbers, . and _ only (max 15)",
+  "@editTwitterRule": {
+    "description": "Validation error for an invalid Twitter/X handle."
+  },
+  "editUsernameEmpty": "Username cannot be empty",
+  "@editUsernameEmpty": {
+    "description": "Validation error when the username field is empty."
+  },
+  "editLangRequestTitle": "Request Language Addition",
+  "@editLangRequestTitle": {
+    "description": "Title of the dialog to request a new certified guide language."
+  },
+  "editLangRequestBody": "By Egyptian law, guides require official certification to guide in specific languages. Please enter the language you wish to add. An admin will verify your syndicate/MOTA records.",
+  "@editLangRequestBody": {
+    "description": "Explanation in the request-language dialog."
+  },
+  "editLangRequestHint": "e.g., Spanish, German, Italian",
+  "@editLangRequestHint": {
+    "description": "Hint for the language input in the request-language dialog."
+  },
+  "editLangSubmit": "Submit Request",
+  "@editLangSubmit": {
+    "description": "Button that submits a language addition request."
+  },
+  "editLangPending": "You already have a pending language request.",
+  "@editLangPending": {
+    "description": "Error when the user already has a pending language request."
+  },
+  "editLangSubmitted": "Request submitted! An admin will review it shortly.",
+  "@editLangSubmitted": {
+    "description": "Confirmation after a language addition request is submitted."
+  },
+  "editProfileUpdated": "Profile Updated ✅",
+  "@editProfileUpdated": {
+    "description": "Confirmation after the profile is saved."
+  },
+  "editProfileCompletion": "Profile Completion",
+  "@editProfileCompletion": {
+    "description": "Label above the profile completion progress bar."
+  },
+  "editSectionBasic": "Basic Information",
+  "@editSectionBasic": {
+    "description": "Section header for basic profile fields."
+  },
+  "editFullName": "Full name",
+  "@editFullName": {
+    "description": "Label for the full name field."
+  },
+  "editUsername": "Username",
+  "@editUsername": {
+    "description": "Label for the username field."
+  },
+  "editPhoneNumber": "Phone number",
+  "@editPhoneNumber": {
+    "description": "Label for the phone number field."
+  },
+  "editNationality": "Nationality",
+  "@editNationality": {
+    "description": "Label for the nationality picker."
+  },
+  "editSectionContact": "Contact Information",
+  "@editSectionContact": {
+    "description": "Section header for contact fields."
+  },
+  "editSectionAbout": "About You",
+  "@editSectionAbout": {
+    "description": "Section header for bio and interests."
+  },
+  "editBio": "Bio",
+  "@editBio": {
+    "description": "Label for the bio field."
+  },
+  "editBioHint": "Tell us about yourself...",
+  "@editBioHint": {
+    "description": "Hint inside the bio field."
+  },
+  "editSectionSocial": "Social Links (Optional)",
+  "@editSectionSocial": {
+    "description": "Section header for optional social links."
+  },
+  "editSocialHint": "username (no @)",
+  "@editSocialHint": {
+    "description": "Hint inside the Instagram/Twitter handle fields."
+  },
+  "editTwitterLabel": "Twitter/X",
+  "@editTwitterLabel": {
+    "description": "Label for the Twitter/X handle field."
+  },
+  "editSectionGuide": "Guide Credentials",
+  "@editSectionGuide": {
+    "description": "Section header for verified-guide credentials."
+  },
+  "editCertifiedLangs": "Certified Languages (Locked)",
+  "@editCertifiedLangs": {
+    "description": "Label for the read-only certified languages field."
+  },
+  "editNoCertifiedLangs": "None certified yet.",
+  "@editNoCertifiedLangs": {
+    "description": "Placeholder when the guide has no certified languages."
+  },
+  "editRequestNewLang": "Request New Language",
+  "@editRequestNewLang": {
+    "description": "Button to request adding a new certified language."
+  },
+  "editSearchNationality": "Search nationality",
+  "@editSearchNationality": {
+    "description": "Hint in the nationality country-picker search field."
+  },
+  "editUsernameHint": "your_handle",
+  "@editUsernameHint": {
+    "description": "Placeholder example handle in the username field."
+  },
+  "editVerificationStatus": "Verification Status",
+  "@editVerificationStatus": {
+    "description": "Header of the verification status card."
+  },
+  "editVerificationEmailSent": "Verification email sent! Check your inbox.",
+  "@editVerificationEmailSent": {
+    "description": "Confirmation after a verification email is resent."
+  },
+  "editResend": "Resend",
+  "@editResend": {
+    "description": "Button to resend the email verification."
+  },
+  "editVerifyNow": "Verify now",
+  "@editVerifyNow": {
+    "description": "Button to start phone verification."
+  },
+  "editSaveChanges": "Save Changes",
+  "@editSaveChanges": {
+    "description": "Primary button that saves the edited profile."
   }
 }
