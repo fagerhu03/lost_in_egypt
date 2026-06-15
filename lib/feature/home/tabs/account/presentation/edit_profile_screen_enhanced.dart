@@ -418,7 +418,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     final bool? shouldSubmit = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Request Language Addition', style: TextStyle(fontFamily: 'Marcellus')),
+        title: const Text('Request Language Addition', style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,7 +604,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                                   style: TextStyle(
                                     color: onSurface.withValues(alpha: 0.7),
                                     fontSize: 13.sp,
-                                    fontFamily: 'Marcellus',
+                                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                   ),
                                 ),
                                 Text(
@@ -613,7 +613,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                                     color: primary,
                                     fontSize: 13.sp,
                                     fontWeight: FontWeight.bold,
-                                    fontFamily: 'Marcellus',
+                                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                   ),
                                 ),
                               ],
@@ -649,7 +649,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                       if (_usernameError != null) ...[
                         SizedBox(height: 6.h),
                         Padding(
-                          padding: EdgeInsets.only(left: 8.w),
+                          padding: EdgeInsetsDirectional.only(start: 8.w),
                           child: Text(
                             _usernameError!,
                             style: TextStyle(color: Colors.red, fontSize: 12.sp),
@@ -763,7 +763,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             "Edit profile",
             style: TextStyle(
               fontSize: 20.sp,
-              fontFamily: "Marcellus",
+              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
               color: onSurface,
             ),
           ),
@@ -781,7 +781,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         style: TextStyle(
           color: onSurface,
           fontSize: 20.sp,
-          fontFamily: "Marcellus",
+          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -875,13 +875,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   }
 
   Widget _buildLabel(String text, Color onSurface) => Padding(
-    padding: EdgeInsets.only(bottom: 8.h, left: 4.w),
+    padding: EdgeInsetsDirectional.only(bottom: 8.h, start: 4.w),
     child: Text(
       text,
       style: TextStyle(
         color: onSurface.withValues(alpha: 0.85),
         fontSize: 14.sp,
-        fontFamily: "Marcellus",
+        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
         fontWeight: FontWeight.w600,
       ),
     ),
@@ -1004,7 +1004,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             countryListTheme: CountryListThemeData(
               backgroundColor: surface,
               textStyle: TextStyle(
-                fontFamily: "Marcellus",
+                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 color: onSurface,
               ),
               borderRadius: BorderRadius.circular(20.r),
@@ -1065,7 +1065,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         style: TextStyle(
           color: onSurface,
           fontSize: 16.sp,
-          fontFamily: 'Marcellus',
+          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
         ),
       ),
     );
@@ -1180,7 +1180,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       child: Row(
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 20.w),
+            padding: EdgeInsetsDirectional.only(start: 20.w),
             child: Text(
               "@",
               style: TextStyle(
@@ -1263,7 +1263,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         ),
         if (hasError)
           Padding(
-            padding: EdgeInsets.only(left: 12.w, top: 4.h),
+            padding: EdgeInsetsDirectional.only(start: 12.w, top: 4.h),
             child: Text(
               errorText,
               style: TextStyle(color: Colors.red, fontSize: 12.sp),
@@ -1289,7 +1289,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             style: TextStyle(
               color: onSurface,
               fontSize: 16.sp,
-              fontFamily: "Marcellus",
+              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1426,7 +1426,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           "Save Changes",
           style: TextStyle(
             fontSize: 18.sp,
-            fontFamily: "Marcellus",
+            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
             fontWeight: FontWeight.w600,
           ),
         ),

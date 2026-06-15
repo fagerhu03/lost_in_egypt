@@ -279,7 +279,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
           style: TextStyle(
             color: textColor.withValues(alpha: 0.9),
             fontSize: 22.sp,
-            fontFamily: "Marcellus",
+            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
           ),
         ),
       ),
@@ -383,8 +383,8 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                             secondaryTextColor)
                         : ListView.builder(
                             controller: _scrollController,
-                            padding: EdgeInsets.only(
-                                left: 16.w, right: 16.w, top: 4.h, bottom: 32.h),
+                            padding: EdgeInsetsDirectional.only(
+                                start: 16.w, end: 16.w, top: 4.h, bottom: 32.h),
                             itemCount: _displayedPlaces.length +
                                 (_displayedPlaces.length <
                                         _filteredPlaces.length
@@ -469,7 +469,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
           SizedBox(height: 14.h),
           Text(text,
               style: TextStyle(
-                  color: color, fontSize: 16.sp, fontFamily: "Marcellus")),
+                  color: color, fontSize: 16.sp, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'])),
         ],
       ),
     );
@@ -640,7 +640,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                       color: textColor.withValues(alpha: 0.92),
                       fontSize: 17.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       height: 1.2,
                     ),
                     maxLines: 2,

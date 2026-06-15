@@ -211,7 +211,7 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('React to post', style: TextStyle(fontFamily: 'Marcellus', fontSize: 15.sp, color: onSurface)),
+              Text('React to post', style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 15.sp, color: onSurface)),
               SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

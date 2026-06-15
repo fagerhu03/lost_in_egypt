@@ -53,7 +53,7 @@ class SearchHeader extends StatelessWidget {
                   color: textColor,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ),

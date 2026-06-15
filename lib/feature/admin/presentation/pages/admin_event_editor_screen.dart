@@ -100,7 +100,7 @@ class _AdminEventEditorScreenState extends State<AdminEventEditorScreen> {
           widget.isEditing ? 'Edit Event' : 'Create Event',
           style: TextStyle(
             color: onSurface,
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             fontSize: 20.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -110,7 +110,7 @@ class _AdminEventEditorScreenState extends State<AdminEventEditorScreen> {
         actions: [
           if (_saving)
             Padding(
-              padding: EdgeInsets.only(right: 16.w),
+              padding: EdgeInsetsDirectional.only(end: 16.w),
               child: Center(
                 child: SizedBox(
                   width: 20.r,
@@ -253,7 +253,7 @@ class _AdminEventEditorScreenState extends State<AdminEventEditorScreen> {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         ),
                       ),
               ),

@@ -206,7 +206,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
             Text(
               _codeSent ? "Enter Code" : "Verify Phone Number",
               style: TextStyle(
-                fontFamily: "Marcellus",
+                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF714611),

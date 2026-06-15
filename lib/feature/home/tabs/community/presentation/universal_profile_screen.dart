@@ -83,7 +83,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                             color: titleColor,
                             fontSize: 18.sp,
                             fontWeight: FontWeight.w600,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                       ),
@@ -139,7 +139,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
                                 labelColor: titleColor,
                                 unselectedLabelColor: titleColor.withValues(alpha: 0.45),
                                 indicatorColor: theme.colorScheme.primary,
-                                labelStyle: TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, fontSize: 14.sp),
+                                labelStyle: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold, fontSize: 14.sp),
                                 tabs: const [Tab(text: 'About'), Tab(text: 'Posts')],
                               ),
                               Expanded(
@@ -193,7 +193,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
               children: [
                 Icon(Icons.post_add_outlined, size: 52.r, color: onSurface.withValues(alpha: 0.2)),
                 SizedBox(height: 12.h),
-                Text('No posts yet', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16.sp, color: onSurface.withValues(alpha: 0.45))),
+                Text('No posts yet', style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 16.sp, color: onSurface.withValues(alpha: 0.45))),
               ],
             ),
           );
@@ -248,7 +248,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           style: TextStyle(
             color: titleColor,
             fontSize: 24.sp,
-            fontFamily: "Marcellus",
+            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -259,7 +259,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontSize: 14.sp,
-              fontFamily: "Marcellus",
+              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
             ),
           ),
         ],
@@ -329,7 +329,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Achievements',
-            style: TextStyle(color: titleColor, fontSize: 20.sp, fontFamily: "Marcellus", fontWeight: FontWeight.bold),
+            style: TextStyle(color: titleColor, fontSize: 20.sp, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold),
           ),
         ),
         SizedBox(height: 16.h),
@@ -372,7 +372,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
         SizedBox(height: 24.h),
         Text(
           'About Me',
-          style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
+          style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo']),
         ),
         SizedBox(height: 8.h),
         Text(
@@ -430,7 +430,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
         SizedBox(height: 24.h),
         Text(
           'Hosted Tours',
-          style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
+          style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo']),
         ),
         SizedBox(height: 12.h),
         SizedBox(
@@ -442,7 +442,7 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
           SizedBox(height: 24.h),
           Text(
             'Traveler Reviews',
-            style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus'),
+            style: TextStyle(color: titleColor, fontSize: 20.sp, fontWeight: FontWeight.bold, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo']),
           ),
           SizedBox(height: 12.h),
           _UniversalGuideReviews(guideId: widget.user.id),
@@ -569,7 +569,7 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: 13.sp,
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   ),
                 ),
               ],

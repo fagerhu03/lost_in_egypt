@@ -648,7 +648,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                           color: theme.colorScheme.onSurface,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         ),
                       ),
                     ),
@@ -664,7 +664,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       if (_loadingSimilar) {
                         return Container(
                           width: 220.w,
-                          margin: EdgeInsets.only(right: 12.w),
+                          margin: EdgeInsetsDirectional.only(end: 12.w),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.06),
@@ -673,7 +673,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         );
                       }
                       return Padding(
-                        padding: EdgeInsets.only(right: 12.w),
+                        padding: EdgeInsetsDirectional.only(end: 12.w),
                         child: _BookingSimilarTourCard(tour: _similarTours[i]),
                       );
                     },
@@ -938,7 +938,7 @@ class _BookingSimilarTourCard extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                   height: 1.2,
                 ),
                 maxLines: 2,

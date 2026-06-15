@@ -35,6 +35,72 @@
   "@commonReset": {
     "description": "Generic Reset button."
   },
+  "commonTryAgain": "Try again",
+  "@commonTryAgain": {
+    "description": "Generic retry button shown on error states."
+  },
+  "commonDismiss": "Dismiss",
+  "@commonDismiss": {
+    "description": "Generic dismiss/close tooltip."
+  },
+
+  "reportUser": "Report User",
+  "@reportUser": {
+    "description": "Title of the report dialog when reporting a user or guide."
+  },
+  "reportTour": "Report Tour",
+  "@reportTour": {
+    "description": "Title of the report dialog when reporting a tour."
+  },
+  "reportPost": "Report Post",
+  "@reportPost": {
+    "description": "Title of the report dialog when reporting a community post."
+  },
+  "reportComment": "Report Comment",
+  "@reportComment": {
+    "description": "Title of the report dialog when reporting a comment."
+  },
+  "reportReasonPrompt": "Why are you reporting this?",
+  "@reportReasonPrompt": {
+    "description": "Prompt above the list of report reasons."
+  },
+  "reportAdditionalDetails": "Additional details (optional)",
+  "@reportAdditionalDetails": {
+    "description": "Hint text for the optional report description field."
+  },
+  "reportSubmit": "Submit Report",
+  "@reportSubmit": {
+    "description": "Button that submits a content report."
+  },
+  "reportMustBeLoggedIn": "You must be logged in to submit a report.",
+  "@reportMustBeLoggedIn": {
+    "description": "Error shown when an unauthenticated user tries to report."
+  },
+  "reportSelectReason": "Please select a reason for reporting.",
+  "@reportSelectReason": {
+    "description": "Validation error when no report reason is selected."
+  },
+  "reportDescriptionTooLong": "Description must be 500 characters or fewer.",
+  "@reportDescriptionTooLong": {
+    "description": "Validation error when the report description exceeds 500 chars."
+  },
+  "reportSuccess": "Report submitted successfully. Thank you.",
+  "@reportSuccess": {
+    "description": "Confirmation snackbar after a report is submitted."
+  },
+
+  "weatherTapForForecast": "Tap for 7-day forecast",
+  "@weatherTapForForecast": {
+    "description": "Hint on the weather banner that opens the 7-day forecast."
+  },
+  "weatherConditionsNow": "Egypt conditions right now",
+  "@weatherConditionsNow": {
+    "description": "Subtitle under the current weather conditions card."
+  },
+  "weather7DayForecast": "7-Day Forecast",
+  "@weather7DayForecast": {
+    "description": "Header above the 7-day forecast list."
+  },
 
   "settingsTitle": "Settings",
   "@settingsTitle": {
@@ -98,5 +164,904 @@
         "example": "1.0.0"
       }
     }
+  },
+
+  "commonContinue": "Continue",
+  "@commonContinue": {
+    "description": "Generic Continue button."
+  },
+
+  "authEmailHint": "Enter your email",
+  "@authEmailHint": {
+    "description": "Hint text for the email input field."
+  },
+  "authPasswordHint": "Enter your password",
+  "@authPasswordHint": {
+    "description": "Hint text for the password input field."
+  },
+
+  "loginTagline": "Log in to unlock your journey.",
+  "@loginTagline": {
+    "description": "Tagline under the logo on the login screen."
+  },
+  "loginButton": "Log In",
+  "@loginButton": {
+    "description": "Primary button on the login screen."
+  },
+  "loginForgotPassword": "Forgot Password?",
+  "@loginForgotPassword": {
+    "description": "Link to the password reset screen."
+  },
+  "loginOrSignInWith": "OR SIGN IN WITH",
+  "@loginOrSignInWith": {
+    "description": "Divider label above social sign-in buttons."
+  },
+  "loginNoAccount": "Don't have an account?",
+  "@loginNoAccount": {
+    "description": "Prompt next to the create-account link on login."
+  },
+  "loginCreateAccount": "Create Account",
+  "@loginCreateAccount": {
+    "description": "Link to the account creation flow."
+  },
+  "loginFillEmailPassword": "Please fill in your email and password.",
+  "@loginFillEmailPassword": {
+    "description": "Validation error when login fields are empty."
+  },
+  "loginGuidePending": "Your guide application is pending approval.",
+  "@loginGuidePending": {
+    "description": "Notice shown when a guide with a pending application logs in."
+  },
+
+  "forgotEnterEmail": "Please enter your email",
+  "@forgotEnterEmail": {
+    "description": "Validation error when the reset email field is empty."
+  },
+  "forgotResetSent": "If an account exists, a reset link was sent.",
+  "@forgotResetSent": {
+    "description": "Confirmation snackbar after requesting a password reset."
+  },
+  "forgotFailedSend": "Failed to send reset email",
+  "@forgotFailedSend": {
+    "description": "Error when the reset email could not be sent."
+  },
+  "forgotInvalidEmail": "Invalid email formatting.",
+  "@forgotInvalidEmail": {
+    "description": "Error when the entered email is malformed."
+  },
+  "forgotEmailSentTitle": "Email Sent!",
+  "@forgotEmailSentTitle": {
+    "description": "Title after a reset email has been sent."
+  },
+  "forgotResetTitle": "Reset Password",
+  "@forgotResetTitle": {
+    "description": "Title of the password reset screen."
+  },
+  "forgotEmailSentBody": "If an account is registered to {email}, we've sent a secure password reset link. Please check your email.",
+  "@forgotEmailSentBody": {
+    "description": "Body shown after a reset email is sent.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "user@example.com"
+      }
+    }
+  },
+  "forgotResetBody": "Enter your email to receive a secure password reset link.",
+  "@forgotResetBody": {
+    "description": "Instruction on the password reset screen."
+  },
+  "forgotSendLink": "Send Reset Link",
+  "@forgotSendLink": {
+    "description": "Button that sends the password reset link."
+  },
+  "forgotReturnToLogin": "Return to Login",
+  "@forgotReturnToLogin": {
+    "description": "Button to return to the login screen after sending a reset."
+  },
+
+  "usernameTitle": "Choose your\nusername",
+  "@usernameTitle": {
+    "description": "Title of the create-username screen."
+  },
+  "usernameSubtitle": "This is how others will find you in the community. You can change it later in your profile.",
+  "@usernameSubtitle": {
+    "description": "Subtitle explaining the username on the create-username screen."
+  },
+  "usernameAvailable": "@{handle} is available!",
+  "@usernameAvailable": {
+    "description": "Feedback when the chosen username handle is available.",
+    "placeholders": {
+      "handle": {
+        "type": "String",
+        "example": "ahmed_x1"
+      }
+    }
+  },
+  "usernameRules": "3–20 characters · letters, numbers, underscores only",
+  "@usernameRules": {
+    "description": "Hint describing the username format rules."
+  },
+  "usernameTooShort": "Too short — minimum 3 characters",
+  "@usernameTooShort": {
+    "description": "Validation error when the username is under 3 characters."
+  },
+  "usernameTooLong": "Too long — maximum 20 characters",
+  "@usernameTooLong": {
+    "description": "Validation error when the username exceeds 20 characters."
+  },
+  "usernameInvalidChars": "Only lowercase letters, numbers, and underscores",
+  "@usernameInvalidChars": {
+    "description": "Validation error when the username has invalid characters."
+  },
+  "usernameTaken": "That username is already taken",
+  "@usernameTaken": {
+    "description": "Validation error when the username is already in use."
+  },
+  "usernameCheckFailed": "Couldn't check availability — try again",
+  "@usernameCheckFailed": {
+    "description": "Error when the username availability check fails."
+  },
+  "usernameTakenJustNow": "That username was just taken — try another",
+  "@usernameTakenJustNow": {
+    "description": "Error when the username was claimed during submission."
+  },
+  "usernameSaveFailed": "Failed to save — please try again",
+  "@usernameSaveFailed": {
+    "description": "Error when saving the username fails."
+  },
+
+  "roleSelectionTitle": "Are you a...",
+  "@roleSelectionTitle": {
+    "description": "Prompt on the role selection screen asking the user to pick traveler or guide."
+  },
+  "roleTraveler": "TRAVELER!",
+  "@roleTraveler": {
+    "description": "Label on the traveler/tourist role card."
+  },
+  "roleGuide": "GUIDE!",
+  "@roleGuide": {
+    "description": "Label on the guide role card."
+  },
+
+  "completeProfileTitle": "One Last Step",
+  "@completeProfileTitle": {
+    "description": "Title on the complete-profile screen for new social sign-in users."
+  },
+  "completeProfileSubtitle": "We need your birthdate to customize your journey in Egypt.",
+  "@completeProfileSubtitle": {
+    "description": "Subtitle explaining why a birthdate is requested on complete-profile."
+  },
+  "completeProfileButton": "Complete Setup",
+  "@completeProfileButton": {
+    "description": "Button that finalizes the social profile setup."
+  },
+
+  "dobMonth": "Month",
+  "@dobMonth": {
+    "description": "Hint for the birth month dropdown."
+  },
+  "dobDay": "Day",
+  "@dobDay": {
+    "description": "Hint for the birth day dropdown."
+  },
+  "dobYear": "Year",
+  "@dobYear": {
+    "description": "Hint for the birth year dropdown."
+  },
+
+  "signupTitle": "New Account",
+  "@signupTitle": {
+    "description": "Title of the sign-up screen."
+  },
+  "signupFirstNameHint": "First Name",
+  "@signupFirstNameHint": {
+    "description": "Hint for the first name field on sign-up."
+  },
+  "signupLastNameHint": "Last Name",
+  "@signupLastNameHint": {
+    "description": "Hint for the last name field on sign-up."
+  },
+  "signupDateOfBirth": "Date of birth",
+  "@signupDateOfBirth": {
+    "description": "Label above the date-of-birth dropdowns on sign-up."
+  },
+  "signupEmailHint": "Email",
+  "@signupEmailHint": {
+    "description": "Hint for the email field on sign-up."
+  },
+  "signupPhoneLabel": "Phone Number",
+  "@signupPhoneLabel": {
+    "description": "Label for the phone number field on sign-up."
+  },
+  "signupConfirmPasswordHint": "Confirm your password",
+  "@signupConfirmPasswordHint": {
+    "description": "Hint for the confirm-password field on sign-up."
+  },
+  "signupButton": "Sign Up",
+  "@signupButton": {
+    "description": "Primary button on the sign-up screen."
+  },
+  "signupHaveAccount": "Already have an account?",
+  "@signupHaveAccount": {
+    "description": "Prompt next to the log-in link on sign-up."
+  },
+  "signupFirstNameInvalid": "First name must contain valid letters (min 2).",
+  "@signupFirstNameInvalid": {
+    "description": "Validation error for an invalid first name."
+  },
+  "signupLastNameInvalid": "Last name must contain valid letters (min 2).",
+  "@signupLastNameInvalid": {
+    "description": "Validation error for an invalid last name."
+  },
+  "signupEmailInvalid": "Please enter a valid email address.",
+  "@signupEmailInvalid": {
+    "description": "Validation error for an invalid email on sign-up."
+  },
+  "signupPasswordWeak": "Password must be 8+ characters with at least 1 letter and 1 number.",
+  "@signupPasswordWeak": {
+    "description": "Validation error for a weak password on sign-up."
+  },
+  "signupPasswordsNoMatch": "Passwords do not match.",
+  "@signupPasswordsNoMatch": {
+    "description": "Validation error when the two passwords differ."
+  },
+  "signupPhoneInvalid": "Please enter a valid phone number.",
+  "@signupPhoneInvalid": {
+    "description": "Validation error for an invalid phone number on sign-up."
+  },
+  "signupSuccess": "Account created! Please verify your email to continue.",
+  "@signupSuccess": {
+    "description": "Confirmation after an account is created."
+  },
+  "signupEmailInUse": "This email is already registered.",
+  "@signupEmailInUse": {
+    "description": "Error when the email is already registered."
+  },
+  "signupPasswordTooWeak": "The password is too weak.",
+  "@signupPasswordTooWeak": {
+    "description": "Error when Firebase reports a weak password."
+  },
+
+  "greetingMorning": "Good morning",
+  "@greetingMorning": {
+    "description": "Greeting shown before noon."
+  },
+  "greetingAfternoon": "Good afternoon",
+  "@greetingAfternoon": {
+    "description": "Greeting shown between noon and 5pm."
+  },
+  "greetingEvening": "Good evening",
+  "@greetingEvening": {
+    "description": "Greeting shown after 5pm."
+  },
+  "homeGreeting": "{greeting}, {name} 👋",
+  "@homeGreeting": {
+    "description": "Personalised greeting line on the home screen.",
+    "placeholders": {
+      "greeting": {
+        "type": "String",
+        "example": "Good morning"
+      },
+      "name": {
+        "type": "String",
+        "example": "Ahmed"
+      }
+    }
+  },
+  "homeWhereToGo": "Where do you want to go?",
+  "@homeWhereToGo": {
+    "description": "Heading above the category grid on the home screen."
+  },
+  "homePopularPlaces": "Popular Places",
+  "@homePopularPlaces": {
+    "description": "Section header for the popular places carousel."
+  },
+  "homeForYou": "For You",
+  "@homeForYou": {
+    "description": "Section header for the personalised recommendations carousel."
+  },
+  "homeExperiences": "Experiences",
+  "@homeExperiences": {
+    "description": "Section header for the events/experiences carousel."
+  },
+  "homeSeeAll": "see all >",
+  "@homeSeeAll": {
+    "description": "Link to view all items in a section."
+  },
+  "homeNoEventsInCategory": "No events in this category",
+  "@homeNoEventsInCategory": {
+    "description": "Empty state when no events match the selected category filter."
+  },
+  "homePopularTours": "Popular Tours",
+  "@homePopularTours": {
+    "description": "Section header for the popular tours carousel."
+  },
+  "homePlanYourTrip": "Plan your trip",
+  "@homePlanYourTrip": {
+    "description": "Section header above the Guides / Solo trip cards."
+  },
+  "homeTripGuides": "Guides",
+  "@homeTripGuides": {
+    "description": "Label on the Guides trip-planning card."
+  },
+  "homeTripSolo": "Solo trip",
+  "@homeTripSolo": {
+    "description": "Label on the Solo trip card."
+  },
+
+  "communityTitle": "Community",
+  "@communityTitle": {
+    "description": "Header title of the Community tab."
+  },
+  "communitySearchPostsHint": "Search posts...",
+  "@communitySearchPostsHint": {
+    "description": "Hint in the community post search field."
+  },
+  "communitySortTooltip": "Sort",
+  "@communitySortTooltip": {
+    "description": "Tooltip on the sort icon button."
+  },
+  "communityTagLocation": "Tag a Location",
+  "@communityTagLocation": {
+    "description": "Title of the tag-a-location dialog."
+  },
+  "communitySearchPlacesHint": "Search places in Egypt...",
+  "@communitySearchPlacesHint": {
+    "description": "Hint in the place-search field of the tag-location dialog."
+  },
+  "communityTypeToSearch": "Type to search places...",
+  "@communityTypeToSearch": {
+    "description": "Empty state in the tag-location dialog before typing."
+  },
+  "communityPostCategory": "Post Category",
+  "@communityPostCategory": {
+    "description": "Header of the post category picker sheet."
+  },
+  "communityCategoryPhotos": "Photos",
+  "@communityCategoryPhotos": {
+    "description": "Community post category: photos."
+  },
+  "communityCategoryQuestions": "Questions",
+  "@communityCategoryQuestions": {
+    "description": "Community post category: questions."
+  },
+  "communityCategoryGuides": "Guides",
+  "@communityCategoryGuides": {
+    "description": "Community post category: guides."
+  },
+  "communityCategoryLandmarks": "Landmarks",
+  "@communityCategoryLandmarks": {
+    "description": "Community post category: landmarks."
+  },
+  "communityCategoryTips": "Traveler's Tips",
+  "@communityCategoryTips": {
+    "description": "Community post category: traveler's tips."
+  },
+  "communitySortPosts": "Sort Posts",
+  "@communitySortPosts": {
+    "description": "Header of the sort-posts sheet."
+  },
+  "communitySortNewest": "Newest",
+  "@communitySortNewest": {
+    "description": "Sort option: newest first."
+  },
+  "communitySortTopRated": "Top Rated",
+  "@communitySortTopRated": {
+    "description": "Sort option: most liked."
+  },
+  "communitySortMostDiscussed": "Most Discussed",
+  "@communitySortMostDiscussed": {
+    "description": "Sort option: most comments."
+  },
+  "communitySomethingWrong": "Something went wrong. Please try again.",
+  "@communitySomethingWrong": {
+    "description": "Error state when the posts stream fails to load."
+  },
+  "communityNoPostsYet": "No posts yet. Be the first!",
+  "@communityNoPostsYet": {
+    "description": "Empty state when there are no posts at all."
+  },
+  "communityNoResultsFor": "No results for '{query}'",
+  "@communityNoResultsFor": {
+    "description": "Empty state when a search returns no posts.",
+    "placeholders": {
+      "query": {
+        "type": "String",
+        "example": "pyramids"
+      }
+    }
+  },
+  "communityNoPostsInCategory": "No posts in this category yet.",
+  "@communityNoPostsInCategory": {
+    "description": "Empty state when no posts match the active category/hashtag filter."
+  },
+  "communityNewPosts": "New posts — tap to refresh",
+  "@communityNewPosts": {
+    "description": "Floating banner shown when new posts arrive."
+  },
+  "communityTrending": "Trending",
+  "@communityTrending": {
+    "description": "Header above the trending hashtags row."
+  },
+  "communityClearFilter": "Clear filter",
+  "@communityClearFilter": {
+    "description": "Link that clears the active hashtag filter."
+  },
+  "communityTopExplorers": "Top Explorers This Feed",
+  "@communityTopExplorers": {
+    "description": "Header of the leaderboard card."
+  },
+  "communityPostsCount": "{count, plural, =1{1 post} other{{count} posts}}",
+  "@communityPostsCount": {
+    "description": "Post count badge on the leaderboard.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityWeeklyChallenge": "Weekly Challenge",
+  "@communityWeeklyChallenge": {
+    "description": "Label above the weekly challenge title."
+  },
+  "communityPostNow": "Post Now",
+  "@communityPostNow": {
+    "description": "Call-to-action chip on the weekly challenge card."
+  },
+  "communityComposerHint": "Share your Egypt experience...",
+  "@communityComposerHint": {
+    "description": "Hint in the new-post composer field."
+  },
+  "communityPostButton": "Post",
+  "@communityPostButton": {
+    "description": "Button that submits a new community post."
+  },
+  "communityAddPhotosTooltip": "Add photos",
+  "@communityAddPhotosTooltip": {
+    "description": "Tooltip on the composer add-photos action."
+  },
+  "communityTagLocationTooltip": "Tag location",
+  "@communityTagLocationTooltip": {
+    "description": "Tooltip on the composer tag-location action."
+  },
+  "communityCategoryTooltip": "Category",
+  "@communityCategoryTooltip": {
+    "description": "Tooltip on the composer category action."
+  },
+
+  "commonSave": "Save",
+  "@commonSave": {
+    "description": "Generic Save button."
+  },
+  "commonEdit": "Edit",
+  "@commonEdit": {
+    "description": "Generic Edit action."
+  },
+  "commonDelete": "Delete",
+  "@commonDelete": {
+    "description": "Generic Delete action."
+  },
+  "commonReport": "Report",
+  "@commonReport": {
+    "description": "Generic Report action."
+  },
+
+  "commentEditTitle": "Edit Comment",
+  "@commentEditTitle": {
+    "description": "Title of the edit-comment dialog."
+  },
+  "commentDeleteTitle": "Delete Comment",
+  "@commentDeleteTitle": {
+    "description": "Title of the delete-comment confirmation dialog."
+  },
+  "commentDeleteConfirm": "Are you sure you want to delete this comment?",
+  "@commentDeleteConfirm": {
+    "description": "Body of the delete-comment confirmation dialog."
+  },
+  "commentReply": "Reply",
+  "@commentReply": {
+    "description": "Button that starts a reply to a comment."
+  },
+  "commentReplyingTo": "Replying to @{name}",
+  "@commentReplyingTo": {
+    "description": "Banner above the composer when replying to a comment.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "ahmed"
+      }
+    }
+  },
+  "commentWriteReply": "Write a reply...",
+  "@commentWriteReply": {
+    "description": "Hint in the composer when replying."
+  },
+  "commentWriteComment": "Write a comment...",
+  "@commentWriteComment": {
+    "description": "Hint in the composer when commenting."
+  },
+  "commentsEmpty": "No comments yet. Be the first!",
+  "@commentsEmpty": {
+    "description": "Empty state when a post has no comments."
+  },
+  "commentViewReplies": "{count, plural, =1{View 1 reply} other{View {count} replies}} ▸",
+  "@commentViewReplies": {
+    "description": "Expander to show replies under a comment.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commentHideReplies": "Hide replies ▴",
+  "@commentHideReplies": {
+    "description": "Collapser to hide replies under a comment."
+  },
+  "commentsViewMore": "View More Comments",
+  "@commentsViewMore": {
+    "description": "Button that loads more comments."
+  },
+  "commentsHeader": "Comments ({count})",
+  "@commentsHeader": {
+    "description": "Header above the comments list with a count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "moreTitle": "More",
+  "@moreTitle": {
+    "description": "Header of the More tab."
+  },
+  "moreCurrency": "Currency",
+  "@moreCurrency": {
+    "description": "More tab tile: currency converter."
+  },
+  "moreHelp": "Help",
+  "@moreHelp": {
+    "description": "More tab tile: help/FAQ."
+  },
+  "moreTranslator": "Translator",
+  "@moreTranslator": {
+    "description": "More tab tile: translator."
+  },
+  "moreContactUs": "Contact us",
+  "@moreContactUs": {
+    "description": "More tab tile: contact us."
+  },
+  "moreSosButton": "SOS — Emergency Numbers",
+  "@moreSosButton": {
+    "description": "More tab red SOS button."
+  },
+
+  "contactCouldNotOpen": "Could not open link",
+  "@contactCouldNotOpen": {
+    "description": "Error when an external link can't be opened."
+  },
+  "contactEmailCopied": "{email} copied to clipboard",
+  "@contactEmailCopied": {
+    "description": "Confirmation after copying the support email.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "support@lostinegypt.app"
+      }
+    }
+  },
+  "contactTitle": "Contact Us",
+  "@contactTitle": {
+    "description": "Title of the Contact Us screen."
+  },
+  "contactHeadline": "We're here to help",
+  "@contactHeadline": {
+    "description": "Headline on the Contact Us screen."
+  },
+  "contactSubtitle": "Reach out through any of the channels below and we'll get back to you as soon as possible.",
+  "@contactSubtitle": {
+    "description": "Subtitle on the Contact Us screen."
+  },
+  "contactEmailSupport": "Email Support",
+  "@contactEmailSupport": {
+    "description": "Contact tile: email support."
+  },
+  "contactWhatsApp": "WhatsApp",
+  "@contactWhatsApp": {
+    "description": "Contact channel: WhatsApp (brand name)."
+  },
+  "contactWhatsAppSubtitle": "Chat with us directly",
+  "@contactWhatsAppSubtitle": {
+    "description": "Subtitle on the WhatsApp contact tile."
+  },
+  "contactInstagram": "Instagram",
+  "@contactInstagram": {
+    "description": "Contact channel: Instagram (brand name)."
+  },
+  "contactResponseTimes": "Response times",
+  "@contactResponseTimes": {
+    "description": "Header of the response-times section."
+  },
+  "contactRespEmail": "Email",
+  "@contactRespEmail": {
+    "description": "Response-time row label: email."
+  },
+  "contactRespInstagram": "Instagram DMs",
+  "@contactRespInstagram": {
+    "description": "Response-time row label: Instagram direct messages."
+  },
+  "contactTimeEmail": "Within 24 hours",
+  "@contactTimeEmail": {
+    "description": "Expected email response time."
+  },
+  "contactTimeWhatsApp": "Within a few hours",
+  "@contactTimeWhatsApp": {
+    "description": "Expected WhatsApp response time."
+  },
+  "contactTimeInstagram": "1–2 business days",
+  "@contactTimeInstagram": {
+    "description": "Expected Instagram response time."
+  },
+
+  "sosAppBarTitle": "SOS — Emergency",
+  "@sosAppBarTitle": {
+    "description": "Title of the SOS screen."
+  },
+  "sosFindNearestHelp": "Find Nearest Help",
+  "@sosFindNearestHelp": {
+    "description": "Section header above the nearby-help finder."
+  },
+  "sosPolice": "Police",
+  "@sosPolice": {
+    "description": "Help category / dial label: police."
+  },
+  "sosHospital": "Hospital",
+  "@sosHospital": {
+    "description": "Help category: hospital."
+  },
+  "sosFireStation": "Fire Station",
+  "@sosFireStation": {
+    "description": "Help category: fire station."
+  },
+  "sosFindNearest": "Find Nearest {category}",
+  "@sosFindNearest": {
+    "description": "Button to find the nearest place of a category.",
+    "placeholders": {
+      "category": {
+        "type": "String",
+        "example": "Hospital"
+      }
+    }
+  },
+  "sosRefresh": "Refresh — {category}",
+  "@sosRefresh": {
+    "description": "Button to refresh nearby results for a category.",
+    "placeholders": {
+      "category": {
+        "type": "String",
+        "example": "Hospital"
+      }
+    }
+  },
+  "sosUsingLocation": "Using your current location",
+  "@sosUsingLocation": {
+    "description": "Status line shown when a GPS fix is available."
+  },
+  "sosEnableLocation": "Please enable location in your device settings to find nearby help.",
+  "@sosEnableLocation": {
+    "description": "Error when location permission is permanently denied."
+  },
+  "sosLocationError": "Make sure location services are enabled and try again.",
+  "@sosLocationError": {
+    "description": "Error when fetching the current location fails."
+  },
+  "sosNoResults": "No {category} found within 10 km. Try moving to a different area.",
+  "@sosNoResults": {
+    "description": "Empty state when no nearby places of a category are found.",
+    "placeholders": {
+      "category": {
+        "type": "String",
+        "example": "hospitals"
+      }
+    }
+  },
+  "sosSearchFailed": "Search failed — check your connection and try again.",
+  "@sosSearchFailed": {
+    "description": "Error when the nearby search fails."
+  },
+  "sosCouldNotDial": "Could not open dialler",
+  "@sosCouldNotDial": {
+    "description": "Error when the phone dialler can't be opened."
+  },
+  "sosEmergencyNumbers": "Emergency Numbers",
+  "@sosEmergencyNumbers": {
+    "description": "Section header above the emergency dial grid."
+  },
+  "sosNumbersNote": "These are Egypt's official emergency numbers. Tourist Police (126) has English-speaking operators.",
+  "@sosNumbersNote": {
+    "description": "Footnote under the emergency numbers grid."
+  },
+  "sosTouristPolice": "Tourist Police",
+  "@sosTouristPolice": {
+    "description": "Dial label: tourist police."
+  },
+  "sosAmbulance": "Ambulance",
+  "@sosAmbulance": {
+    "description": "Dial label: ambulance."
+  },
+  "sosFireBrigade": "Fire Brigade",
+  "@sosFireBrigade": {
+    "description": "Dial label: fire brigade."
+  },
+  "sosGasEmergency": "Gas Emergency",
+  "@sosGasEmergency": {
+    "description": "Dial label: gas emergency."
+  },
+  "sosTouristPoliceSubtitle": "English-speaking operators · Available 24/7",
+  "@sosTouristPoliceSubtitle": {
+    "description": "Subtitle on the featured tourist-police dial chip."
+  },
+  "sosForTourists": "FOR TOURISTS",
+  "@sosForTourists": {
+    "description": "Badge on the featured tourist-police dial chip."
+  },
+  "sosCall": "Call",
+  "@sosCall": {
+    "description": "Action button to call a nearby place."
+  },
+  "sosMap": "Map",
+  "@sosMap": {
+    "description": "Action button to open a nearby place on the map."
+  },
+
+  "accountUser": "User",
+  "@accountUser": {
+    "description": "Fallback display name when the user's name is unavailable."
+  },
+  "accountYourTaste": "Your Taste",
+  "@accountYourTaste": {
+    "description": "Title of the personalised taste card on the account screen."
+  },
+  "accountSettingsHeader": "Account Settings:",
+  "@accountSettingsHeader": {
+    "description": "Header above the account settings tiles."
+  },
+  "accountEditProfile": "Edit Profile",
+  "@accountEditProfile": {
+    "description": "Account tile: edit profile."
+  },
+  "accountApplyGuide": "Apply to be a Guide",
+  "@accountApplyGuide": {
+    "description": "Account tile: apply to become a guide."
+  },
+  "accountMyBookings": "My Bookings",
+  "@accountMyBookings": {
+    "description": "Account tile: booking history."
+  },
+  "accountSavedPosts": "Saved Posts",
+  "@accountSavedPosts": {
+    "description": "Account tile: saved community posts."
+  },
+  "accountMyPlans": "My Plans",
+  "@accountMyPlans": {
+    "description": "Account tile: saved solo plans."
+  },
+  "accountMembership": "Membership",
+  "@accountMembership": {
+    "description": "Account tile: membership / plan."
+  },
+  "accountSignOut": "Sign out",
+  "@accountSignOut": {
+    "description": "Sign-out button on the account screen."
+  },
+  "accountGuideApplication": "Guide Application",
+  "@accountGuideApplication": {
+    "description": "Label on the guide application status tile."
+  },
+  "accountStatusUnderReview": "Under Review",
+  "@accountStatusUnderReview": {
+    "description": "Guide application status: pending review."
+  },
+  "accountStatusNotApproved": "Not Approved",
+  "@accountStatusNotApproved": {
+    "description": "Guide application status: rejected."
+  },
+
+  "planExplorerFree": "Explorer — Free",
+  "@planExplorerFree": {
+    "description": "Name of the free membership tier."
+  },
+  "planActive": "Active",
+  "@planActive": {
+    "description": "Badge showing the current plan is active."
+  },
+  "planCurrentDesc": "Your current plan — enjoy all the core features of Lost in Egypt at no cost.",
+  "@planCurrentDesc": {
+    "description": "Description of the free plan."
+  },
+  "planWhatsIncluded": "What's included",
+  "@planWhatsIncluded": {
+    "description": "Header above the included-features list."
+  },
+  "planFeatDiscoveryTitle": "AI Landmark Discovery",
+  "@planFeatDiscoveryTitle": {
+    "description": "Plan feature title: AI landmark discovery."
+  },
+  "planFeatDiscoveryDesc": "Identify unlimited landmarks with your camera",
+  "@planFeatDiscoveryDesc": {
+    "description": "Plan feature description: AI landmark discovery."
+  },
+  "planFeatStoriesTitle": "AI Historical Stories",
+  "@planFeatStoriesTitle": {
+    "description": "Plan feature title: AI historical stories."
+  },
+  "planFeatStoriesDesc": "Hear captivating stories about every landmark you find",
+  "@planFeatStoriesDesc": {
+    "description": "Plan feature description: AI historical stories."
+  },
+  "planFeatMapTitle": "Interactive Map",
+  "@planFeatMapTitle": {
+    "description": "Plan feature title: interactive map."
+  },
+  "planFeatMapDesc": "Explore 500+ Egyptian landmarks with GPS and routing",
+  "@planFeatMapDesc": {
+    "description": "Plan feature description: interactive map."
+  },
+  "planFeatToursTitle": "Browse & Book Tours",
+  "@planFeatToursTitle": {
+    "description": "Plan feature title: browse and book tours."
+  },
+  "planFeatToursDesc": "Browse guided tours and book with certified guides",
+  "@planFeatToursDesc": {
+    "description": "Plan feature description: tours."
+  },
+  "planFeatBadgesTitle": "Badges & Gamification",
+  "@planFeatBadgesTitle": {
+    "description": "Plan feature title: badges and gamification."
+  },
+  "planFeatBadgesDesc": "Earn badges as you explore more of Egypt",
+  "@planFeatBadgesDesc": {
+    "description": "Plan feature description: badges."
+  },
+  "planFeatCommunityTitle": "Community Feed",
+  "@planFeatCommunityTitle": {
+    "description": "Plan feature title: community feed."
+  },
+  "planFeatCommunityDesc": "Share discoveries and connect with fellow travellers",
+  "@planFeatCommunityDesc": {
+    "description": "Plan feature description: community."
+  },
+  "planFeatTranslatorTitle": "Translator",
+  "@planFeatTranslatorTitle": {
+    "description": "Plan feature title: translator."
+  },
+  "planFeatTranslatorDesc": "Translate text using your camera in real-time",
+  "@planFeatTranslatorDesc": {
+    "description": "Plan feature description: translator."
+  },
+  "planFeatCurrencyTitle": "Currency Converter",
+  "@planFeatCurrencyTitle": {
+    "description": "Plan feature title: currency converter."
+  },
+  "planFeatCurrencyDesc": "Convert between 16 currencies instantly",
+  "@planFeatCurrencyDesc": {
+    "description": "Plan feature description: currency converter."
+  },
+  "planFeatNotificationsTitle": "Booking Notifications",
+  "@planFeatNotificationsTitle": {
+    "description": "Plan feature title: booking notifications."
+  },
+  "planFeatNotificationsDesc": "Get notified about your tour confirmations",
+  "@planFeatNotificationsDesc": {
+    "description": "Plan feature description: notifications."
+  },
+  "planComingSoon": "Coming soon",
+  "@planComingSoon": {
+    "description": "Header of the coming-soon section."
+  },
+  "planComingSoonDesc": "We're working on premium features including offline mode, exclusive guided experiences, and advanced trip planning tools. Stay tuned — and the core app will always remain free.",
+  "@planComingSoonDesc": {
+    "description": "Description under the coming-soon section."
   }
 }

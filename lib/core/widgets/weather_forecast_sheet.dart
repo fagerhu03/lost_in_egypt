@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../models/weather_context.dart';
 import '../services/weather_controller.dart';
 
@@ -25,6 +26,7 @@ class WeatherForecastSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? const Color(0xFF1A2E3B) : Colors.white;
     final onSurface = isDark ? Colors.white : const Color(0xFF1A1A1A);
@@ -82,11 +84,11 @@ class WeatherForecastSheet extends StatelessWidget {
                                   color: color,
                                   fontWeight: FontWeight.w700,
                                   fontSize: 17.sp,
-                                  fontFamily: 'Marcellus',
+                                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                 ),
                               ),
                               Text(
-                                'Egypt conditions right now',
+                                l.weatherConditionsNow,
                                 style: TextStyle(
                                   color: dimText,
                                   fontSize: 12.sp,
@@ -104,7 +106,7 @@ class WeatherForecastSheet extends StatelessWidget {
                                   color: onSurface,
                                   fontSize: 28.sp,
                                   fontWeight: FontWeight.w300,
-                                  fontFamily: 'Marcellus',
+                                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                 ),
                               ),
                               Text(
@@ -176,12 +178,12 @@ class WeatherForecastSheet extends StatelessWidget {
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      '7-Day Forecast',
+                      l.weather7DayForecast,
                       style: TextStyle(
                         color: onSurface,
                         fontWeight: FontWeight.w700,
                         fontSize: 15.sp,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ],
@@ -220,7 +222,7 @@ class WeatherForecastSheet extends StatelessWidget {
                                     ? FontWeight.w700
                                     : FontWeight.w500,
                                 fontSize: 14.sp,
-                                fontFamily: 'Marcellus',
+                                fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               ),
                             ),
                           ),
@@ -248,7 +250,7 @@ class WeatherForecastSheet extends StatelessWidget {
                           // UV badge (only when elevated)
                           if (day.isHighUV)
                             Container(
-                              margin: EdgeInsets.only(right: 8.w),
+                              margin: EdgeInsetsDirectional.only(end: 8.w),
                               padding: EdgeInsets.symmetric(
                                   horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(

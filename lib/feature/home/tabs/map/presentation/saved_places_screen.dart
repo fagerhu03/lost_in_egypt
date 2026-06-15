@@ -106,7 +106,7 @@ class _SavedPlacesSheetState extends State<SavedPlacesSheet> {
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         color: onSurface,
                       ),
                     ),

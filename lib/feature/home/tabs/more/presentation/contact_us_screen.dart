@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class ContactUsScreen extends StatelessWidget {
   const ContactUsScreen({super.key});
@@ -11,7 +12,7 @@ class ContactUsScreen extends StatelessWidget {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Could not open link")),
+          SnackBar(content: Text(AppLocalizations.of(context).contactCouldNotOpen)),
         );
       }
     }
@@ -21,7 +22,7 @@ class ContactUsScreen extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: email));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("$email copied to clipboard"),
+        content: Text(AppLocalizations.of(context).contactEmailCopied(email)),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
@@ -29,6 +30,7 @@ class ContactUsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final surface = theme.colorScheme.surface;
@@ -38,7 +40,7 @@ class ContactUsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Contact Us", style: TextStyle(fontFamily: 'Marcellus')),
+        title: Text(l10n.contactTitle, style: const TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -53,17 +55,17 @@ class ContactUsScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            "We're here to help",
+            l10n.contactHeadline,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 22.sp,
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               color: onSurface,
             ),
           ),
           SizedBox(height: 6.h),
           Text(
-            "Reach out through any of the channels below and we'll get back to you as soon as possible.",
+            l10n.contactSubtitle,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14.sp, color: onSurface.withValues(alpha: 0.65), height: 1.5),
           ),
@@ -71,7 +73,7 @@ class ContactUsScreen extends StatelessWidget {
 
           _ContactTile(
             icon: Icons.email_outlined,
-            title: "Email Support",
+            title: l10n.contactEmailSupport,
             subtitle: supportEmail,
             surface: surface,
             onSurface: onSurface,
@@ -82,8 +84,8 @@ class ContactUsScreen extends StatelessWidget {
           SizedBox(height: 12.h),
           _ContactTile(
             icon: Icons.chat_bubble_outline_rounded,
-            title: "WhatsApp",
-            subtitle: "Chat with us directly",
+            title: l10n.contactWhatsApp,
+            subtitle: l10n.contactWhatsAppSubtitle,
             surface: surface,
             onSurface: onSurface,
             primary: const Color(0xFF25D366),
@@ -92,7 +94,7 @@ class ContactUsScreen extends StatelessWidget {
           SizedBox(height: 12.h),
           _ContactTile(
             icon: Icons.camera_alt_outlined,
-            title: "Instagram",
+            title: l10n.contactInstagram,
             subtitle: "@lostinegypt.app",
             surface: surface,
             onSurface: onSurface,
@@ -103,18 +105,18 @@ class ContactUsScreen extends StatelessWidget {
           Divider(color: onSurface.withValues(alpha: 0.1)),
           SizedBox(height: 16.h),
           Text(
-            "Response times",
+            l10n.contactResponseTimes,
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.w600,
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               color: onSurface,
             ),
           ),
           SizedBox(height: 8.h),
-          _ResponseRow(label: "Email", time: "Within 24 hours", onSurface: onSurface),
-          _ResponseRow(label: "WhatsApp", time: "Within a few hours", onSurface: onSurface),
-          _ResponseRow(label: "Instagram DMs", time: "1–2 business days", onSurface: onSurface),
+          _ResponseRow(label: l10n.contactRespEmail, time: l10n.contactTimeEmail, onSurface: onSurface),
+          _ResponseRow(label: l10n.contactWhatsApp, time: l10n.contactTimeWhatsApp, onSurface: onSurface),
+          _ResponseRow(label: l10n.contactRespInstagram, time: l10n.contactTimeInstagram, onSurface: onSurface),
         ],
       ),
     );
@@ -177,7 +179,7 @@ class _ContactTile extends StatelessWidget {
                     Text(title,
                         style: TextStyle(
                           fontSize: 15.sp,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           color: onSurface,
                         )),
                     SizedBox(height: 2.h),

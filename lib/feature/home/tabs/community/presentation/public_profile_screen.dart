@@ -123,7 +123,7 @@ class PublicProfileScreen extends StatelessWidget {
                                     style: TextStyle(
                                       color: isDark ? onSurface : const Color(0xFF6B3A28),
                                       fontSize: 22.sp,
-                                      fontFamily: "Marcellus",
+                                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                     ),
                                   ),
                                   if (user.bio.isNotEmpty) ...[

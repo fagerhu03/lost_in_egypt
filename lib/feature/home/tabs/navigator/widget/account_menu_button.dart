@@ -174,7 +174,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
 
           itemBuilder: (BuildContext context) {
             final textStyle = TextStyle(
-              fontFamily: "Marcellus",
+              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
               color: onSurface.withValues(alpha: 0.9),
             );
 

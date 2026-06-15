@@ -233,7 +233,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                         GestureDetector(
                           onTap: () => setSheetState(() => tempRating = tempRating == i.toDouble() ? 0 : i.toDouble()),
                           child: Padding(
-                            padding: EdgeInsets.only(right: 4.w),
+                            padding: EdgeInsetsDirectional.only(end: 4.w),
                             child: Icon(
                               i <= tempRating ? Icons.star : Icons.star_border,
                               color: Colors.amber,
@@ -347,10 +347,10 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           child: TextField(
                             onChanged: (val) => setState(() => _searchQuery = val),
                             textInputAction: TextInputAction.search,
-                            style: TextStyle(color: isDark ? onSurface : Colors.white, fontFamily: "Marcellus", fontWeight: FontWeight.bold),
+                            style: TextStyle(color: isDark ? onSurface : Colors.white, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
                               hintText: _tabIndex == 0 ? "Search tours..." : "Search guides...",
-                              hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontFamily: "Marcellus"),
+                              hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo']),
                               border: InputBorder.none,
                               prefixIcon: Icon(Icons.search, color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85)),
                               prefixIconConstraints: BoxConstraints(minWidth: 32.w),
@@ -411,7 +411,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                         SizedBox(width: 8.w),
                         if (_activeFilters.contains('price') && _tabIndex == 0)
                           Padding(
-                            padding: EdgeInsets.only(right: 8.w),
+                            padding: EdgeInsetsDirectional.only(end: 8.w),
                             child: InputChip(
                               label: Text('EGP ${_priceRange.start.round()}-${_priceRange.end.round()}', style: TextStyle(fontSize: 12.sp)),
                               onDeleted: () => setState(() => _activeFilters.remove('price')),
@@ -421,7 +421,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           ),
                         if (_activeFilters.contains('rating'))
                           Padding(
-                            padding: EdgeInsets.only(right: 8.w),
+                            padding: EdgeInsetsDirectional.only(end: 8.w),
                             child: InputChip(
                               avatar: Icon(Icons.star, color: Colors.amber, size: 16.r),
                               label: Text('${_minRating.toInt()}+', style: TextStyle(fontSize: 12.sp)),
@@ -432,7 +432,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           ),
                         if (_activeFilters.contains('frequency') && _selectedFrequency != null && _tabIndex == 0)
                           Padding(
-                            padding: EdgeInsets.only(right: 8.w),
+                            padding: EdgeInsetsDirectional.only(end: 8.w),
                             child: InputChip(
                               label: Text(_selectedFrequency!, style: TextStyle(fontSize: 12.sp)),
                               onDeleted: () => setState(() { _activeFilters.remove('frequency'); _selectedFrequency = null; }),

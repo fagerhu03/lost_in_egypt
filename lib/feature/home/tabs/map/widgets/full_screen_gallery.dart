@@ -53,7 +53,7 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                 widget.title!,
                 style: TextStyle(
                   color: Colors.white,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                   fontSize: 16.sp,
                 ),
               )
@@ -62,7 +62,7 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
         actions: [
           if (widget.imageUrls.length > 1)
             Padding(
-              padding: EdgeInsets.only(right: 16.w),
+              padding: EdgeInsetsDirectional.only(end: 16.w),
               child: Center(
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),

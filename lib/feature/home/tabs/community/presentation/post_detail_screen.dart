@@ -18,6 +18,7 @@ import '../../account/presentation/account_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import '../../../../../core/widgets/shimmer_avatar.dart';
 import '../../../../../core/widgets/shimmer_image.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final CommunityPost post;
@@ -241,7 +242,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         return AlertDialog(
           backgroundColor: surface,
           surfaceTintColor: Colors.transparent,
-          title: Text('Edit Comment', style: TextStyle(color: onSurface)),
+          title: Text(AppLocalizations.of(ctx).commentEditTitle, style: TextStyle(color: onSurface)),
           content: TextField(
             controller: controller,
             maxLines: 4,
@@ -253,7 +254,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: TextStyle(color: onSurface.withValues(alpha: 0.6)))),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(ctx).commonCancel, style: TextStyle(color: onSurface.withValues(alpha: 0.6)))),
             TextButton(
               onPressed: () async {
                 final text = controller.text.trim();
@@ -262,7 +263,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
               },
-              child: Text('Save', style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+              child: Text(AppLocalizations.of(ctx).commonSave, style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -281,16 +282,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         return AlertDialog(
           backgroundColor: surface,
           surfaceTintColor: Colors.transparent,
-          title: Text("Delete Comment", style: TextStyle(color: onSurface)),
+          title: Text(AppLocalizations.of(ctx).commentDeleteTitle, style: TextStyle(color: onSurface)),
           content: Text(
-            "Are you sure you want to delete this comment?",
+            AppLocalizations.of(ctx).commentDeleteConfirm,
             style: TextStyle(color: onSurface.withValues(alpha: 0.8)),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
               child: Text(
-                "Cancel",
+                AppLocalizations.of(ctx).commonCancel,
                 style: TextStyle(color: onSurface.withValues(alpha: 0.7)),
               ),
             ),
@@ -299,7 +300,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 Navigator.pop(ctx);
                 _repository.deleteComment(widget.post.id, commentId);
               },
-              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+              child: Text(AppLocalizations.of(ctx).commonDelete, style: const TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -422,10 +423,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 },
                 itemBuilder: (_) => [
                   if (ownerId == _currentUid) ...[
-                    PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 16.r), SizedBox(width: 8.w), const Text('Edit')])),
-                    PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, color: Colors.red, size: 16.r), SizedBox(width: 8.w), const Text('Delete', style: TextStyle(color: Colors.red))])),
+                    PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 16.r), SizedBox(width: 8.w), Text(AppLocalizations.of(context).commonEdit)])),
+                    PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, color: Colors.red, size: 16.r), SizedBox(width: 8.w), Text(AppLocalizations.of(context).commonDelete, style: const TextStyle(color: Colors.red))])),
                   ],
-                  if (ownerId != _currentUid) PopupMenuItem(value: 'report', child: Row(children: [Icon(Icons.flag_outlined, color: Colors.orange, size: 16.r), SizedBox(width: 8.w), const Text('Report', style: TextStyle(color: Colors.orange))])),
+                  if (ownerId != _currentUid) PopupMenuItem(value: 'report', child: Row(children: [Icon(Icons.flag_outlined, color: Colors.orange, size: 16.r), SizedBox(width: 8.w), Text(AppLocalizations.of(context).commonReport, style: const TextStyle(color: Colors.orange))])),
                 ],
               ),
             ],
@@ -456,7 +457,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   final mention = uname.isNotEmpty ? uname : displayName;
                   _handleReply(rootThreadId, mention);
                 },
-                child: Text('Reply', style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.bold)),
+                child: Text(AppLocalizations.of(context).commentReply, style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -551,7 +552,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             SizedBox(height: 8.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Text(header, style: TextStyle(fontFamily: 'Marcellus', fontSize: 15.sp, fontWeight: FontWeight.bold, color: onSurface)),
+              child: Text(header, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 15.sp, fontWeight: FontWeight.bold, color: onSurface)),
             ),
             SizedBox(height: 10.h),
             SizedBox(
@@ -651,7 +652,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 children: [
                   Icon(Icons.reply_rounded, size: 14.r, color: primary),
                   SizedBox(width: 6.w),
-                  Expanded(child: Text('Replying to @${_replyingToUserName ?? ''}', style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+                  Expanded(child: Text(AppLocalizations.of(context).commentReplyingTo(_replyingToUserName ?? ''), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
                   GestureDetector(onTap: _cancelReply, child: Icon(Icons.close, size: 16.r, color: onSurface.withValues(alpha: 0.6))),
                 ],
               ),
@@ -686,7 +687,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         textInputAction: TextInputAction.send,
                         onSubmitted: (_) => _submitComment(),
                         decoration: InputDecoration(
-                          hintText: _replyingToCommentId != null ? 'Write a reply...' : 'Write a comment...',
+                          hintText: _replyingToCommentId != null ? AppLocalizations.of(context).commentWriteReply : AppLocalizations.of(context).commentWriteComment,
                           hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.45), fontSize: 14.sp),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
@@ -802,7 +803,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 return SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.all(32.r),
-                    child: Text('No comments yet. Be the first!', textAlign: TextAlign.center, style: TextStyle(color: onSurface.withValues(alpha: 0.5))),
+                    child: Text(AppLocalizations.of(context).commentsEmpty, textAlign: TextAlign.center, style: TextStyle(color: onSurface.withValues(alpha: 0.5))),
                   ),
                 );
               }
@@ -885,10 +886,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     if (children.isNotEmpty) ...[
                       if (!isExpanded)
                         Padding(
-                          padding: EdgeInsets.only(left: 20.w, bottom: 8.h),
+                          padding: EdgeInsetsDirectional.only(start: 20.w, bottom: 8.h),
                           child: GestureDetector(
                             onTap: () => setState(() => _expandedThreadIds.add(rootId)),
-                            child: Text('View ${children.length} ${children.length == 1 ? 'reply' : 'replies'}  ▸', style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.bold)),
+                            child: Text(AppLocalizations.of(context).commentViewReplies(children.length), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.bold)),
                           ),
                         )
                       else ...[
@@ -909,10 +910,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(left: 20.w, bottom: 8.h),
+                          padding: EdgeInsetsDirectional.only(start: 20.w, bottom: 8.h),
                           child: GestureDetector(
                             onTap: () => setState(() => _expandedThreadIds.remove(rootId)),
-                            child: Text('Hide replies  ▴', style: TextStyle(fontSize: 12.sp, color: primary.withValues(alpha: 0.7), fontWeight: FontWeight.bold)),
+                            child: Text(AppLocalizations.of(context).commentHideReplies, style: TextStyle(fontSize: 12.sp, color: primary.withValues(alpha: 0.7), fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
@@ -946,7 +947,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     if (rawComments.length == _commentLimit)
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 16.h),
-                        child: TextButton(onPressed: _loadMoreComments, child: Text('View More Comments', style: TextStyle(color: primary, fontWeight: FontWeight.bold))),
+                        child: TextButton(onPressed: _loadMoreComments, child: Text(AppLocalizations.of(context).commentsViewMore, style: TextStyle(color: primary, fontWeight: FontWeight.bold))),
                       ),
                   ]),
                 ),
@@ -1003,7 +1004,7 @@ class _CommentsSectionHeader extends SliverPersistentHeaderDelegate {
           SizedBox(height: 4.h),
           Row(
             children: [
-              Text('Comments ($commentCount)', style: TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, color: onSurface, fontSize: 15.sp)),
+              Text(AppLocalizations.of(context).commentsHeader(commentCount), style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold, color: onSurface, fontSize: 15.sp)),
               const Spacer(),
               Icon(Icons.remove_red_eye_outlined, size: 14.r, color: onSurface.withValues(alpha: 0.5)),
               SizedBox(width: 4.w),

@@ -78,7 +78,7 @@ class NotifCard extends StatelessWidget {
                     Text(
                       senderName,
                       style: TextStyle(
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         fontWeight: FontWeight.w700,
                         fontSize: 13.sp,
                         color: onSurface.withValues(alpha: 0.87),
@@ -88,7 +88,7 @@ class NotifCard extends StatelessWidget {
                     Text(
                       message,
                       style: TextStyle(
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         fontSize: 12.sp,
                         color: onSurface.withValues(alpha: 0.65),
                         height: 1.25,
@@ -100,7 +100,7 @@ class NotifCard extends StatelessWidget {
                         Text(
                           timeText,
                           style: TextStyle(
-                            fontFamily: "Marcellus",
+                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             fontSize: 11.sp,
                             color: onSurface.withValues(alpha: 0.50),
                           ),

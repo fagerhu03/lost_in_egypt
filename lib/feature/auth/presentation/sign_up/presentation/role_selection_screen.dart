@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/signup_screen.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
@@ -23,6 +24,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final bgColor = const Color(0xFFFCFBE8);
     final textColor = const Color(0xff634700);
 
@@ -52,10 +54,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               SizedBox(height: 40.h),
 
               Text(
-                "Are you a...",
+                l10n.roleSelectionTitle,
                 style: TextStyle(
                   fontSize: 22.sp,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   color: textColor,
                   fontWeight: FontWeight.w600,
                 ),
@@ -73,7 +75,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       // Traveler Card
                       Expanded(
                         child: _RoleCard(
-                          title: "TRAVELER!",
+                          title: l10n.roleTraveler,
                           imagePath: "assets/icons/adventure.png",
                           isSelected: isGuideSelected == false,
                           onTap: () {
@@ -97,7 +99,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       // Guide Card
                       Expanded(
                         child: _RoleCard(
-                          title: "GUIDE!",
+                          title: l10n.roleGuide,
                           imagePath: "assets/icons/guide.png",
                           isSelected: isGuideSelected == true,
                           onTap: () {
@@ -174,7 +176,7 @@ class _RoleCard extends StatelessWidget {
               isSelected ? title.toUpperCase() : title,
               style: TextStyle(
                 fontSize: (isSelected ? 20 : 16).sp,
-                fontFamily: "Marcellus",
+                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 color: textColor,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),

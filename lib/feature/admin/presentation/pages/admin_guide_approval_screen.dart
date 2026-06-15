@@ -66,7 +66,7 @@ class _AdminGuideApprovalScreenState extends State<AdminGuideApprovalScreen> {
                           children: [
                             if (flagged)
                               Container(
-                                margin: EdgeInsets.only(right: 6.w),
+                                margin: EdgeInsetsDirectional.only(end: 6.w),
                                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                                 decoration: BoxDecoration(
                                   color: risk == 'high' ? Colors.red.shade600 : Colors.orange.shade600,

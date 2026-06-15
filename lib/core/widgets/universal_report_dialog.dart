@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../feature/admin/data/models/report_model.dart';
 import '../../feature/admin/domain/repositories/reports_repository.dart';
 import '../utils/error_handler.dart';
@@ -60,17 +61,18 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
   }
 
   Future<void> _submitReport() async {
+    final l = AppLocalizations.of(context);
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to submit a report.')),
+        SnackBar(content: Text(l.reportMustBeLoggedIn)),
       );
       return;
     }
 
     if (_selectedReason == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a reason for reporting.')),
+        SnackBar(content: Text(l.reportSelectReason)),
       );
       return;
     }
@@ -78,7 +80,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
     final description = _descriptionController.text.trim();
     if (description.length > 500) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Description must be 500 characters or fewer.')),
+        SnackBar(content: Text(l.reportDescriptionTooLong)),
       );
       return;
     }
@@ -102,7 +104,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Report submitted successfully. Thank you.')),
+          SnackBar(content: Text(l.reportSuccess)),
         );
       }
     } catch (e) {
@@ -116,22 +118,23 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
     }
   }
 
-  String _getDialogTitle() {
+  String _getDialogTitle(AppLocalizations l) {
     switch (widget.reportType) {
       case ReportType.user:
       case ReportType.guide:
-        return 'Report User';
+        return l.reportUser;
       case ReportType.tour:
-        return 'Report Tour';
+        return l.reportTour;
       case ReportType.post:
-        return 'Report Post';
+        return l.reportPost;
       case ReportType.comment:
-        return 'Report Comment';
+        return l.reportComment;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       child: Padding(
@@ -145,7 +148,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _getDialogTitle(),
+                  _getDialogTitle(l),
                   style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
@@ -158,7 +161,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
             ),
             SizedBox(height: 16.h),
             Text(
-              'Why are you reporting this?',
+              l.reportReasonPrompt,
               style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 8.h),
@@ -195,7 +198,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                       controller: _descriptionController,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        hintText: 'Additional details (optional)',
+                        hintText: l.reportAdditionalDetails,
                         hintStyle: TextStyle(fontSize: 14.sp),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.r),
@@ -232,7 +235,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                         ),
                       )
                     : Text(
-                        'Submit Report',
+                        l.reportSubmit,
                         style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                       ),
               ),

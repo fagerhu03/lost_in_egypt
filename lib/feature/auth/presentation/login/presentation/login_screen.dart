@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/login/bloc/login_bloc.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/login/bloc/login_event.dart';
@@ -45,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _doLogin(BuildContext context) {
     if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
-      showErrorSnackBar(context, 'Please fill in your email and password.');
+      showErrorSnackBar(context, AppLocalizations.of(context).loginFillEmailPassword);
       return;
     }
 
@@ -102,10 +103,10 @@ class _LoginScreenState extends State<LoginScreen> {
               final user = state.user;
               if (user != null && user.role == 'guide' && user.applicationStatus != 'approved') {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Your guide application is pending approval.'),
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context).loginGuidePending),
                     backgroundColor: Colors.orange,
-                    duration: Duration(seconds: 4),
+                    duration: const Duration(seconds: 4),
                   ),
                 );
               }
@@ -114,6 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           builder: (context, state) {
             final isLoading = state is LoginLoading;
+            final l = AppLocalizations.of(context);
 
             return Center(
               child: SingleChildScrollView(
@@ -133,11 +135,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(height: 25.h),
 
                       Text(
-                        "Log in to unlock your journey.",
+                        l.loginTagline,
                         style: TextStyle(
                           fontSize: 16.sp,
                           color: const Color(0xff634700),
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         ),
                       ),
 
@@ -145,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       AuthTextField(
                         controller: _emailController,
-                        hintText: "Enter your email",
+                        hintText: l.authEmailHint,
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                         focusNode: _emailFocus,
@@ -156,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       AuthPasswordField(
                         controller: _passwordController,
-                        hintText: "Enter your password",
+                        hintText: l.authPasswordHint,
                         obscureText: obscure,
                         textInputAction: TextInputAction.done,
                         focusNode: _passwordFocus,
@@ -186,12 +188,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                       color: Colors.black87,
                                     )
                                   : Text(
-                                      "Log In",
+                                      l.loginButton,
                                       style: TextStyle(
                                         color: Colors.black87,
                                         fontSize: 18.sp,
                                         fontWeight: FontWeight.w700,
-                                        fontFamily: "Marcellus",
+                                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                       ),
                                     ),
                             ),
@@ -208,11 +210,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         },
                         child: Text(
-                          "Forgot Password?",
+                          l.loginForgotPassword,
                           style: TextStyle(
                             color: const Color(0xff634700),
                             fontSize: 16.sp,
-                            fontFamily: "Marcellus",
+                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -228,11 +230,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8.w),
                             child: Text(
-                              'OR SIGN IN WITH',
+                              l.loginOrSignInWith,
                               style: TextStyle(
                                 color: const Color(0xff634700),
                                 fontSize: 14.sp,
-                                fontFamily: 'Marcellus',
+                                fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               ),
                             ),
                           ),
@@ -294,11 +296,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            "Don't have an account?",
-                            style: TextStyle(
+                          Text(
+                            l.loginNoAccount,
+                            style: const TextStyle(
                               color: Colors.black87,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: ['Cairo'],
                             ),
                           ),
                           SizedBox(width: 5.w),
@@ -308,12 +310,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 FadePageRoute(page: const RoleSelectionScreen()),
                               );
                             },
-                            child: const Text(
-                              "Create Account",
-                              style: TextStyle(
+                            child: Text(
+                              l.loginCreateAccount,
+                              style: const TextStyle(
                                 color: Color(0xFFD6A00F),
                                 fontWeight: FontWeight.w600,
-                                fontFamily: "Marcellus",
+                                fontFamily: "Marcellus", fontFamilyFallback: ['Cairo'],
                               ),
                             ),
                           ),

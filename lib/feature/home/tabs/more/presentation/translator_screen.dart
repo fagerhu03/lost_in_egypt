@@ -251,7 +251,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         "Translator",
                         style: TextStyle(
                           fontSize: 24.sp,
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                           color: textColor,
                           fontWeight: FontWeight.w500,
                         ),
@@ -294,7 +294,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               "Downloading translation models for offline use...",
                               style: TextStyle(
                                 fontSize: 12.sp,
-                                fontFamily: "Marcellus",
+                                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                 color: textColor,
                               ),
                             ),
@@ -325,7 +325,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               "Works offline - models cached on device",
                               style: TextStyle(
                                 fontSize: 12.sp,
-                                fontFamily: "Marcellus",
+                                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                 color: textColor,
                               ),
                             ),
@@ -353,10 +353,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                       children: [
                         // Source language dropdown and textbox
                         Padding(
-                          padding: EdgeInsets.only(
+                          padding: EdgeInsetsDirectional.only(
                             top: 12.h,
-                            left: 12.w,
-                            right: 12.w,
+                            start: 12.w,
+                            end: 12.w,
                           ),
                           child: _buildLanguageDropdown(
                             value: _sourceLanguage,
@@ -383,7 +383,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               hintText: "Enter text",
                               hintStyle: TextStyle(
                                 color: textColor.withValues(alpha: 0.4),
-                                fontFamily: "Marcellus",
+                                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16.r),
@@ -408,7 +408,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             style: TextStyle(
                               color: textColor,
                               fontSize: 14.sp,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             ),
                             textInputAction: TextInputAction.done,
                             onSubmitted: (_) => _translate(),
@@ -442,10 +442,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
                         // Target language dropdown and textbox
                         Padding(
-                          padding: EdgeInsets.only(
+                          padding: EdgeInsetsDirectional.only(
                             top: 12.h,
-                            left: 12.w,
-                            right: 12.w,
+                            start: 12.w,
+                            end: 12.w,
                           ),
                           child: _buildLanguageDropdown(
                             value: _targetLanguage,
@@ -471,7 +471,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                               hintText: "Translation",
                               hintStyle: TextStyle(
                                 color: textColor.withValues(alpha: 0.4),
-                                fontFamily: "Marcellus",
+                                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16.r),
@@ -493,7 +493,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             style: TextStyle(
                               color: textColor,
                               fontSize: 14.sp,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                         ),
@@ -533,7 +533,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           "Translate",
                           style: TextStyle(
                             fontSize: 16.sp,
-                            fontFamily: "Marcellus",
+                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
@@ -583,7 +583,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                 lang,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   color: textColor,
                 ),
               ),

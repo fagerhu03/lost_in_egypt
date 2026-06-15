@@ -285,7 +285,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
   Widget _actionButton(IconData icon, String label, VoidCallback onTap, {Color? color}) {
     final c = color ?? Theme.of(context).colorScheme.primary;
     return Padding(
-      padding: EdgeInsets.only(right: 8.w),
+      padding: EdgeInsetsDirectional.only(end: 8.w),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8.r),

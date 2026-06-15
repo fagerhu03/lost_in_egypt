@@ -234,7 +234,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                             fontSize: 22.sp,
                             fontWeight: FontWeight.w500,
                             color: titleColor,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                       ),
@@ -321,7 +321,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                       fontSize: 24.sp,
                                       fontWeight: FontWeight.w500,
                                       color: titleColor,
-                                      fontFamily: 'Marcellus',
+                                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                     ),
                                   ),
                                   if (_loadingPersonalization)
@@ -366,7 +366,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                         direction: DismissDirection.endToStart,
                                         background: Container(
                                           alignment: Alignment.centerRight,
-                                          padding: EdgeInsets.only(right: 20.w),
+                                          padding: EdgeInsetsDirectional.only(end: 20.w),
                                           decoration: BoxDecoration(
                                             color: Colors.red.shade400,
                                             borderRadius: BorderRadius.circular(20.r),

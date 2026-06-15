@@ -98,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   title: Text(
                     code,
                     style: TextStyle(
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       fontSize: 16.sp,
                       color: theme.colorScheme.onSurface,
                     ),
@@ -152,7 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.settingsResetTasteSignalsTitle,
-            style: const TextStyle(fontFamily: 'Marcellus')),
+            style: const TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         content: Text(l.settingsResetTasteSignalsBody),
         actions: [
           TextButton(
@@ -229,7 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                         l.settingsTitle,
                         style: TextStyle(
                           fontSize: 30.sp,
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                           color: textColor.withValues(alpha: 0.75),
                         ),
                       ),
@@ -451,7 +451,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                                     l.settingsVersion('1.0.0'),
                                     style: TextStyle(
                                       color: textColor.withValues(alpha: 0.5),
-                                      fontFamily: "Marcellus",
+                                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                       fontSize: 14.sp,
                                     ),
                                   ),
@@ -525,7 +525,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     color: iconColor ?? onSurface.withValues(alpha: 0.88),
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                   ),
                 ),
               ),

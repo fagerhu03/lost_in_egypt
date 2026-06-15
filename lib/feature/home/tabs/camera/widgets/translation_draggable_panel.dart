@@ -71,7 +71,7 @@ class TranslationDraggablePanel extends StatelessWidget {
                     Text(
                       "Translation Result",
                       style: TextStyle(
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,

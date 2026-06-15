@@ -132,7 +132,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
                   '${_user!.firstName} ${_user!.lastName}',
                   style: TextStyle(
                     fontSize: 20.sp,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     color: onSurface,
                     fontWeight: FontWeight.w700,
                   ),

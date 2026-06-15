@@ -349,7 +349,7 @@ class _CameraScreenState extends State<CameraScreen> {
                       ? (isCorrect ? "You May Pass 🦁" : "Incorrect, Mortal 🌪️")
                       : "The Sphinx's Riddle 🦁",
                   style: TextStyle(
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     color: isAnswered ? (isCorrect ? textColor : Colors.red) : textColor,
                     fontSize: 24.sp,
                     fontWeight: FontWeight.bold,

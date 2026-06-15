@@ -8,6 +8,7 @@ import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 import 'package:lost_in_egypt/core/utils/dob_validator.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -74,6 +75,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -88,19 +90,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "One Last Step",
+                    l10n.completeProfileTitle,
                     style: TextStyle(
                       fontSize: 24.sp,
                       color: const Color(0xff634700),
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 15.h),
                   Text(
-                    "We need your birthdate to customize your journey in Egypt.",
+                    l10n.completeProfileSubtitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16.sp, fontFamily: "Marcellus"),
+                    style: TextStyle(fontSize: 16.sp, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo']),
                   ),
                   SizedBox(height: 30.h),
                   
@@ -110,7 +112,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         child: _dropdown(
                           _months,
                           _selectedMonth,
-                          "Month",
+                          l10n.dobMonth,
                           (v) => setState(() => _selectedMonth = v),
                         ),
                       ),
@@ -119,7 +121,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         child: _dropdown(
                           _days,
                           _selectedDay,
-                          "Day",
+                          l10n.dobDay,
                           (v) => setState(() => _selectedDay = v),
                         ),
                       ),
@@ -128,7 +130,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         child: _dropdown(
                           _years,
                           _selectedYear,
-                          "Year",
+                          l10n.dobYear,
                           (v) => setState(() => _selectedYear = v),
                         ),
                       ),
@@ -150,12 +152,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.black87)
                           : Text(
-                            "Complete Setup",
+                            l10n.completeProfileButton,
                             style: TextStyle(
                               color: Colors.black87,
                               fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                       ),

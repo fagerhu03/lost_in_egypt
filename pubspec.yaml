@@ -156,6 +156,20 @@ flutter:
      - family: Marcellus
        fonts:
          - asset: assets/fonts/Marcellus-Regular.ttf
+     # Cairo (OFL) — covers both Arabic and Latin glyphs. Used app-wide when the
+     # active locale is Arabic (see AppTheme.fontFamilyFor / locale-aware theme).
+     - family: Cairo
+       fonts:
+         - asset: assets/fonts/Cairo/Cairo-Light.ttf
+           weight: 300
+         - asset: assets/fonts/Cairo/Cairo-Regular.ttf
+           weight: 400
+         - asset: assets/fonts/Cairo/Cairo-Medium.ttf
+           weight: 500
+         - asset: assets/fonts/Cairo/Cairo-SemiBold.ttf
+           weight: 600
+         - asset: assets/fonts/Cairo/Cairo-Bold.ttf
+           weight: 700
 
   #
   # For details regarding fonts from package dependencies,

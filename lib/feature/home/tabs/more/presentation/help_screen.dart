@@ -203,7 +203,7 @@ class HelpScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Help & FAQ", style: TextStyle(fontFamily: 'Marcellus')),
+        title: const Text("Help & FAQ", style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -235,7 +235,7 @@ class HelpScreen extends StatelessWidget {
                     section.title,
                     style: TextStyle(
                       fontSize: 16.sp,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       fontWeight: FontWeight.w700,
                       color: primary,
                     ),
@@ -301,7 +301,7 @@ class _FaqTileState extends State<_FaqTile> {
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                         color: onSurface,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ),

@@ -31,7 +31,7 @@ class MyPlansScreen extends StatelessWidget {
           title: Text(
             'My Plans',
             style: TextStyle(
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               color: textColor,
               fontSize: 20.sp,
             ),
@@ -216,7 +216,7 @@ class _PlanCard extends StatelessWidget {
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
                       color: textColor,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     ),
                   ),
                 ),
@@ -462,7 +462,7 @@ class _EmptyState extends StatelessWidget {
             'No plans yet',
             style: TextStyle(
               fontSize: 18.sp,
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               color: textColor.withValues(alpha: 0.6),
             ),
           ),

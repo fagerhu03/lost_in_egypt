@@ -73,7 +73,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black87,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
           ),
         ),
         backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.85),

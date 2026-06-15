@@ -80,7 +80,7 @@ class BudgetStep extends StatelessWidget {
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                   color: labelColor,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 ),
               ),
               Text(
@@ -96,7 +96,7 @@ class BudgetStep extends StatelessWidget {
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                   color: labelColor,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ],

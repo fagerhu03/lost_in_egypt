@@ -352,7 +352,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
         title: Text(
           _plan.title,
           style: TextStyle(
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             color: textColor,
             fontSize: 17.sp,
           ),
@@ -522,7 +522,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                       child: Text(
                         day.label,
                         style: TextStyle(
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           fontWeight: FontWeight.w700,
                           color: gold,
                           fontSize: 14.sp,
@@ -768,7 +768,7 @@ class _StopTileState extends State<_StopTile> {
                                   decoration: stop.completed
                                       ? TextDecoration.lineThrough
                                       : null,
-                                  fontFamily: 'Marcellus',
+                                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                 ),
                               ),
                             ),
@@ -925,7 +925,7 @@ class _TourOnboardingSheet extends StatelessWidget {
           Text(
             '🗺️ Your Tour Has Started!',
             style: TextStyle(
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
               color: textColor,
@@ -965,7 +965,7 @@ class _TourOnboardingSheet extends StatelessWidget {
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               color: textColor,
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                           SizedBox(height: 3.h),
@@ -1001,7 +1001,7 @@ class _TourOnboardingSheet extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 15.sp,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ),
@@ -1193,7 +1193,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                   style: TextStyle(
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     color: textColor,
                   ),
                 ),
@@ -1291,7 +1291,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w700,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ),
@@ -1344,7 +1344,7 @@ class _TransitBanner extends StatelessWidget {
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                     color: gold,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -1582,7 +1582,7 @@ class _StorySheetState extends State<_StorySheet> {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       color: textColor,
                     ),
                   ),

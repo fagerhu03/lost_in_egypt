@@ -102,7 +102,7 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                 style: TextStyle(
                   fontSize: 22.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   color: textColor,
                 ),
                 textAlign: TextAlign.center,
@@ -167,7 +167,7 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
                 style: TextStyle(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w600,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   color: textColor,
                   letterSpacing: 0.5,
                 ),

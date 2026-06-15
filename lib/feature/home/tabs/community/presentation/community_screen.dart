@@ -19,6 +19,7 @@ import '../../map/data/places_api_service.dart';
 import '../../../../../core/services/recommendation_service.dart';
 import '../../../../../core/services/recommendation_mappings.dart';
 import '../../../../../core/utils/snack_bar_utils.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -184,7 +185,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             return AlertDialog(
               backgroundColor: surface,
               surfaceTintColor: Colors.transparent,
-              title: Text('Tag a Location', style: TextStyle(color: onSurface, fontFamily: 'Marcellus')),
+              title: Text(AppLocalizations.of(context).communityTagLocation, style: TextStyle(color: onSurface, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'])),
               content: SizedBox(
                 width: double.maxFinite,
                 height: 400.h,
@@ -194,7 +195,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       autofocus: true,
                       style: TextStyle(color: onSurface),
                       decoration: InputDecoration(
-                        hintText: 'Search places in Egypt...',
+                        hintText: AppLocalizations.of(context).communitySearchPlacesHint,
                         hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.6)),
                         prefixIcon: Icon(Icons.search, color: onSurface.withValues(alpha: 0.7)),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: onSurface.withValues(alpha: 0.12))),
@@ -224,7 +225,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     if (isLoading)
                       Padding(padding: EdgeInsets.all(20.r), child: CircularProgressIndicator(color: primary))
                     else if (searchResults.isEmpty)
-                      Expanded(child: Center(child: Text('Type to search places...', style: TextStyle(color: onSurface.withValues(alpha: 0.55)))))
+                      Expanded(child: Center(child: Text(AppLocalizations.of(context).communityTypeToSearch, style: TextStyle(color: onSurface.withValues(alpha: 0.55)))))
                     else
                       Expanded(
                         child: ListView.separated(
@@ -263,7 +264,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   ],
                 ),
               ),
-              actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: TextStyle(color: onSurface.withValues(alpha: 0.6))))],
+              actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context).commonCancel, style: TextStyle(color: onSurface.withValues(alpha: 0.6))))],
             );
           },
         );
@@ -285,16 +286,17 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   void _showCategoryPicker() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
     final surface = theme.colorScheme.surface;
 
     final categories = [
-      ('photos', Icons.photo_library_outlined, 'Photos'),
-      ('questions', Icons.help_outline_rounded, 'Questions'),
-      ('guides', Icons.tour_outlined, 'Guides'),
-      ('landmarks', Icons.account_balance_outlined, 'Landmarks'),
-      ('tips', Icons.lightbulb_outline_rounded, "Traveler's Tips"),
+      ('photos', Icons.photo_library_outlined, l10n.communityCategoryPhotos),
+      ('questions', Icons.help_outline_rounded, l10n.communityCategoryQuestions),
+      ('guides', Icons.tour_outlined, l10n.communityCategoryGuides),
+      ('landmarks', Icons.account_balance_outlined, l10n.communityCategoryLandmarks),
+      ('tips', Icons.lightbulb_outline_rounded, l10n.communityCategoryTips),
     ];
 
     showModalBottomSheet(
@@ -310,7 +312,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             SizedBox(height: 16.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Text('Post Category', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16.sp, color: onSurface, fontWeight: FontWeight.bold)),
+              child: Text(l10n.communityPostCategory, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 16.sp, color: onSurface, fontWeight: FontWeight.bold)),
             ),
             SizedBox(height: 12.h),
             ...categories.map((cat) {
@@ -321,7 +323,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   decoration: BoxDecoration(color: primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10.r)),
                   child: Icon(cat.$2, color: primary, size: 20.r),
                 ),
-                title: Text(cat.$3, style: TextStyle(fontFamily: 'Marcellus', color: onSurface)),
+                title: Text(cat.$3, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], color: onSurface)),
                 trailing: isSelected ? Icon(Icons.check_rounded, color: primary) : null,
                 onTap: () {
                   setState(() => _selectedCategory = isSelected ? null : cat.$1);
@@ -334,6 +336,23 @@ class _CommunityScreenState extends State<CommunityScreen>
         ),
       ),
     );
+  }
+
+  String _categoryLabel(AppLocalizations l10n, String id) {
+    switch (id) {
+      case 'photos':
+        return l10n.communityCategoryPhotos;
+      case 'questions':
+        return l10n.communityCategoryQuestions;
+      case 'guides':
+        return l10n.communityCategoryGuides;
+      case 'landmarks':
+        return l10n.communityCategoryLandmarks;
+      case 'tips':
+        return l10n.communityCategoryTips;
+      default:
+        return id;
+    }
   }
 
   Future<void> _handlePost() async {
@@ -399,6 +418,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   void _showSortBottomSheet() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
     final surface = theme.colorScheme.surface;
@@ -414,11 +434,11 @@ class _CommunityScreenState extends State<CommunityScreen>
             SizedBox(height: 12.h),
             Container(width: 36.w, height: 4.h, decoration: BoxDecoration(color: onSurface.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2.r))),
             SizedBox(height: 16.h),
-            Padding(padding: EdgeInsets.symmetric(horizontal: 20.w), child: Text('Sort Posts', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16.sp, color: onSurface, fontWeight: FontWeight.bold))),
+            Padding(padding: EdgeInsets.symmetric(horizontal: 20.w), child: Text(l10n.communitySortPosts, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 16.sp, color: onSurface, fontWeight: FontWeight.bold))),
             SizedBox(height: 8.h),
-            _sortTile(ctx, 'Newest', 'newest', Icons.access_time_rounded, primary, onSurface),
-            _sortTile(ctx, 'Top Rated', 'popular', Icons.thumb_up_outlined, primary, onSurface),
-            _sortTile(ctx, 'Most Discussed', 'most_discussed', Icons.chat_bubble_outline_rounded, primary, onSurface),
+            _sortTile(ctx, l10n.communitySortNewest, 'newest', Icons.access_time_rounded, primary, onSurface),
+            _sortTile(ctx, l10n.communitySortTopRated, 'popular', Icons.thumb_up_outlined, primary, onSurface),
+            _sortTile(ctx, l10n.communitySortMostDiscussed, 'most_discussed', Icons.chat_bubble_outline_rounded, primary, onSurface),
             SizedBox(height: 8.h),
           ],
         ),
@@ -434,7 +454,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         decoration: BoxDecoration(color: primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10.r)),
         child: Icon(icon, color: primary, size: 20.r),
       ),
-      title: Text(label, style: TextStyle(fontFamily: 'Marcellus', color: onSurface)),
+      title: Text(label, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], color: onSurface)),
       trailing: isSelected ? Icon(Icons.check_rounded, color: primary) : null,
       onTap: () {
         if (_sortBy != value) {
@@ -452,6 +472,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   Widget build(BuildContext context) {
     super.build(context);
 
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bg = theme.scaffoldBackgroundColor;
@@ -519,7 +540,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                               );
                             }
                             if (snapshot.hasError) {
-                              return Center(child: Padding(padding: EdgeInsets.all(16.r), child: Text('Something went wrong:\n${snapshot.error}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red))));
+                              return Center(child: Padding(padding: EdgeInsets.all(16.r), child: Text(l10n.communitySomethingWrong, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red))));
                             }
 
                             final allPosts = snapshot.data ?? [];
@@ -566,10 +587,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                             final trendingTags = _extractTrendingHashtags(allPosts);
 
                             if (allPosts.isEmpty) {
-                              return Center(child: Text('No posts yet. Be the first!', style: TextStyle(color: onSurface.withValues(alpha: 0.75))));
+                              return Center(child: Text(l10n.communityNoPostsYet, style: TextStyle(color: onSurface.withValues(alpha: 0.75))));
                             }
                             if (filteredPosts.isEmpty) {
-                              return Center(child: Text(_searchQuery.isNotEmpty ? 'No results for \'$_searchQuery\'' : 'No posts in this category yet.', style: TextStyle(color: onSurface.withValues(alpha: 0.75))));
+                              return Center(child: Text(_searchQuery.isNotEmpty ? l10n.communityNoResultsFor(_searchQuery) : l10n.communityNoPostsInCategory, style: TextStyle(color: onSurface.withValues(alpha: 0.75))));
                             }
 
                             final currentUid = _auth.currentUser?.uid ?? '';
@@ -622,7 +643,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                                             children: [
                                               Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 14.r),
                                               SizedBox(width: 6.w),
-                                              Text('New posts — tap to refresh', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp)),
+                                              Text(l10n.communityNewPosts, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp)),
                                             ],
                                           ),
                                         ),
@@ -648,6 +669,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   // ─── HEADER ───────────────────────────────────────────────────────────────
 
   Widget _buildHeader(BuildContext context, Color surface, Color onSurface, Color primary, BoxShadow shadow) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final searchBg = primary.withValues(alpha: isDark ? 0.25 : 0.18);
     final borderColor = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.10);
@@ -671,10 +693,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                             autofocus: true,
                             onChanged: (val) => setState(() => _searchQuery = val),
                             textInputAction: TextInputAction.search,
-                            style: TextStyle(color: isDark ? onSurface : Colors.white, fontFamily: 'Marcellus', fontWeight: FontWeight.bold),
+                            style: TextStyle(color: isDark ? onSurface : Colors.white, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
-                              hintText: 'Search posts...',
-                              hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontSize: 16.sp, fontFamily: 'Marcellus'),
+                              hintText: l10n.communitySearchPostsHint,
+                              hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontSize: 16.sp, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo']),
                               prefixIcon: Icon(Icons.search, color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.9)),
                               suffixIcon: IconButton(icon: Icon(Icons.close, color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.7)), onPressed: () => setState(() { _searchExpanded = false; _searchQuery = ''; })),
                               border: InputBorder.none,
@@ -685,7 +707,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       : Row(
                           key: const ValueKey('title'),
                           children: [
-                            Text('Community', style: TextStyle(fontFamily: 'Marcellus', fontSize: 24.sp, fontWeight: FontWeight.bold, color: onSurface)),
+                            Text(l10n.communityTitle, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 24.sp, fontWeight: FontWeight.bold, color: onSurface)),
                           ],
                         ),
                 ),
@@ -694,7 +716,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 IconButton(icon: Icon(Icons.search_rounded, color: onSurface.withValues(alpha: 0.8)), onPressed: () => setState(() => _searchExpanded = true)),
                 IconButton(
                   icon: Icon(Icons.sort_rounded, color: onSurface.withValues(alpha: 0.8)),
-                  tooltip: 'Sort',
+                  tooltip: l10n.communitySortTooltip,
                   onPressed: _showSortBottomSheet,
                 ),
               ],
@@ -729,7 +751,7 @@ class _CommunityScreenState extends State<CommunityScreen>
           final cat = categories[i];
           final isSelected = _activeCategory == cat.$1;
           return FilterChip(
-            label: Text(cat.$2, style: TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, color: isSelected ? Colors.white : primary, fontSize: 13.sp)),
+            label: Text(cat.$2, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold, color: isSelected ? Colors.white : primary, fontSize: 13.sp)),
             selected: isSelected,
             onSelected: (_) => setState(() => _activeCategory = cat.$1),
             selectedColor: primary,
@@ -762,6 +784,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   Widget _buildTrendingHashtags(List<MapEntry<String, int>> tags, Color primary, Color onSurface) {
     if (tags.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -771,12 +794,12 @@ class _CommunityScreenState extends State<CommunityScreen>
             children: [
               Icon(Icons.trending_up_rounded, size: 15.r, color: primary),
               SizedBox(width: 6.w),
-              Text('Trending', style: TextStyle(fontFamily: 'Marcellus', fontSize: 13.sp, color: onSurface, fontWeight: FontWeight.bold)),
+              Text(l10n.communityTrending, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 13.sp, color: onSurface, fontWeight: FontWeight.bold)),
               if (_activeHashtag != null) ...[
                 const Spacer(),
                 GestureDetector(
                   onTap: () => setState(() => _activeHashtag = null),
-                  child: Text('Clear filter', style: TextStyle(color: primary, fontSize: 12.sp)),
+                  child: Text(l10n.communityClearFilter, style: TextStyle(color: primary, fontSize: 12.sp)),
                 ),
               ],
             ],
@@ -822,6 +845,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   // ─── LEADERBOARD WIDGET ───────────────────────────────────────────────────
 
   Widget _buildLeaderboard(List<CommunityPost> posts, Color primary, Color onSurface, Color surface, bool isDark) {
+    final l10n = AppLocalizations.of(context);
     // Group by userId — count posts
     final Map<String, List<CommunityPost>> byUser = {};
     for (final post in posts) {
@@ -850,7 +874,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             children: [
               Text('🏆', style: TextStyle(fontSize: 15.sp)),
               SizedBox(width: 6.w),
-              Text('Top Explorers This Feed', style: TextStyle(fontFamily: 'Marcellus', fontSize: 13.sp, color: onSurface, fontWeight: FontWeight.bold)),
+              Text(l10n.communityTopExplorers, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 13.sp, color: onSurface, fontWeight: FontWeight.bold)),
             ],
           ),
           SizedBox(height: 10.h),
@@ -883,7 +907,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                     decoration: BoxDecoration(color: primary.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(12.r)),
-                    child: Text('${entry.value.length} posts', style: TextStyle(color: primary, fontSize: 11.sp, fontWeight: FontWeight.w700)),
+                    child: Text(l10n.communityPostsCount(entry.value.length), style: TextStyle(color: primary, fontSize: 11.sp, fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -933,15 +957,15 @@ class _CommunityScreenState extends State<CommunityScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Weekly Challenge', style: TextStyle(color: Colors.white70, fontSize: 11.sp, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                          Text(AppLocalizations.of(context).communityWeeklyChallenge, style: TextStyle(color: Colors.white70, fontSize: 11.sp, fontWeight: FontWeight.bold, letterSpacing: 1)),
                           SizedBox(height: 4.h),
-                          Text(title, style: TextStyle(color: Colors.white, fontFamily: 'Marcellus', fontSize: 15.sp, fontWeight: FontWeight.bold)),
+                          Text(title, style: TextStyle(color: Colors.white, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 15.sp, fontWeight: FontWeight.bold)),
                           if (hashtag.isNotEmpty) ...[
                             SizedBox(height: 8.h),
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                               decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12.r)),
-                              child: Text('Post Now', style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.bold)),
+                              child: Text(AppLocalizations.of(context).communityPostNow, style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ],
@@ -961,6 +985,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   // ─── COMPOSER ────────────────────────────────────────────────────────────
 
   Widget _buildComposer(ThemeData theme, Color surface, Color onSurface, Color primary, BoxShadow shadow) {
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bool isActive = _composerFocused || _postController.text.isNotEmpty || _selectedImages.isNotEmpty || _selectedLocationName != null;
 
@@ -996,7 +1021,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     maxLines: isActive ? 4 : 1,
                     style: TextStyle(color: onSurface),
                     decoration: InputDecoration(
-                      hintText: 'Share your Egypt experience...',
+                      hintText: l10n.communityComposerHint,
                       hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.55)),
                       border: InputBorder.none,
                       isDense: true,
@@ -1044,7 +1069,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                       Chip(
                         backgroundColor: primary.withValues(alpha: 0.10),
                         avatar: Icon(Icons.label_rounded, size: 14.r, color: primary),
-                        label: Text(_selectedCategory!, style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
+                        label: Text(_categoryLabel(l10n, _selectedCategory!), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
                         deleteIcon: Icon(Icons.close, size: 13.r, color: primary.withValues(alpha: 0.7)),
                         onDeleted: () => setState(() => _selectedCategory = null),
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1068,7 +1093,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     itemBuilder: (_, index) => Stack(
                       children: [
                         Container(
-                          margin: EdgeInsets.only(right: 8.w),
+                          margin: EdgeInsetsDirectional.only(end: 8.w),
                           width: 80.w,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10.r),
@@ -1097,20 +1122,20 @@ class _CommunityScreenState extends State<CommunityScreen>
               Divider(height: 16.h, color: onSurface.withValues(alpha: 0.08)),
               Row(
                 children: [
-                  _ComposerActionBtn(icon: Icons.photo_library_outlined, color: onSurface.withValues(alpha: 0.65), onTap: _pickImages, tooltip: 'Add photos'),
+                  _ComposerActionBtn(icon: Icons.photo_library_outlined, color: onSurface.withValues(alpha: 0.65), onTap: _pickImages, tooltip: l10n.communityAddPhotosTooltip),
                   SizedBox(width: 4.w),
                   _ComposerActionBtn(
                     icon: Icons.location_on_outlined,
                     color: _selectedLocationName != null ? primary : onSurface.withValues(alpha: 0.65),
                     onTap: _pickLocation,
-                    tooltip: 'Tag location',
+                    tooltip: l10n.communityTagLocationTooltip,
                   ),
                   SizedBox(width: 4.w),
                   _ComposerActionBtn(
                     icon: Icons.label_outline_rounded,
                     color: _selectedCategory != null ? primary : onSurface.withValues(alpha: 0.65),
                     onTap: _showCategoryPicker,
-                    tooltip: 'Category',
+                    tooltip: l10n.communityCategoryTooltip,
                   ),
                   const Spacer(),
                   _isPosting
@@ -1120,7 +1145,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 8.h),
                             decoration: BoxDecoration(color: primary, borderRadius: BorderRadius.circular(20.r)),
-                            child: Text('Post', style: TextStyle(color: Colors.white, fontFamily: 'Marcellus', fontWeight: FontWeight.bold, fontSize: 14.sp)),
+                            child: Text(l10n.communityPostButton, style: TextStyle(color: Colors.white, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold, fontSize: 14.sp)),
                           ),
                         ),
                 ],

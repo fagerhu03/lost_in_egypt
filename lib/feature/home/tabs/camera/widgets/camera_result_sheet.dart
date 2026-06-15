@@ -218,7 +218,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                   Text(
                     widget.place.title,
                     style: TextStyle(
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       fontSize: 26.sp,
                       color: onSurface,
                     ),
@@ -471,7 +471,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
                             color: onSurface,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                       ],
@@ -485,7 +485,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                               itemCount: 3,
                               itemBuilder: (_, _) => Container(
                                 width: 150.w,
-                                margin: EdgeInsets.only(right: 10.w),
+                                margin: EdgeInsetsDirectional.only(end: 10.w),
                                 decoration: BoxDecoration(
                                   color: onSurface.withValues(alpha: 0.06),
                                   borderRadius: BorderRadius.circular(12.r),
@@ -504,7 +504,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                   },
                                   child: Container(
                                     width: 150.w,
-                                    margin: EdgeInsets.only(right: 10.w),
+                                    margin: EdgeInsetsDirectional.only(end: 10.w),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12.r),
                                       color: onSurface.withValues(alpha: 0.05),

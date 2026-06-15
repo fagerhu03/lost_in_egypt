@@ -113,7 +113,7 @@ class _SheetBodyState extends State<_SheetBody> {
               "Notification Preferences",
               style: TextStyle(
                 color: onSurface,
-                fontFamily: "Marcellus",
+                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 fontWeight: FontWeight.w700,
                 fontSize: 16.sp,
               ),
@@ -123,7 +123,7 @@ class _SheetBodyState extends State<_SheetBody> {
               "Choose what you want to be notified about.",
               style: TextStyle(
                 color: onSurface.withValues(alpha: 0.65),
-                fontFamily: "Marcellus",
+                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 fontSize: 12.sp,
               ),
             ),
@@ -230,7 +230,7 @@ class _SheetBodyState extends State<_SheetBody> {
                   child: const Text(
                     "Done",
                     style: TextStyle(
-                        fontFamily: "Marcellus", fontWeight: FontWeight.w600),
+                        fontFamily: "Marcellus", fontFamilyFallback: ['Cairo'], fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -292,14 +292,14 @@ class _ToggleTile extends StatelessWidget {
                 Text(title,
                     style: TextStyle(
                         color: onSurface,
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         fontWeight: FontWeight.w700,
                         fontSize: 13.sp)),
                 SizedBox(height: 2.h),
                 Text(subtitle,
                     style: TextStyle(
                         color: onSurface.withValues(alpha: 0.60),
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         fontSize: 11.sp)),
               ],
             ),

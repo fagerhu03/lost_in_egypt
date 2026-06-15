@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
@@ -19,12 +20,13 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
   Future<void> _sendPasswordReset() async {
     FocusManager.instance.primaryFocus?.unfocus();
+    final l = AppLocalizations.of(context);
     final email = _emailController.text.trim();
 
     // 1. Basic Input Validation
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email")),
+        SnackBar(content: Text(l.forgotEnterEmail)),
       );
       return;
     }
@@ -43,17 +45,17 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("If an account exists, a reset link was sent."),
+          SnackBar(
+            content: Text(l.forgotResetSent),
             backgroundColor: Colors.green,
           ),
         );
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        String msg = "Failed to send reset email";
-        if (e.code == 'invalid-email') msg = "Invalid email formatting.";
-        
+        String msg = l.forgotFailedSend;
+        if (e.code == 'invalid-email') msg = l.forgotInvalidEmail;
+
         showErrorSnackBar(context, msg);
       }
     } catch (e) {
@@ -67,6 +69,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFFFCFBE8),
@@ -99,10 +102,10 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                 ),
 
                 Text(
-                  _emailSent ? "Email Sent!" : "Reset Password",
+                  _emailSent ? l.forgotEmailSentTitle : l.forgotResetTitle,
                   style: TextStyle(
                     fontSize: 24.sp,
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     color: const Color(0xff634700),
                     fontWeight: FontWeight.bold,
                   ),
@@ -112,11 +115,11 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
                 Text(
                   _emailSent
-                    ? "If an account is registered to ${_emailController.text}, we've sent a secure password reset link. Please check your email."
-                    : "Enter your email to receive a secure password reset link.",
+                    ? l.forgotEmailSentBody(_emailController.text)
+                    : l.forgotResetBody,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     fontSize: 16.sp,
                     color: const Color(0xff634700),
                   ),
@@ -128,7 +131,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                   // EMAIL INPUT
                   AuthTextField(
                     controller: _emailController,
-                    hintText: "Enter your email",
+                    hintText: l.authEmailHint,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) {
@@ -153,12 +156,12 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                               ? const CircularProgressIndicator(
                                   color: Colors.black87)
                               : Text(
-                                  "Send Reset Link",
+                                  l.forgotSendLink,
                                   style: TextStyle(
                                     color: Colors.black87,
                                     fontSize: 18.sp,
                                     fontWeight: FontWeight.w700,
-                                    fontFamily: "Marcellus",
+                                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                   ),
                                 ),
                         ),
@@ -179,12 +182,12 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                         height: 50.h,
                         child: Center(
                           child: Text(
-                            "Return to Login",
+                            l.forgotReturnToLogin,
                             style: TextStyle(
                               color: Colors.black87,
                               fontSize: 18.sp,
                               fontWeight: FontWeight.w700,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                         ),

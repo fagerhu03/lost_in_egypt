@@ -105,7 +105,7 @@ class PlanCard extends StatelessWidget {
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
                               color: AppColors.lightPrimaryButton,
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                         ],
@@ -174,7 +174,7 @@ class PlanCard extends StatelessWidget {
                             fontSize: 17.sp,
                             fontWeight: FontWeight.w600,
                             color: titleColor,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                         if (tagline != null) ...[

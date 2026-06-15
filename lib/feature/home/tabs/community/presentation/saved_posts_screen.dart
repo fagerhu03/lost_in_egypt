@@ -31,7 +31,7 @@ class SavedPostsScreen extends StatelessWidget {
         title: Text(
           'Saved Posts',
           style: TextStyle(
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             color: onSurface,
             fontWeight: FontWeight.bold,
           ),
@@ -72,7 +72,7 @@ class SavedPostsScreen extends StatelessWidget {
                         SizedBox(height: 16.h),
                         Text(
                           'No saved posts yet',
-                          style: TextStyle(fontFamily: 'Marcellus', fontSize: 18.sp, color: onSurface.withValues(alpha: 0.5)),
+                          style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 18.sp, color: onSurface.withValues(alpha: 0.5)),
                         ),
                         SizedBox(height: 8.h),
                         Text(

@@ -268,7 +268,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             color: onSurface,
                           ),
                         ),
@@ -535,7 +535,7 @@ class _ItineraryTile extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: 20.w),
+        padding: EdgeInsetsDirectional.only(end: 20.w),
         margin: EdgeInsets.only(bottom: 8.h),
         decoration: BoxDecoration(
           color: Colors.red.withValues(alpha: 0.12),

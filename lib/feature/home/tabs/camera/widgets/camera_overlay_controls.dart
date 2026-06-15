@@ -94,7 +94,7 @@ class CameraOverlayControls extends StatelessWidget {
                 Text(
                   showGalleryImage ? "Translation" : "Lens",
                   style: TextStyle(
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     color: Colors.white,
                     fontSize: 20.sp,
                   ),
@@ -136,10 +136,10 @@ class CameraOverlayControls extends StatelessWidget {
           ),
           const Spacer(),
           Padding(
-            padding: EdgeInsets.only(
+            padding: EdgeInsetsDirectional.only(
               bottom: 40.h,
-              left: 30.w,
-              right: 30.w,
+              start: 30.w,
+              end: 30.w,
             ),
             child: SizedBox(
               height: 84.h, // ensures the stack has the height of the largest element

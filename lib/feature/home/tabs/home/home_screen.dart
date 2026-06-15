@@ -19,6 +19,7 @@ import 'package:lost_in_egypt/feature/tours/presentation/pages/tour_detail_scree
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
 import 'package:lost_in_egypt/core/constants/event_categories.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../theme/theme.dart';
 import '../navigator/widget/account_menu_button.dart';
 import './data/datasources/local_mock_data.dart';
@@ -296,6 +297,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -346,12 +348,12 @@ class _HomeScreenState extends State<HomeScreen>
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Text(
-                  "${_greetingForTimeOfDay()}, $_firstName 👋",
+                  l10n.homeGreeting(_greetingForTimeOfDay(l10n), _firstName!),
                   style: TextStyle(
                     color: primary,
                     fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   ),
                 ),
               ),
@@ -359,11 +361,11 @@ class _HomeScreenState extends State<HomeScreen>
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Text(
-                "Where do you want to go?",
+                l10n.homeWhereToGo,
                 style: TextStyle(
                   color: textColor.withValues(alpha: 0.9),
                   fontSize: 22.sp,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ),
@@ -419,11 +421,11 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      "Popular Places",
+                      l10n.homePopularPlaces,
                       style: TextStyle(
                         color: textColor.withValues(alpha: 0.9),
                         fontSize: 22.sp,
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ],
@@ -434,7 +436,7 @@ class _HomeScreenState extends State<HomeScreen>
                 height: 200.h,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.only(left: 16.w),
+                  padding: EdgeInsetsDirectional.only(start: 16.w),
                   itemCount: _popularPlaces.length,
                   itemBuilder: (context, index) {
                     final place = _popularPlaces[index];
@@ -466,11 +468,11 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      "For You",
+                      l10n.homeForYou,
                       style: TextStyle(
                         color: textColor.withValues(alpha: 0.9),
                         fontSize: 22.sp,
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                     SizedBox(width: 8.w),
@@ -484,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen>
                   height: 200.h,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.only(left: 16.w),
+                    padding: EdgeInsetsDirectional.only(start: 16.w),
                     itemCount: 3,
                     itemBuilder: (_, _) => const _ForYouSkeletonCard(),
                   ),
@@ -494,7 +496,7 @@ class _HomeScreenState extends State<HomeScreen>
                   height: 200.h,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.only(left: 16.w),
+                    padding: EdgeInsetsDirectional.only(start: 16.w),
                     itemCount: _forYouPlaces.length,
                     itemBuilder: (context, index) {
                       return _popularPlaceCard(
@@ -527,11 +529,11 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        "Experiences",
+                        l10n.homeExperiences,
                         style: TextStyle(
                           color: textColor.withValues(alpha: 0.9),
                           fontSize: 22.sp,
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         ),
                       ),
                     ],
@@ -544,11 +546,11 @@ class _HomeScreenState extends State<HomeScreen>
                       );
                     },
                     child: Text(
-                      "see all >",
+                      l10n.homeSeeAll,
                       style: TextStyle(
                         color: primary,
                         fontWeight: FontWeight.bold,
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ),
@@ -561,13 +563,13 @@ class _HomeScreenState extends State<HomeScreen>
               height: 36.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.only(left: 16.w),
+                padding: EdgeInsetsDirectional.only(start: 16.w),
                 itemCount: EventCategories.values.length,
                 itemBuilder: (context, index) {
                   final cat = EventCategories.values[index];
                   final isSelected = _selectedEventCategory == cat.id;
                   return Padding(
-                    padding: EdgeInsets.only(right: 8.w),
+                    padding: EdgeInsetsDirectional.only(end: 8.w),
                     child: GestureDetector(
                       onTap: () {
                         setState(() => _selectedEventCategory = cat.id);
@@ -588,7 +590,7 @@ class _HomeScreenState extends State<HomeScreen>
                             color: isSelected ? Colors.white : textColor.withValues(alpha: 0.7),
                             fontSize: 12.sp,
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                            fontFamily: "Marcellus",
+                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                       ),
@@ -617,14 +619,14 @@ class _HomeScreenState extends State<HomeScreen>
                         if (filtered.isEmpty) {
                           return Center(
                             child: Text(
-                              "No events in this category",
+                              l10n.homeNoEventsInCategory,
                               style: TextStyle(color: secondaryTextColor),
                             ),
                           );
                         }
                         return ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.only(left: 16.w),
+                          padding: EdgeInsetsDirectional.only(start: 16.w),
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             return _eventCard(
@@ -664,12 +666,12 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    "Plan your trip",
+                    l10n.homePlanYourTrip,
                     style: TextStyle(
                       color: textColor.withValues(alpha: 0.9),
                       fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     ),
                   ),
                 ],
@@ -682,7 +684,8 @@ class _HomeScreenState extends State<HomeScreen>
                 children: [
                   Expanded(
                     child: _tripCard(
-                      title: "Guides",
+                      title: l10n.homeTripGuides,
+                      iconAsset: "assets/icons/guide.png",
                       surface: surface,
                       textColor: textColor,
                       shadow: cardShadow,
@@ -700,7 +703,8 @@ class _HomeScreenState extends State<HomeScreen>
                   SizedBox(width: 12.w),
                   Expanded(
                     child: _tripCard(
-                      title: "Solo trip",
+                      title: l10n.homeTripSolo,
+                      iconAsset: "assets/icons/solo_trip.png",
                       surface: surface,
                       textColor: textColor,
                       shadow: cardShadow,
@@ -786,7 +790,7 @@ class _HomeScreenState extends State<HomeScreen>
                 style: TextStyle(
                   color: textColor.withValues(alpha: 0.9),
                   fontWeight: FontWeight.w600,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ],
@@ -816,7 +820,7 @@ class _HomeScreenState extends State<HomeScreen>
       },
       child: Container(
         width: 170.w,
-        margin: EdgeInsets.only(right: 12.w),
+        margin: EdgeInsetsDirectional.only(end: 12.w),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [shadow],
@@ -918,7 +922,7 @@ class _HomeScreenState extends State<HomeScreen>
                       color: Colors.white,
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       height: 1.2,
                     ),
                     maxLines: 2,
@@ -956,6 +960,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _tripCard({
     required String title,
+    required String iconAsset,
     required Color surface,
     required Color textColor,
     required BoxShadow shadow,
@@ -986,9 +991,7 @@ class _HomeScreenState extends State<HomeScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                title == "Guides"
-                    ? "assets/icons/guide.png"
-                    : "assets/icons/solo_trip.png",
+                iconAsset,
                 width: 80.r,
                 color: isDark
                     ? AppColors.darkNavBar.withValues(alpha: 0.9)
@@ -1002,7 +1005,7 @@ class _HomeScreenState extends State<HomeScreen>
                   color: textColor.withValues(alpha: 0.9),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ],
@@ -1012,11 +1015,11 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  String _greetingForTimeOfDay() {
+  String _greetingForTimeOfDay(AppLocalizations l10n) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return l10n.greetingMorning;
+    if (hour < 17) return l10n.greetingAfternoon;
+    return l10n.greetingEvening;
   }
 
   Widget _popularPlaceCard({
@@ -1030,7 +1033,7 @@ class _HomeScreenState extends State<HomeScreen>
       onTap: () => MapFocusService.instance.triggerFocus(place),
       child: Container(
         width: 170.w,
-        margin: EdgeInsets.only(right: 12.w),
+        margin: EdgeInsetsDirectional.only(end: 12.w),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [shadow],
@@ -1106,7 +1109,7 @@ class _HomeScreenState extends State<HomeScreen>
                       color: Colors.white,
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       height: 1.2,
                     ),
                     maxLines: 2,
@@ -1181,11 +1184,11 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    "Popular Tours",
+                    AppLocalizations.of(context).homePopularTours,
                     style: TextStyle(
                       color: textColor.withValues(alpha: 0.9),
                       fontSize: 22.sp,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     ),
                   ),
                 ],
@@ -1196,7 +1199,7 @@ class _HomeScreenState extends State<HomeScreen>
               height: 200.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.only(left: 16.w),
+                padding: EdgeInsetsDirectional.only(start: 16.w),
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
                   final data = docs[index].data() as Map<String, dynamic>;
@@ -1236,7 +1239,7 @@ class _HomeScreenState extends State<HomeScreen>
                     },
                     child: Container(
                       width: 220.w,
-                      margin: EdgeInsets.only(right: 12.w),
+                      margin: EdgeInsetsDirectional.only(end: 12.w),
                       decoration: BoxDecoration(
                         color: surface,
                         borderRadius: BorderRadius.circular(16.r),
@@ -1271,7 +1274,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     color: textColor.withValues(alpha: 0.9),
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.bold,
-                                    fontFamily: "Marcellus",
+                                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1349,7 +1352,7 @@ class _ForYouSkeletonCard extends StatelessWidget {
 
     return Container(
       width: 170.w,
-      margin: EdgeInsets.only(right: 12.w),
+      margin: EdgeInsetsDirectional.only(end: 12.w),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
@@ -1479,10 +1482,10 @@ class _HeroBannerState extends State<_HeroBanner> {
               color: Colors.black.withValues(alpha: 0.08),
             ),
             Padding(
-              padding: EdgeInsets.only(
+              padding: EdgeInsetsDirectional.only(
                 top: MediaQuery.of(context).padding.top + 8,
-                left: 16.w,
-                right: 16.w,
+                start: 16.w,
+                end: 16.w,
               ),
               child: Row(
                 children: [

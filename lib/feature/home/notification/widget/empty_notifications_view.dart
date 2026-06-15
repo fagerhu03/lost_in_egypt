@@ -34,7 +34,7 @@ class EmptyNotificationsView extends StatelessWidget {
             "No notifications yet",
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.87),
-              fontFamily: "Marcellus",
+              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -45,7 +45,7 @@ class EmptyNotificationsView extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.55),
-              fontFamily: "Marcellus",
+              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
               fontSize: 12.sp,
               height: 1.3,
             ),
@@ -58,7 +58,7 @@ class EmptyNotificationsView extends StatelessWidget {
               "Notification Settings",
               style: TextStyle(
                 color: primary,
-                fontFamily: "Marcellus",
+                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),

@@ -211,7 +211,7 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
                           style: TextStyle(
                             fontSize: 13.sp,
                             color: onSurface.withValues(alpha: 0.45),
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                         const Spacer(),
@@ -251,7 +251,7 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
                     Text(
                       'Personalise Your Journey',
                       style: TextStyle(
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         fontSize: 22.sp,
                         fontWeight: FontWeight.w700,
                         color: onSurface,
@@ -321,7 +321,7 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
                                 : 'Next',
                             style: TextStyle(
                               fontSize: 17.sp,
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -366,7 +366,7 @@ class _QuestionPage extends StatelessWidget {
           Text(
             question.prompt,
             style: TextStyle(
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
               color: onSurface,
@@ -433,7 +433,7 @@ class _QuestionPage extends StatelessWidget {
                               color: isSelected
                                   ? primary
                                   : onSurface.withValues(alpha: 0.75),
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                         ],

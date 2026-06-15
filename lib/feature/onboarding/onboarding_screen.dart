@@ -110,7 +110,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 child: Text(
                   'Skip',
-                  style: TextStyle(fontSize: 14.sp, fontFamily: 'Marcellus'),
+                  style: TextStyle(fontSize: 14.sp, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo']),
                 ),
               ),
             ),

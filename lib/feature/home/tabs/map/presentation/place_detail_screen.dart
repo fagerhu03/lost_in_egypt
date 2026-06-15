@@ -553,7 +553,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     Text(
                       widget.place.title,
                       style: TextStyle(
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         fontSize: 26.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,
@@ -820,7 +820,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             itemCount: 3,
                             itemBuilder: (_, _) => Container(
                               width: 150.w,
-                              margin: EdgeInsets.only(right: 10.w),
+                              margin: EdgeInsetsDirectional.only(end: 10.w),
                               child: ShimmerLoadingWidget.rectangular(height: 148.h),
                             ),
                           ),
@@ -852,8 +852,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                               },
                               child: Container(
                                 width: 150.w,
-                                margin: EdgeInsets.only(
-                                  right: index < _similarPlaces.length - 1 ? 10.w : 0,
+                                margin: EdgeInsetsDirectional.only(
+                                  end: index < _similarPlaces.length - 1 ? 10.w : 0,
                                 ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(14.r),
@@ -1208,7 +1208,7 @@ class _CommunityPostsSheet extends StatelessWidget {
                     child: Text(
                       'Posts from $placeName',
                       style: TextStyle(
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         fontSize: 18.sp,
                         color: textColor,
                         fontWeight: FontWeight.w700,

@@ -149,7 +149,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         "Currency Converter",
                         style: TextStyle(
                           fontSize: 30.sp,
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                           color: textColor.withValues(alpha: 0.75),
                           fontWeight: FontWeight.w500,
                         ),
@@ -164,7 +164,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     "From",
                     style: TextStyle(
                       fontSize: 14.sp,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
@@ -212,7 +212,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     "To",
                     style: TextStyle(
                       fontSize: 14.sp,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
@@ -236,7 +236,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     "Amount",
                     style: TextStyle(
                       fontSize: 14.sp,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       color: textColor.withValues(alpha: 0.7),
                     ),
                   ),
@@ -279,7 +279,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     style: TextStyle(
                       color: textColor,
                       fontSize: 16.sp,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     ),
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _convert(),
@@ -319,7 +319,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         "Convert",
                         style: TextStyle(
                           fontSize: 16.sp,
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
@@ -351,7 +351,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                             "Result",
                             style: TextStyle(
                               fontSize: 14.sp,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                               color: textColor.withValues(alpha: 0.6),
                             ),
                           ),
@@ -360,7 +360,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                             "${_convertedAmount!.toStringAsFixed(2)} $_toCurrency",
                             style: TextStyle(
                               fontSize: 28.sp,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                               color: textColor,
                               fontWeight: FontWeight.w600,
                             ),
@@ -370,7 +370,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                             "${_amountController.text} $_fromCurrency",
                             style: TextStyle(
                               fontSize: 14.sp,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                               color: textColor.withValues(alpha: 0.5),
                             ),
                           ),
@@ -419,7 +419,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                 currency,
                 style: TextStyle(
                   fontSize: 16.sp,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   color: textColor,
                 ),
               ),

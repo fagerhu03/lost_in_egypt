@@ -209,7 +209,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                 style: const TextStyle(
                   color: Colors.white,
                   shadows: [Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(0, 1))],
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'],
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -422,7 +422,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                         itemCount: tour.images.length,
                         itemBuilder: (context, index) {
                           return Padding(
-                            padding: EdgeInsets.only(right: 12.w),
+                            padding: EdgeInsetsDirectional.only(end: 12.w),
                             child: Material(
                               color: Colors.transparent,
                               borderRadius: BorderRadius.circular(12.r),
@@ -479,7 +479,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                         itemBuilder: (_, i) {
                           if (_loadingSimilar) {
                             return Padding(
-                              padding: EdgeInsets.only(right: 12.w),
+                              padding: EdgeInsetsDirectional.only(end: 12.w),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(16.r),
                                 child: ShimmerLoadingWidget.rectangular(
@@ -488,7 +488,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                             );
                           }
                           return Padding(
-                            padding: EdgeInsets.only(right: 12.w),
+                            padding: EdgeInsetsDirectional.only(end: 12.w),
                             child: _SimilarTourCard(tour: _similarTours[i]),
                           );
                         },
@@ -1344,7 +1344,7 @@ class _SimilarTourCard extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                   height: 1.2,
                 ),
                 maxLines: 2,

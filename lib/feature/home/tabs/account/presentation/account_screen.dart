@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
@@ -108,6 +109,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bg = theme.scaffoldBackgroundColor;
@@ -128,10 +130,10 @@ class _AccountScreenState extends State<AccountScreen> {
         (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
     final User? authUser = sl<FirebaseAuth>().currentUser;
-    String displayName = "User";
+    String displayName = l10n.accountUser;
     if (_user != null) {
       displayName = "${_user!.firstName} ${_user!.lastName}".trim();
-      if (displayName.isEmpty) displayName = "User";
+      if (displayName.isEmpty) displayName = l10n.accountUser;
     } else if (authUser?.displayName != null && authUser!.displayName!.isNotEmpty) {
       displayName = authUser.displayName!;
     }
@@ -185,7 +187,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         'My Profile',
                         style: TextStyle(
                           fontSize: 18.sp,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           color: onSurface,
                         ),
                       ),
@@ -240,7 +242,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                                 ? onSurface
                                                 : const Color(0xFF6B3A28),
                                             fontSize: 22.sp,
-                                            fontFamily: "Marcellus",
+                                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                           ),
                                         ),
                                         if (_user?.username.isNotEmpty == true) ...[
@@ -250,7 +252,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                             style: TextStyle(
                                               color: theme.colorScheme.primary,
                                               fontSize: 14.sp,
-                                              fontFamily: "Marcellus",
+                                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                             ),
                                           ),
                                         ],
@@ -325,13 +327,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                                             color: goldButtonColor),
                                                         SizedBox(width: 6.w),
                                                         Text(
-                                                          'Your Taste',
+                                                          l10n.accountYourTaste,
                                                           style: TextStyle(
                                                             fontSize: 13.sp,
                                                             fontWeight:
                                                                 FontWeight.w700,
                                                             color: goldButtonColor,
-                                                            fontFamily: 'Marcellus',
+                                                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                                           ),
                                                         ),
                                                       ],
@@ -452,19 +454,19 @@ class _AccountScreenState extends State<AccountScreen> {
                               SizedBox(height: 30.h),
 
                               Text(
-                                "Account Settings:",
+                                l10n.accountSettingsHeader,
                                 style: TextStyle(
                                   color: isDark
                                       ? onSurface
                                       : const Color(0xFF6B3A28),
                                   fontSize: 16.sp,
-                                  fontFamily: "Marcellus",
+                                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                 ),
                               ),
                               SizedBox(height: 16.h),
 
                               _AccountTile(
-                                title: "Edit Profile",
+                                title: l10n.accountEditProfile,
                                 icon: Icons.person_outline_rounded,
                                 onTap: () async {
                                   await Navigator.push(
@@ -511,7 +513,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                   )
                                 else
                                   _AccountTile(
-                                    title: "Apply to be a Guide",
+                                    title: l10n.accountApplyGuide,
                                     icon: Icons.badge_outlined,
                                     onTap: () {
                                       Navigator.push(
@@ -532,7 +534,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                   ),
                               ],
                               _AccountTile(
-                                title: "My Bookings",
+                                title: l10n.accountMyBookings,
                                 icon: Icons.calendar_today_outlined,
                                 onTap: () => Navigator.push(context,
                                     MaterialPageRoute(
@@ -540,7 +542,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                             const BookingHistoryScreen())),
                               ),
                               _AccountTile(
-                                title: "Saved Posts",
+                                title: l10n.accountSavedPosts,
                                 icon: Icons.bookmark_outline_rounded,
                                 onTap: () => Navigator.push(context,
                                     MaterialPageRoute(
@@ -548,14 +550,14 @@ class _AccountScreenState extends State<AccountScreen> {
                                             const SavedPostsScreen())),
                               ),
                               _AccountTile(
-                                title: "My Plans",
+                                title: l10n.accountMyPlans,
                                 icon: Icons.map_outlined,
                                 onTap: () => Navigator.push(context,
                                     MaterialPageRoute(
                                         builder: (_) => const MyPlansScreen())),
                               ),
                               _AccountTile(
-                                title: "Membership",
+                                title: l10n.accountMembership,
                                 icon: Icons.workspace_premium_outlined,
                                 onTap: () => Navigator.push(
                                   context,
@@ -580,7 +582,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                     elevation: 2,
                                   ),
                                   child: Text(
-                                    "Sign out",
+                                    l10n.accountSignOut,
                                     style: TextStyle(fontSize: 18.sp),
                                   ),
                                 ),
@@ -658,9 +660,11 @@ class _ApplicationStatusTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isPending = status == 'pending';
     final statusColor = isPending ? Colors.orange : Colors.red;
-    final statusLabel = isPending ? 'Under Review' : 'Not Approved';
+    final statusLabel =
+        isPending ? l10n.accountStatusUnderReview : l10n.accountStatusNotApproved;
     final statusIcon =
         isPending ? Icons.hourglass_top_rounded : Icons.cancel_outlined;
 
@@ -688,7 +692,7 @@ class _ApplicationStatusTile extends StatelessWidget {
                   Icon(Icons.badge_outlined, color: statusColor, size: 20.r),
                   SizedBox(width: 10.w),
                   Text(
-                    'Guide Application',
+                    l10n.accountGuideApplication,
                     style: TextStyle(
                         color: onSurface.withValues(alpha: 0.85),
                         fontSize: 16.sp),
@@ -787,7 +791,7 @@ class _AccountTile extends StatelessWidget {
                       color: onSurface.withValues(alpha: 0.88),
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     ),
                   ),
                 ),

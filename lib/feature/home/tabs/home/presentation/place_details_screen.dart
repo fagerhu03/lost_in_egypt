@@ -252,7 +252,7 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                     Text(
                       widget.place.title,
                       style: TextStyle(
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         fontSize: 28.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,

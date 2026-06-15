@@ -228,7 +228,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                         GestureDetector(
                           onTap: () => setSheetState(() => tempRating = tempRating == i.toDouble() ? 0 : i.toDouble()),
                           child: Padding(
-                            padding: EdgeInsets.only(right: 4.w),
+                            padding: EdgeInsetsDirectional.only(end: 4.w),
                             child: Icon(
                               i <= tempRating ? Icons.star : Icons.star_border,
                               color: Colors.amber,
@@ -309,7 +309,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
           style: TextStyle(
             color: onSurface,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             fontSize: 24.sp,
           ),
         ),
@@ -386,7 +386,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                     // Active filter chips
                     if (_activeFilters.contains('price'))
                       Padding(
-                        padding: EdgeInsets.only(right: 8.w),
+                        padding: EdgeInsetsDirectional.only(end: 8.w),
                         child: InputChip(
                           label: Text('EGP ${_priceRange.start.round()}-${_priceRange.end.round()}', style: TextStyle(fontSize: 12.sp)),
                           onDeleted: () => setState(() => _activeFilters.remove('price')),
@@ -396,7 +396,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                       ),
                     if (_activeFilters.contains('rating'))
                       Padding(
-                        padding: EdgeInsets.only(right: 8.w),
+                        padding: EdgeInsetsDirectional.only(end: 8.w),
                         child: InputChip(
                           avatar: Icon(Icons.star, color: Colors.amber, size: 16.r),
                           label: Text('${_minRating.toInt()}+', style: TextStyle(fontSize: 12.sp)),
@@ -407,7 +407,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                       ),
                     if (_activeFilters.contains('frequency') && _selectedFrequency != null)
                       Padding(
-                        padding: EdgeInsets.only(right: 8.w),
+                        padding: EdgeInsetsDirectional.only(end: 8.w),
                         child: InputChip(
                           label: Text(_selectedFrequency!, style: TextStyle(fontSize: 12.sp)),
                           onDeleted: () => setState(() { _activeFilters.remove('frequency'); _selectedFrequency = null; }),
@@ -569,7 +569,7 @@ class _RecommendedToursCarousel extends StatelessWidget {
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
                     color: onSurface,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                   ),
                 ),
               ],
@@ -584,7 +584,7 @@ class _RecommendedToursCarousel extends StatelessWidget {
               itemBuilder: (context, i) {
                 if (loading) {
                   return Padding(
-                    padding: EdgeInsets.only(right: 12.w),
+                    padding: EdgeInsetsDirectional.only(end: 12.w),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16.r),
                       child: ShimmerLoadingWidget.rectangular(
@@ -596,7 +596,7 @@ class _RecommendedToursCarousel extends StatelessWidget {
                 }
                 final tour = tours[i];
                 return Padding(
-                  padding: EdgeInsets.only(right: 12.w),
+                  padding: EdgeInsetsDirectional.only(end: 12.w),
                   child: _RecommendedTourCard(tour: tour),
                 );
               },
@@ -700,7 +700,7 @@ class _RecommendedTourCard extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       height: 1.2,
                     ),
                     maxLines: 2,

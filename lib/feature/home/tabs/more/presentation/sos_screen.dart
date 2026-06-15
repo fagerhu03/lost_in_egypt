@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Emergency dial numbers — ordered by importance to tourists
@@ -54,6 +55,39 @@ const _categories = [
   ),
 ];
 
+// The const lists above carry the structural data (color/icon/placeTypes/number).
+// Display labels are resolved here so they can be localized — the const `label`
+// fields stay as English fallbacks/identifiers.
+String _categoryLabelFor(AppLocalizations l10n, int index) {
+  switch (index) {
+    case 0:
+      return l10n.sosPolice;
+    case 1:
+      return l10n.sosHospital;
+    case 2:
+      return l10n.sosFireStation;
+    default:
+      return _categories[index].label;
+  }
+}
+
+String _dialLabelFor(AppLocalizations l10n, String number) {
+  switch (number) {
+    case '126':
+      return l10n.sosTouristPolice;
+    case '123':
+      return l10n.sosAmbulance;
+    case '122':
+      return l10n.sosPolice;
+    case '180':
+      return l10n.sosFireBrigade;
+    case '129':
+      return l10n.sosGasEmergency;
+    default:
+      return '';
+  }
+}
+
 class SOSScreen extends StatefulWidget {
   const SOSScreen({super.key});
 
@@ -75,6 +109,7 @@ class _SOSScreenState extends State<SOSScreen> {
   // ── Location ───────────────────────────────────────────────────────────────
 
   Future<void> _findHelp() async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _locating = true;
       _searchError = null;
@@ -88,8 +123,7 @@ class _SOSScreenState extends State<SOSScreen> {
       if (permission == LocationPermission.deniedForever) {
         setState(() {
           _locating = false;
-          _searchError =
-              "Please enable location in your device settings to find nearby help.";
+          _searchError = l10n.sosEnableLocation;
         });
         return;
       }
@@ -107,13 +141,14 @@ class _SOSScreenState extends State<SOSScreen> {
     } catch (e) {
       setState(() {
         _locating = false;
-        _searchError = "Make sure location services are enabled and try again.";
+        _searchError = l10n.sosLocationError;
       });
     }
   }
 
   Future<void> _searchNearby() async {
     if (_position == null) return;
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _searching = true;
       _results = [];
@@ -156,14 +191,13 @@ class _SOSScreenState extends State<SOSScreen> {
         _results = results;
         _searching = false;
         if (results.isEmpty) {
-          _searchError = "No ${_categories[_selectedCategory].label.toLowerCase()} "
-              "stations found within 10 km. Try moving to a different area.";
+          _searchError = l10n.sosNoResults(_categoryLabelFor(l10n, _selectedCategory));
         }
       });
     } catch (e) {
       setState(() {
         _searching = false;
-        _searchError = "Search failed — check your connection and try again.";
+        _searchError = l10n.sosSearchFailed;
       });
     }
   }
@@ -175,7 +209,7 @@ class _SOSScreenState extends State<SOSScreen> {
     if (!await launchUrl(uri)) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Could not open dialler")),
+          SnackBar(content: Text(AppLocalizations.of(context).sosCouldNotDial)),
         );
       }
     }
@@ -259,6 +293,7 @@ class _SOSScreenState extends State<SOSScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
@@ -266,7 +301,7 @@ class _SOSScreenState extends State<SOSScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("SOS — Emergency", style: TextStyle(fontFamily: 'Marcellus')),
+        title: Text(l10n.sosAppBarTitle, style: const TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -276,7 +311,7 @@ class _SOSScreenState extends State<SOSScreen> {
         padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 40.h),
         children: [
           // ── Find Nearest Help ──────────────────────────────────────────────
-          _SectionHeader(label: "Find Nearest Help", onSurface: onSurface),
+          _SectionHeader(label: l10n.sosFindNearestHelp, onSurface: onSurface),
           SizedBox(height: 10.h),
 
           // Category tabs
@@ -286,7 +321,7 @@ class _SOSScreenState extends State<SOSScreen> {
               final selected = _selectedCategory == i;
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(right: i < _categories.length - 1 ? 8.w : 0),
+                  padding: EdgeInsetsDirectional.only(end: i < _categories.length - 1 ? 8.w : 0),
                   child: GestureDetector(
                     onTap: () {
                       setState(() => _selectedCategory = i);
@@ -307,7 +342,7 @@ class _SOSScreenState extends State<SOSScreen> {
                               color: selected ? Colors.white : cat.color, size: 20.r),
                           SizedBox(height: 4.h),
                           Text(
-                            cat.label,
+                            _categoryLabelFor(l10n, i),
                             style: TextStyle(
                               fontSize: 11.sp,
                               fontWeight: FontWeight.w600,
@@ -339,9 +374,9 @@ class _SOSScreenState extends State<SOSScreen> {
                   : Icon(Icons.my_location_rounded, size: 20.r),
               label: Text(
                 _position == null
-                    ? "Find Nearest ${_categories[_selectedCategory].label}"
-                    : "Refresh — ${_categories[_selectedCategory].label}",
-                style: TextStyle(fontFamily: 'Marcellus', fontSize: 15.sp),
+                    ? l10n.sosFindNearest(_categoryLabelFor(l10n, _selectedCategory))
+                    : l10n.sosRefresh(_categoryLabelFor(l10n, _selectedCategory)),
+                style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 15.sp),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _categories[_selectedCategory].color,
@@ -363,7 +398,7 @@ class _SOSScreenState extends State<SOSScreen> {
                     color: Colors.green.shade600),
                 SizedBox(width: 4.w),
                 Text(
-                  "Using your current location",
+                  l10n.sosUsingLocation,
                   style: TextStyle(
                       fontSize: 12.sp, color: onSurface.withValues(alpha: 0.55)),
                 ),
@@ -400,7 +435,7 @@ class _SOSScreenState extends State<SOSScreen> {
           SizedBox(height: 24.h),
 
           // ── Emergency Dial Numbers ─────────────────────────────────────────
-          _SectionHeader(label: "Emergency Numbers", onSurface: onSurface),
+          _SectionHeader(label: l10n.sosEmergencyNumbers, onSurface: onSurface),
           SizedBox(height: 12.h),
 
           // 2-column rows, last chip full-width
@@ -408,8 +443,7 @@ class _SOSScreenState extends State<SOSScreen> {
 
           SizedBox(height: 12.h),
           Text(
-            "These are Egypt's official emergency numbers. "
-            "Tourist Police (126) has English-speaking operators.",
+            l10n.sosNumbersNote,
             style: TextStyle(
               fontSize: 11.sp,
               color: onSurface.withValues(alpha: 0.5),
@@ -497,7 +531,7 @@ class _SectionHeader extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 16.sp,
-          fontFamily: 'Marcellus',
+          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
           fontWeight: FontWeight.w700,
           color: onSurface,
         ),
@@ -594,7 +628,7 @@ class _NearbyCard extends StatelessWidget {
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
                     color: onSurface,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                   ),
                 ),
                 if (result.address.isNotEmpty) ...[
@@ -625,14 +659,14 @@ class _NearbyCard extends StatelessWidget {
                     if (onCall != null)
                       _ActionButton(
                         icon: Icons.phone_rounded,
-                        label: "Call",
+                        label: AppLocalizations.of(context).sosCall,
                         color: categoryColor,
                         onTap: onCall!,
                       ),
                     SizedBox(width: 8.w),
                     _ActionButton(
                       icon: Icons.map_outlined,
-                      label: "Map",
+                      label: AppLocalizations.of(context).sosMap,
                       color: categoryColor,
                       onTap: onMap,
                     ),
@@ -691,6 +725,7 @@ class _DialChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final featured = dialNumber.isFeatured;
     return Material(
       color: dialNumber.color,
@@ -734,7 +769,7 @@ class _DialChip extends StatelessWidget {
                             fontSize: featured ? 28.sp : 22.sp,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             letterSpacing: 1.5,
                           ),
                         ),
@@ -748,7 +783,7 @@ class _DialChip extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
-                              'FOR TOURISTS',
+                              l10n.sosForTourists,
                               style: TextStyle(
                                 fontSize: 9.sp,
                                 fontWeight: FontWeight.bold,
@@ -761,7 +796,7 @@ class _DialChip extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      dialNumber.label,
+                      _dialLabelFor(l10n, dialNumber.number),
                       style: TextStyle(
                         fontSize: featured ? 13.sp : 11.sp,
                         fontWeight:
@@ -773,7 +808,7 @@ class _DialChip extends StatelessWidget {
                     if (featured && dialNumber.subtitle != null) ...[
                       SizedBox(height: 3.h),
                       Text(
-                        dialNumber.subtitle!,
+                        l10n.sosTouristPoliceSubtitle,
                         style: TextStyle(
                           fontSize: 10.sp,
                           color: Colors.white.withValues(alpha: 0.72),

@@ -179,6 +179,10 @@ class MyApp extends StatelessWidget {
           return ValueListenableBuilder<Locale>(
             valueListenable: LocaleController.locale,
             builder: (context, locale, _) {
+              // Locale-aware default font: Cairo for Arabic, Marcellus for
+              // Latin. The Cairo fallback means any Marcellus-tagged text still
+              // renders Arabic glyphs on-brand instead of the system font.
+              final fontFamily = AppTheme.fontFamilyFor(locale);
               return MaterialApp(
                 debugShowCheckedModeBanner: false,
                 onGenerateTitle: (context) =>
@@ -194,13 +198,16 @@ class MyApp extends StatelessWidget {
                 supportedLocales: AppLocalizations.supportedLocales,
 
                 theme: AppTheme.light.copyWith(
-                  textTheme: ThemeData.light()
-                      .textTheme
-                      .apply(fontFamily: 'Marcellus'),
+                  textTheme: ThemeData.light().textTheme.apply(
+                        fontFamily: fontFamily,
+                        fontFamilyFallback: AppTheme.fontFallback,
+                      ),
                 ),
                 darkTheme: AppTheme.dark.copyWith(
-                  textTheme:
-                      ThemeData.dark().textTheme.apply(fontFamily: 'Marcellus'),
+                  textTheme: ThemeData.dark().textTheme.apply(
+                        fontFamily: fontFamily,
+                        fontFamilyFallback: AppTheme.fontFallback,
+                      ),
                 ),
 
                 themeMode: mode,

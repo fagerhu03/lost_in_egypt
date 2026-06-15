@@ -190,7 +190,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         "Notifications",
                         style: TextStyle(
                           color: onSurface,
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                           fontWeight: FontWeight.w600,
                           fontSize: 18.sp,
                         ),
@@ -222,7 +222,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             "Customize your notifications!",
                             style: TextStyle(
                               color: primary,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                               fontWeight: FontWeight.w600,
                               fontSize: 12.sp,
                             ),
@@ -260,12 +260,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             SizedBox(height: 4.h),
                             Padding(
                               padding:
-                                  EdgeInsets.only(left: 6.w, bottom: 8.h),
+                                  EdgeInsetsDirectional.only(start: 6.w, bottom: 8.h),
                               child: Text(
                                 "Previously",
                                 style: TextStyle(
                                   color: onSurface,
-                                  fontFamily: "Marcellus",
+                                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                   fontWeight: FontWeight.w600,
                                   fontSize: 12.sp,
                                 ),
@@ -281,7 +281,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   background: Container(
                                     alignment: Alignment.centerRight,
                                     padding:
-                                        EdgeInsets.only(right: 18.w),
+                                        EdgeInsetsDirectional.only(end: 18.w),
                                     decoration: BoxDecoration(
                                       color:
                                           Colors.red.withValues(alpha: 0.85),
@@ -323,7 +323,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 "Marking notifications?",
                                 style: TextStyle(
                                   color: onSurface.withValues(alpha: 0.75),
-                                  fontFamily: "Marcellus",
+                                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                   fontSize: 12.sp,
                                 ),
                               ),
@@ -337,7 +337,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   "See how it works",
                                   style: TextStyle(
                                     color: primary,
-                                    fontFamily: "Marcellus",
+                                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
                                   ),

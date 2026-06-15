@@ -636,7 +636,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     }).toList(),
                   ),
                   SizedBox(height: 24.h),
-                  Text(widget.tourToEdit != null ? 'Edit Tour Images' : 'Tour Images', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus")),
+                  Text(widget.tourToEdit != null ? 'Edit Tour Images' : 'Tour Images', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'])),
                   SizedBox(height: 8.h),
                   Wrap(
                     spacing: 8.w,

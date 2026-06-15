@@ -48,7 +48,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
           'Manage Events',
           style: TextStyle(
             color: onSurface,
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             fontSize: 20.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -110,7 +110,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
                           style: TextStyle(
                             color: onSurface.withValues(alpha: 0.5),
                             fontSize: 16.sp,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                         SizedBox(height: 8.h),
@@ -161,7 +161,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen> {
   Widget _filterChip(String label, String value, Color primary, Color onSurface, Color surface) {
     final isSelected = _filterSource == value;
     return Padding(
-      padding: EdgeInsets.only(right: 8.w),
+      padding: EdgeInsetsDirectional.only(end: 8.w),
       child: GestureDetector(
         onTap: () => setState(() => _filterSource = value),
         child: AnimatedContainer(
@@ -403,7 +403,7 @@ class _AdminEventTile extends StatelessWidget {
                           color: onSurface,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

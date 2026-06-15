@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import '../models/weather_context.dart';
 import '../../theme/theme.dart';
@@ -40,6 +41,7 @@ class _WeatherBannerState extends State<WeatherBanner> {
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l = AppLocalizations.of(context);
 
     // Two-tone palette tuned to match the cream/gold/deep-blue Egyptian theme.
     // Severe advisories use a deep terracotta that reads as urgent without
@@ -97,7 +99,7 @@ class _WeatherBannerState extends State<WeatherBanner> {
                             color: titleColor,
                             fontWeight: FontWeight.w600,
                             fontSize: 13.sp,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -124,7 +126,7 @@ class _WeatherBannerState extends State<WeatherBanner> {
                   if (widget.onTap != null) ...[
                     SizedBox(height: 4.h),
                     Text(
-                      'Tap for 7-day forecast',
+                      l.weatherTapForForecast,
                       style: TextStyle(
                         color: accent,
                         fontSize: 11.sp,
@@ -137,9 +139,9 @@ class _WeatherBannerState extends State<WeatherBanner> {
             ),
             IconButton(
               icon: Icon(Icons.close_rounded, color: bodyColor, size: 18.r),
-              padding: EdgeInsets.only(left: 4.w),
+              padding: EdgeInsetsDirectional.only(start: 4.w),
               constraints: const BoxConstraints(),
-              tooltip: 'Dismiss',
+              tooltip: l.commonDismiss,
               onPressed: () => setState(() => _dismissed = true),
             ),
           ],

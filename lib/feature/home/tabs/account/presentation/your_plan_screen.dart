@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class YourPlanScreen extends StatelessWidget {
   const YourPlanScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -16,7 +18,7 @@ class YourPlanScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
-        title: const Text("Membership", style: TextStyle(fontFamily: 'Marcellus')),
+        title: Text(l10n.accountMembership, style: const TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -54,10 +56,10 @@ class YourPlanScreen extends StatelessWidget {
                     Icon(Icons.workspace_premium_rounded, color: primary, size: 28.r),
                     SizedBox(width: 10.w),
                     Text(
-                      "Explorer — Free",
+                      l10n.planExplorerFree,
                       style: TextStyle(
                         fontSize: 20.sp,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         color: primary,
                         fontWeight: FontWeight.bold,
                       ),
@@ -70,7 +72,7 @@ class YourPlanScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20.r),
                       ),
                       child: Text(
-                        "Active",
+                        l10n.planActive,
                         style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 12.sp),
                       ),
                     ),
@@ -78,7 +80,7 @@ class YourPlanScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  "Your current plan — enjoy all the core features of Lost in Egypt at no cost.",
+                  l10n.planCurrentDesc,
                   style: TextStyle(fontSize: 13.sp, color: onSurface.withValues(alpha: 0.65), height: 1.5),
                 ),
               ],
@@ -88,10 +90,10 @@ class YourPlanScreen extends StatelessWidget {
           SizedBox(height: 28.h),
 
           Text(
-            "What's included",
+            l10n.planWhatsIncluded,
             style: TextStyle(
               fontSize: 17.sp,
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               fontWeight: FontWeight.w700,
               color: onSurface,
             ),
@@ -99,15 +101,15 @@ class YourPlanScreen extends StatelessWidget {
           SizedBox(height: 14.h),
 
           ...[
-            (Icons.camera_alt_outlined, "AI Landmark Discovery", "Identify unlimited landmarks with your camera"),
-            (Icons.auto_stories_outlined, "AI Historical Stories", "Hear captivating stories about every landmark you find"),
-            (Icons.map_outlined, "Interactive Map", "Explore 500+ Egyptian landmarks with GPS and routing"),
-            (Icons.tour_outlined, "Browse & Book Tours", "Browse guided tours and book with certified guides"),
-            (Icons.emoji_events_outlined, "Badges & Gamification", "Earn badges as you explore more of Egypt"),
-            (Icons.people_outline, "Community Feed", "Share discoveries and connect with fellow travellers"),
-            (Icons.translate_outlined, "Translator", "Translate text using your camera in real-time"),
-            (Icons.currency_exchange_outlined, "Currency Converter", "Convert between 16 currencies instantly"),
-            (Icons.notifications_outlined, "Booking Notifications", "Get notified about your tour confirmations"),
+            (Icons.camera_alt_outlined, l10n.planFeatDiscoveryTitle, l10n.planFeatDiscoveryDesc),
+            (Icons.auto_stories_outlined, l10n.planFeatStoriesTitle, l10n.planFeatStoriesDesc),
+            (Icons.map_outlined, l10n.planFeatMapTitle, l10n.planFeatMapDesc),
+            (Icons.tour_outlined, l10n.planFeatToursTitle, l10n.planFeatToursDesc),
+            (Icons.emoji_events_outlined, l10n.planFeatBadgesTitle, l10n.planFeatBadgesDesc),
+            (Icons.people_outline, l10n.planFeatCommunityTitle, l10n.planFeatCommunityDesc),
+            (Icons.translate_outlined, l10n.planFeatTranslatorTitle, l10n.planFeatTranslatorDesc),
+            (Icons.currency_exchange_outlined, l10n.planFeatCurrencyTitle, l10n.planFeatCurrencyDesc),
+            (Icons.notifications_outlined, l10n.planFeatNotificationsTitle, l10n.planFeatNotificationsDesc),
           ].map((e) => _FeatureRow(
                 icon: e.$1,
                 title: e.$2,
@@ -143,10 +145,10 @@ class YourPlanScreen extends StatelessWidget {
                     Icon(Icons.rocket_launch_outlined, color: primary, size: 22.r),
                     SizedBox(width: 8.w),
                     Text(
-                      "Coming soon",
+                      l10n.planComingSoon,
                       style: TextStyle(
                         fontSize: 16.sp,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         color: onSurface,
                         fontWeight: FontWeight.w600,
                       ),
@@ -155,9 +157,7 @@ class YourPlanScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  "We're working on premium features including offline mode, "
-                  "exclusive guided experiences, and advanced trip planning tools. "
-                  "Stay tuned — and the core app will always remain free.",
+                  l10n.planComingSoonDesc,
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: onSurface.withValues(alpha: 0.65),

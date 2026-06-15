@@ -88,7 +88,7 @@ class _HieroglyphicsOverlayState extends State<HieroglyphicsOverlay>
                   child: Text(
                     "CURSE RELEASED",
                     style: TextStyle(
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       fontSize: 36.sp,
                       color: const Color(0xFFC79A00),
                       letterSpacing: 8.0,

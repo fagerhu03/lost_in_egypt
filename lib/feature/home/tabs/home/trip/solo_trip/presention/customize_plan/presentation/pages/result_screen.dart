@@ -333,7 +333,7 @@ class _LoadingView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'Marcellus',
+                fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 color: textColor,
               ),
             ),
@@ -408,7 +408,7 @@ class _ErrorView extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w600,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         color: textColor,
                       ),
                     ),
@@ -915,7 +915,7 @@ class _PlanViewState extends State<_PlanView> {
                     style: TextStyle(
                       fontSize: 26.sp,
                       fontWeight: FontWeight.w700,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       color: textColor,
                     ),
                   ),
@@ -1040,7 +1040,7 @@ class _PlanViewState extends State<_PlanView> {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -1177,7 +1177,7 @@ class _ForecastChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 11.sp,
               fontWeight: FontWeight.w700,
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               color: textColor.withValues(alpha: 0.85),
             ),
           ),
@@ -1298,7 +1298,7 @@ class _TransitCard extends StatelessWidget {
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                     color: gold,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -1433,7 +1433,7 @@ class _DayCard extends StatelessWidget {
               fontSize: 14.sp,
               fontWeight: FontWeight.w700,
               color: gold,
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             ),
           ),
         ),
@@ -1532,7 +1532,7 @@ class _StopTile extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               color: textColor,
                             ),
                           ),

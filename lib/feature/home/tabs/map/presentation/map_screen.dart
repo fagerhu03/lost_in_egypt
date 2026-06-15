@@ -1034,7 +1034,7 @@ class _MapScreenViewState extends State<MapScreenView>
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                               color: onSurface.withValues(alpha: 0.7),
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                           SizedBox(height: 6.h),
@@ -1083,7 +1083,7 @@ class _MapScreenViewState extends State<MapScreenView>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsets.only(left: 20.w, bottom: 8.h),
+                            padding: EdgeInsetsDirectional.only(start: 20.w, bottom: 8.h),
                             child: Text(
                               '🔥 Top Rated',
                               style: TextStyle(
@@ -1693,7 +1693,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14.sp,
-                                fontFamily: 'Marcellus',
+                                fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               ),
                             ),
                           ],
@@ -2263,7 +2263,7 @@ class _NearbyNudgeCardState extends State<_NearbyNudgeCard>
                                     color: textColor,
                                     fontSize: (widget.compact ? 14 : 15).sp,
                                     fontWeight: FontWeight.w800,
-                                    fontFamily: 'Marcellus',
+                                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                     height: 1.15,
                                   ),
                                   maxLines: 1,
@@ -2297,7 +2297,7 @@ class _NearbyNudgeCardState extends State<_NearbyNudgeCard>
                             onTap: widget.onDismiss,
                             radius: 18.r,
                             child: Padding(
-                              padding: EdgeInsets.only(left: 4.w),
+                              padding: EdgeInsetsDirectional.only(start: 4.w),
                               child: Icon(
                                 Icons.close_rounded,
                                 size: 16.r,

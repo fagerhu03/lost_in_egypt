@@ -100,7 +100,7 @@ class _TimeCard extends StatelessWidget {
                   fontSize: 22.sp,
                   fontWeight: FontWeight.w700,
                   color: isSelected ? activeColor : textColor,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 ),
               ),
               SizedBox(height: 8.h),
