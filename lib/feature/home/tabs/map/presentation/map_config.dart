@@ -1,4 +1,5 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
 
 class UiCategory {
@@ -6,6 +7,40 @@ class UiCategory {
   final String label;
   final String icon;
   const UiCategory(this.id, this.label, this.icon);
+}
+
+/// Localized display label for a map filter category. The `id`s are a fixed,
+/// bounded set; the const `label` (English) is kept as the fallback for any
+/// unrecognised id (e.g. the no-match `UiCategory('', 'Unknown', '')`).
+String mapCategoryLabel(AppLocalizations l10n, UiCategory category) {
+  switch (category.id) {
+    case 'all':
+      return l10n.mapCatAll;
+    case 'favorites':
+      return l10n.mapCatFavorites;
+    case 'open_now':
+      return l10n.mapCatOpenNow;
+    case 'tourism':
+      return l10n.mapCatTourism;
+    case 'historical':
+      return l10n.mapCatHistorical;
+    case 'museum':
+      return l10n.mapCatMuseums;
+    case 'hotel':
+      return l10n.mapCatHotels;
+    case 'religious':
+      return l10n.mapCatReligious;
+    case 'food':
+      return l10n.mapCatFood;
+    case 'nature':
+      return l10n.mapCatNature;
+    case 'entertainment':
+      return l10n.mapCatEntertainment;
+    case 'shopping':
+      return l10n.mapCatShopping;
+    default:
+      return category.label;
+  }
 }
 
 class MapConfig {

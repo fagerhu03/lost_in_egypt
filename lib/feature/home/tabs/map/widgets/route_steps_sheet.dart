@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 
 class RouteStepsSheet extends StatelessWidget {
@@ -10,6 +11,7 @@ class RouteStepsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
@@ -54,7 +56,7 @@ class RouteStepsSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Route Steps',
+                          l10n.mapRouteSteps,
                           style: TextStyle(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
@@ -210,7 +212,7 @@ class RouteStepsSheet extends StatelessWidget {
                     ),
                     SizedBox(width: 14.w),
                     Text(
-                      'Arrive at destination',
+                      l10n.mapArriveDestination,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: Colors.green.shade700,

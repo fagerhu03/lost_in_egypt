@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../presentation/bloc/camera_cubit.dart';
 import '../presentation/bloc/camera_state.dart';
 
@@ -92,7 +93,7 @@ class CameraOverlayControls extends StatelessWidget {
                     onPressed: () => cubit.toggleFlash(),
                   ),
                 Text(
-                  showGalleryImage ? "Translation" : "Lens",
+                  showGalleryImage ? AppLocalizations.of(context).cameraTranslation : AppLocalizations.of(context).cameraLens,
                   style: TextStyle(
                     fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     color: Colors.white,

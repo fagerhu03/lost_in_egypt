@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../core/constants/trip_options.dart';
 import '../manager/trip_planner_controller.dart';
 import '../widgets/option_chip.dart';
@@ -33,7 +34,7 @@ class InterestStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return QuizScaffold(
-      title: 'What are your interests?',
+      title: AppLocalizations.of(context).soloQuizInterestsTitle,
       stepIndex: 1,
       onNext: onNext,
       onBack: onBack,

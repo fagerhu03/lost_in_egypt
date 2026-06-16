@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../theme/theme.dart';
 
 class QuizScaffold extends StatelessWidget {
@@ -8,7 +9,11 @@ class QuizScaffold extends StatelessWidget {
   final Widget child;
   final VoidCallback onNext;
   final VoidCallback onBack;
-  final String nextText;
+
+  /// When true the primary button reads "Finish" with a check icon instead of
+  /// "Next" with a forward arrow. Replaces the old string-compare on nextText
+  /// so the label can be localized without breaking the icon logic.
+  final bool isFinish;
   final int stepIndex;
   final int totalSteps;
 
@@ -20,11 +25,12 @@ class QuizScaffold extends StatelessWidget {
     required this.onBack,
     required this.stepIndex,
     this.totalSteps = 5,
-    this.nextText = 'Next',
+    this.isFinish = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppColors.darkPrimaryButton;
     final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
@@ -63,7 +69,7 @@ class QuizScaffold extends StatelessWidget {
                   ),
                   Expanded(
                     child: Text(
-                      'Step ${stepIndex + 1} of $totalSteps',
+                      l10n.quizStepOf(stepIndex + 1, totalSteps),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13.sp,
@@ -143,7 +149,7 @@ class QuizScaffold extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              nextText,
+                              isFinish ? l10n.quizFinish : l10n.quizNext,
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.w600,
@@ -152,7 +158,7 @@ class QuizScaffold extends StatelessWidget {
                             ),
                             SizedBox(width: 6.w),
                             Icon(
-                              nextText == 'Finish'
+                              isFinish
                                   ? Icons.check_rounded
                                   : Icons.arrow_forward_rounded,
                               size: 16.r,

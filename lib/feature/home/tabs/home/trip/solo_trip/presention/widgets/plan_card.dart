@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/services/place_photos_service.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../theme/theme.dart';
 import 'trip_theme.dart';
 
@@ -100,7 +101,7 @@ class PlanCard extends StatelessWidget {
                           Text('✨', style: TextStyle(fontSize: 12.sp)),
                           SizedBox(width: 4.w),
                           Text(
-                            'Best for you',
+                            AppLocalizations.of(context).soloBestForYou,
                             style: TextStyle(
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
@@ -133,7 +134,7 @@ class PlanCard extends StatelessWidget {
                               color: AppColors.lightPrimaryButton),
                           SizedBox(width: 3.w),
                           Text(
-                            'Saved',
+                            AppLocalizations.of(context).soloStatusSaved,
                             style: TextStyle(
                               fontSize: 11.sp,
                               fontWeight: FontWeight.w600,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../presentation/bloc/camera_cubit.dart';
 import '../presentation/bloc/camera_state.dart';
 
@@ -15,6 +16,7 @@ class CameraErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -31,7 +33,7 @@ class CameraErrorView extends StatelessWidget {
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  state.isApiKeyError ? 'Configuration Error' : 'Error',
+                  state.isApiKeyError ? l10n.cameraConfigError : l10n.cameraErrorTitle,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -58,7 +60,7 @@ class CameraErrorView extends StatelessWidget {
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
                       ),
-                      child: Text('Try Again', style: TextStyle(fontSize: 16.sp)),
+                      child: Text(l10n.commonTryAgain, style: TextStyle(fontSize: 16.sp)),
                     ),
                   ],
                 ),

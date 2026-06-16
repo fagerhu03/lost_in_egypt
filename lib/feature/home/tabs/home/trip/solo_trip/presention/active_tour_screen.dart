@@ -18,6 +18,7 @@ import 'package:lost_in_egypt/core/services/story_cache_service.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/core/services/weather_service.dart';
 import 'package:lost_in_egypt/core/utils/dataset_resolver.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
@@ -269,19 +270,19 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
   }
 
   Future<void> _endTour() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('End Tour?'),
-        content: const Text(
-            'This will mark the tour as completed. You can still view it in My Plans.'),
+        title: Text(l10n.tourEndTitle),
+        content: Text(l10n.tourEndBody),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l10n.commonCancel)),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('End Tour', style: TextStyle(color: Colors.red))),
+              child: Text(l10n.tourEndConfirm, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -293,7 +294,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Tour ended. Find it under Completed in My Plans.'),
+          content: Text(l10n.tourEnded),
           backgroundColor: AppColors.lightPrimaryButton,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -360,7 +361,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
         actions: [
           IconButton(
             icon: Icon(Icons.map_outlined, color: gold),
-            tooltip: 'View full route',
+            tooltip: AppLocalizations.of(context).soloViewFullRoute,
             onPressed: _viewFullRoute,
           ),
         ],
@@ -397,7 +398,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      'Tour in Progress',
+                      AppLocalizations.of(context).tourInProgress,
                       style: TextStyle(
                         color: gold,
                         fontWeight: FontWeight.w700,
@@ -477,7 +478,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                                     size: 12.r, color: Colors.white),
                                 SizedBox(width: 4.w),
                                 Text(
-                                  'Go',
+                                  AppLocalizations.of(context).tourGo,
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     color: Colors.white,
@@ -570,9 +571,9 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                   child: const CircularProgressIndicator(
                       strokeWidth: 2, color: Colors.white))
               : Icon(Icons.stop_circle_outlined, size: 18.r, color: Colors.white),
-          label: const Text(
-            'End Tour',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          label: Text(
+            AppLocalizations.of(context).tourEndConfirm,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red.shade700,
@@ -782,7 +783,7 @@ class _StopTileState extends State<_StopTile> {
                                   borderRadius: BorderRadius.circular(10.r),
                                 ),
                                 child: Text(
-                                  'Up next',
+                                  AppLocalizations.of(context).tourUpNext,
                                   style: TextStyle(
                                     fontSize: 10.sp,
                                     color: Colors.white,
@@ -808,7 +809,7 @@ class _StopTileState extends State<_StopTile> {
                   if (widget.onNavigate != null)
                     IconButton(
                       icon: Icon(Icons.navigation_rounded, color: gold, size: 20.r),
-                      tooltip: 'Navigate here',
+                      tooltip: AppLocalizations.of(context).soloNavigateHere,
                       onPressed: widget.onNavigate,
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(6.r),
@@ -861,7 +862,7 @@ class _StopTileState extends State<_StopTile> {
                               size: 15.r, color: gold),
                           SizedBox(width: 6.w),
                           Text(
-                            'Hear the Story',
+                            AppLocalizations.of(context).soloHearStory,
                             style: TextStyle(
                               fontSize: 13.sp,
                               color: gold,
@@ -893,13 +894,11 @@ class _TourOnboardingSheet extends StatelessWidget {
     final textColor = isDark ? AppColors.darkText : AppColors.lightBox;
     final gold = AppColors.lightPrimaryButton;
 
-    const features = [
-      (Icons.map_outlined, 'View on Map',
-          'Tap the map icon (top-right) to see your stops on the map and navigate to any one.'),
-      (Icons.check_circle_outline_rounded, 'Track Progress',
-          'Check off each stop as you visit it. Your progress saves automatically.'),
-      (Icons.auto_stories_outlined, 'AI Stories',
-          'Expand any stop and tap "Hear the Story" for an AI-generated history of that place.'),
+    final l10n = AppLocalizations.of(context);
+    final features = [
+      (Icons.map_outlined, l10n.tourFeatViewMap, l10n.tourFeatViewMapDesc),
+      (Icons.check_circle_outline_rounded, l10n.tourFeatTrack, l10n.tourFeatTrackDesc),
+      (Icons.auto_stories_outlined, l10n.tourFeatStories, l10n.tourFeatStoriesDesc),
     ];
 
     return Container(
@@ -923,7 +922,7 @@ class _TourOnboardingSheet extends StatelessWidget {
           ),
           SizedBox(height: 20.h),
           Text(
-            '🗺️ Your Tour Has Started!',
+            l10n.tourStartedTitle,
             style: TextStyle(
               fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               fontSize: 20.sp,
@@ -933,7 +932,7 @@ class _TourOnboardingSheet extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Here\'s what you can do',
+            l10n.tourOnboardTitle,
             style: TextStyle(
               fontSize: 14.sp,
               color: textColor.withValues(alpha: 0.5),
@@ -997,7 +996,7 @@ class _TourOnboardingSheet extends StatelessWidget {
                 elevation: 0,
               ),
               child: Text(
-                'Let\'s Go!',
+                l10n.tourLetsGo,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 15.sp,
@@ -1189,7 +1188,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                 ),
                 SizedBox(height: 20.h),
                 Text(
-                  'Tour Complete!',
+                  AppLocalizations.of(context).tourComplete,
                   style: TextStyle(
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
@@ -1221,7 +1220,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                       Icon(Icons.place_rounded, size: 18.r, color: gold),
                       SizedBox(width: 8.w),
                       Text(
-                        '${widget.stopsCompleted} stops explored',
+                        AppLocalizations.of(context).tourStopsExplored(widget.stopsCompleted),
                         style: TextStyle(
                           fontSize: 14.sp,
                           color: gold,
@@ -1233,7 +1232,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  'You\'ve experienced the heart of Egypt.\nGreat exploring! 🌟',
+                  AppLocalizations.of(context).tourCompleteSub,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13.sp,
@@ -1246,7 +1245,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'You might also love',
+                      AppLocalizations.of(context).tourYouMightLove,
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
@@ -1287,7 +1286,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                       elevation: 0,
                     ),
                     child: Text(
-                      'Done',
+                      AppLocalizations.of(context).tourDone,
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w700,
@@ -1619,7 +1618,7 @@ class _StorySheetState extends State<_StorySheet> {
                 child: Column(
                   children: [
                     Text(
-                      'The spirits of history are silent right now.',
+                      AppLocalizations.of(context).soloStorySilent,
                       style: TextStyle(
                           fontSize: 14.sp,
                           color: textColor.withValues(alpha: 0.6)),
@@ -1627,7 +1626,7 @@ class _StorySheetState extends State<_StorySheet> {
                     SizedBox(height: 12.h),
                     TextButton(
                       onPressed: _fetchStory,
-                      child: Text('Try again', style: TextStyle(color: gold)),
+                      child: Text(AppLocalizations.of(context).commonTryAgain, style: TextStyle(color: gold)),
                     ),
                   ],
                 ),
@@ -1665,12 +1664,12 @@ class _StorySheetState extends State<_StorySheet> {
                             ),
                       label: Text(
                         _loadingAudio
-                            ? 'Generating audio…'
+                            ? AppLocalizations.of(context).soloStoryGenerating
                             : _isPlaying
-                                ? 'Pause'
+                                ? AppLocalizations.of(context).soloStoryPause
                                 : _isPaused
-                                    ? 'Resume'
-                                    : 'Listen',
+                                    ? AppLocalizations.of(context).soloStoryResume
+                                    : AppLocalizations.of(context).soloStoryListen,
                         style: const TextStyle(
                             color: Colors.white, fontWeight: FontWeight.w600),
                       ),
@@ -1688,7 +1687,7 @@ class _StorySheetState extends State<_StorySheet> {
                     IconButton.filled(
                       onPressed: _loadingAudio ? null : _handleReplay,
                       icon: const Icon(Icons.replay_rounded),
-                      tooltip: 'Replay from start',
+                      tooltip: AppLocalizations.of(context).soloStoryReplay,
                       style: IconButton.styleFrom(
                         backgroundColor: gold.withValues(alpha: 0.15),
                         foregroundColor: gold,

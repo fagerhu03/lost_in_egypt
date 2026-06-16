@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/utils/map_style_helper.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
@@ -166,6 +167,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: CustomScrollView(
@@ -196,7 +198,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                         children: [
                           Icon(Icons.flag, color: Colors.orange, size: 20.r),
                           SizedBox(width: 8.w),
-                          const Text('Report Tour'),
+                          Text(l10n.tourDetailReport),
                         ],
                       ),
                     ),
@@ -287,7 +289,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                           Text(
                             tour.rating > 0 && !tour.rating.isNaN && !tour.rating.isInfinite
                               ? '${tour.rating.toStringAsFixed(1)} (${tour.reviewCount})'
-                              : 'New',
+                              : l10n.tourDetailNew,
                             style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -306,17 +308,17 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     ),
                     child: Column(
                       children: [
-                        _buildInfoRow(context, Icons.calendar_month, 'Date & Time', DateFormat('MMM d, yyyy - h:mm a').format(tour.meetingTime)),
+                        _buildInfoRow(context, Icons.calendar_month, l10n.tourDetailDateTime, DateFormat('MMM d, yyyy - h:mm a').format(tour.meetingTime)),
                         Divider(height: 24.h),
-                        _buildInfoRow(context, Icons.people, 'Max Attendees', '${tour.maxAttendees} people'),
+                        _buildInfoRow(context, Icons.people, l10n.createFieldMaxAttendees, l10n.tourDetailPeople(tour.maxAttendees)),
                         Divider(height: 24.h),
-                        _buildInfoRow(context, Icons.location_on, 'Location', tour.meetingLocationName),
+                        _buildInfoRow(context, Icons.location_on, l10n.tourDetailLocation, tour.meetingLocationName),
                       ],
                     ),
                   ),
 
                   SizedBox(height: 24.h),
-                  Text('About This Tour', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  Text(l10n.tourDetailAbout, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8.h),
                   Text(
                     tour.description,
@@ -324,7 +326,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   ),
 
                   SizedBox(height: 24.h),
-                  Text('Destinations', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  Text(l10n.tourDetailDestinations, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
                   SizedBox(height: 12.h),
                   Wrap(
                     spacing: 8.w,
@@ -337,7 +339,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
 
                   // Map Preview
                   SizedBox(height: 24.h),
-                  Text('Meetup Location & Route', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  Text(l10n.tourDetailMeetupRoute, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
                   SizedBox(height: 12.h),
                   Container(
                     height: 200.h,
@@ -357,7 +359,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                             Marker(
                               markerId: const MarkerId('meeting_point'),
                               position: LatLng(tour.meetingLatitude, tour.meetingLongitude),
-                              infoWindow: InfoWindow(title: tour.meetingLocationName, snippet: 'Meetup Point'),
+                              infoWindow: InfoWindow(title: tour.meetingLocationName, snippet: l10n.tourMapMeetingPoint),
                             ),
                           },
                           zoomControlsEnabled: false,
@@ -395,7 +397,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                               children: [
                                 Icon(Icons.fullscreen, size: 20.r),
                                 SizedBox(width: 4.w),
-                                Text('Tap to expand', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold)),
+                                Text(l10n.tourDetailTapExpand, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -406,14 +408,14 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
 
                   // Schedule Display
                   SizedBox(height: 24.h),
-                  Text('Schedule', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  Text(l10n.tourDetailSchedule, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
                   SizedBox(height: 12.h),
                   _buildScheduleRow(context, tour.frequency),
 
                   // Image Gallery
                   if (tour.images.length > 1) ...[
                     SizedBox(height: 24.h),
-                    Text('Gallery', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                    Text(l10n.tourDetailGallery, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
                     SizedBox(height: 12.h),
                     SizedBox(
                       height: 140.h,
@@ -444,7 +446,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   ],
 
                   SizedBox(height: 24.h),
-                  Text('Your Guide', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  Text(l10n.tourDetailYourGuide, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
                   SizedBox(height: 12.h),
                   _GuideInfoTile(guideId: tour.guideId),
 
@@ -464,7 +466,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                             size: 18.r, color: theme.colorScheme.primary),
                         SizedBox(width: 8.w),
                         Text(
-                          'You might also enjoy',
+                          l10n.tourDetailYouMightEnjoy,
                           style: TextStyle(
                               fontSize: 20.sp, fontWeight: FontWeight.bold),
                         ),
@@ -519,7 +521,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                 ),
                 onPressed: null,
-                child: Text('This is your tour', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                child: Text(l10n.tourDetailYourTour, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
               )
             : ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -535,7 +537,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                      MaterialPageRoute(builder: (_) => BookingConfirmationScreen(tour: tour)),
                    );
                 },
-                child: Text('Book Now', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                child: Text(l10n.tourDetailBookNow, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
               ),
       ),
     );
@@ -567,9 +569,32 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
     );
   }
 
+  // Weekday values stay English (parsed from `frequency`); only display localized.
+  String _weekdayLabel(AppLocalizations l10n, String day) {
+    switch (day) {
+      case 'Mon':
+        return l10n.weekdayMon;
+      case 'Tue':
+        return l10n.weekdayTue;
+      case 'Wed':
+        return l10n.weekdayWed;
+      case 'Thu':
+        return l10n.weekdayThu;
+      case 'Fri':
+        return l10n.weekdayFri;
+      case 'Sat':
+        return l10n.weekdaySat;
+      case 'Sun':
+        return l10n.weekdaySun;
+      default:
+        return day;
+    }
+  }
+
   Widget _buildScheduleRow(BuildContext context, String frequency) {
+    final l10n = AppLocalizations.of(context);
     if (frequency == 'One-Time') {
-      return Text('This is a one-time tour.', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)));
+      return Text(l10n.tourDetailOneTime, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8)));
     }
 
     final days = frequency.split(', ');
@@ -581,7 +606,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
       children: allDays.map((day) {
         final isSelected = days.contains(day);
         return Chip(
-          label: Text(day),
+          label: Text(_weekdayLabel(l10n, day)),
           backgroundColor: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
           labelStyle: TextStyle(
             color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
@@ -731,6 +756,7 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     if (_loading) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -744,7 +770,7 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
           backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
           child: const Icon(Icons.person),
         ),
-        title: const Text('Guide not found'),
+        title: Text(l10n.tourDetailGuideNotFound),
       );
     }
     final guide = _guide!;
@@ -756,16 +782,16 @@ class _GuideInfoTileState extends State<_GuideInfoTile> {
         radius: 24.r,
         fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
       ),
-      title: Text(displayName.isNotEmpty ? displayName : 'Your Guide', style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(displayName.isNotEmpty ? displayName : l10n.tourDetailYourGuide, style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: guide.reviewCount > 0
           ? Row(
               children: [
                 Icon(Icons.star, color: Colors.amber, size: 14.r),
                 SizedBox(width: 2.w),
-                Text('${guide.rating.toStringAsFixed(1)} (${guide.reviewCount} reviews)', style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+                Text(l10n.tourDetailGuideRating(guide.rating.toStringAsFixed(1), guide.reviewCount), style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
               ],
             )
-          : Text('Verified Guide', style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+          : Text(l10n.profileRoleVerifiedGuide, style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
         Navigator.push(
@@ -795,13 +821,14 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
   @override
   Widget build(BuildContext context) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Reviews', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+            Text(l10n.tourDetailReviews, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
             if (currentUid != null && currentUid != tour.guideId)
               FutureBuilder<QuerySnapshot>(
                 future: FirebaseFirestore.instance
@@ -816,7 +843,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                   return TextButton.icon(
                     onPressed: () => _showAddReviewDialog(context, tour.id),
                     icon: Icon(Icons.rate_review, size: 18.r),
-                    label: const Text('Write a Review'),
+                    label: Text(l10n.tourDetailWriteReview),
                   );
                 },
               ),
@@ -831,7 +858,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
               .limit(_reviewLimit)
               .snapshots(),
           builder: (context, snapshot) {
-            if (snapshot.hasError) return const Text('Error loading reviews');
+            if (snapshot.hasError) return Text(l10n.tourDetailReviewsError);
             if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -844,8 +871,8 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                   color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(16.r),
                 ),
-                child: const Center(
-                  child: Text('No reviews yet. Be the first to review!', style: TextStyle(fontStyle: FontStyle.italic)),
+                child: Center(
+                  child: Text(l10n.tourDetailNoReviews, style: const TextStyle(fontStyle: FontStyle.italic)),
                 ),
               );
             }
@@ -864,7 +891,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                 final data = reviewDoc.data() as Map<String, dynamic>;
                 final rating = (data['rating'] ?? 0.0).toDouble();
                 final text = data['text'] ?? '';
-                final userName = data['userName'] ?? 'Anonymous';
+                final userName = data['userName'] ?? l10n.tourDetailAnonymous;
                 final userId = data['userId'] as String?;
                 final userImage = data['userImage'] as String?;
                 final isOwnReview = userId == currentUid;
@@ -929,7 +956,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                   TextButton.icon(
                     onPressed: () => setState(() => _reviewLimit += _reviewPageSize),
                     icon: const Icon(Icons.expand_more, size: 18),
-                    label: const Text('Show more reviews'),
+                    label: Text(l10n.tourDetailShowMore),
                   ),
               ],
             );
@@ -940,6 +967,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
   }
 
   Widget _buildReviewActionMenu(BuildContext context, String reviewDocId, Map<String, dynamic> data, bool isOwnReview) {
+    final l10n = AppLocalizations.of(context);
     return PopupMenuButton<String>(
       icon: Icon(Icons.more_vert, size: 18.r, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
       padding: EdgeInsets.zero,
@@ -966,17 +994,17 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
         if (isOwnReview) ...[
           PopupMenuItem(
             value: 'edit',
-            child: Row(children: [Icon(Icons.edit, size: 18.r), SizedBox(width: 8.w), const Text('Edit Review')]),
+            child: Row(children: [Icon(Icons.edit, size: 18.r), SizedBox(width: 8.w), Text(l10n.tourDetailEditReview)]),
           ),
           PopupMenuItem(
             value: 'delete',
-            child: Row(children: [Icon(Icons.delete, size: 18.r, color: Colors.red), SizedBox(width: 8.w), const Text('Delete Review', style: TextStyle(color: Colors.red))]),
+            child: Row(children: [Icon(Icons.delete, size: 18.r, color: Colors.red), SizedBox(width: 8.w), Text(l10n.tourDetailDeleteReview, style: const TextStyle(color: Colors.red))]),
           ),
         ],
         if (!isOwnReview)
           PopupMenuItem(
             value: 'report',
-            child: Row(children: [Icon(Icons.flag, size: 18.r, color: Colors.orange), SizedBox(width: 8.w), const Text('Report Review')]),
+            child: Row(children: [Icon(Icons.flag, size: 18.r, color: Colors.orange), SizedBox(width: 8.w), Text(l10n.tourDetailReportReview)]),
           ),
       ],
     );
@@ -1008,6 +1036,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
   }
 
   void _showEditReviewDialog(BuildContext context, String tourId, String reviewDocId, Map<String, dynamic> oldData) {
+    final l10n = AppLocalizations.of(context);
     double selectedRating = (oldData['rating'] ?? 5.0).toDouble();
     final textController = TextEditingController(text: oldData['text'] ?? '');
 
@@ -1017,7 +1046,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Edit Review'),
+              title: Text(l10n.tourDetailEditReview),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1038,9 +1067,9 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                   TextField(
                     controller: textController,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText: 'Update your experience...',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: l10n.tourDetailUpdateHint,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
@@ -1048,7 +1077,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child: Text(l10n.commonCancel),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -1084,7 +1113,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                       debugPrint('Error editing review: $e');
                     }
                   },
-                  child: const Text('Update'),
+                  child: Text(l10n.tourDetailUpdate),
                 ),
               ],
             );
@@ -1095,16 +1124,17 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
   }
 
   void _showDeleteReviewConfirmation(BuildContext context, String tourId, String reviewDocId, Map<String, dynamic> data) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete Review'),
-          content: const Text('Are you sure you want to delete your review? This action cannot be undone.'),
+          title: Text(l10n.tourDetailDeleteReview),
+          content: Text(l10n.tourDetailDeleteReviewBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(l10n.commonCancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -1138,7 +1168,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                   debugPrint('Error deleting review: $e');
                 }
               },
-              child: const Text('Delete', style: TextStyle(color: Colors.white)),
+              child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -1147,6 +1177,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
   }
 
   void _showAddReviewDialog(BuildContext context, String tourId) {
+    final l10n = AppLocalizations.of(context);
     double selectedRating = 5.0;
     final textController = TextEditingController();
 
@@ -1156,7 +1187,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Write a Review'),
+              title: Text(l10n.tourDetailWriteReview),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1177,9 +1208,9 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                   TextField(
                     controller: textController,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText: 'Share your experience...',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: l10n.tourDetailShareHint,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
@@ -1187,7 +1218,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child: Text(l10n.commonCancel),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -1245,7 +1276,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                       debugPrint('Error adding review: $e');
                     }
                   },
-                  child: const Text('Submit'),
+                  child: Text(l10n.tourDetailSubmit),
                 ),
               ],
             );

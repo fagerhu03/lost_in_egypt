@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../tours/domain/entities/tour_entity.dart';
 import '../../../tours/presentation/pages/tour_detail_screen.dart';
 import '../../../../core/services/currency_controller.dart';
@@ -80,7 +81,7 @@ class TourCard extends StatelessWidget {
                       ),
                       SizedBox(width: 8.w),
                       // Rating badge
-                      _buildRatingBadge(theme),
+                      _buildRatingBadge(context, theme),
                       SizedBox(width: 12.w),
                       ValueListenableBuilder<String>(
                         valueListenable: CurrencyController.currency,
@@ -122,7 +123,7 @@ class TourCard extends StatelessWidget {
                       Icon(Icons.people, size: 16.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                       SizedBox(width: 4.w),
                       Text(
-                        'Up to ${tour.maxAttendees}',
+                        AppLocalizations.of(context).tourCardUpTo(tour.maxAttendees),
                         style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                     ],
@@ -159,7 +160,7 @@ class TourCard extends StatelessWidget {
     ));
   }
 
-  Widget _buildRatingBadge(ThemeData theme) {
+  Widget _buildRatingBadge(BuildContext context, ThemeData theme) {
     final hasRating = tour.rating > 0 && !tour.rating.isNaN && !tour.rating.isInfinite && tour.reviewCount > 0;
     if (hasRating) {
       return Row(
@@ -192,7 +193,7 @@ class TourCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(6.r),
       ),
       child: Text(
-        'NEW',
+        AppLocalizations.of(context).tourCardNew,
         style: TextStyle(
           fontSize: 10.sp,
           fontWeight: FontWeight.bold,

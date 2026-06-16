@@ -18,6 +18,7 @@ import 'package:lost_in_egypt/feature/tours/domain/entities/tour_entity.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/tour_detail_screen.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
+import 'package:lost_in_egypt/core/services/place_photos_service.dart';
 import 'package:lost_in_egypt/core/constants/event_categories.dart';
 import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../theme/theme.dart';
@@ -1042,16 +1043,10 @@ class _HomeScreenState extends State<HomeScreen>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            place.imagePath.startsWith('http')
-                ? ShimmerImage(
-                    url: place.imagePath,
-                    fit: BoxFit.cover,
-                    fallbackIcon: Icons.image_not_supported_outlined,
-                    fallbackBackgroundColor: primary.withValues(alpha: 0.06),
-                    fallbackIconColor: primary.withValues(alpha: 0.3),
-                    fallbackIconSize: 32.r,
-                  )
-                : Image.asset(place.imagePath, fit: BoxFit.cover),
+            _PlacePhoto(
+              place: place,
+              primary: primary,
+            ),
             // Gradient overlay
             Positioned.fill(
               child: DecoratedBox(
@@ -1333,6 +1328,71 @@ class _HomeScreenState extends State<HomeScreen>
             SizedBox(height: 25.h),
           ],
         );
+      },
+    );
+  }
+}
+
+// ── Place photo resolver ──────────────────────────────────────────────────────
+//
+// The bundled `cat_*.json` / dataset `imagePath` values are baked Google Places
+// API photo URLs whose photo references EXPIRE — Google returns
+// `400 INVALID_ARGUMENT: "retrieve it from Places API endpoints"`, so they can't
+// be rendered directly (that's why every home place image broke). We instead
+// fetch a fresh, durable `lh3.googleusercontent.com` CDN URL at runtime via
+// PlacePhotosService (memory + 30-day Firestore cache, keyed on the stable Place
+// ID), so each place hits the Places API at most once per month globally.
+class _PlacePhoto extends StatelessWidget {
+  final PlaceModel place;
+  final Color primary;
+  const _PlacePhoto({required this.place, required this.primary});
+
+  bool get _isStalePlacesUrl =>
+      place.imagePath.contains('places.googleapis.com');
+
+  @override
+  Widget build(BuildContext context) {
+    Widget fallback() => ColoredBox(
+          color: primary.withValues(alpha: 0.06),
+          child: Icon(Icons.image_not_supported_outlined,
+              color: primary.withValues(alpha: 0.3), size: 32.r),
+        );
+
+    ShimmerImage netImage(String url) => ShimmerImage(
+          url: url,
+          fit: BoxFit.cover,
+          fallbackIcon: Icons.image_not_supported_outlined,
+          fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+          fallbackIconColor: primary.withValues(alpha: 0.3),
+          fallbackIconSize: 32.r,
+        );
+
+    // A real, stable CDN URL (not a Places photo endpoint) — render directly.
+    if (place.imagePath.startsWith('http') && !_isStalePlacesUrl) {
+      return netImage(place.imagePath);
+    }
+
+    // A bundled asset path — render directly.
+    if (!place.imagePath.startsWith('http')) {
+      return Image.asset(place.imagePath,
+          fit: BoxFit.cover, errorBuilder: (_, _, _) => fallback());
+    }
+
+    // Stale Places photo URL (or empty) → resolve a fresh one, cached by Place ID.
+    return FutureBuilder<String?>(
+      future: PlacePhotosService.instance
+          .getPhotoUrl(place.id, '${place.title}, Egypt'),
+      builder: (context, snap) {
+        final url = snap.data;
+        if (url != null && url.isNotEmpty) return netImage(url);
+        if (snap.connectionState == ConnectionState.waiting) {
+          return Shimmer.fromColors(
+            baseColor: primary.withValues(alpha: 0.06),
+            highlightColor: primary.withValues(alpha: 0.12),
+            child: ColoredBox(color: primary.withValues(alpha: 0.06)),
+          );
+        }
+        return fallback();
       },
     );
   }

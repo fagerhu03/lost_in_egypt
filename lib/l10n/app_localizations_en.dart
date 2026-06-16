@@ -1175,4 +1175,1603 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpAEmergency =>
       'Open More → SOS. You can find the nearest police station, hospital, or fire station using your current location, or dial Egypt\'s official emergency numbers directly from the app:\n• Police: 122\n• Ambulance: 123\n• Fire: 180\n• Tourist Police: 126';
+
+  @override
+  String get soloTripTitle => 'Solo Trip';
+
+  @override
+  String get soloRecommendedPlans => 'Recommended Plans';
+
+  @override
+  String get soloPersonalised => 'Personalised based on your travel history';
+
+  @override
+  String get soloBestForYou => 'Best for you';
+
+  @override
+  String get soloStatusActive => 'Active';
+
+  @override
+  String get soloStatusSaved => 'Saved';
+
+  @override
+  String get soloStatusCompleted => 'Completed';
+
+  @override
+  String get soloTabAll => 'All';
+
+  @override
+  String get soloCouldNotLoadPlans => 'Could not load plans';
+
+  @override
+  String get soloContinueTour => 'Continue Tour';
+
+  @override
+  String get soloStartTour => 'Start Tour';
+
+  @override
+  String get soloCouldNotStart => 'Could not start tour. Try again.';
+
+  @override
+  String get soloDeletePlanTitle => 'Delete plan?';
+
+  @override
+  String get soloDeleteActiveBody =>
+      'This tour is in progress. Deleting it will discard all your progress and cannot be undone.';
+
+  @override
+  String get soloDeleteBody => 'This cannot be undone.';
+
+  @override
+  String get soloNoPlansYet => 'No plans yet';
+
+  @override
+  String get soloNoPlansSub =>
+      'Save a curated trip or create your own\nto see it here.';
+
+  @override
+  String get soloBrowseTrips => 'Browse Trips';
+
+  @override
+  String get soloCustomizeOwnPlan => 'Customize your\nown plan';
+
+  @override
+  String get soloSavePlan => 'Save Plan';
+
+  @override
+  String get soloPlanSaved => 'Plan saved! Find it in My Plans.';
+
+  @override
+  String get soloCouldNotSave => 'Could not save plan. Try again.';
+
+  @override
+  String get soloHearStory => 'Hear the Story';
+
+  @override
+  String get soloStorySilent => 'The spirits of history are silent right now.';
+
+  @override
+  String get soloStoryPause => 'Pause';
+
+  @override
+  String get soloStoryResume => 'Resume';
+
+  @override
+  String get soloStoryListen => 'Listen';
+
+  @override
+  String get soloStoryGenerating => 'Generating audio…';
+
+  @override
+  String get soloStoryReplay => 'Replay from start';
+
+  @override
+  String get soloNavigateHere => 'Navigate here';
+
+  @override
+  String get soloViewFullRoute => 'View full route';
+
+  @override
+  String get soloViewFullRouteMap => 'View full route on map';
+
+  @override
+  String get soloFullRoute => 'Full route';
+
+  @override
+  String get soloHighlights => 'Highlights';
+
+  @override
+  String get soloItinerary => 'Itinerary';
+
+  @override
+  String get tourEndTitle => 'End Tour?';
+
+  @override
+  String get tourEndBody =>
+      'This will mark the tour as completed. You can still view it in My Plans.';
+
+  @override
+  String get tourEndConfirm => 'End Tour';
+
+  @override
+  String get tourEnded => 'Tour ended. Find it under Completed in My Plans.';
+
+  @override
+  String get tourInProgress => 'Tour in Progress';
+
+  @override
+  String get tourGo => 'Go';
+
+  @override
+  String get tourUpNext => 'Up next';
+
+  @override
+  String get tourComplete => 'Tour Complete!';
+
+  @override
+  String tourStopsExplored(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stops explored',
+      one: '1 stop explored',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tourCompleteSub =>
+      'You\'ve experienced the heart of Egypt.\nGreat exploring! 🌟';
+
+  @override
+  String get tourYouMightLove => 'You might also love';
+
+  @override
+  String get tourDone => 'Done';
+
+  @override
+  String get tourStartedTitle => '🗺️ Your Tour Has Started!';
+
+  @override
+  String get tourOnboardTitle => 'Here\'s what you can do';
+
+  @override
+  String get tourLetsGo => 'Let\'s Go!';
+
+  @override
+  String get tourFeatViewMap => 'View on Map';
+
+  @override
+  String get tourFeatViewMapDesc =>
+      'Tap the map icon (top-right) to see your stops on the map and navigate to any one.';
+
+  @override
+  String get tourFeatTrack => 'Track Progress';
+
+  @override
+  String get tourFeatTrackDesc =>
+      'Check off each stop as you visit it. Your progress saves automatically.';
+
+  @override
+  String get tourFeatStories => 'AI Stories';
+
+  @override
+  String get tourFeatStoriesDesc =>
+      'Expand any stop and tap \"Hear the Story\" for an AI-generated history of that place.';
+
+  @override
+  String get resultCouldNotGenerate => 'Could not generate your plan.';
+
+  @override
+  String get resultPlanning => 'Planning your trip…';
+
+  @override
+  String get resultPlanningSub =>
+      'Our AI guide is building a personalised day-by-day itinerary for you.';
+
+  @override
+  String get resultCouldNotLoad => 'Couldn\'t load your plan';
+
+  @override
+  String resultCouldNotPin(String name) {
+    return 'Couldn\'t pin $name on the map yet. Try again in a moment.';
+  }
+
+  @override
+  String get resultCouldNotExport => 'Could not export itinerary. Try again.';
+
+  @override
+  String get resultDiscardTitle => 'Discard plan?';
+
+  @override
+  String get resultDiscardBody =>
+      'This plan will not be saved. You can always generate a new one.';
+
+  @override
+  String get resultKeep => 'Keep';
+
+  @override
+  String get resultDiscard => 'Discard';
+
+  @override
+  String get resultExportPdf => 'Export PDF';
+
+  @override
+  String resultLocationsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count locations',
+      one: '1 location',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String resultDayNum(int num) {
+    return 'Day $num';
+  }
+
+  @override
+  String get resultViewOnMaps => 'View on Maps';
+
+  @override
+  String get resultShareSuffix => 'Planned with Lost in Egypt 🌍';
+
+  @override
+  String get quizNext => 'Next';
+
+  @override
+  String get quizFinish => 'Finish';
+
+  @override
+  String quizStepOf(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get soloQuizInterestsTitle => 'What are your interests?';
+
+  @override
+  String get soloQuizAreasTitle => 'Where do you want to explore?';
+
+  @override
+  String get soloQuizTripTimeTitle => 'Day trips or night out?';
+
+  @override
+  String get tripTimeDay => 'Day';
+
+  @override
+  String get tripTimeDayDesc => 'Temples, markets,\nand outdoor adventures';
+
+  @override
+  String get tripTimeNight => 'Night';
+
+  @override
+  String get tripTimeNightDesc => 'Dining, nightlife,\nand entertainment';
+
+  @override
+  String get soloQuizBudgetTitle => 'What\'s your budget?';
+
+  @override
+  String get budgetPresetBudget => 'Budget';
+
+  @override
+  String get budgetPresetMid => 'Mid-range';
+
+  @override
+  String get budgetPresetLuxury => 'Luxury';
+
+  @override
+  String get soloQuizDateTitle => 'Choose your dates & location';
+
+  @override
+  String get soloDateFrom => 'From';
+
+  @override
+  String get soloDateStartHint => 'Start date';
+
+  @override
+  String get soloDateTo => 'To';
+
+  @override
+  String get soloDateEndHint => 'End date';
+
+  @override
+  String soloNightsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nights',
+      one: '1 night',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get soloStartLocationHint => 'Where are you starting from?';
+
+  @override
+  String get soloSelectDayNight => 'Please select Day, Night, or both.';
+
+  @override
+  String tourCardUpTo(int count) {
+    return 'Up to $count';
+  }
+
+  @override
+  String get tourCardNew => 'NEW';
+
+  @override
+  String get mapPickerFetching => 'Fetching address...';
+
+  @override
+  String get mapPickerSelectedLocation => 'Selected Location';
+
+  @override
+  String get mapPickerUnknownLocation => 'Unknown Location';
+
+  @override
+  String get mapPickerSearchHint => 'Search for a landmark or destination...';
+
+  @override
+  String get mapPickerTapHint => 'Tap anywhere on the map to select a location';
+
+  @override
+  String get mapPickerConfirm => 'Confirm Location';
+
+  @override
+  String get mapPickerCustomPin => 'Custom Pin Location';
+
+  @override
+  String get tourMapMeetupTitle => 'Meetup Location';
+
+  @override
+  String get tourMapStartPoint => 'Tour Start Point';
+
+  @override
+  String get tourMapMeetingPoint => 'Meeting Point';
+
+  @override
+  String get tourMapDestinations => 'Destinations You Will Visit:';
+
+  @override
+  String get tourMapExplore => 'Explore in Main Map';
+
+  @override
+  String get tourMapNavigateRoute => 'Navigate Tour Route';
+
+  @override
+  String get qrTitle => 'Scan Ticket QR';
+
+  @override
+  String get qrPointCamera => 'Point camera at tourist\'s QR ticket';
+
+  @override
+  String get qrScanAnother => 'Scan Another';
+
+  @override
+  String get qrBookingNotFound => 'Booking not found';
+
+  @override
+  String get qrUnknownTour => 'Unknown Tour';
+
+  @override
+  String get qrUnknownTraveler => 'Unknown Traveler';
+
+  @override
+  String get qrValidTicket => 'Valid Ticket';
+
+  @override
+  String qrInvalidTicket(String status) {
+    return 'Invalid Ticket ($status)';
+  }
+
+  @override
+  String get qrAllCheckedIn => 'All Tickets Checked In';
+
+  @override
+  String qrPartiallyCheckedIn(int checked, int total) {
+    return 'Partially Checked In ($checked/$total)';
+  }
+
+  @override
+  String get qrRowTour => 'Tour';
+
+  @override
+  String get qrRowDate => 'Date';
+
+  @override
+  String get qrRowTickets => 'Tickets';
+
+  @override
+  String get qrRowAmount => 'Amount';
+
+  @override
+  String get qrRowBookingId => 'Booking ID';
+
+  @override
+  String qrTicketsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tickets',
+      one: '1 ticket',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String qrCheckedInCount(int count) {
+    return '$count checked in';
+  }
+
+  @override
+  String get qrCheckInHowMany => 'Check in how many?';
+
+  @override
+  String get qrCheckInTourist => 'Check In Tourist';
+
+  @override
+  String qrCheckInRemaining(int count, int remaining) {
+    return 'Check In $count of $remaining Remaining';
+  }
+
+  @override
+  String qrAllTicketsCheckedIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'All $count tickets checked in!',
+      one: 'Ticket checked in!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String qrCheckedInResult(int count, int remaining) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tickets checked in.',
+      one: '1 ticket checked in.',
+    );
+    return '$_temp0\n$remaining remaining.';
+  }
+
+  @override
+  String get commonNo => 'No';
+
+  @override
+  String get attendeesTitle => 'Attendees';
+
+  @override
+  String get attendeesError => 'Error loading attendees';
+
+  @override
+  String get attendeesIndexHint =>
+      'A Firestore index may be needed.\nCheck debug console for the link.';
+
+  @override
+  String get attendeesEmpty => 'No bookings yet';
+
+  @override
+  String get attendeesEmptySub =>
+      'When travelers book this tour,\nthey\'ll appear here.';
+
+  @override
+  String get attendeesStatConfirmed => 'Confirmed';
+
+  @override
+  String get attendeesStatCancelled => 'Cancelled';
+
+  @override
+  String get attendeesStatTotal => 'Total';
+
+  @override
+  String attendeesSectionConfirmed(int count) {
+    return 'Confirmed ($count)';
+  }
+
+  @override
+  String attendeesSectionCancelled(int count) {
+    return 'Cancelled ($count)';
+  }
+
+  @override
+  String get attendeesUnknownUser => 'Unknown User';
+
+  @override
+  String get attendeesPaid => 'PAID';
+
+  @override
+  String get attendeesPending => 'PENDING';
+
+  @override
+  String get attendeesCall => 'Call';
+
+  @override
+  String get attendeesWhatsApp => 'WhatsApp';
+
+  @override
+  String get attendeesEmail => 'Email';
+
+  @override
+  String get attendeesCancelBooking => 'Cancel Booking';
+
+  @override
+  String get attendeesCancelBody =>
+      'Are you sure you want to cancel this booking? The traveler will be notified.';
+
+  @override
+  String get guideDashTitle => 'Guide Dashboard';
+
+  @override
+  String get guideDashStopSharing => 'Stop sharing live location';
+
+  @override
+  String get guideDashShareLocation => 'Share live location with tourists';
+
+  @override
+  String get guideDashScanTicket => 'Scan Ticket';
+
+  @override
+  String get guideDashNoTours => 'No tours yet';
+
+  @override
+  String get guideDashCreateFirst => 'Create your first tour!';
+
+  @override
+  String guideDashYourTours(int count) {
+    return 'Your Tours ($count)';
+  }
+
+  @override
+  String get guideDashCreateTour => 'Create Tour';
+
+  @override
+  String get guideDashEarningsError =>
+      'Could not load earnings.\nCheck your connection and try again.';
+
+  @override
+  String get guideDashStatTours => 'Tours';
+
+  @override
+  String get guideDashStatBookings => 'Bookings';
+
+  @override
+  String get guideDashStatRevenue => 'Revenue';
+
+  @override
+  String guideDashMax(int count) {
+    return '$count max';
+  }
+
+  @override
+  String get guideDashBookingsError => 'Could not load bookings.';
+
+  @override
+  String guideDashConfirmedBookings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count confirmed bookings',
+      one: '1 confirmed booking',
+    );
+    return '📌 $_temp0';
+  }
+
+  @override
+  String get guideDashView => 'View';
+
+  @override
+  String get guideDashDeleteTitle => 'Delete Tour';
+
+  @override
+  String guideDashDeleteBody(String title) {
+    return 'Are you sure you want to delete \"$title\"? This cannot be undone.';
+  }
+
+  @override
+  String get weekdayMon => 'Mon';
+
+  @override
+  String get weekdayTue => 'Tue';
+
+  @override
+  String get weekdayWed => 'Wed';
+
+  @override
+  String get weekdayThu => 'Thu';
+
+  @override
+  String get weekdayFri => 'Fri';
+
+  @override
+  String get weekdaySat => 'Sat';
+
+  @override
+  String get weekdaySun => 'Sun';
+
+  @override
+  String get createEditTitle => 'Edit Tour';
+
+  @override
+  String get createNewTitle => 'Create New Tour';
+
+  @override
+  String get createUpdatedToast => 'Tour updated!';
+
+  @override
+  String get createCreatedToast => 'Tour created successfully!';
+
+  @override
+  String get createRequired => 'Required';
+
+  @override
+  String get createFieldTitle => 'Tour Title';
+
+  @override
+  String get createFieldDesc => 'Description';
+
+  @override
+  String get createDestinationsLabel => 'Destinations (Max 5)';
+
+  @override
+  String get createSearchDestination => 'Search destination...';
+
+  @override
+  String get createFieldPrice => 'Price (EGP)';
+
+  @override
+  String get createFieldMaxAttendees => 'Max Attendees';
+
+  @override
+  String get createMeetingLocation => 'Meeting Location';
+
+  @override
+  String get createSelectMeetingLocation => 'Select Meeting Location';
+
+  @override
+  String get createSelectMeetingTime => 'Select Meeting Time';
+
+  @override
+  String createMeetingTimePrefix(String time) {
+    return 'Meeting Time: $time';
+  }
+
+  @override
+  String get createScheduleFreq => 'Schedule Frequency (Days)';
+
+  @override
+  String get createImages => 'Tour Images';
+
+  @override
+  String get createEditImages => 'Edit Tour Images';
+
+  @override
+  String get createSaveChanges => 'Save Changes';
+
+  @override
+  String get createSelectTime => 'Please select a meeting time.';
+
+  @override
+  String get createSelectImage => 'Please select at least one image.';
+
+  @override
+  String get createSelectLocation =>
+      'Please select a meeting location on the map.';
+
+  @override
+  String get createAddDestination => 'Please add at least one destination.';
+
+  @override
+  String get createPriceNegative => 'Price cannot be negative.';
+
+  @override
+  String get createAttendeesZero => 'Max attendees must be greater than zero.';
+
+  @override
+  String get toursDiscoverTitle => 'Discover Tours';
+
+  @override
+  String get toursSearchHint => 'Search destinations, guides...';
+
+  @override
+  String get toursFilters => 'Filters';
+
+  @override
+  String get toursPriceRange => 'Price Range';
+
+  @override
+  String get toursMinRating => 'Minimum Rating';
+
+  @override
+  String toursStarsPlus(int count) {
+    return '$count+ stars';
+  }
+
+  @override
+  String get toursFrequency => 'Frequency';
+
+  @override
+  String get toursFreqDaily => 'Daily';
+
+  @override
+  String get toursFreqWeekly => 'Weekly';
+
+  @override
+  String get toursFreqWeekends => 'Weekends';
+
+  @override
+  String get toursFreqOneTime => 'One-Time';
+
+  @override
+  String get toursApplyFilters => 'Apply Filters';
+
+  @override
+  String get toursSortNewest => 'Newest First';
+
+  @override
+  String get toursSortCheapest => 'Cheapest First';
+
+  @override
+  String get toursSortPriciest => 'Priciest First';
+
+  @override
+  String get toursSortHighestRated => 'Highest Rated';
+
+  @override
+  String get toursSortMostPopular => 'Most Popular';
+
+  @override
+  String get toursSortLabelNewest => 'Newest';
+
+  @override
+  String get toursSortLabelCheapest => 'Cheapest';
+
+  @override
+  String get toursSortLabelPriciest => 'Priciest';
+
+  @override
+  String get toursSortLabelTopRated => 'Top Rated';
+
+  @override
+  String get toursSortLabelPopular => 'Popular';
+
+  @override
+  String toursFoundCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tours found',
+      one: '1 tour found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get toursLoadError =>
+      'Could not load tours.\nCheck your connection and try again.';
+
+  @override
+  String get toursEmptyTitle => 'No tours found';
+
+  @override
+  String get toursEmptyFilters => 'Try adjusting your filters.';
+
+  @override
+  String get toursEmptySearch => 'Try adjusting your search query.';
+
+  @override
+  String get toursClearFilters => 'Clear All Filters';
+
+  @override
+  String get toursRecommended => 'Recommended for You';
+
+  @override
+  String get bookingCheckoutTitle => 'Checkout';
+
+  @override
+  String get bookingLoginRequired => 'Please log in to book.';
+
+  @override
+  String get bookingInvalidWallet =>
+      'Please enter a valid Egyptian mobile number (e.g. 01XXXXXXXXX).';
+
+  @override
+  String get bookingFullyBooked => 'Sorry, this tour is now fully booked.';
+
+  @override
+  String bookingSeatsRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Only $count seats remaining. Please reduce your selection.',
+      one: 'Only 1 seat remaining. Please reduce your selection.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bookingPaymentFailed => 'Payment was cancelled or failed.';
+
+  @override
+  String get bookingWalletFailed => 'Wallet payment failed.';
+
+  @override
+  String get bookingKioskSoon => 'Kiosk payment coming soon!';
+
+  @override
+  String bookingErrorPrefix(String message) {
+    return 'Booking Error: $message';
+  }
+
+  @override
+  String get bookingConfirmedTitle => 'Booking Confirmed!';
+
+  @override
+  String bookingReservedBody(String title) {
+    return 'Your spot on \"$title\" is reserved!';
+  }
+
+  @override
+  String bookingPaidSuccess(String amount) {
+    return '$amount paid successfully.';
+  }
+
+  @override
+  String get bookingViewMyBookings => 'View My Bookings';
+
+  @override
+  String get bookingBackHome => 'Back to Home';
+
+  @override
+  String get bookingOrderSummary => 'Order Summary';
+
+  @override
+  String get bookingGuests => 'Guests';
+
+  @override
+  String get bookingPaymentMethod => 'Payment Method';
+
+  @override
+  String get bookingPayCardTitle => 'Credit / Debit Card';
+
+  @override
+  String get bookingPayCardSub => 'Visa, Mastercard, Meeza';
+
+  @override
+  String get bookingPayWalletTitle => 'Mobile Wallet';
+
+  @override
+  String get bookingPayWalletSub => 'Vodafone Cash, Orange, Etisalat';
+
+  @override
+  String get bookingPayApplePayTitle => 'Apple Pay';
+
+  @override
+  String get bookingPayApplePaySub => 'iOS only • Coming soon';
+
+  @override
+  String get bookingPayKioskTitle => 'Fawry / Kiosk';
+
+  @override
+  String get bookingPayKioskSub => 'Pay at any 172,000+ Fawry outlets';
+
+  @override
+  String get bookingWalletPhoneLabel => 'Wallet Phone Number';
+
+  @override
+  String get bookingSecurityNote =>
+      'Payments are processed securely by Paymob. Your card details are never stored locally.';
+
+  @override
+  String get bookingBecauseBooked => 'Because you booked this, you might enjoy';
+
+  @override
+  String get bookingProcessing => 'Processing payment...';
+
+  @override
+  String get bookingTotal => 'Total';
+
+  @override
+  String bookingChargedNote(String amount) {
+    return 'Charged as EGP $amount via Paymob';
+  }
+
+  @override
+  String get bookingPaySecurely => 'Pay Securely';
+
+  @override
+  String get tourDetailReport => 'Report Tour';
+
+  @override
+  String get tourDetailNew => 'New';
+
+  @override
+  String get tourDetailDateTime => 'Date & Time';
+
+  @override
+  String tourDetailPeople(int count) {
+    return '$count people';
+  }
+
+  @override
+  String get tourDetailLocation => 'Location';
+
+  @override
+  String get tourDetailAbout => 'About This Tour';
+
+  @override
+  String get tourDetailDestinations => 'Destinations';
+
+  @override
+  String get tourDetailMeetupRoute => 'Meetup Location & Route';
+
+  @override
+  String get tourDetailTapExpand => 'Tap to expand';
+
+  @override
+  String get tourDetailSchedule => 'Schedule';
+
+  @override
+  String get tourDetailGallery => 'Gallery';
+
+  @override
+  String get tourDetailYourGuide => 'Your Guide';
+
+  @override
+  String get tourDetailYouMightEnjoy => 'You might also enjoy';
+
+  @override
+  String get tourDetailYourTour => 'This is your tour';
+
+  @override
+  String get tourDetailBookNow => 'Book Now';
+
+  @override
+  String get tourDetailOneTime => 'This is a one-time tour.';
+
+  @override
+  String get tourDetailGuideNotFound => 'Guide not found';
+
+  @override
+  String tourDetailGuideRating(String rating, int count) {
+    return '$rating ($count reviews)';
+  }
+
+  @override
+  String get tourDetailReviews => 'Reviews';
+
+  @override
+  String get tourDetailWriteReview => 'Write a Review';
+
+  @override
+  String get tourDetailReviewsError => 'Error loading reviews';
+
+  @override
+  String get tourDetailNoReviews => 'No reviews yet. Be the first to review!';
+
+  @override
+  String get tourDetailShowMore => 'Show more reviews';
+
+  @override
+  String get tourDetailAnonymous => 'Anonymous';
+
+  @override
+  String get tourDetailEditReview => 'Edit Review';
+
+  @override
+  String get tourDetailDeleteReview => 'Delete Review';
+
+  @override
+  String get tourDetailReportReview => 'Report Review';
+
+  @override
+  String get tourDetailUpdateHint => 'Update your experience...';
+
+  @override
+  String get tourDetailUpdate => 'Update';
+
+  @override
+  String get tourDetailDeleteReviewBody =>
+      'Are you sure you want to delete your review? This action cannot be undone.';
+
+  @override
+  String get tourDetailShareHint => 'Share your experience...';
+
+  @override
+  String get tourDetailSubmit => 'Submit';
+
+  @override
+  String get commonLoadMore => 'Load more';
+
+  @override
+  String get bookingStatusConfirmed => 'CONFIRMED';
+
+  @override
+  String get bookingStatusCancelled => 'CANCELLED';
+
+  @override
+  String get bookingStatusPending => 'PENDING';
+
+  @override
+  String get bookingStatusCompleted => 'COMPLETED';
+
+  @override
+  String get bookingStatusCheckedIn => 'CHECKED IN';
+
+  @override
+  String get bookingStatusPartial => 'PARTIALLY CHECKED IN';
+
+  @override
+  String get bookingHistTitle => 'My Bookings';
+
+  @override
+  String get bookingHistLoginRequired => 'Please log in';
+
+  @override
+  String get bookingHistUpcoming => 'Upcoming';
+
+  @override
+  String get bookingHistPast => 'Past';
+
+  @override
+  String get bookingHistLoadError =>
+      'Could not load bookings.\nCheck your connection and try again.';
+
+  @override
+  String get bookingHistNoUpcoming => 'No upcoming tours';
+
+  @override
+  String get bookingHistNoPast => 'No past tours';
+
+  @override
+  String get bookingHistEmptyHint =>
+      'Explore tours and book your next adventure!';
+
+  @override
+  String get bookingHistTbd => 'TBD';
+
+  @override
+  String bookingHistCountdownDHM(int days, int hours, int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0 ${hours}h ${minutes}m';
+  }
+
+  @override
+  String bookingHistCountdownHMS(int hours, int minutes, int seconds) {
+    return '${hours}h ${minutes}m ${seconds}s';
+  }
+
+  @override
+  String bookingHistCountdownMS(int minutes, int seconds) {
+    return '${minutes}m ${seconds}s';
+  }
+
+  @override
+  String bookingHistStartsIn(String time) {
+    return 'Starts in $time';
+  }
+
+  @override
+  String get bookingHistCancelBody =>
+      'Are you sure you want to cancel this booking?';
+
+  @override
+  String get bookingHistYesCancel => 'Yes, Cancel';
+
+  @override
+  String get bookingHistCancelled => 'Booking cancelled';
+
+  @override
+  String get bookingHistReviewSubmitted => 'Review submitted!';
+
+  @override
+  String get bookingHistNoPhone => 'No phone number on file';
+
+  @override
+  String get bookingHistNoEmail => 'No email on file';
+
+  @override
+  String get bookingHistCantOpenPhone => 'Could not open phone app';
+
+  @override
+  String get bookingHistCantOpenEmail => 'Could not open email app';
+
+  @override
+  String get bookingHistLeaveReview => 'Leave a Review';
+
+  @override
+  String get bookingHistSubmitReview => 'Submit Review';
+
+  @override
+  String get bookingHistViewQr => 'View QR Ticket';
+
+  @override
+  String bookingHistBookingId(String id) {
+    return 'Booking ID: $id';
+  }
+
+  @override
+  String get bookingHistShowGuide => 'Show this to your guide upon arrival';
+
+  @override
+  String get bookingHistViewMeeting => 'View Meeting Point';
+
+  @override
+  String get bookingHistOpensMap => 'Opens in Map tab';
+
+  @override
+  String get bookingHistGuide => 'Guide';
+
+  @override
+  String get bookingHistTrackGuide => 'Track Guide Live';
+
+  @override
+  String get bookingHistTrackGuideSub => 'See your guide\'s real-time location';
+
+  @override
+  String get bookingHistTotalPaid => 'Total paid';
+
+  @override
+  String get bookingHistPaymentRef => 'Payment ref';
+
+  @override
+  String get bookingHistAddCalendar => 'Add to Calendar';
+
+  @override
+  String get bookingHistShareTicket => 'Share Ticket';
+
+  @override
+  String get bookingHistCallGuide => 'Call Guide';
+
+  @override
+  String get bookingHistEmailGuide => 'Email Guide';
+
+  @override
+  String get bookingHistRebook => 'Re-book This Tour';
+
+  @override
+  String get bookingHistNewGuide => 'New Guide';
+
+  @override
+  String get bookingHistWeatherDay => 'Weather on tour day';
+
+  @override
+  String bookingHistLiveLocation(String name) {
+    return '$name – Live Location';
+  }
+
+  @override
+  String get bookingHistWaitingLocation =>
+      'Waiting for guide to share their location…';
+
+  @override
+  String bookingHistCalTitle(String title) {
+    return 'Lost in Egypt: $title';
+  }
+
+  @override
+  String bookingHistCalDesc(String location, String id) {
+    return 'Meeting point: $location\nBooking ID: $id';
+  }
+
+  @override
+  String bookingHistShareText(
+    String title,
+    String date,
+    String location,
+    int tickets,
+    String ref,
+  ) {
+    return '🏺 Lost in Egypt – Tour Ticket\n\nTour: $title\nDate: $date\nMeeting point: $location\nTickets: $tickets\nBooking ref: $ref\n\nSee you there!';
+  }
+
+  @override
+  String get cameraLens => 'Lens';
+
+  @override
+  String get cameraTranslation => 'Translation';
+
+  @override
+  String get cameraTranslationResult => 'Translation Result';
+
+  @override
+  String get cameraNoLandmark => 'Could not identify any landmark';
+
+  @override
+  String cameraNotInDb(String label) {
+    return 'We found \"$label\" but it\'s not in our database';
+  }
+
+  @override
+  String get cameraConfigError => 'Configuration Error';
+
+  @override
+  String get cameraErrorTitle => 'Error';
+
+  @override
+  String get cameraLandmarkIdentified => 'Landmark Identified';
+
+  @override
+  String cameraTapForecast(String condition) {
+    return '$condition · Tap for forecast';
+  }
+
+  @override
+  String get cameraReadMore => 'Read More';
+
+  @override
+  String get cameraReadLess => 'Read Less';
+
+  @override
+  String get cameraTellStory => 'Tell me a story';
+
+  @override
+  String get cameraConsulting => 'Consulting history...';
+
+  @override
+  String get cameraListen => 'Listen';
+
+  @override
+  String get cameraPause => 'Pause';
+
+  @override
+  String get cameraResume => 'Resume';
+
+  @override
+  String get cameraGenerating => 'Generating...';
+
+  @override
+  String get cameraReplay => 'Replay from start';
+
+  @override
+  String get cameraAudioGenFailed =>
+      'Could not generate audio. Please try again.';
+
+  @override
+  String get cameraAudioPlayFailed =>
+      'Audio playback failed. Please try again.';
+
+  @override
+  String get cameraShowOnMap => 'Show on Map';
+
+  @override
+  String get cameraDone => 'Done';
+
+  @override
+  String get cameraNearby => 'You might also like nearby';
+
+  @override
+  String get sphinxRiddleTitle => 'The Sphinx\'s Riddle 🦁';
+
+  @override
+  String get sphinxPassTitle => 'You May Pass 🦁';
+
+  @override
+  String get sphinxFailTitle => 'Incorrect, Mortal 🌪️';
+
+  @override
+  String get sphinxRiddleBody =>
+      '\"What walks on four legs in the morning, two at noon, and three in the evening?\"';
+
+  @override
+  String get sphinxPassBody =>
+      'Your wisdom equals the ancients. The Sphinx permits your journey to continue.';
+
+  @override
+  String get sphinxFailBody =>
+      'The sands of time will swallow your ignorance. Return when you have learned.';
+
+  @override
+  String get sphinxAnswerAnimal => 'An Animal';
+
+  @override
+  String get sphinxAnswerHuman => 'A Human';
+
+  @override
+  String get tripPlannerTitle => 'Trip Planner';
+
+  @override
+  String get tripPlannerStart => 'Start Trip';
+
+  @override
+  String get tripPlannerOptimising => 'Optimising...';
+
+  @override
+  String get tripPlannerSearchHint => 'Search places to add…';
+
+  @override
+  String tripPlannerStopsInfo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count stops — route will be optimised by shortest distance',
+      one: '1 stop — route will be optimised by shortest distance',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tripPlannerEmptyTitle => 'Plan your day in Egypt';
+
+  @override
+  String get tripPlannerEmptySub =>
+      'Search above or pick from suggestions below';
+
+  @override
+  String get tripPlannerSuggested => 'Suggested for you';
+
+  @override
+  String get tripPlannerAdd => 'Add';
+
+  @override
+  String get placeDetailLoginToSave => 'You must be logged in to save places.';
+
+  @override
+  String placeDetailMetersAway(int meters) {
+    return '$meters m away';
+  }
+
+  @override
+  String placeDetailKmAway(String km) {
+    return '$km km away';
+  }
+
+  @override
+  String placeDetailTaxiFare(int low, int high) {
+    return '~$low–$high EGP by taxi';
+  }
+
+  @override
+  String get placeDetailOpenNow => 'Open Now';
+
+  @override
+  String get placeDetailClosed => 'Closed';
+
+  @override
+  String get placeDetailClose => 'Close';
+
+  @override
+  String get placeDetailDirections => 'Directions';
+
+  @override
+  String get placeDetailShare => 'Share';
+
+  @override
+  String get placeDetailSaved => 'Saved';
+
+  @override
+  String get placeDetailAbout => 'About';
+
+  @override
+  String get placeDetailDefaultDesc =>
+      'Explore the ancient wonders and hidden gems of Egypt. This location offers a unique glimpse into the rich history and culture of the region.';
+
+  @override
+  String placeDetailEntryFee(String price) {
+    return '$price EGP Entry Fee';
+  }
+
+  @override
+  String get placeDetailReviews => 'What Travelers Say';
+
+  @override
+  String placeDetailPostedHere(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count travelers posted from here',
+      one: '1 traveler posted from here',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get placeDetailSeePosts => 'See Posts';
+
+  @override
+  String get placeDetailSimilar => 'Similar Places';
+
+  @override
+  String get placeDetailCrowdQuiet => 'Quiet right now';
+
+  @override
+  String get placeDetailCrowdModerate => 'Moderately busy';
+
+  @override
+  String get placeDetailCrowdBusy => 'Very busy';
+
+  @override
+  String placeDetailPostsFrom(String name) {
+    return 'Posts from $name';
+  }
+
+  @override
+  String get placeDetailNoPosts =>
+      'No posts yet from this place.\nBe the first to share!';
+
+  @override
+  String get mapDiscovering => 'Discovering Egypt...';
+
+  @override
+  String get mapLoadingNearby => 'Loading places near you';
+
+  @override
+  String get mapArrivedTitle => 'You\'ve Arrived!';
+
+  @override
+  String mapArrivedBody(String name) {
+    return 'You have arrived at $name';
+  }
+
+  @override
+  String get mapFabTrip => 'Trip';
+
+  @override
+  String get mapFabNearMe => 'Near Me';
+
+  @override
+  String get mapFabSaved => 'Saved';
+
+  @override
+  String mapStopOf(int current, int total) {
+    return 'Stop $current of $total';
+  }
+
+  @override
+  String get mapNextStop => 'Next Stop';
+
+  @override
+  String get mapTripDone => 'Done! 🎉';
+
+  @override
+  String get mapBackToTour => 'Back to Tour';
+
+  @override
+  String get mapFindingRoute => 'Finding route...';
+
+  @override
+  String mapEtaTotal(String distance, String duration) {
+    return '$distance · $duration total';
+  }
+
+  @override
+  String mapStepProgress(int current, int total) {
+    return 'Step $current/$total';
+  }
+
+  @override
+  String get mapAiPick => 'AI PICK';
+
+  @override
+  String get commonLoading => 'Loading...';
+
+  @override
+  String get mapSearchHint => 'Search places...';
+
+  @override
+  String get mapNoPlacesFound => 'No places found';
+
+  @override
+  String get mapModeDrive => 'Drive';
+
+  @override
+  String get mapModeWalk => 'Walk';
+
+  @override
+  String get mapModeTransit => 'Transit';
+
+  @override
+  String mapStepsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count steps',
+      one: '1 step',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapStartNavigation => 'Start Navigation';
+
+  @override
+  String get mapRouteSteps => 'Route Steps';
+
+  @override
+  String get mapArriveDestination => 'Arrive at destination';
+
+  @override
+  String get mapCurseReleased => 'CURSE RELEASED';
+
+  @override
+  String get mapFilterByCategory => 'Filter by Category';
+
+  @override
+  String get mapZoomFilterOn => 'Zoom Filter ON';
+
+  @override
+  String get mapShowingAll => 'Showing All';
+
+  @override
+  String mapPlacesCount(int visible, int total) {
+    return '$visible/$total places';
+  }
+
+  @override
+  String mapCatPlacesZoom(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places • Zoom to see more',
+      one: '1 place • Zoom to see more',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapCatSavedPlaces(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count saved places',
+      one: '1 saved place',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapCatPlaces(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count places',
+      one: '1 place',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapCatAll => 'All';
+
+  @override
+  String get mapCatFavorites => 'Favorites';
+
+  @override
+  String get mapCatOpenNow => 'Open Now';
+
+  @override
+  String get mapCatTourism => 'Tourism';
+
+  @override
+  String get mapCatHistorical => 'Historical';
+
+  @override
+  String get mapCatMuseums => 'Museums';
+
+  @override
+  String get mapCatHotels => 'Hotels';
+
+  @override
+  String get mapCatReligious => 'Religious';
+
+  @override
+  String get mapCatFood => 'Food & Dining';
+
+  @override
+  String get mapCatNature => 'Nature';
+
+  @override
+  String get mapCatEntertainment => 'Entertainment';
+
+  @override
+  String get mapCatShopping => 'Shopping';
 }

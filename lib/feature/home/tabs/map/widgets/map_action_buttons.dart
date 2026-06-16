@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import '../bloc/map_bloc.dart';
 import '../bloc/map_event.dart';
@@ -76,7 +77,7 @@ class MapActionButtons extends StatelessWidget {
                   context.read<MapBloc>().add(const MapCategoryChanged('all')),
               icon: Icon(Icons.close,
                   color: onSurface.withValues(alpha: 0.9), size: 18.r),
-              label: Text('Reset',
+              label: Text(AppLocalizations.of(context).commonReset,
                   style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
             ),
           ),

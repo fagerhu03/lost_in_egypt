@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
 import '../../../../core/utils/error_handler.dart';
 import 'package:intl/intl.dart';
@@ -35,16 +36,37 @@ import '../../../../core/utils/map_style_helper.dart';
 // Main screen
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Booking-status values stay English in Firestore; only the badge display is localized.
+String _bookingStatusLabel(AppLocalizations l10n, String status) {
+  switch (status) {
+    case 'confirmed':
+      return l10n.bookingStatusConfirmed;
+    case 'cancelled':
+      return l10n.bookingStatusCancelled;
+    case 'pending':
+      return l10n.bookingStatusPending;
+    case 'completed':
+      return l10n.bookingStatusCompleted;
+    case 'checked_in':
+      return l10n.bookingStatusCheckedIn;
+    case 'partially_checked_in':
+      return l10n.bookingStatusPartial;
+    default:
+      return status.toUpperCase();
+  }
+}
+
 class BookingHistoryScreen extends StatelessWidget {
   const BookingHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('My Bookings'), centerTitle: true),
-        body: const Center(child: Text('Please log in')),
+        appBar: AppBar(title: Text(l10n.bookingHistTitle), centerTitle: true),
+        body: Center(child: Text(l10n.bookingHistLoginRequired)),
       );
     }
 
@@ -52,12 +74,12 @@ class BookingHistoryScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My Bookings'),
+          title: Text(l10n.bookingHistTitle),
           centerTitle: true,
           bottom: TabBar(
-            tabs: const [
-              Tab(text: 'Upcoming'),
-              Tab(text: 'Past'),
+            tabs: [
+              Tab(text: l10n.bookingHistUpcoming),
+              Tab(text: l10n.bookingHistPast),
             ],
             labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           ),
@@ -95,6 +117,7 @@ class _BookingTabState extends State<_BookingTab> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final now = DateTime.now();
+    final l10n = AppLocalizations.of(context);
 
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -109,7 +132,7 @@ class _BookingTabState extends State<_BookingTab> {
         }
         if (snapshot.hasError) {
           return AppErrorWidget(
-            message: 'Could not load bookings.\nCheck your connection and try again.',
+            message: l10n.bookingHistLoadError,
             icon: Icons.book_outlined,
           );
         }
@@ -136,13 +159,13 @@ class _BookingTabState extends State<_BookingTab> {
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  widget.upcoming ? 'No upcoming tours' : 'No past tours',
+                  widget.upcoming ? l10n.bookingHistNoUpcoming : l10n.bookingHistNoPast,
                   style: TextStyle(fontSize: 18.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                 ),
                 if (widget.upcoming) ...[
                   SizedBox(height: 8.h),
                   Text(
-                    'Explore tours and book your next adventure!',
+                    l10n.bookingHistEmptyHint,
                     style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
                   ),
                 ],
@@ -162,7 +185,7 @@ class _BookingTabState extends State<_BookingTab> {
             if (i == docs.length) {
               return TextButton(
                 onPressed: () => setState(() => _limit += _pageSize),
-                child: const Text('Load more'),
+                child: Text(l10n.commonLoadMore),
               );
             }
             final data = docs[i].data() as Map<String, dynamic>;
@@ -188,6 +211,7 @@ class _BookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final status = data['status'] ?? 'pending';
     final date = (data['date'] as Timestamp?)?.toDate();
     final tourId = data['tourId'] ?? '';
@@ -205,7 +229,7 @@ class _BookingCard extends StatelessWidget {
       future: FirebaseFirestore.instance.collection('tours').doc(tourId).get(),
       builder: (context, snap) {
         final tourData = snap.data?.data() as Map<String, dynamic>?;
-        final title = tourData?['title'] ?? 'Unknown Tour';
+        final title = tourData?['title'] ?? l10n.qrUnknownTour;
         final images = tourData?['images'] as List?;
         final imageUrl = images?.isNotEmpty == true ? images!.first as String? : null;
         final location = tourData?['meetingLocationName'] ?? '';
@@ -264,7 +288,7 @@ class _BookingCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
-                      status.toUpperCase(),
+                      _bookingStatusLabel(l10n, status),
                       style: TextStyle(color: statusColor, fontSize: 11.sp, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -277,12 +301,12 @@ class _BookingCard extends StatelessWidget {
                       Icon(Icons.calendar_today, size: 14.r, color: theme.colorScheme.primary),
                       SizedBox(width: 4.w),
                       Text(
-                        date != null ? DateFormat('MMM d, yyyy · h:mm a').format(date) : 'TBD',
+                        date != null ? DateFormat('MMM d, yyyy · h:mm a').format(date) : l10n.bookingHistTbd,
                         style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                       const Spacer(),
                       Text(
-                        '$quantity ticket${quantity > 1 ? 's' : ''} · EGP ${totalEGP.toStringAsFixed(0)}',
+                        '${l10n.qrTicketsCount(quantity)} · EGP ${totalEGP.toStringAsFixed(0)}',
                         style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
                       ),
                     ],
@@ -338,6 +362,7 @@ class _CountdownBannerState extends State<_CountdownBanner> {
   @override
   Widget build(BuildContext context) {
     if (_remaining == Duration.zero) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
     final d = _remaining.inDays;
     final h = _remaining.inHours % 24;
     final m = _remaining.inMinutes % 60;
@@ -345,11 +370,11 @@ class _CountdownBannerState extends State<_CountdownBanner> {
 
     String label;
     if (d > 0) {
-      label = '$d day${d > 1 ? 's' : ''} ${h}h ${m}m';
+      label = l10n.bookingHistCountdownDHM(d, h, m);
     } else if (h > 0) {
-      label = '${h}h ${m}m ${s}s';
+      label = l10n.bookingHistCountdownHMS(h, m, s);
     } else {
-      label = '${m}m ${s}s';
+      label = l10n.bookingHistCountdownMS(m, s);
     }
 
     return Container(
@@ -367,7 +392,7 @@ class _CountdownBannerState extends State<_CountdownBanner> {
           Icon(Icons.timer_outlined, size: 14.r, color: widget.theme.colorScheme.primary),
           SizedBox(width: 6.w),
           Text(
-            'Starts in $label',
+            l10n.bookingHistStartsIn(label),
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w600,
@@ -464,17 +489,18 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Future<void> _cancelBooking() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel Booking'),
-        content: const Text('Are you sure you want to cancel this booking?'),
+        title: Text(l10n.attendeesCancelBooking),
+        content: Text(l10n.bookingHistCancelBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonNo)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Yes, Cancel'),
+            child: Text(l10n.bookingHistYesCancel),
           ),
         ],
       ),
@@ -533,7 +559,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking cancelled')),
+          SnackBar(content: Text(l10n.bookingHistCancelled)),
         );
         Navigator.pop(context);
       }
@@ -548,6 +574,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   void _addToCalendar() {
+    final l10n = AppLocalizations.of(context);
     final dateTs = widget.bookingData['date'] as Timestamp?;
     final title = widget.tourData['title'] ?? 'Tour';
     final location = widget.tourData['meetingLocationName'] ?? '';
@@ -557,8 +584,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     final end = start.add(const Duration(hours: 2));
 
     Add2Calendar.addEvent2Cal(Event(
-      title: 'Lost in Egypt: $title',
-      description: 'Meeting point: $location\nBooking ID: ${widget.bookingId}',
+      title: l10n.bookingHistCalTitle(title),
+      description: l10n.bookingHistCalDesc(location, widget.bookingId),
       location: location,
       startDate: start,
       endDate: end,
@@ -566,25 +593,21 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   void _shareTicket() {
+    final l10n = AppLocalizations.of(context);
     final title = widget.tourData['title'] ?? 'Tour';
     final dateTs = widget.bookingData['date'] as Timestamp?;
-    final date = dateTs != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(dateTs.toDate()) : 'TBD';
+    final date = dateTs != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(dateTs.toDate()) : l10n.bookingHistTbd;
     final location = widget.tourData['meetingLocationName'] ?? '';
     final quantity = (widget.bookingData['quantity'] as num?)?.toInt() ?? 1;
 
     Share.share(
-      '🏺 Lost in Egypt – Tour Ticket\n\n'
-      'Tour: $title\n'
-      'Date: $date\n'
-      'Meeting point: $location\n'
-      'Tickets: $quantity\n'
-      'Booking ref: ${widget.bookingId}\n\n'
-      'See you there!',
+      l10n.bookingHistShareText(title, date, location, quantity, widget.bookingId),
     );
   }
 
   Future<void> _contactGuide({bool callPhone = false}) async {
     if (_guideData == null) return;
+    final l10n = AppLocalizations.of(context);
     final phone = _guideData!['phoneNumber'] as String?;
     final email = _guideData!['email'] as String?;
 
@@ -598,7 +621,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     if (uri == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(callPhone ? 'No phone number on file' : 'No email on file')),
+          SnackBar(content: Text(callPhone ? l10n.bookingHistNoPhone : l10n.bookingHistNoEmail)),
         );
       }
       return;
@@ -609,13 +632,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(callPhone ? 'Could not open phone app' : 'Could not open email app')),
+          SnackBar(content: Text(callPhone ? l10n.bookingHistCantOpenPhone : l10n.bookingHistCantOpenEmail)),
         );
       }
     }
   }
 
   void _showLeaveReviewSheet() {
+    final l10n = AppLocalizations.of(context);
     double rating = 5;
     final commentCtrl = TextEditingController();
 
@@ -632,7 +656,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Leave a Review', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+              Text(l10n.bookingHistLeaveReview, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
               SizedBox(height: 16.h),
               Row(
                 children: List.generate(5, (i) => IconButton(
@@ -644,9 +668,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               TextField(
                 controller: commentCtrl,
                 maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: 'Share your experience...',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: l10n.tourDetailShareHint,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               SizedBox(height: 16.h),
@@ -703,7 +727,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       if (mounted) {
                         setState(() => _hasReviewed = true);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Review submitted!')),
+                          SnackBar(content: Text(l10n.bookingHistReviewSubmitted)),
                         );
                       }
                     } catch (e) {
@@ -714,7 +738,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       }
                     }
                   },
-                  child: const Text('Submit Review'),
+                  child: Text(l10n.bookingHistSubmitReview),
                 ),
               ),
             ],
@@ -771,6 +795,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final status = widget.bookingData['status'] ?? 'pending';
     final dateTs = widget.bookingData['date'] as Timestamp?;
     final tourDate = dateTs?.toDate();
@@ -834,7 +859,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
-                          status.toUpperCase(),
+                          _bookingStatusLabel(l10n, status),
                           style: TextStyle(
                               color: statusColor, fontSize: 12.sp, fontWeight: FontWeight.bold),
                         ),
@@ -844,16 +869,16 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   SizedBox(height: 20.h),
 
                   // ── Info grid ────────────────────────────────────────────
-                  _InfoRow(Icons.calendar_today, 'Date',
-                      tourDate != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(tourDate) : 'TBD',
+                  _InfoRow(Icons.calendar_today, l10n.qrRowDate,
+                      tourDate != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(tourDate) : l10n.bookingHistTbd,
                       theme),
-                  _InfoRow(Icons.place_outlined, 'Meeting point', location, theme),
-                  _InfoRow(Icons.confirmation_number_outlined, 'Tickets',
-                      '$quantity ticket${quantity > 1 ? 's' : ''}', theme),
-                  _InfoRow(Icons.payments_outlined, 'Total paid',
+                  _InfoRow(Icons.place_outlined, l10n.tourMapMeetingPoint, location, theme),
+                  _InfoRow(Icons.confirmation_number_outlined, l10n.qrRowTickets,
+                      l10n.qrTicketsCount(quantity), theme),
+                  _InfoRow(Icons.payments_outlined, l10n.bookingHistTotalPaid,
                       'EGP ${totalEGP.toStringAsFixed(0)}', theme),
                   if (paymentRef.isNotEmpty)
-                    _InfoRow(Icons.receipt_outlined, 'Payment ref', paymentRef, theme),
+                    _InfoRow(Icons.receipt_outlined, l10n.bookingHistPaymentRef, paymentRef, theme),
 
                   // ── Guide info ───────────────────────────────────────────
                   if (_guideData != null) ...[
@@ -895,7 +920,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         children: [
                           Icon(Icons.qr_code, color: theme.colorScheme.primary),
                           SizedBox(width: 12.w),
-                          Text('View QR Ticket',
+                          Text(l10n.bookingHistViewQr,
                               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp)),
                           const Spacer(),
                           Icon(_qrVisible ? Icons.expand_less : Icons.expand_more),
@@ -928,7 +953,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                           ),
                           SizedBox(height: 8.h),
                           Text(
-                            'Booking ID: ${widget.bookingId.substring(0, 8).toUpperCase()}',
+                            l10n.bookingHistBookingId(widget.bookingId.substring(0, 8).toUpperCase()),
                             style: TextStyle(
                               fontFamily: 'monospace',
                               fontSize: 13.sp,
@@ -937,7 +962,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            'Show this to your guide upon arrival',
+                            l10n.bookingHistShowGuide,
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
@@ -987,9 +1012,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('View Meeting Point',
+                                Text(l10n.bookingHistViewMeeting,
                                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp)),
-                                Text('Opens in Map tab',
+                                Text(l10n.bookingHistOpensMap,
                                     style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                               ],
                             ),
@@ -1009,7 +1034,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         widget.tourData['guideId'] ?? '',
                         _guideData != null
                             ? '${_guideData!['firstName'] ?? ''} ${_guideData!['lastName'] ?? ''}'.trim()
-                            : 'Guide',
+                            : l10n.bookingHistGuide,
                       ),
                       borderRadius: BorderRadius.circular(12.r),
                       child: Padding(
@@ -1021,9 +1046,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Track Guide Live',
+                                Text(l10n.bookingHistTrackGuide,
                                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp)),
-                                Text('See your guide\'s real-time location',
+                                Text(l10n.bookingHistTrackGuideSub,
                                     style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                               ],
                             ),
@@ -1047,13 +1072,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         if (!isCancelled) ...[
                           _ActionChip(
                             icon: Icons.calendar_month,
-                            label: 'Add to Calendar',
+                            label: l10n.bookingHistAddCalendar,
                             onTap: _addToCalendar,
                             theme: theme,
                           ),
                           _ActionChip(
                             icon: Icons.share,
-                            label: 'Share Ticket',
+                            label: l10n.bookingHistShareTicket,
                             onTap: _shareTicket,
                             theme: theme,
                           ),
@@ -1061,13 +1086,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         if (_guideData != null) ...[
                           _ActionChip(
                             icon: Icons.phone_outlined,
-                            label: 'Call Guide',
+                            label: l10n.bookingHistCallGuide,
                             onTap: () => _contactGuide(callPhone: true),
                             theme: theme,
                           ),
                           _ActionChip(
                             icon: Icons.email_outlined,
-                            label: 'Email Guide',
+                            label: l10n.bookingHistEmailGuide,
                             onTap: () => _contactGuide(callPhone: false),
                             theme: theme,
                           ),
@@ -1083,7 +1108,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       width: double.infinity,
                       child: FilledButton.icon(
                         icon: Icon(Icons.star_rounded, size: 20.r),
-                        label: Text('Leave a Review',
+                        label: Text(l10n.bookingHistLeaveReview,
                             style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.amber[700],
@@ -1101,7 +1126,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       width: double.infinity,
                       child: FilledButton.icon(
                         icon: Icon(Icons.refresh_rounded, size: 20.r),
-                        label: Text('Re-book This Tour',
+                        label: Text(l10n.bookingHistRebook,
                             style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
                         style: FilledButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -1118,7 +1143,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       child: OutlinedButton.icon(
                         icon: Icon(Icons.cancel_outlined,
                             size: 18.r, color: _cancelling ? Colors.red.withValues(alpha: 0.4) : Colors.red),
-                        label: Text('Cancel Booking',
+                        label: Text(l10n.attendeesCancelBooking,
                             style: TextStyle(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
@@ -1191,6 +1216,7 @@ class _GuideRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final name = '${guideData['firstName'] ?? ''} ${guideData['lastName'] ?? ''}'.trim();
     final avatar = guideData['profileImageUrl'] as String?;
     final rating = (guideData['rating'] as num?)?.toDouble() ?? 0;
@@ -1221,7 +1247,7 @@ class _GuideRow extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name.isNotEmpty ? name : 'Your Guide',
+                Text(name.isNotEmpty ? name : l10n.tourDetailYourGuide,
                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp)),
                 SizedBox(height: 2.h),
                 reviewCount > 0
@@ -1233,7 +1259,7 @@ class _GuideRow extends StatelessWidget {
                               style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                         ],
                       )
-                    : Text('New Guide',
+                    : Text(l10n.bookingHistNewGuide,
                         style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
               ],
             ),
@@ -1266,6 +1292,7 @@ class _WeatherRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     try {
       final daily = weatherData['daily'] as Map<String, dynamic>?;
       if (daily == null) return const SizedBox.shrink();
@@ -1291,7 +1318,7 @@ class _WeatherRow extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Weather on tour day',
+                Text(l10n.bookingHistWeatherDay,
                     style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                 SizedBox(height: 2.h),
                 Text('$maxT°C / $minT°C',
@@ -1344,6 +1371,7 @@ class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
@@ -1371,7 +1399,7 @@ class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
                     Icon(Icons.location_on_rounded, color: Colors.green.shade600, size: 20.r),
                     SizedBox(width: 8.w),
                     Text(
-                      '${widget.guideName} – Live Location',
+                      l10n.bookingHistLiveLocation(widget.guideName),
                       style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -1449,10 +1477,10 @@ class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
                                   child: CircularProgressIndicator(strokeWidth: 2, color: primary),
                                 ),
                                 SizedBox(width: 10.w),
-                                const Expanded(
+                                Expanded(
                                   child: Text(
-                                    'Waiting for guide to share their location…',
-                                    style: TextStyle(fontSize: 13),
+                                    l10n.bookingHistWaitingLocation,
+                                    style: const TextStyle(fontSize: 13),
                                   ),
                                 ),
                               ],

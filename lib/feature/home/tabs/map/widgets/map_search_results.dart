@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 
@@ -55,7 +56,7 @@ class MapSearchResults extends StatelessWidget {
             ),
             SizedBox(width: 8.w),
             Text(
-              'No places found',
+              AppLocalizations.of(context).mapNoPlacesFound,
               style: TextStyle(
                 color: onSurface.withValues(alpha: 0.5),
                 fontSize: 14.sp,

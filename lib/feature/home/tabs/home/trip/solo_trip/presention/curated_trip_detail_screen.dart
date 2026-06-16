@@ -14,6 +14,7 @@ import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/core/services/story_cache_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../theme/theme.dart';
 import 'active_tour_screen.dart';
 import 'widgets/trip_theme.dart';
@@ -187,6 +188,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
   // ── Save / Start ──────────────────────────────────────────────────────────
 
   Future<void> _savePlan() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       await SoloPlanService.instance.saveCuratedPlan(widget.trip);
@@ -194,7 +196,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
       setState(() => _isSaved = true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Plan saved! Find it in My Plans.'),
+          content: Text(l10n.soloPlanSaved),
           backgroundColor: AppColors.lightPrimaryButton,
           behavior: SnackBarBehavior.floating,
           shape:
@@ -205,7 +207,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Could not save plan. Try again.'),
+          content: Text(l10n.soloCouldNotSave),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape:
@@ -218,6 +220,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
   }
 
   Future<void> _startTour() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _starting = true);
     try {
       final plan = _existingPlan ?? await SoloPlanService.instance.saveCuratedPlan(widget.trip);
@@ -237,7 +240,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Could not start tour. Try again.'),
+          content: Text(l10n.soloCouldNotStart),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape:
@@ -293,7 +296,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                       child: IconButton(
                         icon: Icon(Icons.map_outlined,
                             color: Colors.white, size: 20.r),
-                        tooltip: 'View full route on map',
+                        tooltip: AppLocalizations.of(context).soloViewFullRouteMap,
                         onPressed: _viewFullRoute,
                       ),
                     ),
@@ -493,7 +496,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                                     size: 17.r, color: gold),
                                 SizedBox(width: 8.w),
                                 Text(
-                                  'Hear the Story',
+                                  AppLocalizations.of(context).soloHearStory,
                                   style: TextStyle(
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.w600,
@@ -516,7 +519,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Highlights',
+                              AppLocalizations.of(context).soloHighlights,
                               style: TextStyle(
                                 fontSize: 18.sp,
                                 fontWeight: FontWeight.w600,
@@ -560,7 +563,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                         child: Row(
                           children: [
                             Text(
-                              'Itinerary',
+                              AppLocalizations.of(context).soloItinerary,
                               style: TextStyle(
                                 fontSize: 18.sp,
                                 fontWeight: FontWeight.w600,
@@ -574,7 +577,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                               icon: Icon(Icons.map_outlined,
                                   size: 16.r, color: gold),
                               label: Text(
-                                'Full route',
+                                AppLocalizations.of(context).soloFullRoute,
                                 style: TextStyle(
                                     color: gold,
                                     fontSize: 13.sp,
@@ -656,7 +659,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                               color: gold,
                             ),
                       label: Text(
-                        _isSaved ? 'Saved' : 'Save Plan',
+                        _isSaved ? AppLocalizations.of(context).soloStatusSaved : AppLocalizations.of(context).soloSavePlan,
                         style: TextStyle(
                             color: gold, fontWeight: FontWeight.w600),
                       ),
@@ -687,7 +690,7 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                               size: 20.r,
                               color: Colors.white),
                       label: Text(
-                        _isActive ? 'Continue Tour' : 'Start Tour',
+                        _isActive ? AppLocalizations.of(context).soloContinueTour : AppLocalizations.of(context).soloStartTour,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 15.sp,
@@ -984,7 +987,7 @@ class _StopRow extends StatelessWidget {
                                   size: 14.r, color: gold),
                               SizedBox(width: 6.w),
                               Text(
-                                'Navigate here',
+                                AppLocalizations.of(context).soloNavigateHere,
                                 style: TextStyle(
                                   fontSize: 12.sp,
                                   color: gold,
@@ -1195,13 +1198,13 @@ class _TripStorySheetState extends State<_TripStorySheet> {
                 child: Column(
                   children: [
                     Text(
-                      'The spirits of history are silent right now.',
+                      AppLocalizations.of(context).soloStorySilent,
                       style: TextStyle(fontSize: 14.sp, color: textColor.withValues(alpha: 0.6)),
                     ),
                     SizedBox(height: 12.h),
                     TextButton(
                       onPressed: _fetchStory,
-                      child: Text('Try again', style: TextStyle(color: gold)),
+                      child: Text(AppLocalizations.of(context).commonTryAgain, style: TextStyle(color: gold)),
                     ),
                   ],
                 ),
@@ -1239,12 +1242,12 @@ class _TripStorySheetState extends State<_TripStorySheet> {
                             ),
                       label: Text(
                         _loadingAudio
-                            ? 'Generating audio…'
+                            ? AppLocalizations.of(context).soloStoryGenerating
                             : _isPlaying
-                                ? 'Pause'
+                                ? AppLocalizations.of(context).soloStoryPause
                                 : _isPaused
-                                    ? 'Resume'
-                                    : 'Listen',
+                                    ? AppLocalizations.of(context).soloStoryResume
+                                    : AppLocalizations.of(context).soloStoryListen,
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -1260,7 +1263,7 @@ class _TripStorySheetState extends State<_TripStorySheet> {
                     IconButton.filled(
                       onPressed: _loadingAudio ? null : _handleReplay,
                       icon: const Icon(Icons.replay_rounded),
-                      tooltip: 'Replay from start',
+                      tooltip: AppLocalizations.of(context).soloStoryReplay,
                       style: IconButton.styleFrom(
                         backgroundColor: gold.withValues(alpha: 0.15),
                         foregroundColor: gold,

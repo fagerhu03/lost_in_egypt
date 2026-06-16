@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../core/widgets/shimmer_image.dart';
 import '../bloc/guide_tours_cubit.dart';
 import '../bloc/guide_tours_state.dart';
@@ -53,10 +54,11 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Guide Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.guideDashTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -64,12 +66,12 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
               _isSharing ? Icons.location_on_rounded : Icons.location_off_rounded,
               color: _isSharing ? Colors.green : null,
             ),
-            tooltip: _isSharing ? 'Stop sharing live location' : 'Share live location with tourists',
+            tooltip: _isSharing ? l10n.guideDashStopSharing : l10n.guideDashShareLocation,
             onPressed: _toggleSharing,
           ),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
-            tooltip: 'Scan Ticket',
+            tooltip: l10n.guideDashScanTicket,
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const QrScannerScreen()),
@@ -92,9 +94,9 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
                   children: [
                     Icon(Icons.tour, size: 80.r, color: onSurface.withValues(alpha: 0.2)),
                     SizedBox(height: 16.h),
-                    Text('No tours yet', style: TextStyle(fontSize: 20.sp, color: onSurface.withValues(alpha: 0.5))),
+                    Text(l10n.guideDashNoTours, style: TextStyle(fontSize: 20.sp, color: onSurface.withValues(alpha: 0.5))),
                     SizedBox(height: 8.h),
-                    Text('Create your first tour!', style: TextStyle(fontSize: 14.sp, color: onSurface.withValues(alpha: 0.35))),
+                    Text(l10n.guideDashCreateFirst, style: TextStyle(fontSize: 14.sp, color: onSurface.withValues(alpha: 0.35))),
                   ],
                 ),
               );
@@ -106,7 +108,7 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
                 _EarningsSummary(tours: tours),
                 SizedBox(height: 20.h),
 
-                Text('Your Tours (${tours.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp, color: onSurface)),
+                Text(l10n.guideDashYourTours(tours.length), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp, color: onSurface)),
                 SizedBox(height: 12.h),
 
                 ...tours.map((tour) => _GuideTourCard(
@@ -142,7 +144,7 @@ class _GuideDashboardScreenState extends State<GuideDashboardScreen> {
             context.read<GuideToursCubit>().fetchTours(user.uid);
           }
         },
-        label: const Text('Create Tour', style: TextStyle(fontWeight: FontWeight.bold)),
+        label: Text(l10n.guideDashCreateTour, style: const TextStyle(fontWeight: FontWeight.bold)),
         icon: const Icon(Icons.add),
         backgroundColor: const Color(0xFFC79A00),
       ),
@@ -160,6 +162,7 @@ class _EarningsSummary extends StatelessWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final guideId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final l10n = AppLocalizations.of(context);
 
     return FutureBuilder<QuerySnapshot>(
       future: FirebaseFirestore.instance
@@ -172,7 +175,7 @@ class _EarningsSummary extends StatelessWidget {
         double totalRevenue = 0;
 
         if (snapshot.hasError) {
-          return AppErrorWidget(message: 'Could not load earnings.\nCheck your connection and try again.');
+          return AppErrorWidget(message: l10n.guideDashEarningsError);
         }
 
         if (snapshot.hasData) {
@@ -206,9 +209,9 @@ class _EarningsSummary extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statItem('${tours.length}', 'Tours', Icons.tour, primary),
+              _statItem('${tours.length}', l10n.guideDashStatTours, Icons.tour, primary),
               Container(width: 1, height: 50.h, color: primary.withValues(alpha: 0.15)),
-              _statItem('$totalBookings', 'Bookings', Icons.confirmation_number, Colors.green),
+              _statItem('$totalBookings', l10n.guideDashStatBookings, Icons.confirmation_number, Colors.green),
               Container(width: 1, height: 50.h, color: primary.withValues(alpha: 0.15)),
               ValueListenableBuilder<String>(
                 valueListenable: CurrencyController.currency,
@@ -220,7 +223,7 @@ class _EarningsSummary extends StatelessWidget {
                         : snap.hasError
                             ? 'EGP ${totalRevenue.toStringAsFixed(0)} ΓÜá'
                             : 'EGP ${totalRevenue.toStringAsFixed(0)}';
-                    return _statItem(label, 'Revenue', Icons.monetization_on, Colors.amber[700]!);
+                    return _statItem(label, l10n.guideDashStatRevenue, Icons.monetization_on, Colors.amber[700]!);
                   },
                 ),
               ),
@@ -255,6 +258,7 @@ class _GuideTourCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
@@ -355,7 +359,7 @@ class _GuideTourCard extends StatelessWidget {
               children: [
                 _infoChip(Icons.calendar_today, DateFormat('MMM d').format(tour.meetingTime), theme),
                 SizedBox(width: 12.w),
-                _infoChip(Icons.people, '${tour.maxAttendees} max', theme),
+                _infoChip(Icons.people, l10n.guideDashMax(tour.maxAttendees), theme),
                 SizedBox(width: 12.w),
                 _infoChip(Icons.repeat, tour.frequency, theme),
                 const Spacer(),
@@ -373,7 +377,7 @@ class _GuideTourCard extends StatelessWidget {
                       color: theme.colorScheme.tertiary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6.r),
                     ),
-                    child: Text('NEW', style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: theme.colorScheme.tertiary)),
+                    child: Text(l10n.tourCardNew, style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: theme.colorScheme.tertiary)),
                   ),
               ],
             ),
@@ -390,7 +394,7 @@ class _GuideTourCard extends StatelessWidget {
               if (snap.hasError) {
                 return Padding(
                   padding: EdgeInsets.symmetric(horizontal: 14.w),
-                  child: AppErrorWidget(message: 'Could not load bookings.', icon: Icons.book_outlined),
+                  child: AppErrorWidget(message: l10n.guideDashBookingsError, icon: Icons.book_outlined),
                 );
               }
               final count = snap.data?.docs.length ?? 0;
@@ -403,7 +407,7 @@ class _GuideTourCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
-                    count > 0 ? '📌 $count confirmed booking${count == 1 ? '' : 's'}' : 'No bookings yet',
+                    count > 0 ? l10n.guideDashConfirmedBookings(count) : l10n.attendeesEmpty,
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
@@ -422,10 +426,10 @@ class _GuideTourCard extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 10.h),
             child: Row(
               children: [
-                _actionButton(context, Icons.visibility, 'View', () {
+                _actionButton(context, Icons.visibility, l10n.guideDashView, () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)));
                 }),
-              _actionButton(context, Icons.edit, 'Edit', () async {
+              _actionButton(context, Icons.edit, l10n.commonEdit, () async {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -440,13 +444,13 @@ class _GuideTourCard extends StatelessWidget {
                 );
                   onRefresh();
                 }),
-                _actionButton(context, Icons.people, 'Attendees', () {
+                _actionButton(context, Icons.people, l10n.attendeesTitle, () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => TourAttendeesScreen(tourId: tour.id, tourTitle: tour.title)),
                   );
                 }),
-                _actionButton(context, Icons.delete, 'Delete', () => _confirmDelete(context), color: Colors.red),
+                _actionButton(context, Icons.delete, l10n.commonDelete, () => _confirmDelete(context), color: Colors.red),
               ],
             ),
           ),
@@ -487,18 +491,19 @@ class _GuideTourCard extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Text('Delete Tour'),
-        content: Text('Are you sure you want to delete "${tour.title}"? This cannot be undone.'),
+        title: Text(l10n.guideDashDeleteTitle),
+        content: Text(l10n.guideDashDeleteBody(tour.title)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonCancel)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.commonDelete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

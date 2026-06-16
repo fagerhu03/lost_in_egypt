@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../manager/trip_planner_controller.dart';
 import '../widgets/quiz_scaffold.dart';
 
@@ -17,8 +18,9 @@ class TripTimeStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return QuizScaffold(
-      title: 'Day trips or night out?',
+      title: l10n.soloQuizTripTimeTitle,
       stepIndex: 3,
       onNext: onNext,
       onBack: onBack,
@@ -26,18 +28,18 @@ class TripTimeStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _TimeCard(
-            label: 'Day',
+            label: l10n.tripTimeDay,
             emoji: '☀️',
-            description: 'Temples, markets,\nand outdoor adventures',
+            description: l10n.tripTimeDayDesc,
             isSelected: controller.plan.tripTimes.contains('Day'),
             activeColor: const Color(0xFFF59E0B),
             onTap: () => controller.toggleTripTime('Day'),
           ),
           SizedBox(width: 12.w),
           _TimeCard(
-            label: 'Night',
+            label: l10n.tripTimeNight,
             emoji: '🌙',
-            description: 'Dining, nightlife,\nand entertainment',
+            description: l10n.tripTimeNightDesc,
             isSelected: controller.plan.tripTimes.contains('Night'),
             activeColor: const Color(0xFF6366F1),
             onTap: () => controller.toggleTripTime('Night'),

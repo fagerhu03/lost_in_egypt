@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../presentation/bloc/camera_cubit.dart';
 import '../presentation/bloc/camera_state.dart';
 
@@ -18,6 +19,7 @@ class CameraNoLandmarkView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -47,8 +49,8 @@ class CameraNoLandmarkView extends StatelessWidget {
                   SizedBox(height: 16.h),
                   Text(
                     state.identifiedLabel != null
-                        ? 'We found "${state.identifiedLabel}" but it\'s not in our database'
-                        : 'Could not identify any landmark',
+                        ? l10n.cameraNotInDb(state.identifiedLabel!)
+                        : l10n.cameraNoLandmark,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
@@ -62,7 +64,7 @@ class CameraNoLandmarkView extends StatelessWidget {
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
-                    child: const Text('Try Again'),
+                    child: Text(l10n.commonTryAgain),
                   ),
                 ],
               ),

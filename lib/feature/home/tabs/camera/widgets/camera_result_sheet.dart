@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
@@ -141,6 +142,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
 
   Future<void> _startPlayback() async {
     if (story == null) return;
+    final l10n = AppLocalizations.of(context);
 
     if (_audioFilePath != null) {
       await _audioPlayer.play(DeviceFileSource(_audioFilePath!));
@@ -156,7 +158,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
         if (mounted) {
           setState(() => isLoadingAudio = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not generate audio. Please try again.')),
+            SnackBar(content: Text(l10n.cameraAudioGenFailed)),
           );
         }
         return;
@@ -174,7 +176,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
       if (mounted) {
         setState(() => isLoadingAudio = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Audio playback failed. Please try again.')),
+          SnackBar(content: Text(l10n.cameraAudioPlayFailed)),
         );
       }
     }
@@ -183,6 +185,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
     final surface = theme.colorScheme.surface;
@@ -229,7 +232,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                       Icon(Icons.check_circle, color: primary, size: 20.r),
                       SizedBox(width: 8.w),
                       Text(
-                        'Landmark Identified',
+                        l10n.cameraLandmarkIdentified,
                         style: TextStyle(
                           color: onSurface.withValues(alpha: 0.7),
                           fontWeight: FontWeight.w800,
@@ -261,7 +264,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                               SizedBox(width: 6.w),
                               Expanded(
                                 child: Text(
-                                  '${weather.conditionLabel} · Tap for forecast',
+                                  l10n.cameraTapForecast(weather.conditionLabel),
                                   style: TextStyle(
                                     color: color,
                                     fontSize: 12.sp,
@@ -291,7 +294,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                       TextButton(
                         onPressed: () => setState(() => showFullDescription = !showFullDescription),
                         child: Text(
-                          showFullDescription ? 'Read Less' : 'Read More',
+                          showFullDescription ? l10n.cameraReadLess : l10n.cameraReadMore,
                           style: TextStyle(color: primary, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -348,7 +351,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                 ),
                               )
                             : Icon(Icons.auto_awesome, color: theme.colorScheme.onPrimary),
-                        label: Text(isLoadingStory ? 'Consulting history...' : 'Tell me a story'),
+                        label: Text(isLoadingStory ? l10n.cameraConsulting : l10n.cameraTellStory),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primary,
                           foregroundColor: theme.colorScheme.onPrimary,
@@ -384,12 +387,12 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                   ),
                             label: Text(
                               isLoadingAudio
-                                  ? 'Generating...'
+                                  ? l10n.cameraGenerating
                                   : isPlaying
-                                      ? 'Pause'
+                                      ? l10n.cameraPause
                                       : isPaused
-                                          ? 'Resume'
-                                          : 'Listen',
+                                          ? l10n.cameraResume
+                                          : l10n.cameraListen,
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primary,
@@ -406,7 +409,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                           IconButton.filled(
                             onPressed: isLoadingAudio ? null : _handleReplay,
                             icon: const Icon(Icons.replay),
-                            tooltip: 'Replay from start',
+                            tooltip: l10n.cameraReplay,
                             style: IconButton.styleFrom(
                               backgroundColor: primary.withValues(alpha: 0.15),
                               foregroundColor: primary,
@@ -428,7 +431,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                           },
                           icon: Icon(Icons.map_outlined, color: theme.colorScheme.secondary),
                           label: Text(
-                            'Show on Map',
+                            l10n.cameraShowOnMap,
                             style: TextStyle(color: theme.colorScheme.secondary),
                           ),
                           style: OutlinedButton.styleFrom(
@@ -452,7 +455,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                               borderRadius: BorderRadius.circular(16.r),
                             ),
                           ),
-                          child: const Text('Done', style: TextStyle(color: Colors.white)),
+                          child: Text(l10n.cameraDone, style: const TextStyle(color: Colors.white)),
                         ),
                       ),
                     ],
@@ -466,7 +469,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                         Icon(Icons.auto_awesome, size: 16.r, color: primary),
                         SizedBox(width: 6.w),
                         Text(
-                          'You might also like nearby',
+                          l10n.cameraNearby,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,

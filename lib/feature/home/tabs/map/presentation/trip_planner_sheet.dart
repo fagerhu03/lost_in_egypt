@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
@@ -221,6 +222,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
@@ -264,7 +266,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                         Icon(Icons.route_rounded, color: primary, size: 22.r),
                         SizedBox(width: 10.w),
                         Text(
-                          'Trip Planner',
+                          l10n.tripPlannerTitle,
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
@@ -286,7 +288,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                                     ),
                                   )
                                 : Icon(Icons.play_arrow_rounded, size: 18.r),
-                            label: Text(_isSorting ? 'Optimising...' : 'Start Trip'),
+                            label: Text(_isSorting ? l10n.tripPlannerOptimising : l10n.tripPlannerStart),
                             style: FilledButton.styleFrom(
                               backgroundColor: primary,
                               foregroundColor: theme.colorScheme.onPrimary,
@@ -311,7 +313,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                   controller: _searchController,
                   onChanged: _searchPlaces,
                   decoration: InputDecoration(
-                    hintText: 'Search places to add…',
+                    hintText: l10n.tripPlannerSearchHint,
                     prefixIcon:
                         Icon(Icons.search, color: onSurface.withValues(alpha: 0.4)),
                     suffixIcon: _searchController.text.isNotEmpty
@@ -386,7 +388,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
-                          '${_itinerary.length} stop${_itinerary.length > 1 ? "s" : ""} — route will be optimised by shortest distance',
+                          l10n.tripPlannerStopsInfo(_itinerary.length),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: primary,
@@ -414,7 +416,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                                 color: onSurface.withValues(alpha: 0.15)),
                             SizedBox(height: 12.h),
                             Text(
-                              'Plan your day in Egypt',
+                              l10n.tripPlannerEmptyTitle,
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 color: onSurface.withValues(alpha: 0.45),
@@ -423,7 +425,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                             ),
                             SizedBox(height: 4.h),
                             Text(
-                              'Search above or pick from suggestions below',
+                              l10n.tripPlannerEmptySub,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 12.sp,
@@ -465,8 +467,8 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                           SizedBox(width: 5.w),
                           Text(
                             _itinerary.isEmpty
-                                ? 'Suggested for you'
-                                : 'You might also enjoy',
+                                ? l10n.tripPlannerSuggested
+                                : l10n.tourDetailYouMightEnjoy,
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w700,
@@ -652,7 +654,7 @@ class _SuggestionTile extends StatelessWidget {
                 Icon(Icons.add, size: 14.r, color: primary),
                 SizedBox(width: 3.w),
                 Text(
-                  'Add',
+                  AppLocalizations.of(context).tripPlannerAdd,
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: primary,

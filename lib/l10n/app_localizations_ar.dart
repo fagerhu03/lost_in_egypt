@@ -1167,4 +1167,1644 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get helpAEmergency =>
       'افتح المزيد ← الطوارئ. يمكنك العثور على أقرب قسم شرطة أو مستشفى أو محطة إطفاء باستخدام موقعك الحالي، أو الاتصال بأرقام الطوارئ الرسمية في مصر مباشرةً من التطبيق:\n• الشرطة: 122\n• الإسعاف: 123\n• الإطفاء: 180\n• شرطة السياحة: 126';
+
+  @override
+  String get soloTripTitle => 'رحلة فردية';
+
+  @override
+  String get soloRecommendedPlans => 'خطط موصى بها';
+
+  @override
+  String get soloPersonalised => 'مخصّصة بناءً على سجل سفرك';
+
+  @override
+  String get soloBestForYou => 'الأنسب لك';
+
+  @override
+  String get soloStatusActive => 'نشطة';
+
+  @override
+  String get soloStatusSaved => 'محفوظة';
+
+  @override
+  String get soloStatusCompleted => 'مكتملة';
+
+  @override
+  String get soloTabAll => 'الكل';
+
+  @override
+  String get soloCouldNotLoadPlans => 'تعذّر تحميل الخطط';
+
+  @override
+  String get soloContinueTour => 'متابعة الجولة';
+
+  @override
+  String get soloStartTour => 'ابدأ الجولة';
+
+  @override
+  String get soloCouldNotStart => 'تعذّر بدء الجولة. حاول مرة أخرى.';
+
+  @override
+  String get soloDeletePlanTitle => 'حذف الخطة؟';
+
+  @override
+  String get soloDeleteActiveBody =>
+      'هذه الجولة قيد التنفيذ. حذفها سيلغي كل تقدّمك ولا يمكن التراجع عنه.';
+
+  @override
+  String get soloDeleteBody => 'لا يمكن التراجع عن هذا.';
+
+  @override
+  String get soloNoPlansYet => 'لا توجد خطط بعد';
+
+  @override
+  String get soloNoPlansSub =>
+      'احفظ رحلة منسّقة أو أنشئ رحلتك الخاصة\nلتظهر هنا.';
+
+  @override
+  String get soloBrowseTrips => 'تصفّح الرحلات';
+
+  @override
+  String get soloCustomizeOwnPlan => 'خصّص خطتك\nالخاصة';
+
+  @override
+  String get soloSavePlan => 'حفظ الخطة';
+
+  @override
+  String get soloPlanSaved => 'تم حفظ الخطة! اعثر عليها في خططي.';
+
+  @override
+  String get soloCouldNotSave => 'تعذّر حفظ الخطة. حاول مرة أخرى.';
+
+  @override
+  String get soloHearStory => 'استمع إلى القصة';
+
+  @override
+  String get soloStorySilent => 'أرواح التاريخ صامتة الآن.';
+
+  @override
+  String get soloStoryPause => 'إيقاف مؤقت';
+
+  @override
+  String get soloStoryResume => 'استئناف';
+
+  @override
+  String get soloStoryListen => 'استماع';
+
+  @override
+  String get soloStoryGenerating => 'جارٍ إنشاء الصوت…';
+
+  @override
+  String get soloStoryReplay => 'إعادة من البداية';
+
+  @override
+  String get soloNavigateHere => 'التنقّل إلى هنا';
+
+  @override
+  String get soloViewFullRoute => 'عرض المسار كاملاً';
+
+  @override
+  String get soloViewFullRouteMap => 'عرض المسار كاملاً على الخريطة';
+
+  @override
+  String get soloFullRoute => 'المسار كاملاً';
+
+  @override
+  String get soloHighlights => 'أبرز المعالم';
+
+  @override
+  String get soloItinerary => 'خط سير الرحلة';
+
+  @override
+  String get tourEndTitle => 'إنهاء الجولة؟';
+
+  @override
+  String get tourEndBody =>
+      'سيؤدي هذا إلى وضع علامة على الجولة كمكتملة. لا يزال بإمكانك عرضها في خططي.';
+
+  @override
+  String get tourEndConfirm => 'إنهاء الجولة';
+
+  @override
+  String get tourEnded => 'انتهت الجولة. اعثر عليها ضمن المكتملة في خططي.';
+
+  @override
+  String get tourInProgress => 'الجولة قيد التنفيذ';
+
+  @override
+  String get tourGo => 'انطلق';
+
+  @override
+  String get tourUpNext => 'التالي';
+
+  @override
+  String get tourComplete => 'اكتملت الجولة!';
+
+  @override
+  String tourStopsExplored(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count محطة مُستكشَفة',
+      many: '$count محطة مُستكشَفة',
+      few: '$count محطات مُستكشَفة',
+      two: 'محطتان مُستكشَفتان',
+      one: 'محطة واحدة مُستكشَفة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tourCompleteSub => 'لقد عشت قلب مصر.\nاستكشاف رائع! 🌟';
+
+  @override
+  String get tourYouMightLove => 'قد يعجبك أيضًا';
+
+  @override
+  String get tourDone => 'تم';
+
+  @override
+  String get tourStartedTitle => '🗺️ بدأت جولتك!';
+
+  @override
+  String get tourOnboardTitle => 'إليك ما يمكنك فعله';
+
+  @override
+  String get tourLetsGo => 'هيا بنا!';
+
+  @override
+  String get tourFeatViewMap => 'عرض على الخريطة';
+
+  @override
+  String get tourFeatViewMapDesc =>
+      'اضغط أيقونة الخريطة (أعلى اليمين) لرؤية محطاتك على الخريطة والتنقّل إلى أيٍّ منها.';
+
+  @override
+  String get tourFeatTrack => 'تتبّع التقدّم';
+
+  @override
+  String get tourFeatTrackDesc =>
+      'ضع علامة على كل محطة عند زيارتها. يُحفظ تقدّمك تلقائيًا.';
+
+  @override
+  String get tourFeatStories => 'قصص الذكاء الاصطناعي';
+
+  @override
+  String get tourFeatStoriesDesc =>
+      'وسّع أي محطة واضغط \"استمع إلى القصة\" للحصول على تاريخ ذلك المكان من الذكاء الاصطناعي.';
+
+  @override
+  String get resultCouldNotGenerate => 'تعذّر إنشاء خطتك.';
+
+  @override
+  String get resultPlanning => 'جارٍ التخطيط لرحلتك…';
+
+  @override
+  String get resultPlanningSub =>
+      'مرشد الذكاء الاصطناعي يبني لك خط سير مخصّصًا يومًا بيوم.';
+
+  @override
+  String get resultCouldNotLoad => 'تعذّر تحميل خطتك';
+
+  @override
+  String resultCouldNotPin(String name) {
+    return 'تعذّر تحديد $name على الخريطة بعد. حاول مرة أخرى بعد لحظة.';
+  }
+
+  @override
+  String get resultCouldNotExport => 'تعذّر تصدير خط السير. حاول مرة أخرى.';
+
+  @override
+  String get resultDiscardTitle => 'تجاهل الخطة؟';
+
+  @override
+  String get resultDiscardBody =>
+      'لن يتم حفظ هذه الخطة. يمكنك دائمًا إنشاء خطة جديدة.';
+
+  @override
+  String get resultKeep => 'احتفظ بها';
+
+  @override
+  String get resultDiscard => 'تجاهل';
+
+  @override
+  String get resultExportPdf => 'تصدير PDF';
+
+  @override
+  String resultLocationsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موقع',
+      many: '$count موقعًا',
+      few: '$count مواقع',
+      two: 'موقعان',
+      one: 'موقع واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String resultDayNum(int num) {
+    return 'اليوم $num';
+  }
+
+  @override
+  String get resultViewOnMaps => 'عرض على الخرائط';
+
+  @override
+  String get resultShareSuffix => 'خُطّط له باستخدام تائه في مصر 🌍';
+
+  @override
+  String get quizNext => 'التالي';
+
+  @override
+  String get quizFinish => 'إنهاء';
+
+  @override
+  String quizStepOf(int current, int total) {
+    return 'الخطوة $current من $total';
+  }
+
+  @override
+  String get soloQuizInterestsTitle => 'ما هي اهتماماتك؟';
+
+  @override
+  String get soloQuizAreasTitle => 'أين تريد أن تستكشف؟';
+
+  @override
+  String get soloQuizTripTimeTitle => 'رحلات نهارية أم سهرة ليلية؟';
+
+  @override
+  String get tripTimeDay => 'نهارًا';
+
+  @override
+  String get tripTimeDayDesc => 'المعابد والأسواق\nوالمغامرات في الهواء الطلق';
+
+  @override
+  String get tripTimeNight => 'ليلاً';
+
+  @override
+  String get tripTimeNightDesc => 'تناول الطعام والحياة الليلية\nوالترفيه';
+
+  @override
+  String get soloQuizBudgetTitle => 'ما هي ميزانيتك؟';
+
+  @override
+  String get budgetPresetBudget => 'اقتصادية';
+
+  @override
+  String get budgetPresetMid => 'متوسطة';
+
+  @override
+  String get budgetPresetLuxury => 'فاخرة';
+
+  @override
+  String get soloQuizDateTitle => 'اختر تواريخك وموقعك';
+
+  @override
+  String get soloDateFrom => 'من';
+
+  @override
+  String get soloDateStartHint => 'تاريخ البدء';
+
+  @override
+  String get soloDateTo => 'إلى';
+
+  @override
+  String get soloDateEndHint => 'تاريخ الانتهاء';
+
+  @override
+  String soloNightsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ليلة',
+      many: '$count ليلة',
+      few: '$count ليالٍ',
+      two: 'ليلتان',
+      one: 'ليلة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get soloStartLocationHint => 'من أين تبدأ رحلتك؟';
+
+  @override
+  String get soloSelectDayNight => 'يرجى اختيار نهارًا أو ليلاً أو كليهما.';
+
+  @override
+  String tourCardUpTo(int count) {
+    return 'حتى $count';
+  }
+
+  @override
+  String get tourCardNew => 'جديد';
+
+  @override
+  String get mapPickerFetching => 'جارٍ جلب العنوان...';
+
+  @override
+  String get mapPickerSelectedLocation => 'الموقع المحدد';
+
+  @override
+  String get mapPickerUnknownLocation => 'موقع غير معروف';
+
+  @override
+  String get mapPickerSearchHint => 'ابحث عن معلم أو وجهة...';
+
+  @override
+  String get mapPickerTapHint => 'اضغط في أي مكان على الخريطة لتحديد موقع';
+
+  @override
+  String get mapPickerConfirm => 'تأكيد الموقع';
+
+  @override
+  String get mapPickerCustomPin => 'موقع مخصّص';
+
+  @override
+  String get tourMapMeetupTitle => 'موقع اللقاء';
+
+  @override
+  String get tourMapStartPoint => 'نقطة بداية الجولة';
+
+  @override
+  String get tourMapMeetingPoint => 'نقطة اللقاء';
+
+  @override
+  String get tourMapDestinations => 'الوجهات التي ستزورها:';
+
+  @override
+  String get tourMapExplore => 'استكشف في الخريطة الرئيسية';
+
+  @override
+  String get tourMapNavigateRoute => 'التنقّل عبر مسار الجولة';
+
+  @override
+  String get qrTitle => 'مسح رمز التذكرة';
+
+  @override
+  String get qrPointCamera => 'وجّه الكاميرا نحو رمز تذكرة السائح';
+
+  @override
+  String get qrScanAnother => 'مسح تذكرة أخرى';
+
+  @override
+  String get qrBookingNotFound => 'لم يتم العثور على الحجز';
+
+  @override
+  String get qrUnknownTour => 'جولة غير معروفة';
+
+  @override
+  String get qrUnknownTraveler => 'مسافر غير معروف';
+
+  @override
+  String get qrValidTicket => 'تذكرة صالحة';
+
+  @override
+  String qrInvalidTicket(String status) {
+    return 'تذكرة غير صالحة ($status)';
+  }
+
+  @override
+  String get qrAllCheckedIn => 'تم تسجيل دخول جميع التذاكر';
+
+  @override
+  String qrPartiallyCheckedIn(int checked, int total) {
+    return 'تم تسجيل الدخول جزئيًا ($checked/$total)';
+  }
+
+  @override
+  String get qrRowTour => 'الجولة';
+
+  @override
+  String get qrRowDate => 'التاريخ';
+
+  @override
+  String get qrRowTickets => 'التذاكر';
+
+  @override
+  String get qrRowAmount => 'المبلغ';
+
+  @override
+  String get qrRowBookingId => 'رقم الحجز';
+
+  @override
+  String qrTicketsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تذكرة',
+      many: '$count تذكرة',
+      few: '$count تذاكر',
+      two: 'تذكرتان',
+      one: 'تذكرة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String qrCheckedInCount(int count) {
+    return '$count تم تسجيلهم';
+  }
+
+  @override
+  String get qrCheckInHowMany => 'كم عدد التذاكر للتسجيل؟';
+
+  @override
+  String get qrCheckInTourist => 'تسجيل دخول السائح';
+
+  @override
+  String qrCheckInRemaining(int count, int remaining) {
+    return 'تسجيل دخول $count من $remaining المتبقية';
+  }
+
+  @override
+  String qrAllTicketsCheckedIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'تم تسجيل دخول جميع التذاكر الـ$count!',
+      many: 'تم تسجيل دخول جميع التذاكر الـ$count!',
+      few: 'تم تسجيل دخول جميع التذاكر الـ$count!',
+      two: 'تم تسجيل دخول التذكرتين!',
+      one: 'تم تسجيل دخول التذكرة!',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String qrCheckedInResult(int count, int remaining) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'تم تسجيل دخول $count تذكرة.',
+      many: 'تم تسجيل دخول $count تذكرة.',
+      few: 'تم تسجيل دخول $count تذاكر.',
+      two: 'تم تسجيل دخول تذكرتين.',
+      one: 'تم تسجيل دخول تذكرة واحدة.',
+    );
+    return '$_temp0\nمتبقّي $remaining.';
+  }
+
+  @override
+  String get commonNo => 'لا';
+
+  @override
+  String get attendeesTitle => 'الحاضرون';
+
+  @override
+  String get attendeesError => 'خطأ في تحميل الحاضرين';
+
+  @override
+  String get attendeesIndexHint =>
+      'قد تكون هناك حاجة إلى فهرس Firestore.\nتحقق من وحدة التصحيح للحصول على الرابط.';
+
+  @override
+  String get attendeesEmpty => 'لا توجد حجوزات بعد';
+
+  @override
+  String get attendeesEmptySub =>
+      'عندما يحجز المسافرون هذه الجولة،\nسيظهرون هنا.';
+
+  @override
+  String get attendeesStatConfirmed => 'مؤكَّد';
+
+  @override
+  String get attendeesStatCancelled => 'ملغى';
+
+  @override
+  String get attendeesStatTotal => 'الإجمالي';
+
+  @override
+  String attendeesSectionConfirmed(int count) {
+    return 'مؤكَّد ($count)';
+  }
+
+  @override
+  String attendeesSectionCancelled(int count) {
+    return 'ملغى ($count)';
+  }
+
+  @override
+  String get attendeesUnknownUser => 'مستخدم غير معروف';
+
+  @override
+  String get attendeesPaid => 'مدفوع';
+
+  @override
+  String get attendeesPending => 'قيد الانتظار';
+
+  @override
+  String get attendeesCall => 'اتصال';
+
+  @override
+  String get attendeesWhatsApp => 'واتساب';
+
+  @override
+  String get attendeesEmail => 'بريد إلكتروني';
+
+  @override
+  String get attendeesCancelBooking => 'إلغاء الحجز';
+
+  @override
+  String get attendeesCancelBody =>
+      'هل أنت متأكد أنك تريد إلغاء هذا الحجز؟ سيتم إخطار المسافر.';
+
+  @override
+  String get guideDashTitle => 'لوحة المرشد';
+
+  @override
+  String get guideDashStopSharing => 'إيقاف مشاركة الموقع المباشر';
+
+  @override
+  String get guideDashShareLocation => 'شارك موقعك المباشر مع السائحين';
+
+  @override
+  String get guideDashScanTicket => 'مسح التذكرة';
+
+  @override
+  String get guideDashNoTours => 'لا توجد جولات بعد';
+
+  @override
+  String get guideDashCreateFirst => 'أنشئ جولتك الأولى!';
+
+  @override
+  String guideDashYourTours(int count) {
+    return 'جولاتك ($count)';
+  }
+
+  @override
+  String get guideDashCreateTour => 'إنشاء جولة';
+
+  @override
+  String get guideDashEarningsError =>
+      'تعذّر تحميل الأرباح.\nتحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get guideDashStatTours => 'الجولات';
+
+  @override
+  String get guideDashStatBookings => 'الحجوزات';
+
+  @override
+  String get guideDashStatRevenue => 'الإيرادات';
+
+  @override
+  String guideDashMax(int count) {
+    return 'حتى $count';
+  }
+
+  @override
+  String get guideDashBookingsError => 'تعذّر تحميل الحجوزات.';
+
+  @override
+  String guideDashConfirmedBookings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count حجز مؤكَّد',
+      many: '$count حجزًا مؤكَّدًا',
+      few: '$count حجوزات مؤكَّدة',
+      two: 'حجزان مؤكَّدان',
+      one: 'حجز مؤكَّد واحد',
+    );
+    return '📌 $_temp0';
+  }
+
+  @override
+  String get guideDashView => 'عرض';
+
+  @override
+  String get guideDashDeleteTitle => 'حذف الجولة';
+
+  @override
+  String guideDashDeleteBody(String title) {
+    return 'هل أنت متأكد أنك تريد حذف \"$title\"؟ لا يمكن التراجع عن هذا.';
+  }
+
+  @override
+  String get weekdayMon => 'الإثنين';
+
+  @override
+  String get weekdayTue => 'الثلاثاء';
+
+  @override
+  String get weekdayWed => 'الأربعاء';
+
+  @override
+  String get weekdayThu => 'الخميس';
+
+  @override
+  String get weekdayFri => 'الجمعة';
+
+  @override
+  String get weekdaySat => 'السبت';
+
+  @override
+  String get weekdaySun => 'الأحد';
+
+  @override
+  String get createEditTitle => 'تعديل الجولة';
+
+  @override
+  String get createNewTitle => 'إنشاء جولة جديدة';
+
+  @override
+  String get createUpdatedToast => 'تم تحديث الجولة!';
+
+  @override
+  String get createCreatedToast => 'تم إنشاء الجولة بنجاح!';
+
+  @override
+  String get createRequired => 'مطلوب';
+
+  @override
+  String get createFieldTitle => 'عنوان الجولة';
+
+  @override
+  String get createFieldDesc => 'الوصف';
+
+  @override
+  String get createDestinationsLabel => 'الوجهات (بحد أقصى 5)';
+
+  @override
+  String get createSearchDestination => 'ابحث عن وجهة...';
+
+  @override
+  String get createFieldPrice => 'السعر (ج.م)';
+
+  @override
+  String get createFieldMaxAttendees => 'الحد الأقصى للحضور';
+
+  @override
+  String get createMeetingLocation => 'موقع اللقاء';
+
+  @override
+  String get createSelectMeetingLocation => 'اختر موقع اللقاء';
+
+  @override
+  String get createSelectMeetingTime => 'اختر وقت اللقاء';
+
+  @override
+  String createMeetingTimePrefix(String time) {
+    return 'وقت اللقاء: $time';
+  }
+
+  @override
+  String get createScheduleFreq => 'أيام الجدولة';
+
+  @override
+  String get createImages => 'صور الجولة';
+
+  @override
+  String get createEditImages => 'تعديل صور الجولة';
+
+  @override
+  String get createSaveChanges => 'حفظ التغييرات';
+
+  @override
+  String get createSelectTime => 'يرجى اختيار وقت اللقاء.';
+
+  @override
+  String get createSelectImage => 'يرجى اختيار صورة واحدة على الأقل.';
+
+  @override
+  String get createSelectLocation => 'يرجى اختيار موقع اللقاء على الخريطة.';
+
+  @override
+  String get createAddDestination => 'يرجى إضافة وجهة واحدة على الأقل.';
+
+  @override
+  String get createPriceNegative => 'لا يمكن أن يكون السعر سالبًا.';
+
+  @override
+  String get createAttendeesZero =>
+      'يجب أن يكون الحد الأقصى للحضور أكبر من صفر.';
+
+  @override
+  String get toursDiscoverTitle => 'اكتشف الجولات';
+
+  @override
+  String get toursSearchHint => 'ابحث عن وجهات أو مرشدين...';
+
+  @override
+  String get toursFilters => 'الفلاتر';
+
+  @override
+  String get toursPriceRange => 'نطاق السعر';
+
+  @override
+  String get toursMinRating => 'الحد الأدنى للتقييم';
+
+  @override
+  String toursStarsPlus(int count) {
+    return '$count+ نجوم';
+  }
+
+  @override
+  String get toursFrequency => 'التكرار';
+
+  @override
+  String get toursFreqDaily => 'يومي';
+
+  @override
+  String get toursFreqWeekly => 'أسبوعي';
+
+  @override
+  String get toursFreqWeekends => 'عطلات نهاية الأسبوع';
+
+  @override
+  String get toursFreqOneTime => 'لمرة واحدة';
+
+  @override
+  String get toursApplyFilters => 'تطبيق الفلاتر';
+
+  @override
+  String get toursSortNewest => 'الأحدث أولاً';
+
+  @override
+  String get toursSortCheapest => 'الأرخص أولاً';
+
+  @override
+  String get toursSortPriciest => 'الأغلى أولاً';
+
+  @override
+  String get toursSortHighestRated => 'الأعلى تقييمًا';
+
+  @override
+  String get toursSortMostPopular => 'الأكثر شعبية';
+
+  @override
+  String get toursSortLabelNewest => 'الأحدث';
+
+  @override
+  String get toursSortLabelCheapest => 'الأرخص';
+
+  @override
+  String get toursSortLabelPriciest => 'الأغلى';
+
+  @override
+  String get toursSortLabelTopRated => 'الأعلى تقييمًا';
+
+  @override
+  String get toursSortLabelPopular => 'شائع';
+
+  @override
+  String toursFoundCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'تم العثور على $count جولة',
+      many: 'تم العثور على $count جولة',
+      few: 'تم العثور على $count جولات',
+      two: 'تم العثور على جولتين',
+      one: 'تم العثور على جولة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get toursLoadError =>
+      'تعذّر تحميل الجولات.\nتحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get toursEmptyTitle => 'لم يتم العثور على جولات';
+
+  @override
+  String get toursEmptyFilters => 'حاول تعديل الفلاتر.';
+
+  @override
+  String get toursEmptySearch => 'حاول تعديل كلمة البحث.';
+
+  @override
+  String get toursClearFilters => 'مسح كل الفلاتر';
+
+  @override
+  String get toursRecommended => 'موصى به لك';
+
+  @override
+  String get bookingCheckoutTitle => 'الدفع';
+
+  @override
+  String get bookingLoginRequired => 'يرجى تسجيل الدخول للحجز.';
+
+  @override
+  String get bookingInvalidWallet =>
+      'يرجى إدخال رقم هاتف مصري صالح (مثال: 01XXXXXXXXX).';
+
+  @override
+  String get bookingFullyBooked => 'عذرًا، هذه الجولة محجوزة بالكامل الآن.';
+
+  @override
+  String bookingSeatsRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مقعد فقط متبقٍّ. يرجى تقليل اختيارك.',
+      many: '$count مقعدًا فقط متبقية. يرجى تقليل اختيارك.',
+      few: '$count مقاعد فقط متبقية. يرجى تقليل اختيارك.',
+      two: 'مقعدان فقط متبقيان. يرجى تقليل اختيارك.',
+      one: 'مقعد واحد فقط متبقٍّ. يرجى تقليل اختيارك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bookingPaymentFailed => 'تم إلغاء الدفع أو فشل.';
+
+  @override
+  String get bookingWalletFailed => 'فشل الدفع عبر المحفظة.';
+
+  @override
+  String get bookingKioskSoon => 'الدفع عبر الكشك قريبًا!';
+
+  @override
+  String bookingErrorPrefix(String message) {
+    return 'خطأ في الحجز: $message';
+  }
+
+  @override
+  String get bookingConfirmedTitle => 'تم تأكيد الحجز!';
+
+  @override
+  String bookingReservedBody(String title) {
+    return 'تم حجز مكانك في \"$title\"!';
+  }
+
+  @override
+  String bookingPaidSuccess(String amount) {
+    return 'تم دفع $amount بنجاح.';
+  }
+
+  @override
+  String get bookingViewMyBookings => 'عرض حجوزاتي';
+
+  @override
+  String get bookingBackHome => 'العودة إلى الرئيسية';
+
+  @override
+  String get bookingOrderSummary => 'ملخص الطلب';
+
+  @override
+  String get bookingGuests => 'الضيوف';
+
+  @override
+  String get bookingPaymentMethod => 'طريقة الدفع';
+
+  @override
+  String get bookingPayCardTitle => 'بطاقة ائتمان / خصم';
+
+  @override
+  String get bookingPayCardSub => 'فيزا، ماستركارد، ميزة';
+
+  @override
+  String get bookingPayWalletTitle => 'محفظة إلكترونية';
+
+  @override
+  String get bookingPayWalletSub => 'فودافون كاش، أورنج، اتصالات';
+
+  @override
+  String get bookingPayApplePayTitle => 'Apple Pay';
+
+  @override
+  String get bookingPayApplePaySub => 'iOS فقط • قريبًا';
+
+  @override
+  String get bookingPayKioskTitle => 'فوري / كشك';
+
+  @override
+  String get bookingPayKioskSub => 'ادفع في أكثر من 172,000 منفذ فوري';
+
+  @override
+  String get bookingWalletPhoneLabel => 'رقم هاتف المحفظة';
+
+  @override
+  String get bookingSecurityNote =>
+      'تتم معالجة المدفوعات بأمان عبر Paymob. لا يتم تخزين بيانات بطاقتك محليًا أبدًا.';
+
+  @override
+  String get bookingBecauseBooked => 'لأنك حجزت هذه، قد تستمتع بـ';
+
+  @override
+  String get bookingProcessing => 'جارٍ معالجة الدفع...';
+
+  @override
+  String get bookingTotal => 'الإجمالي';
+
+  @override
+  String bookingChargedNote(String amount) {
+    return 'يُحصَّل كـ $amount ج.م عبر Paymob';
+  }
+
+  @override
+  String get bookingPaySecurely => 'ادفع بأمان';
+
+  @override
+  String get tourDetailReport => 'الإبلاغ عن الجولة';
+
+  @override
+  String get tourDetailNew => 'جديدة';
+
+  @override
+  String get tourDetailDateTime => 'التاريخ والوقت';
+
+  @override
+  String tourDetailPeople(int count) {
+    return '$count أشخاص';
+  }
+
+  @override
+  String get tourDetailLocation => 'الموقع';
+
+  @override
+  String get tourDetailAbout => 'عن هذه الجولة';
+
+  @override
+  String get tourDetailDestinations => 'الوجهات';
+
+  @override
+  String get tourDetailMeetupRoute => 'موقع اللقاء والمسار';
+
+  @override
+  String get tourDetailTapExpand => 'اضغط للتكبير';
+
+  @override
+  String get tourDetailSchedule => 'الجدول';
+
+  @override
+  String get tourDetailGallery => 'المعرض';
+
+  @override
+  String get tourDetailYourGuide => 'مرشدك';
+
+  @override
+  String get tourDetailYouMightEnjoy => 'قد يعجبك أيضًا';
+
+  @override
+  String get tourDetailYourTour => 'هذه جولتك';
+
+  @override
+  String get tourDetailBookNow => 'احجز الآن';
+
+  @override
+  String get tourDetailOneTime => 'هذه جولة لمرة واحدة.';
+
+  @override
+  String get tourDetailGuideNotFound => 'لم يتم العثور على المرشد';
+
+  @override
+  String tourDetailGuideRating(String rating, int count) {
+    return '$rating ($count تقييمات)';
+  }
+
+  @override
+  String get tourDetailReviews => 'التقييمات';
+
+  @override
+  String get tourDetailWriteReview => 'اكتب تقييمًا';
+
+  @override
+  String get tourDetailReviewsError => 'خطأ في تحميل التقييمات';
+
+  @override
+  String get tourDetailNoReviews => 'لا توجد تقييمات بعد. كن أول من يقيّم!';
+
+  @override
+  String get tourDetailShowMore => 'عرض المزيد من التقييمات';
+
+  @override
+  String get tourDetailAnonymous => 'مجهول';
+
+  @override
+  String get tourDetailEditReview => 'تعديل التقييم';
+
+  @override
+  String get tourDetailDeleteReview => 'حذف التقييم';
+
+  @override
+  String get tourDetailReportReview => 'الإبلاغ عن التقييم';
+
+  @override
+  String get tourDetailUpdateHint => 'حدّث تجربتك...';
+
+  @override
+  String get tourDetailUpdate => 'تحديث';
+
+  @override
+  String get tourDetailDeleteReviewBody =>
+      'هل أنت متأكد أنك تريد حذف تقييمك؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get tourDetailShareHint => 'شارك تجربتك...';
+
+  @override
+  String get tourDetailSubmit => 'إرسال';
+
+  @override
+  String get commonLoadMore => 'تحميل المزيد';
+
+  @override
+  String get bookingStatusConfirmed => 'مؤكَّد';
+
+  @override
+  String get bookingStatusCancelled => 'ملغى';
+
+  @override
+  String get bookingStatusPending => 'قيد الانتظار';
+
+  @override
+  String get bookingStatusCompleted => 'مكتمل';
+
+  @override
+  String get bookingStatusCheckedIn => 'تم تسجيل الدخول';
+
+  @override
+  String get bookingStatusPartial => 'تم تسجيل الدخول جزئيًا';
+
+  @override
+  String get bookingHistTitle => 'حجوزاتي';
+
+  @override
+  String get bookingHistLoginRequired => 'يرجى تسجيل الدخول';
+
+  @override
+  String get bookingHistUpcoming => 'القادمة';
+
+  @override
+  String get bookingHistPast => 'السابقة';
+
+  @override
+  String get bookingHistLoadError =>
+      'تعذّر تحميل الحجوزات.\nتحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get bookingHistNoUpcoming => 'لا توجد جولات قادمة';
+
+  @override
+  String get bookingHistNoPast => 'لا توجد جولات سابقة';
+
+  @override
+  String get bookingHistEmptyHint => 'استكشف الجولات واحجز مغامرتك القادمة!';
+
+  @override
+  String get bookingHistTbd => 'يُحدَّد لاحقًا';
+
+  @override
+  String bookingHistCountdownDHM(int days, int hours, int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days يوم',
+      many: '$days يومًا',
+      few: '$days أيام',
+      two: 'يومان',
+      one: 'يوم واحد',
+    );
+    return '$_temp0 $hoursس $minutesد';
+  }
+
+  @override
+  String bookingHistCountdownHMS(int hours, int minutes, int seconds) {
+    return '$hoursس $minutesد $secondsث';
+  }
+
+  @override
+  String bookingHistCountdownMS(int minutes, int seconds) {
+    return '$minutesد $secondsث';
+  }
+
+  @override
+  String bookingHistStartsIn(String time) {
+    return 'تبدأ خلال $time';
+  }
+
+  @override
+  String get bookingHistCancelBody => 'هل أنت متأكد أنك تريد إلغاء هذا الحجز؟';
+
+  @override
+  String get bookingHistYesCancel => 'نعم، إلغاء';
+
+  @override
+  String get bookingHistCancelled => 'تم إلغاء الحجز';
+
+  @override
+  String get bookingHistReviewSubmitted => 'تم إرسال التقييم!';
+
+  @override
+  String get bookingHistNoPhone => 'لا يوجد رقم هاتف مسجّل';
+
+  @override
+  String get bookingHistNoEmail => 'لا يوجد بريد إلكتروني مسجّل';
+
+  @override
+  String get bookingHistCantOpenPhone => 'تعذّر فتح تطبيق الهاتف';
+
+  @override
+  String get bookingHistCantOpenEmail => 'تعذّر فتح تطبيق البريد';
+
+  @override
+  String get bookingHistLeaveReview => 'اترك تقييمًا';
+
+  @override
+  String get bookingHistSubmitReview => 'إرسال التقييم';
+
+  @override
+  String get bookingHistViewQr => 'عرض تذكرة QR';
+
+  @override
+  String bookingHistBookingId(String id) {
+    return 'رقم الحجز: $id';
+  }
+
+  @override
+  String get bookingHistShowGuide => 'أظهر هذا لمرشدك عند الوصول';
+
+  @override
+  String get bookingHistViewMeeting => 'عرض نقطة اللقاء';
+
+  @override
+  String get bookingHistOpensMap => 'يفتح في تبويب الخريطة';
+
+  @override
+  String get bookingHistGuide => 'المرشد';
+
+  @override
+  String get bookingHistTrackGuide => 'تتبّع المرشد مباشرة';
+
+  @override
+  String get bookingHistTrackGuideSub => 'شاهد موقع مرشدك في الوقت الفعلي';
+
+  @override
+  String get bookingHistTotalPaid => 'الإجمالي المدفوع';
+
+  @override
+  String get bookingHistPaymentRef => 'مرجع الدفع';
+
+  @override
+  String get bookingHistAddCalendar => 'أضف إلى التقويم';
+
+  @override
+  String get bookingHistShareTicket => 'مشاركة التذكرة';
+
+  @override
+  String get bookingHistCallGuide => 'اتصل بالمرشد';
+
+  @override
+  String get bookingHistEmailGuide => 'راسل المرشد';
+
+  @override
+  String get bookingHistRebook => 'أعد حجز هذه الجولة';
+
+  @override
+  String get bookingHistNewGuide => 'مرشد جديد';
+
+  @override
+  String get bookingHistWeatherDay => 'الطقس يوم الجولة';
+
+  @override
+  String bookingHistLiveLocation(String name) {
+    return '$name – الموقع المباشر';
+  }
+
+  @override
+  String get bookingHistWaitingLocation => 'في انتظار مشاركة المرشد لموقعه…';
+
+  @override
+  String bookingHistCalTitle(String title) {
+    return 'تائه في مصر: $title';
+  }
+
+  @override
+  String bookingHistCalDesc(String location, String id) {
+    return 'نقطة اللقاء: $location\nرقم الحجز: $id';
+  }
+
+  @override
+  String bookingHistShareText(
+    String title,
+    String date,
+    String location,
+    int tickets,
+    String ref,
+  ) {
+    return '🏺 تائه في مصر – تذكرة جولة\n\nالجولة: $title\nالتاريخ: $date\nنقطة اللقاء: $location\nالتذاكر: $tickets\nمرجع الحجز: $ref\n\nنراك هناك!';
+  }
+
+  @override
+  String get cameraLens => 'العدسة';
+
+  @override
+  String get cameraTranslation => 'الترجمة';
+
+  @override
+  String get cameraTranslationResult => 'نتيجة الترجمة';
+
+  @override
+  String get cameraNoLandmark => 'تعذّر التعرّف على أي معلم';
+
+  @override
+  String cameraNotInDb(String label) {
+    return 'وجدنا \"$label\" لكنه غير موجود في قاعدة بياناتنا';
+  }
+
+  @override
+  String get cameraConfigError => 'خطأ في الإعداد';
+
+  @override
+  String get cameraErrorTitle => 'خطأ';
+
+  @override
+  String get cameraLandmarkIdentified => 'تم التعرّف على المعلم';
+
+  @override
+  String cameraTapForecast(String condition) {
+    return '$condition · اضغط لعرض التوقعات';
+  }
+
+  @override
+  String get cameraReadMore => 'اقرأ المزيد';
+
+  @override
+  String get cameraReadLess => 'عرض أقل';
+
+  @override
+  String get cameraTellStory => 'احكِ لي قصة';
+
+  @override
+  String get cameraConsulting => 'أستشير التاريخ...';
+
+  @override
+  String get cameraListen => 'استمع';
+
+  @override
+  String get cameraPause => 'إيقاف مؤقت';
+
+  @override
+  String get cameraResume => 'استئناف';
+
+  @override
+  String get cameraGenerating => 'جارٍ الإنشاء...';
+
+  @override
+  String get cameraReplay => 'إعادة من البداية';
+
+  @override
+  String get cameraAudioGenFailed => 'تعذّر إنشاء الصوت. حاول مرة أخرى.';
+
+  @override
+  String get cameraAudioPlayFailed => 'فشل تشغيل الصوت. حاول مرة أخرى.';
+
+  @override
+  String get cameraShowOnMap => 'عرض على الخريطة';
+
+  @override
+  String get cameraDone => 'تم';
+
+  @override
+  String get cameraNearby => 'قد يعجبك أيضًا في الجوار';
+
+  @override
+  String get sphinxRiddleTitle => 'لغز أبو الهول 🦁';
+
+  @override
+  String get sphinxPassTitle => 'يمكنك العبور 🦁';
+
+  @override
+  String get sphinxFailTitle => 'خطأ أيها الفاني 🌪️';
+
+  @override
+  String get sphinxRiddleBody =>
+      '\"ما الذي يمشي على أربع في الصباح، واثنتين عند الظهيرة، وثلاث في المساء؟\"';
+
+  @override
+  String get sphinxPassBody =>
+      'حكمتك تضاهي القدماء. يسمح لك أبو الهول بمواصلة رحلتك.';
+
+  @override
+  String get sphinxFailBody => 'ستبتلع رمال الزمن جهلك. عُد عندما تتعلّم.';
+
+  @override
+  String get sphinxAnswerAnimal => 'حيوان';
+
+  @override
+  String get sphinxAnswerHuman => 'إنسان';
+
+  @override
+  String get tripPlannerTitle => 'مخطط الرحلة';
+
+  @override
+  String get tripPlannerStart => 'ابدأ الرحلة';
+
+  @override
+  String get tripPlannerOptimising => 'جارٍ التحسين...';
+
+  @override
+  String get tripPlannerSearchHint => 'ابحث عن أماكن لإضافتها…';
+
+  @override
+  String tripPlannerStopsInfo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count محطة — سيتم تحسين المسار حسب أقصر مسافة',
+      many: '$count محطة — سيتم تحسين المسار حسب أقصر مسافة',
+      few: '$count محطات — سيتم تحسين المسار حسب أقصر مسافة',
+      two: 'محطتان — سيتم تحسين المسار حسب أقصر مسافة',
+      one: 'محطة واحدة — سيتم تحسين المسار حسب أقصر مسافة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tripPlannerEmptyTitle => 'خطّط ليومك في مصر';
+
+  @override
+  String get tripPlannerEmptySub =>
+      'ابحث بالأعلى أو اختر من الاقتراحات بالأسفل';
+
+  @override
+  String get tripPlannerSuggested => 'مقترح لك';
+
+  @override
+  String get tripPlannerAdd => 'إضافة';
+
+  @override
+  String get placeDetailLoginToSave => 'يجب تسجيل الدخول لحفظ الأماكن.';
+
+  @override
+  String placeDetailMetersAway(int meters) {
+    return 'على بُعد $meters م';
+  }
+
+  @override
+  String placeDetailKmAway(String km) {
+    return 'على بُعد $km كم';
+  }
+
+  @override
+  String placeDetailTaxiFare(int low, int high) {
+    return '~$low–$high ج.م بالتاكسي';
+  }
+
+  @override
+  String get placeDetailOpenNow => 'مفتوح الآن';
+
+  @override
+  String get placeDetailClosed => 'مغلق';
+
+  @override
+  String get placeDetailClose => 'إغلاق';
+
+  @override
+  String get placeDetailDirections => 'الاتجاهات';
+
+  @override
+  String get placeDetailShare => 'مشاركة';
+
+  @override
+  String get placeDetailSaved => 'محفوظ';
+
+  @override
+  String get placeDetailAbout => 'نبذة';
+
+  @override
+  String get placeDetailDefaultDesc =>
+      'اكتشف عجائب مصر القديمة وكنوزها الخفية. يقدّم هذا الموقع لمحة فريدة عن التاريخ والثقافة الغنية للمنطقة.';
+
+  @override
+  String placeDetailEntryFee(String price) {
+    return '$price ج.م رسوم الدخول';
+  }
+
+  @override
+  String get placeDetailReviews => 'ماذا يقول المسافرون';
+
+  @override
+  String placeDetailPostedHere(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'نشر $count مسافر من هنا',
+      many: 'نشر $count مسافرًا من هنا',
+      few: 'نشر $count مسافرين من هنا',
+      two: 'نشر مسافران من هنا',
+      one: 'نشر مسافر واحد من هنا',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get placeDetailSeePosts => 'عرض المنشورات';
+
+  @override
+  String get placeDetailSimilar => 'أماكن مشابهة';
+
+  @override
+  String get placeDetailCrowdQuiet => 'هادئ الآن';
+
+  @override
+  String get placeDetailCrowdModerate => 'ازدحام متوسط';
+
+  @override
+  String get placeDetailCrowdBusy => 'مزدحم جدًا';
+
+  @override
+  String placeDetailPostsFrom(String name) {
+    return 'منشورات من $name';
+  }
+
+  @override
+  String get placeDetailNoPosts =>
+      'لا توجد منشورات من هذا المكان بعد.\nكن أول من يشارك!';
+
+  @override
+  String get mapDiscovering => 'نكتشف مصر...';
+
+  @override
+  String get mapLoadingNearby => 'جارٍ تحميل الأماكن القريبة منك';
+
+  @override
+  String get mapArrivedTitle => 'لقد وصلت!';
+
+  @override
+  String mapArrivedBody(String name) {
+    return 'لقد وصلت إلى $name';
+  }
+
+  @override
+  String get mapFabTrip => 'رحلة';
+
+  @override
+  String get mapFabNearMe => 'بالقرب مني';
+
+  @override
+  String get mapFabSaved => 'المحفوظة';
+
+  @override
+  String mapStopOf(int current, int total) {
+    return 'المحطة $current من $total';
+  }
+
+  @override
+  String get mapNextStop => 'المحطة التالية';
+
+  @override
+  String get mapTripDone => 'تم! 🎉';
+
+  @override
+  String get mapBackToTour => 'العودة إلى الجولة';
+
+  @override
+  String get mapFindingRoute => 'جارٍ إيجاد المسار...';
+
+  @override
+  String mapEtaTotal(String distance, String duration) {
+    return '$distance · $duration إجمالاً';
+  }
+
+  @override
+  String mapStepProgress(int current, int total) {
+    return 'الخطوة $current/$total';
+  }
+
+  @override
+  String get mapAiPick => 'اختيار الذكاء الاصطناعي';
+
+  @override
+  String get commonLoading => 'جارٍ التحميل...';
+
+  @override
+  String get mapSearchHint => 'ابحث عن أماكن...';
+
+  @override
+  String get mapNoPlacesFound => 'لم يتم العثور على أماكن';
+
+  @override
+  String get mapModeDrive => 'قيادة';
+
+  @override
+  String get mapModeWalk => 'سيرًا';
+
+  @override
+  String get mapModeTransit => 'مواصلات';
+
+  @override
+  String mapStepsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count خطوة',
+      many: '$count خطوة',
+      few: '$count خطوات',
+      two: 'خطوتان',
+      one: 'خطوة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapStartNavigation => 'بدء التنقّل';
+
+  @override
+  String get mapRouteSteps => 'خطوات المسار';
+
+  @override
+  String get mapArriveDestination => 'الوصول إلى الوجهة';
+
+  @override
+  String get mapCurseReleased => 'أُطلِقت اللعنة';
+
+  @override
+  String get mapFilterByCategory => 'التصفية حسب الفئة';
+
+  @override
+  String get mapZoomFilterOn => 'فلتر التكبير مفعّل';
+
+  @override
+  String get mapShowingAll => 'عرض الكل';
+
+  @override
+  String mapPlacesCount(int visible, int total) {
+    return '$visible/$total مكان';
+  }
+
+  @override
+  String mapCatPlacesZoom(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مكان • كبّر لرؤية المزيد',
+      many: '$count مكانًا • كبّر لرؤية المزيد',
+      few: '$count أماكن • كبّر لرؤية المزيد',
+      two: 'مكانان • كبّر لرؤية المزيد',
+      one: 'مكان واحد • كبّر لرؤية المزيد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapCatSavedPlaces(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مكان محفوظ',
+      many: '$count مكانًا محفوظًا',
+      few: '$count أماكن محفوظة',
+      two: 'مكانان محفوظان',
+      one: 'مكان محفوظ واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapCatPlaces(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مكان',
+      many: '$count مكانًا',
+      few: '$count أماكن',
+      two: 'مكانان',
+      one: 'مكان واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mapCatAll => 'الكل';
+
+  @override
+  String get mapCatFavorites => 'المفضلة';
+
+  @override
+  String get mapCatOpenNow => 'مفتوح الآن';
+
+  @override
+  String get mapCatTourism => 'السياحة';
+
+  @override
+  String get mapCatHistorical => 'تاريخي';
+
+  @override
+  String get mapCatMuseums => 'المتاحف';
+
+  @override
+  String get mapCatHotels => 'الفنادق';
+
+  @override
+  String get mapCatReligious => 'ديني';
+
+  @override
+  String get mapCatFood => 'الطعام والمطاعم';
+
+  @override
+  String get mapCatNature => 'الطبيعة';
+
+  @override
+  String get mapCatEntertainment => 'الترفيه';
+
+  @override
+  String get mapCatShopping => 'التسوق';
 }

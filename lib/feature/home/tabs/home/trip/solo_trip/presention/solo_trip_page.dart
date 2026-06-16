@@ -16,6 +16,7 @@ import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/w
 import '../../../../../../../../theme/theme.dart';
 import '../../../../navigator/widget/account_menu_button.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class SoloTripPage extends StatefulWidget {
   final String? profileImageUrl;
@@ -189,6 +190,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final sectionColor = isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
@@ -229,7 +231,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                       ),
                       Expanded(
                         child: Text(
-                          'Solo Trip',
+                          l10n.soloTripTitle,
                           style: TextStyle(
                             fontSize: 22.sp,
                             fontWeight: FontWeight.w500,
@@ -256,7 +258,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                   MaterialPageRoute(
                                       builder: (_) => const MyPlansScreen()),
                                 ),
-                                tooltip: 'My Plans',
+                                tooltip: l10n.accountMyPlans,
                                 icon: Icon(Icons.bookmark_outlined,
                                     color: gold, size: 24.r),
                               ),
@@ -316,7 +318,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Recommended Plans',
+                                    l10n.soloRecommendedPlans,
                                     style: TextStyle(
                                       fontSize: 24.sp,
                                       fontWeight: FontWeight.w500,
@@ -338,7 +340,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
-                                    'Personalised based on your travel history',
+                                    l10n.soloPersonalised,
                                     style: TextStyle(
                                       fontSize: 13.sp,
                                       color: titleColor.withValues(alpha: 0.55),

@@ -12,6 +12,7 @@ import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/active_tour_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -178,6 +179,7 @@ class _ResultScreenState extends State<ResultScreen>
   }
 
   Future<void> _generate() async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _loading = true;
       _error = null;
@@ -207,14 +209,14 @@ class _ResultScreenState extends State<ResultScreen>
     } on FirebaseFunctionsException catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.message ?? 'Could not generate your plan.';
+          _error = e.message ?? l10n.resultCouldNotGenerate;
           _loading = false;
         });
       }
     } catch (_) {
       if (mounted) {
         setState(() {
-          _error = 'Something went wrong. Please try again.';
+          _error = l10n.communitySomethingWrong;
           _loading = false;
         });
       }
@@ -313,6 +315,7 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final textColor = isDark ? AppColors.darkText : AppColors.lightBox;
     return Center(
       child: Padding(
@@ -329,7 +332,7 @@ class _LoadingView extends StatelessWidget {
             ),
             SizedBox(height: 28.h),
             Text(
-              'Planning your trip…',
+              l10n.resultPlanning,
               style: TextStyle(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.w600,
@@ -339,7 +342,7 @@ class _LoadingView extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              'Our AI guide is building a personalised day-by-day itinerary for you.',
+              l10n.resultPlanningSub,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
@@ -379,6 +382,7 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final textColor = isDark ? AppColors.darkText : AppColors.lightBox;
     return SafeArea(
       child: Column(
@@ -404,7 +408,7 @@ class _ErrorView extends StatelessWidget {
                     Icon(Icons.cloud_off_outlined, size: 56.r, color: gold),
                     SizedBox(height: 20.h),
                     Text(
-                      'Couldn\'t load your plan',
+                      l10n.resultCouldNotLoad,
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w600,
@@ -426,7 +430,7 @@ class _ErrorView extends StatelessWidget {
                     ElevatedButton.icon(
                       onPressed: onRetry,
                       icon: const Icon(Icons.refresh_rounded),
-                      label: const Text('Try again'),
+                      label: Text(l10n.commonTryAgain),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: gold,
                         foregroundColor: Colors.white,
@@ -484,7 +488,7 @@ class _PlanViewState extends State<_PlanView> {
     if (stop.lat == null || stop.lng == null) {
       ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
-          content: Text("Couldn't pin ${stop.name} on the map yet. Try again in a moment."),
+          content: Text(AppLocalizations.of(ctx).resultCouldNotPin(stop.name)),
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.red.shade700,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -610,6 +614,7 @@ class _PlanViewState extends State<_PlanView> {
   }
 
   Future<void> _savePlan(BuildContext ctx) async {
+    final l10n = AppLocalizations.of(ctx);
     setState(() => _saving = true);
     try {
       final saved = await SoloPlanService.instance.saveCustomPlan(
@@ -629,7 +634,7 @@ class _PlanViewState extends State<_PlanView> {
       });
       ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
-          content: const Text('Plan saved! Find it in My Plans.'),
+          content: Text(l10n.soloPlanSaved),
           backgroundColor: gold,
           behavior: SnackBarBehavior.floating,
           shape:
@@ -640,7 +645,7 @@ class _PlanViewState extends State<_PlanView> {
       if (!ctx.mounted) return;
       ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
-          content: const Text('Could not save plan. Try again.'),
+          content: Text(l10n.soloCouldNotSave),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape:
@@ -660,7 +665,7 @@ class _PlanViewState extends State<_PlanView> {
       if (!ctx.mounted) return;
       if (activePlan == null) {
         ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-          content: const Text('Could not start tour. Try again.'),
+          content: Text(AppLocalizations.of(ctx).soloCouldNotStart),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -783,7 +788,7 @@ class _PlanViewState extends State<_PlanView> {
     } catch (_) {
       if (!ctx.mounted) return;
       ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-        content: const Text('Could not export itinerary. Try again.'),
+        content: Text(AppLocalizations.of(ctx).resultCouldNotExport),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -794,16 +799,17 @@ class _PlanViewState extends State<_PlanView> {
   }
 
   Future<void> _discardPlan(BuildContext ctx) async {
+    final l10n = AppLocalizations.of(ctx);
     final confirm = await showDialog<bool>(
       context: ctx,
       builder: (d) => AlertDialog(
-        title: const Text('Discard plan?'),
-        content: const Text('This plan will not be saved. You can always generate a new one.'),
+        title: Text(l10n.resultDiscardTitle),
+        content: Text(l10n.resultDiscardBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Keep')),
+          TextButton(onPressed: () => Navigator.pop(d, false), child: Text(l10n.resultKeep)),
           TextButton(
             onPressed: () => Navigator.pop(d, true),
-            child: Text('Discard', style: TextStyle(color: Colors.red.shade600)),
+            child: Text(l10n.resultDiscard, style: TextStyle(color: Colors.red.shade600)),
           ),
         ],
       ),
@@ -841,6 +847,7 @@ class _PlanViewState extends State<_PlanView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final textColor = isDark ? AppColors.darkText : AppColors.lightBox;
     final cardColor =
         isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
@@ -878,7 +885,7 @@ class _PlanViewState extends State<_PlanView> {
                           color: gold,
                           size: 22.r,
                         ),
-                  tooltip: _isSaved ? 'Saved' : 'Save Plan',
+                  tooltip: _isSaved ? l10n.soloStatusSaved : l10n.soloSavePlan,
                   onPressed: (_saving || _isSaved) ? null : () => _savePlan(context),
                 ),
                 IconButton(
@@ -889,13 +896,13 @@ class _PlanViewState extends State<_PlanView> {
                           child: CircularProgressIndicator(strokeWidth: 2, color: gold),
                         )
                       : Icon(Icons.picture_as_pdf_outlined, color: textColor, size: 22.r),
-                  tooltip: 'Export PDF',
+                  tooltip: l10n.resultExportPdf,
                   onPressed: _exporting ? null : () => _exportPdf(context),
                 ),
                 IconButton(
                   icon: Icon(Icons.share_outlined, color: textColor, size: 22.r),
                   onPressed: () => Share.share(
-                    '${plan.title}\n\n${plan.summary}\n\nPlanned with Lost in Egypt 🌍',
+                    '${plan.title}\n\n${plan.summary}\n\n${l10n.resultShareSuffix}',
                   ),
                 ),
               ],
@@ -942,7 +949,7 @@ class _PlanViewState extends State<_PlanView> {
                             gold: gold),
                       _StatChip(
                           icon: Icons.place_outlined,
-                          label: '$totalStops locations',
+                          label: l10n.resultLocationsCount(totalStops),
                           gold: gold),
                       if (plan.estimatedBudget.isNotEmpty)
                         _StatChip(
@@ -1010,8 +1017,8 @@ class _PlanViewState extends State<_PlanView> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16.r)),
                           ),
-                          child: const Text('Discard',
-                              style: TextStyle(fontWeight: FontWeight.w600)),
+                          child: Text(l10n.resultDiscard,
+                              style: const TextStyle(fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ),
@@ -1035,8 +1042,8 @@ class _PlanViewState extends State<_PlanView> {
                             ),
                       label: Text(
                         _savedPlan?.status == SoloPlanStatus.active
-                            ? 'Continue Tour'
-                            : 'Start Tour',
+                            ? l10n.soloContinueTour
+                            : l10n.soloStartTour,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
@@ -1173,7 +1180,7 @@ class _ForecastChip extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Day ${day.day}',
+            AppLocalizations.of(context).resultDayNum(day.day),
             style: TextStyle(
               fontSize: 11.sp,
               fontWeight: FontWeight.w700,
@@ -1613,7 +1620,7 @@ class _StopTile extends StatelessWidget {
                           Icon(Icons.map_outlined, size: 14.r, color: gold),
                           SizedBox(width: 4.w),
                           Text(
-                            'View on Maps',
+                            AppLocalizations.of(context).resultViewOnMaps,
                             style: TextStyle(
                               fontSize: 13.sp,
                               color: gold,

@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
@@ -287,7 +288,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   Future<void> _toggleSave() async {
     if (_userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to save places.')),
+        SnackBar(content: Text(AppLocalizations.of(context).placeDetailLoginToSave)),
       );
       return;
     }
@@ -328,20 +329,22 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   }
 
   String _formatDistance(double km) {
-    if (km < 1) return '${(km * 1000).round()} m away';
-    if (km < 10) return '${km.toStringAsFixed(1)} km away';
-    return '${km.round()} km away';
+    final l10n = AppLocalizations.of(context);
+    if (km < 1) return l10n.placeDetailMetersAway((km * 1000).round());
+    if (km < 10) return l10n.placeDetailKmAway(km.toStringAsFixed(1));
+    return l10n.placeDetailKmAway('${km.round()}');
   }
 
   String _estimateFare(double km) {
     final fare = (10 + km * 5).round();
     final fareHigh = (fare * 1.5).round();
-    return '~$fare–$fareHigh EGP by taxi';
+    return AppLocalizations.of(context).placeDetailTaxiFare(fare, fareHigh);
   }
 
   String _getOpeningStatus() {
     if (widget.place.openingHoursText.isNotEmpty) {
-      return widget.place.isCurrentlyOpen ? 'Open Now' : 'Closed';
+      final l10n = AppLocalizations.of(context);
+      return widget.place.isCurrentlyOpen ? l10n.placeDetailOpenNow : l10n.placeDetailClosed;
     }
     return '';
   }
@@ -362,6 +365,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     final surface = theme.colorScheme.surface;
@@ -507,7 +511,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             Icon(Icons.keyboard_arrow_down_rounded,
                                 size: 18.r, color: Colors.white),
                             SizedBox(width: 2.w),
-                            Text('Close',
+                            Text(l10n.placeDetailClose,
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 12.sp,
@@ -622,7 +626,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       children: [
                         _buildActionButton(
                           icon: Icons.map_outlined,
-                          label: "Show on Map",
+                          label: l10n.cameraShowOnMap,
                           isPrimary: true,
                           primary: primary,
                           onSurface: onSurface,
@@ -638,7 +642,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                         _buildActionButton(
                           icon: Icons.directions,
-                          label: "Directions",
+                          label: l10n.placeDetailDirections,
                           isPrimary: false,
                           primary: primary,
                           onSurface: onSurface,
@@ -647,7 +651,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                         _buildActionButton(
                           icon: Icons.share,
-                          label: "Share",
+                          label: l10n.placeDetailShare,
                           isPrimary: false,
                           primary: primary,
                           onSurface: onSurface,
@@ -656,7 +660,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                         _buildActionButton(
                           icon: _isSaved ? Icons.favorite : Icons.favorite_border,
-                          label: _isSaved ? "Saved" : "Save",
+                          label: _isSaved ? l10n.placeDetailSaved : l10n.commonSave,
                           isPrimary: false,
                           primary: primary,
                           onSurface: onSurface,
@@ -675,7 +679,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
 
                     // About
                     Text(
-                      "About",
+                      l10n.placeDetailAbout,
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
@@ -686,9 +690,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     Text(
                       _description.isNotEmpty
                           ? _description
-                          : "Explore the ancient wonders and hidden gems of Egypt. "
-                              "This location offers a unique glimpse into the rich "
-                              "history and culture of the region.",
+                          : l10n.placeDetailDefaultDesc,
                       style: TextStyle(
                         height: 1.6,
                         color: onSurface.withValues(alpha: 0.85),
@@ -725,7 +727,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     if (widget.place.price > 0)
                       _buildInfoTile(
                         icon: Icons.confirmation_number_outlined,
-                        text: "${widget.place.price.toStringAsFixed(0)} EGP Entry Fee",
+                        text: l10n.placeDetailEntryFee(widget.place.price.toStringAsFixed(0)),
                         iconColor: Colors.green,
                         onSurface: onSurface,
                       ),
@@ -749,7 +751,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
                       SizedBox(height: 16.h),
                       Text(
-                        "What Travelers Say",
+                        l10n.placeDetailReviews,
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
@@ -773,7 +775,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
-                              '$_communityPostCount traveler${_communityPostCount == 1 ? '' : 's'} posted from here',
+                              l10n.placeDetailPostedHere(_communityPostCount),
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.w600,
@@ -784,7 +786,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           TextButton(
                             onPressed: () => _openCommunityPosts(context),
                             child: Text(
-                              'See Posts',
+                              l10n.placeDetailSeePosts,
                               style: TextStyle(color: primary, fontWeight: FontWeight.w700),
                             ),
                           ),
@@ -802,7 +804,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           Icon(Icons.auto_awesome, size: 16.r, color: primary),
                           SizedBox(width: 8.w),
                           Text(
-                            "Similar Places",
+                            l10n.placeDetailSimilar,
                             style: TextStyle(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
@@ -1007,17 +1009,18 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   }
 
   Widget _buildCrowdBadge(int count, Color primary, Color onSurface, bool isDark) {
+    final l10n = AppLocalizations.of(context);
     final Color dotColor;
     final String label;
     if (count <= 2) {
       dotColor = Colors.green.shade500;
-      label = 'Quiet right now';
+      label = l10n.placeDetailCrowdQuiet;
     } else if (count <= 8) {
       dotColor = Colors.amber.shade600;
-      label = 'Moderately busy';
+      label = l10n.placeDetailCrowdModerate;
     } else {
       dotColor = Colors.red.shade500;
-      label = 'Very busy';
+      label = l10n.placeDetailCrowdBusy;
     }
 
     return Container(
@@ -1171,6 +1174,7 @@ class _CommunityPostsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? const Color(0xFF1A2E3A) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
@@ -1206,7 +1210,7 @@ class _CommunityPostsSheet extends StatelessWidget {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Posts from $placeName',
+                      l10n.placeDetailPostsFrom(placeName),
                       style: TextStyle(
                         fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         fontSize: 18.sp,
@@ -1235,7 +1239,7 @@ class _CommunityPostsSheet extends StatelessWidget {
                   if (docs.isEmpty) {
                     return Center(
                       child: Text(
-                        'No posts yet from this place.\nBe the first to share!',
+                        l10n.placeDetailNoPosts,
                         textAlign: TextAlign.center,
                         style: TextStyle(color: onSurface.withValues(alpha: 0.5)),
                       ),

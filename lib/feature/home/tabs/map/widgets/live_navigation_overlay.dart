@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import '../bloc/map_state.dart';
 
@@ -124,7 +125,7 @@ class LiveNavigationOverlay extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          'Step ${state.currentStepIndex + 1}/${state.currentRoute!.steps.length}',
+                          AppLocalizations.of(context).mapStepProgress(state.currentStepIndex + 1, state.currentRoute!.steps.length),
                           style: TextStyle(
                               color: onSurface.withValues(alpha: 0.5), fontSize: 12.sp),
                         ),

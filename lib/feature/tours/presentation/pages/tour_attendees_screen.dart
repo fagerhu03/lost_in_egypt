@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
@@ -16,10 +17,11 @@ class TourAttendeesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Attendees', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.attendeesTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -38,10 +40,10 @@ class TourAttendeesScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.error_outline, size: 48.r, color: theme.colorScheme.error),
                   SizedBox(height: 12.h),
-                  const Text('Error loading attendees'),
+                  Text(l10n.attendeesError),
                   SizedBox(height: 8.h),
                   Text(
-                    'A Firestore index may be needed.\nCheck debug console for the link.',
+                    l10n.attendeesIndexHint,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                   ),
@@ -61,10 +63,10 @@ class TourAttendeesScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.people_outline, size: 80.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
                   SizedBox(height: 16.h),
-                  Text('No bookings yet', style: TextStyle(fontSize: 18.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                  Text(l10n.attendeesEmpty, style: TextStyle(fontSize: 18.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                   SizedBox(height: 8.h),
                   Text(
-                    'When travelers book this tour,\nthey\'ll appear here.',
+                    l10n.attendeesEmptySub,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
                   ),
@@ -90,25 +92,25 @@ class TourAttendeesScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _statItem('${confirmed.length}', 'Confirmed', Colors.green),
+                    _statItem('${confirmed.length}', l10n.attendeesStatConfirmed, Colors.green),
                     Container(width: 1, height: 40.h, color: primary.withValues(alpha: 0.2)),
-                    _statItem('${cancelled.length}', 'Cancelled', Colors.red),
+                    _statItem('${cancelled.length}', l10n.attendeesStatCancelled, Colors.red),
                     Container(width: 1, height: 40.h, color: primary.withValues(alpha: 0.2)),
-                    _statItem('${bookings.length}', 'Total', primary),
+                    _statItem('${bookings.length}', l10n.attendeesStatTotal, primary),
                   ],
                 ),
               ),
               SizedBox(height: 20.h),
 
               if (confirmed.isNotEmpty) ...[
-                Text('Confirmed (${confirmed.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: theme.colorScheme.onSurface)),
+                Text(l10n.attendeesSectionConfirmed(confirmed.length), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: theme.colorScheme.onSurface)),
                 SizedBox(height: 12.h),
                 ...confirmed.map((doc) => _AttendeeCard(bookingData: doc.data() as Map<String, dynamic>, bookingId: doc.id)),
                 SizedBox(height: 20.h),
               ],
 
               if (cancelled.isNotEmpty) ...[
-                Text('Cancelled (${cancelled.length})', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: Colors.red)),
+                Text(l10n.attendeesSectionCancelled(cancelled.length), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp, color: Colors.red)),
                 SizedBox(height: 12.h),
                 ...cancelled.map((doc) => _AttendeeCard(bookingData: doc.data() as Map<String, dynamic>, bookingId: doc.id, isCancelled: true)),
               ],
@@ -168,6 +170,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     if (_loading) {
       return Container(
@@ -222,7 +225,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
               fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
               fallbackIconColor: theme.colorScheme.primary,
             ),
-            title: Text(name.isNotEmpty ? name : 'Unknown User', style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(name.isNotEmpty ? name : l10n.attendeesUnknownUser, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -244,7 +247,7 @@ class _AttendeeCardState extends State<_AttendeeCard> {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
-                    paymentStatus == 'paid' ? 'PAID' : 'PENDING',
+                    paymentStatus == 'paid' ? l10n.attendeesPaid : l10n.attendeesPending,
                     style: TextStyle(
                       color: paymentStatus == 'paid' ? Colors.green : Colors.orange,
                       fontSize: 11.sp,
@@ -266,14 +269,14 @@ class _AttendeeCardState extends State<_AttendeeCard> {
             child: Row(
               children: [
                 if (phone.isNotEmpty)
-                  _actionButton(Icons.phone, 'Call', () => _launchUrl('tel:$phone')),
+                  _actionButton(Icons.phone, l10n.attendeesCall, () => _launchUrl('tel:$phone')),
                 if (phone.isNotEmpty)
-                  _actionButton(Icons.message, 'WhatsApp', () => _launchUrl('https://wa.me/${phone.replaceAll(RegExp(r'[^0-9+]'), '')}')),
+                  _actionButton(Icons.message, l10n.attendeesWhatsApp, () => _launchUrl('https://wa.me/${phone.replaceAll(RegExp(r'[^0-9+]'), '')}')),
                 if (email.isNotEmpty)
-                  _actionButton(Icons.email, 'Email', () => _launchUrl('mailto:$email')),
+                  _actionButton(Icons.email, l10n.attendeesEmail, () => _launchUrl('mailto:$email')),
                 const Spacer(),
                 if (!widget.isCancelled)
-                  _actionButton(Icons.cancel, 'Cancel', () => _cancelBooking(context), color: Colors.red),
+                  _actionButton(Icons.cancel, l10n.commonCancel, () => _cancelBooking(context), color: Colors.red),
               ],
             ),
           ),
@@ -312,17 +315,18 @@ class _AttendeeCardState extends State<_AttendeeCard> {
   }
 
   Future<void> _cancelBooking(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Cancel Booking'),
-        content: const Text('Are you sure you want to cancel this booking? The traveler will be notified.'),
+        title: Text(l10n.attendeesCancelBooking),
+        content: Text(l10n.attendeesCancelBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.commonNo)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Cancel Booking', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.attendeesCancelBooking, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

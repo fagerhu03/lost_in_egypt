@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../core/utils/error_handler.dart';
 import '../../../../core/widgets/shimmer_avatar.dart';
 
@@ -31,6 +32,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     if (bookingId == null || bookingId.isEmpty) return;
     if (_processing || bookingId == _lastScanned) return;
 
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _processing = true;
       _lastScanned = bookingId;
@@ -45,7 +47,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
       if (!mounted) return;
       if (!doc.exists) {
-        _showResult(context, valid: false, message: 'Booking not found');
+        _showResult(context, valid: false, message: l10n.qrBookingNotFound);
         return;
       }
 
@@ -80,6 +82,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   void _showResult(BuildContext context, {required bool valid, required String message}) {
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -101,7 +104,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               Navigator.pop(ctx);
               _resumeScanner();
             },
-            child: const Text('Scan Another'),
+            child: Text(l10n.qrScanAnother),
           ),
         ],
       ),
@@ -117,12 +120,13 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     required bool alreadyCheckedIn,
   }) {
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
     final status = bookingData['status'] ?? '';
     final isValid = status == 'confirmed' || status == 'checked_in' ||
         status == 'partially_checked_in';
     final theme = Theme.of(context);
 
-    final tourTitle = tourData?['title'] ?? 'Unknown Tour';
+    final tourTitle = tourData?['title'] ?? l10n.qrUnknownTour;
     final tourDate = (bookingData['date'] as Timestamp?)?.toDate();
     final quantity = (bookingData['quantity'] as num?)?.toInt() ?? 1;
     final totalEGP = (bookingData['totalAmountEGP'] as num?)?.toDouble() ?? 0;
@@ -170,12 +174,12 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         SizedBox(width: 8.w),
                         Text(
                           remaining == 0
-                              ? 'All Tickets Checked In'
+                              ? l10n.qrAllCheckedIn
                               : status == 'partially_checked_in'
-                                  ? 'Partially Checked In ($alreadyCheckedInCount/$quantity)'
+                                  ? l10n.qrPartiallyCheckedIn(alreadyCheckedInCount, quantity)
                                   : isValid
-                                      ? 'Valid Ticket'
-                                      : 'Invalid Ticket (${status.toUpperCase()})',
+                                      ? l10n.qrValidTicket
+                                      : l10n.qrInvalidTicket('$status'.toUpperCase()),
                           style: TextStyle(
                             color: isValid ? Colors.green : Colors.red,
                             fontWeight: FontWeight.bold,
@@ -201,7 +205,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          touristName.isNotEmpty ? touristName : 'Unknown Traveler',
+                          touristName.isNotEmpty ? touristName : l10n.qrUnknownTraveler,
                           style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.bold),
                         ),
                         if (username.isNotEmpty)
@@ -219,16 +223,18 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 SizedBox(height: 12.h),
 
                 // Booking details
-                _SheetRow(Icons.tour_outlined, 'Tour', tourTitle),
+                _SheetRow(Icons.tour_outlined, l10n.qrRowTour, tourTitle),
                 if (tourDate != null)
-                  _SheetRow(Icons.calendar_today, 'Date',
+                  _SheetRow(Icons.calendar_today, l10n.qrRowDate,
                       DateFormat('EEE, MMM d · h:mm a').format(tourDate)),
-                _SheetRow(Icons.confirmation_number_outlined, 'Tickets',
-                    '$quantity ticket${quantity > 1 ? 's' : ''}'
-                    '${alreadyCheckedInCount > 0 ? ' · $alreadyCheckedInCount checked in' : ''}'),
-                _SheetRow(Icons.payments_outlined, 'Amount',
+                _SheetRow(Icons.confirmation_number_outlined, l10n.qrRowTickets,
+                    l10n.qrTicketsCount(quantity) +
+                        (alreadyCheckedInCount > 0
+                            ? ' · ${l10n.qrCheckedInCount(alreadyCheckedInCount)}'
+                            : '')),
+                _SheetRow(Icons.payments_outlined, l10n.qrRowAmount,
                     'EGP ${totalEGP.toStringAsFixed(0)}'),
-                _SheetRow(Icons.receipt_outlined, 'Booking ID',
+                _SheetRow(Icons.receipt_outlined, l10n.qrRowBookingId,
                     bookingId.substring(0, 8).toUpperCase()),
 
                 // Partial check-in stepper (only when tickets remain)
@@ -237,7 +243,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   Row(
                     children: [
                       Text(
-                        'Check in how many?',
+                        l10n.qrCheckInHowMany,
                         style: TextStyle(
                           fontSize: 14.sp,
                           color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -280,8 +286,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     child: FilledButton.icon(
                       icon: const Icon(Icons.check_circle_outline),
                       label: Text(quantity == 1
-                          ? 'Check In Tourist'
-                          : 'Check In $checkingIn of $remaining Remaining'),
+                          ? l10n.qrCheckInTourist
+                          : l10n.qrCheckInRemaining(checkingIn, remaining)),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.green,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -305,8 +311,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                               context,
                               valid: true,
                               message: newStatus == 'checked_in'
-                                  ? 'All $quantity tickets checked in!'
-                                  : '$checkingIn ticket${checkingIn > 1 ? 's' : ''} checked in.\n${quantity - newCheckedIn} remaining.',
+                                  ? l10n.qrAllTicketsCheckedIn(quantity)
+                                  : l10n.qrCheckedInResult(
+                                      checkingIn, quantity - newCheckedIn),
                             );
                           }
                         } catch (e) {
@@ -326,7 +333,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         Navigator.pop(ctx);
                         _resumeScanner();
                       },
-                      child: const Text('Scan Another'),
+                      child: Text(l10n.qrScanAnother),
                     ),
                   ),
               ],
@@ -348,9 +355,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan Ticket QR'),
+        title: Text(l10n.qrTitle),
         centerTitle: true,
         actions: [
           IconButton(
@@ -387,7 +395,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 borderRadius: BorderRadius.circular(24.r),
               ),
               child: Text(
-                'Point camera at tourist\'s QR ticket',
+                l10n.qrPointCamera,
                 style: TextStyle(color: Colors.white, fontSize: 14.sp),
               ),
             ),

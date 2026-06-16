@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/models/route_info.dart';
 
 class NavigationInfoBar extends StatelessWidget {
@@ -25,6 +26,7 @@ class NavigationInfoBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
@@ -75,7 +77,7 @@ class NavigationInfoBar extends StatelessWidget {
                 _buildModeChip(
                   context: context,
                   icon: Icons.directions_car_rounded,
-                  label: 'Drive',
+                  label: l10n.mapModeDrive,
                   mode: 'driving',
                   isSelected: selectedMode == 'driving',
                   primary: primary,
@@ -86,7 +88,7 @@ class NavigationInfoBar extends StatelessWidget {
                 _buildModeChip(
                   context: context,
                   icon: Icons.directions_walk_rounded,
-                  label: 'Walk',
+                  label: l10n.mapModeWalk,
                   mode: 'walking',
                   isSelected: selectedMode == 'walking',
                   primary: primary,
@@ -97,7 +99,7 @@ class NavigationInfoBar extends StatelessWidget {
                 _buildModeChip(
                   context: context,
                   icon: Icons.directions_transit_rounded,
-                  label: 'Transit',
+                  label: l10n.mapModeTransit,
                   mode: 'transit',
                   isSelected: selectedMode == 'transit',
                   primary: primary,
@@ -145,7 +147,7 @@ class NavigationInfoBar extends StatelessWidget {
                   ),
                   SizedBox(width: 10.w),
                   Text(
-                    'Finding route...',
+                    l10n.mapFindingRoute,
                     style: TextStyle(
                       color: onSurface.withValues(alpha: 0.6),
                       fontSize: 14.sp,
@@ -215,7 +217,7 @@ class NavigationInfoBar extends StatelessWidget {
                               ),
                               SizedBox(width: 6.w),
                               Text(
-                                '${routeInfo.steps.length} steps',
+                                l10n.mapStepsCount(routeInfo.steps.length),
                                 style: TextStyle(
                                   color: onSurface.withValues(alpha: 0.7),
                                   fontSize: 13.sp,
@@ -251,7 +253,7 @@ class NavigationInfoBar extends StatelessWidget {
                   ),
                   icon: Icon(Icons.navigation_rounded, size: 22.r),
                   label: Text(
-                    'Start Navigation',
+                    l10n.mapStartNavigation,
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 import '../../home/data/models/map_item_models.dart';
 
@@ -24,6 +25,7 @@ class MapFilterSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     final surface = theme.colorScheme.surface;
@@ -75,7 +77,7 @@ class MapFilterSheet extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      "Filter by Category",
+                      l10n.mapFilterByCategory,
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -97,7 +99,7 @@ class MapFilterSheet extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        selectedCategory == 'all' ? 'Zoom Filter ON' : 'Showing All',
+                        selectedCategory == 'all' ? l10n.mapZoomFilterOn : l10n.mapShowingAll,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: selectedCategory == 'all' ? primary : Colors.green,
@@ -156,7 +158,7 @@ class MapFilterSheet extends StatelessWidget {
                           ),
                         ),
                         title: Text(
-                          category.label,
+                          mapCategoryLabel(l10n, category),
                           style: TextStyle(
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                             color: isSelected ? primary : onSurface,
@@ -164,10 +166,10 @@ class MapFilterSheet extends StatelessWidget {
                         ),
                         subtitle: Text(
                           category.id == 'all'
-                              ? '$count places • Zoom to see more'
+                              ? l10n.mapCatPlacesZoom(count)
                               : category.id == 'favorites'
-                                  ? '$count saved places'
-                                  : '$count places',
+                                  ? l10n.mapCatSavedPlaces(count)
+                                  : l10n.mapCatPlaces(count),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: onSurface.withValues(alpha: 0.70),

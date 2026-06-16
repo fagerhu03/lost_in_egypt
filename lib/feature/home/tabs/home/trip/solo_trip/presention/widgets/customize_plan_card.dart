@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/customize_plan/presentation/pages/quiz_flow_screen.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../theme/theme.dart';
 
 class CustomizePlanCard extends StatelessWidget {
@@ -49,7 +50,7 @@ class CustomizePlanCard extends StatelessWidget {
             SizedBox(width: 18.w),
             Flexible(
               child: Text(
-                "Customize your\nown plan",
+                AppLocalizations.of(context).soloCustomizeOwnPlan,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 24.sp,

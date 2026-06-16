@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../domain/entities/tour_entity.dart';
 import '../../../home/tabs/map/data/datasources/map_focus_service.dart';
 import '../../../home/tabs/home/data/models/map_item_models.dart';
@@ -62,6 +63,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -69,7 +71,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          'Meetup Location',
+          l10n.tourMapMeetupTitle,
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black87,
             fontWeight: FontWeight.bold,
@@ -95,7 +97,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
               Marker(
                 markerId: const MarkerId('meeting_point'),
                 position: LatLng(widget.tour.meetingLatitude, widget.tour.meetingLongitude),
-                infoWindow: InfoWindow(title: widget.tour.meetingLocationName, snippet: 'Tour Start Point'),
+                infoWindow: InfoWindow(title: widget.tour.meetingLocationName, snippet: l10n.tourMapStartPoint),
                 icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
               ),
             },
@@ -170,7 +172,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Meeting Point',
+                              l10n.tourMapMeetingPoint,
                               style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.bold),
                             ),
                             Text(
@@ -187,7 +189,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                     child: Divider(height: 1.h),
                   ),
                   Text(
-                    'Destinations You Will Visit:',
+                    l10n.tourMapDestinations,
                     style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 12.h),
@@ -224,7 +226,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                       ),
                       onPressed: _navigateToMainMap,
                       icon: const Icon(Icons.explore),
-                      label: Text('Explore in Main Map', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                      label: Text(l10n.tourMapExplore, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                     ),
                   ),
                   SizedBox(height: 10.h),
@@ -239,7 +241,7 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
                       ),
                       onPressed: _navigateAsTripRoute,
                       icon: const Icon(Icons.route_rounded),
-                      label: Text('Navigate Tour Route', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                      label: Text(l10n.tourMapNavigateRoute, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

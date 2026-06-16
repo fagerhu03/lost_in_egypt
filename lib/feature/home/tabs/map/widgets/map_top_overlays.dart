@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 
 import '../bloc/map_bloc.dart';
@@ -25,6 +26,7 @@ class MapTopOverlays extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
@@ -60,7 +62,7 @@ class MapTopOverlays extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '$visibleMarkersCount/${state.allItems.length} places',
+                  l10n.mapPlacesCount(visibleMarkersCount, state.allItems.length),
                   style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
@@ -68,10 +70,11 @@ class MapTopOverlays extends StatelessWidget {
                 ),
                 if (state.selectedUiCategoryId != 'all')
                   Text(
-                    MapConfig.categories
-                        .firstWhere((c) => c.id == state.selectedUiCategoryId,
-                            orElse: () => const UiCategory('', 'Unknown', ''))
-                        .label,
+                    mapCategoryLabel(
+                        l10n,
+                        MapConfig.categories.firstWhere(
+                            (c) => c.id == state.selectedUiCategoryId,
+                            orElse: () => const UiCategory('', 'Unknown', ''))),
                     style: TextStyle(
                         fontSize: 10.sp,
                         color: primary,

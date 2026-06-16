@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../bloc/create_tour_cubit.dart';
 import '../bloc/create_tour_state.dart';
 import 'package:intl/intl.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
@@ -96,6 +97,28 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       if (t.frequency != 'One-Time') {
         _selectedWeekdays.addAll(t.frequency.split(', '));
       }
+    }
+  }
+
+  // Weekday values stay English (persisted in `frequency`); only the display is localized.
+  String _weekdayLabel(AppLocalizations l10n, String day) {
+    switch (day) {
+      case 'Mon':
+        return l10n.weekdayMon;
+      case 'Tue':
+        return l10n.weekdayTue;
+      case 'Wed':
+        return l10n.weekdayWed;
+      case 'Thu':
+        return l10n.weekdayThu;
+      case 'Fri':
+        return l10n.weekdayFri;
+      case 'Sat':
+        return l10n.weekdaySat;
+      case 'Sun':
+        return l10n.weekdaySun;
+      default:
+        return day;
     }
   }
 
@@ -196,30 +219,31 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
   }
 
   void _submit() {
+    final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
     if (_selectedMeetingTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a meeting time.')),
+        SnackBar(content: Text(l10n.createSelectTime)),
       );
       return;
     }
     if (_selectedImages.isEmpty && _existingImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one image.')),
+        SnackBar(content: Text(l10n.createSelectImage)),
       );
       return;
     }
 
     if (_selectedLat == null || _selectedLng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a meeting location on the map.')),
+        SnackBar(content: Text(l10n.createSelectLocation)),
       );
       return;
     }
 
     if (_destinations.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one destination.')),
+        SnackBar(content: Text(l10n.createAddDestination)),
       );
       return;
     }
@@ -227,7 +251,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final price = double.tryParse(_priceController.text) ?? 0.0;
     if (price < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Price cannot be negative.')),
+        SnackBar(content: Text(l10n.createPriceNegative)),
       );
       return;
     }
@@ -235,7 +259,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final attendees = int.tryParse(_maxAttendeesController.text) ?? 10;
     if (attendees <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Max attendees must be greater than zero.')),
+        SnackBar(content: Text(l10n.createAttendeesZero)),
       );
       return;
     }
@@ -280,9 +304,10 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.tourToEdit != null ? 'Edit Tour' : 'Create New Tour')),
+      appBar: AppBar(title: Text(widget.tourToEdit != null ? l10n.createEditTitle : l10n.createNewTitle)),
       body: BlocConsumer<CreateTourCubit, CreateTourState>(
         listener: (context, state) {
           if (state is CreateTourError) {
@@ -293,7 +318,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
             final isEdit = widget.tourToEdit != null;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(isEdit ? 'Tour updated!' : 'Tour created successfully!'),
+                content: Text(isEdit ? l10n.createUpdatedToast : l10n.createCreatedToast),
                 backgroundColor: Colors.green,
               ),
             );
@@ -317,18 +342,18 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                 children: [
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Tour Title', border: OutlineInputBorder()),
-                    validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                    decoration: InputDecoration(labelText: l10n.createFieldTitle, border: const OutlineInputBorder()),
+                    validator: (val) => val == null || val.isEmpty ? l10n.createRequired : null,
                   ),
                   SizedBox(height: 16.h),
                   TextFormField(
                     controller: _descController,
-                    decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+                    decoration: InputDecoration(labelText: l10n.createFieldDesc, border: const OutlineInputBorder()),
                     maxLines: 3,
-                    validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                    validator: (val) => val == null || val.isEmpty ? l10n.createRequired : null,
                   ),
                   SizedBox(height: 16.h),
-                  Text('Destinations (Max 5)', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                  Text(l10n.createDestinationsLabel, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8.h),
                   if (_destinations.isNotEmpty)
                     ReorderableListView.builder(
@@ -437,9 +462,9 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                       controller: controller,
                                       focusNode: focusNode,
                                       onEditingComplete: onEditingComplete,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Search destination...',
-                                        border: OutlineInputBorder(),
+                                      decoration: InputDecoration(
+                                        hintText: l10n.createSearchDestination,
+                                        border: const OutlineInputBorder(),
                                       ),
                                     );
                                   },
@@ -452,7 +477,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                 onPressed: () async {
                                   final result = await Navigator.pushNamed(context, '/map_picker');
                                   if (result != null && result is Map<String, dynamic>) {
-                                    final title = result['name'] ?? result['address'] ?? 'Unknown Location';
+                                    final title = result['name'] ?? result['address'] ?? l10n.mapPickerUnknownLocation;
                                     if (!_destinations.contains(title)) {
                                       setState(() {
                                         _destinations.add(title);
@@ -469,18 +494,18 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _priceController,
-                          decoration: const InputDecoration(labelText: 'Price (EGP)', prefixText: 'EGP ', border: OutlineInputBorder()),
+                          decoration: InputDecoration(labelText: l10n.createFieldPrice, prefixText: 'EGP ', border: const OutlineInputBorder()),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                          validator: (val) => val == null || val.isEmpty ? l10n.createRequired : null,
                         ),
                       ),
                       SizedBox(width: 16.w),
                       Expanded(
                         child: TextFormField(
                           controller: _maxAttendeesController,
-                          decoration: const InputDecoration(labelText: 'Max Attendees', border: OutlineInputBorder()),
+                          decoration: InputDecoration(labelText: l10n.createFieldMaxAttendees, border: const OutlineInputBorder()),
                           keyboardType: TextInputType.number,
-                          validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                          validator: (val) => val == null || val.isEmpty ? l10n.createRequired : null,
                         ),
                       ),
                     ],
@@ -490,7 +515,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Meeting Location', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                        Text(l10n.createMeetingLocation, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                         SizedBox(height: 8.h),
                         if (_selectedLocationName != null && _selectedLocationName!.isNotEmpty) ...[
                           Text(
@@ -575,7 +600,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     )
                   else
                     ListTile(
-                      title: const Text('Select Meeting Location'),
+                      title: Text(l10n.createSelectMeetingLocation),
                       trailing: const Icon(Icons.map, color: Color(0xFFC79A00)),
                       shape: RoundedRectangleBorder(
                         side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
@@ -596,8 +621,8 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                   SizedBox(height: 16.h),
                   ListTile(
                     title: Text(_selectedMeetingTime == null
-                        ? 'Select Meeting Time'
-                        : 'Meeting Time: ${DateFormat('yyyy-MM-dd HH:mm').format(_selectedMeetingTime!)}'),
+                        ? l10n.createSelectMeetingTime
+                        : l10n.createMeetingTimePrefix(DateFormat('yyyy-MM-dd HH:mm').format(_selectedMeetingTime!))),
                     trailing: const Icon(Icons.calendar_today),
                     shape: RoundedRectangleBorder(
                       side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
@@ -606,7 +631,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     onTap: _pickDateTime,
                   ),
                   SizedBox(height: 16.h),
-                  Text('Schedule Frequency (Days)', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                  Text(l10n.createScheduleFreq, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                   SizedBox(height: 8.h),
                   Wrap(
                     spacing: 8.w,
@@ -615,7 +640,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       final isSelected = _selectedWeekdays.contains(day);
                       return ChoiceChip(
                         label: Text(
-                          day,
+                          _weekdayLabel(l10n, day),
                           style: TextStyle(
                             color: isSelected ? Colors.black : textColor,
                           ),
@@ -636,7 +661,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     }).toList(),
                   ),
                   SizedBox(height: 24.h),
-                  Text(widget.tourToEdit != null ? 'Edit Tour Images' : 'Tour Images', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'])),
+                  Text(widget.tourToEdit != null ? l10n.createEditImages : l10n.createImages, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'])),
                   SizedBox(height: 8.h),
                   Wrap(
                     spacing: 8.w,
@@ -708,7 +733,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       backgroundColor: const Color(0xFFC79A00),
                     ),
-                    child: Text(widget.tourToEdit != null ? 'Save Changes' : 'Create Tour', style: TextStyle(fontSize: 18.sp, color: Colors.white)),
+                    child: Text(widget.tourToEdit != null ? l10n.createSaveChanges : l10n.guideDashCreateTour, style: TextStyle(fontSize: 18.sp, color: Colors.white)),
                   ),
                   SizedBox(height: 20.h),
                 ],

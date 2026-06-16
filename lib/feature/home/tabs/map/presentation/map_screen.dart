@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -934,6 +935,7 @@ class _MapScreenViewState extends State<MapScreenView>
         
         // Arrival detection — show dialog and stop tracking
         if (state.hasArrived && state.navigationDestination != null) {
+          final l10n = AppLocalizations.of(context);
           _stopLiveNavigation();
           showDialog(
             context: context,
@@ -942,11 +944,11 @@ class _MapScreenViewState extends State<MapScreenView>
               title: Row(
                 children: [
                   Text('🎉 ', style: TextStyle(fontSize: 28.sp)),
-                  const Text('You\'ve Arrived!'),
+                  Text(l10n.mapArrivedTitle),
                 ],
               ),
               content: Text(
-                'You have arrived at ${state.navigationDestination!.title}',
+                l10n.mapArrivedBody(state.navigationDestination!.title),
               ),
               actions: [
                 TextButton(
@@ -954,7 +956,7 @@ class _MapScreenViewState extends State<MapScreenView>
                     Navigator.of(context).pop();
                     context.read<MapBloc>().add(MapNavigationCleared());
                   },
-                  child: const Text('Done'),
+                  child: Text(l10n.cameraDone),
                 ),
               ],
             ),
@@ -965,6 +967,7 @@ class _MapScreenViewState extends State<MapScreenView>
         _updatePolylines(state);
       },
       builder: (context, state) {
+        final l10n = AppLocalizations.of(context);
         return Scaffold(
           resizeToAvoidBottomInset: false,
           body: Stack(
@@ -1029,7 +1032,7 @@ class _MapScreenViewState extends State<MapScreenView>
                           ),
                           SizedBox(height: 16.h),
                           Text(
-                            'Discovering Egypt...',
+                            l10n.mapDiscovering,
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
@@ -1039,7 +1042,7 @@ class _MapScreenViewState extends State<MapScreenView>
                           ),
                           SizedBox(height: 6.h),
                           Text(
-                            'Loading places near you',
+                            l10n.mapLoadingNearby,
                             style: TextStyle(fontSize: 13.sp, color: onSurface.withValues(alpha: 0.4)),
                           ),
                         ],
@@ -1410,7 +1413,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       _buildMiniFab(
                                         heroTag: 'trip_planner_btn',
                                         icon: Icons.route_rounded,
-                                        label: 'Trip',
+                                        label: l10n.mapFabTrip,
                                         primary: primary,
                                         chipBg: chipBg(),
                                         onTap: () async {
@@ -1443,7 +1446,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       _buildMiniFab(
                                         heroTag: 'near_me_btn',
                                         icon: Icons.near_me,
-                                        label: 'Near Me',
+                                        label: l10n.mapFabNearMe,
                                         primary: primary,
                                         chipBg: chipBg(),
                                         onTap: () async {
@@ -1464,7 +1467,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                       _buildMiniFab(
                                         heroTag: 'saved_places_btn',
                                         icon: Icons.bookmarks_rounded,
-                                        label: 'Saved',
+                                        label: l10n.mapFabSaved,
                                         primary: primary,
                                         chipBg: chipBg(),
                                         onTap: () async {
@@ -1500,7 +1503,7 @@ class _MapScreenViewState extends State<MapScreenView>
                     backgroundColor: chipBg(),
                     onPressed: () => context.read<MapBloc>().add(const MapCategoryChanged('all')),
                     icon: Icon(Icons.close, color: onSurface.withValues(alpha: 0.9), size: 18.r),
-                    label: Text('Reset', style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
+                    label: Text(l10n.commonReset, style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
                   ),
                 ),
               // Trip progress bar
@@ -1548,7 +1551,7 @@ class _MapScreenViewState extends State<MapScreenView>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Stop ${_tripCurrentIndex + 1} of ${_tripItinerary.length}',
+                                l10n.mapStopOf(_tripCurrentIndex + 1, _tripItinerary.length),
                                 style: TextStyle(
                                   fontSize: 11.sp,
                                   color: onSurface.withValues(alpha: 0.5),
@@ -1591,7 +1594,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 borderRadius: BorderRadius.circular(20.r),
                               ),
                               child: Text(
-                                'Next Stop',
+                                l10n.mapNextStop,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -1617,7 +1620,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 borderRadius: BorderRadius.circular(20.r),
                               ),
                               child: Text(
-                                'Done! 🎉',
+                                l10n.mapTripDone,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -1688,7 +1691,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 color: Colors.white, size: 18.r),
                             SizedBox(width: 8.w),
                             Text(
-                              'Back to Tour',
+                              l10n.mapBackToTour,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
@@ -1765,7 +1768,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                 children: [
                                   SizedBox(width: 20.r, height: 20.r, child: CircularProgressIndicator(strokeWidth: 2.5, color: primary)),
                                   SizedBox(width: 14.w),
-                                  Text('Finding route...', style: TextStyle(color: onSurface.withValues(alpha: 0.7), fontSize: 15.sp, fontWeight: FontWeight.w500)),
+                                  Text(l10n.mapFindingRoute, style: TextStyle(color: onSurface.withValues(alpha: 0.7), fontSize: 15.sp, fontWeight: FontWeight.w500)),
                                   const Spacer(),
                                   Material(
                                     color: onSurface.withValues(alpha: 0.08),
@@ -1852,7 +1855,7 @@ class _MapScreenViewState extends State<MapScreenView>
                                   Icon(Icons.flag_rounded, color: primary, size: 16.r),
                                   SizedBox(width: 6.w),
                                   Text(
-                                    '${state.currentRoute!.distance} · ${state.currentRoute!.duration} total',
+                                    l10n.mapEtaTotal(state.currentRoute!.distance, state.currentRoute!.duration),
                                     style: TextStyle(
                                       color: onSurface.withValues(alpha: 0.6),
                                       fontSize: 12.sp,
@@ -1867,7 +1870,7 @@ class _MapScreenViewState extends State<MapScreenView>
                             Row(
                               children: [
                                 Text(
-                                  'Step ${state.currentStepIndex + 1}/${state.currentRoute!.steps.length}',
+                                  l10n.mapStepProgress(state.currentStepIndex + 1, state.currentRoute!.steps.length),
                                   style: TextStyle(color: onSurface.withValues(alpha: 0.5), fontSize: 12.sp),
                                 ),
                                 SizedBox(width: 8.w),
@@ -2233,7 +2236,7 @@ class _NearbyNudgeCardState extends State<_NearbyNudgeCard>
                                         borderRadius: BorderRadius.circular(4.r),
                                       ),
                                       child: Text(
-                                        'AI PICK',
+                                        AppLocalizations.of(context).mapAiPick,
                                         style: TextStyle(
                                           color: isDark ? const Color(0xFFFFD27A) : primary,
                                           fontSize: 9.sp,

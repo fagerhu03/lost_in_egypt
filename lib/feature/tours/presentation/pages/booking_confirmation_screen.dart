@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
 import '../../domain/entities/tour_entity.dart';
@@ -134,9 +135,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Future<void> _processPayment() async {
+    final l10n = AppLocalizations.of(context);
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      _showSnackBar('Please log in to book.', isError: true);
+      _showSnackBar(l10n.bookingLoginRequired, isError: true);
       return;
     }
 
@@ -144,7 +146,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       final phone = _walletPhoneController.text.trim();
       final egyptianMobileRegex = RegExp(r'^01[0125][0-9]{8}$');
       if (!egyptianMobileRegex.hasMatch(phone)) {
-        _showSnackBar('Please enter a valid Egyptian mobile number (e.g. 01XXXXXXXXX).', isError: true);
+        _showSnackBar(l10n.bookingInvalidWallet, isError: true);
         return;
       }
     }
@@ -157,10 +159,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       if (!context.mounted) return;
       if (currentCap < _quantity) {
         if (currentCap <= 0) {
-          _showSnackBar('Sorry, this tour is now fully booked.', isError: true);
+          _showSnackBar(l10n.bookingFullyBooked, isError: true);
         } else {
           _showSnackBar(
-            'Only $currentCap seat${currentCap == 1 ? '' : 's'} remaining. Please reduce your selection.',
+            l10n.bookingSeatsRemaining(currentCap),
             isError: true,
           );
           if (mounted) setState(() => _quantity = currentCap);
@@ -189,7 +191,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           } else {
             if (mounted) {
               setState(() => _isLoading = false);
-              _showSnackBar(response?.message ?? 'Payment was cancelled or failed.', isError: true);
+              _showSnackBar(response?.message ?? l10n.bookingPaymentFailed, isError: true);
             }
           }
           break;
@@ -208,14 +210,14 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           } else {
             if (mounted) {
               setState(() => _isLoading = false);
-              _showSnackBar(response?.message ?? 'Wallet payment failed.', isError: true);
+              _showSnackBar(response?.message ?? l10n.bookingWalletFailed, isError: true);
             }
           }
           break;
 
         case 'kiosk':
           // Fawry/Kiosk generates a reference number — user pays at a kiosk later
-          _showSnackBar('Kiosk payment coming soon!');
+          _showSnackBar(l10n.bookingKioskSoon);
           setState(() => _isLoading = false);
           break;
       }
@@ -251,9 +253,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     _notifyTouristAndScheduleReminder(userId);
 
     if (mounted) {
+      final l10n = AppLocalizations.of(context);
       setState(() => _isLoading = false);
       result.fold(
-        (l) => _showSnackBar('Booking Error: ${l.message}', isError: true),
+        (l) => _showSnackBar(l10n.bookingErrorPrefix(l.message), isError: true),
         (r) {
           final inferred = RecommendationMappings.inferKeysFromText(
             '${widget.tour.title} ${widget.tour.destinations.join(' ')} ${widget.tour.description}',
@@ -337,6 +340,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   void _showSuccessDialog() {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -353,14 +357,14 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               child: Icon(Icons.check_circle, color: const Color(0xFFC79A00), size: 64.r),
             ),
             SizedBox(height: 16.h),
-            const Text('Booking Confirmed!', textAlign: TextAlign.center),
+            Text(l10n.bookingConfirmedTitle, textAlign: TextAlign.center),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Your spot on "${widget.tour.title}" is reserved!',
+              l10n.bookingReservedBody(widget.tour.title),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 15.sp),
             ),
@@ -377,7 +381,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                             ? 'EGP ${_totalPrice.toStringAsFixed(0)} ΓÜá'
                             : 'EGP ${_totalPrice.toStringAsFixed(0)}';
                     return Text(
-                      '$label paid successfully.',
+                      l10n.bookingPaidSuccess(label),
                       style: TextStyle(fontSize: 14.sp, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                     );
                   },
@@ -403,13 +407,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     MaterialPageRoute(builder: (_) => const BookingHistoryScreen()),
                   );
                 },
-                child: const Text('View My Bookings',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(l10n.bookingViewMyBookings,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
               SizedBox(height: 8.h),
               TextButton(
                 onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
-                child: const Text('Back to Home'),
+                child: Text(l10n.bookingBackHome),
               ),
             ],
           ),
@@ -435,10 +439,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Checkout'),
+        title: Text(l10n.bookingCheckoutTitle),
         centerTitle: true,
       ),
       body: Stack(
@@ -447,7 +452,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 160.h),
             children: [
               // ── Order Summary ──
-              _buildSectionTitle('Order Summary'),
+              _buildSectionTitle(l10n.bookingOrderSummary),
               SizedBox(height: 12.h),
               Container(
                 padding: EdgeInsets.all(16.r),
@@ -492,7 +497,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Guests', style: TextStyle(fontSize: 15.sp)),
+                        Text(l10n.bookingGuests, style: TextStyle(fontSize: 15.sp)),
                         Row(
                           children: [
                             _quantityButton(Icons.remove, () {
@@ -548,7 +553,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               SizedBox(height: 28.h),
 
               // ── Payment Method ──
-              _buildSectionTitle('Payment Method'),
+              _buildSectionTitle(l10n.bookingPaymentMethod),
               SizedBox(height: 12.h),
               RadioGroup<String>(
                 groupValue: _selectedPaymentMethod,
@@ -559,30 +564,30 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _buildPaymentOption(
-                      title: 'Credit / Debit Card',
-                      subtitle: 'Visa, Mastercard, Meeza',
+                      title: l10n.bookingPayCardTitle,
+                      subtitle: l10n.bookingPayCardSub,
                       icon: Icons.credit_card,
                       value: 'card',
                       theme: theme,
                     ),
                     _buildPaymentOption(
-                      title: 'Mobile Wallet',
-                      subtitle: 'Vodafone Cash, Orange, Etisalat',
+                      title: l10n.bookingPayWalletTitle,
+                      subtitle: l10n.bookingPayWalletSub,
                       icon: Icons.phone_android,
                       value: 'wallet',
                       theme: theme,
                     ),
                     _buildPaymentOption(
-                      title: 'Apple Pay',
-                      subtitle: 'iOS only • Coming soon',
+                      title: l10n.bookingPayApplePayTitle,
+                      subtitle: l10n.bookingPayApplePaySub,
                       icon: Icons.apple,
                       value: 'apple_pay',
                       theme: theme,
                       enabled: false, // Enable when Apple Pay integration is live
                     ),
                     _buildPaymentOption(
-                      title: 'Fawry / Kiosk',
-                      subtitle: 'Pay at any 172,000+ Fawry outlets',
+                      title: l10n.bookingPayKioskTitle,
+                      subtitle: l10n.bookingPayKioskSub,
                       icon: Icons.receipt_long,
                       value: 'kiosk',
                       theme: theme,
@@ -601,7 +606,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   maxLength: 11,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
-                    labelText: 'Wallet Phone Number',
+                    labelText: l10n.bookingWalletPhoneLabel,
                     hintText: '01XXXXXXXXX',
                     prefixIcon: const Icon(Icons.phone),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r)),
@@ -626,7 +631,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
-                        'Payments are processed securely by Paymob. Your card details are never stored locally.',
+                        l10n.bookingSecurityNote,
                         style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                     ),
@@ -643,7 +648,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
-                        'Because you booked this, you might enjoy',
+                        l10n.bookingBecauseBooked,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
@@ -693,7 +698,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   children: [
                     const CircularProgressIndicator(color: Colors.white),
                     SizedBox(height: 16.h),
-                    Text('Processing payment...', style: TextStyle(color: Colors.white, fontSize: 16.sp)),
+                    Text(l10n.bookingProcessing, style: TextStyle(color: Colors.white, fontSize: 16.sp)),
                   ],
                 ),
               ),
@@ -728,7 +733,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total', style: TextStyle(fontSize: 16.sp)),
+                              Text(l10n.bookingTotal, style: TextStyle(fontSize: 16.sp)),
                               Text(
                                 displayLabel,
                                 style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: primary),
@@ -737,7 +742,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           ),
                           if (showEgpNote)
                             Text(
-                              'Charged as EGP ${_totalPrice.toStringAsFixed(0)} via Paymob',
+                              l10n.bookingChargedNote(_totalPrice.toStringAsFixed(0)),
                               style: TextStyle(fontSize: 11.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                             ),
                         ],
@@ -759,7 +764,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   ),
                   onPressed: _isLoading ? null : _processPayment,
                   icon: const Icon(Icons.lock),
-                  label: Text('Pay Securely', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                  label: Text(l10n.bookingPaySecurely, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

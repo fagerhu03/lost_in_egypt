@@ -6,6 +6,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/camera/widgets/ar_bubble_overlay.dart';
 import 'package:lost_in_egypt/feature/home/tabs/camera/presentation/bloc/camera_cubit.dart';
@@ -304,6 +305,7 @@ class _CameraScreenState extends State<CameraScreen> {
     return StatefulBuilder(
       builder: (context, setState) {
         final theme = Theme.of(context);
+        final l10n = AppLocalizations.of(context);
         final isDark = theme.brightness == Brightness.dark;
 
         final Color cardColor = isDark ? theme.colorScheme.surface.withValues(alpha: 0.95) : const Color(0xFFF3F2E4);
@@ -346,8 +348,8 @@ class _CameraScreenState extends State<CameraScreen> {
                 // Title
                 Text(
                   isAnswered
-                      ? (isCorrect ? "You May Pass 🦁" : "Incorrect, Mortal 🌪️")
-                      : "The Sphinx's Riddle 🦁",
+                      ? (isCorrect ? l10n.sphinxPassTitle : l10n.sphinxFailTitle)
+                      : l10n.sphinxRiddleTitle,
                   style: TextStyle(
                     fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     color: isAnswered ? (isCorrect ? textColor : Colors.red) : textColor,
@@ -362,9 +364,9 @@ class _CameraScreenState extends State<CameraScreen> {
                 Text(
                   isAnswered
                       ? (isCorrect
-                          ? "Your wisdom equals the ancients. The Sphinx permits your journey to continue."
-                          : "The sands of time will swallow your ignorance. Return when you have learned.")
-                      : "\"What walks on four legs in the morning, two at noon, and three in the evening?\"",
+                          ? l10n.sphinxPassBody
+                          : l10n.sphinxFailBody)
+                      : l10n.sphinxRiddleBody,
                   style: TextStyle(
                     color: bodyTextColor,
                     fontSize: 18.sp,
@@ -402,7 +404,7 @@ class _CameraScreenState extends State<CameraScreen> {
                         }
                       },
                       child: Text(
-                        "Continue",
+                        l10n.commonContinue,
                         style: TextStyle(color: primaryBtnText, fontWeight: FontWeight.bold, fontSize: 16.sp),
                       ),
                     ),
@@ -419,7 +421,7 @@ class _CameraScreenState extends State<CameraScreen> {
                             side: BorderSide(color: secondaryBtnText.withValues(alpha: 0.3), width: 1),
                           ),
                           onPressed: () => setState(() { isAnswered = true; isCorrect = false; }),
-                          child: Text("An Animal", style: TextStyle(color: secondaryBtnText)),
+                          child: Text(l10n.sphinxAnswerAnimal, style: TextStyle(color: secondaryBtnText)),
                         ),
                       ),
                       SizedBox(width: 16.w),
@@ -436,7 +438,7 @@ class _CameraScreenState extends State<CameraScreen> {
                             // Fire and wait for unlock check to see if we actually unlocked it
                             unlockedBadge = await _cameraCubit.unlockSecretBadge('sphinx_solver');
                           },
-                          child: Text("A Human", style: TextStyle(color: secondaryBtnText)),
+                          child: Text(l10n.sphinxAnswerHuman, style: TextStyle(color: secondaryBtnText)),
                         ),
                       ),
                     ],

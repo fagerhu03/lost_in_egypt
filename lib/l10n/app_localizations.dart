@@ -2227,6 +2227,2718 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open More → SOS. You can find the nearest police station, hospital, or fire station using your current location, or dial Egypt\'s official emergency numbers directly from the app:\n• Police: 122\n• Ambulance: 123\n• Fire: 180\n• Tourist Police: 126'**
   String get helpAEmergency;
+
+  /// Title of the solo trip page.
+  ///
+  /// In en, this message translates to:
+  /// **'Solo Trip'**
+  String get soloTripTitle;
+
+  /// Header above the recommended curated trips.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended Plans'**
+  String get soloRecommendedPlans;
+
+  /// Subtitle shown when a best-match trip is highlighted.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalised based on your travel history'**
+  String get soloPersonalised;
+
+  /// Badge on the best-match trip card.
+  ///
+  /// In en, this message translates to:
+  /// **'Best for you'**
+  String get soloBestForYou;
+
+  /// Plan status: active tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get soloStatusActive;
+
+  /// Plan status / tab / badge: saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get soloStatusSaved;
+
+  /// Plan status / tab: completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get soloStatusCompleted;
+
+  /// My Plans tab: all plans.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get soloTabAll;
+
+  /// Error when the plans stream fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load plans'**
+  String get soloCouldNotLoadPlans;
+
+  /// Button to resume an active tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Tour'**
+  String get soloContinueTour;
+
+  /// Button to start a saved tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Tour'**
+  String get soloStartTour;
+
+  /// Error when starting a tour fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start tour. Try again.'**
+  String get soloCouldNotStart;
+
+  /// Title of the delete-plan confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete plan?'**
+  String get soloDeletePlanTitle;
+
+  /// Body when deleting an in-progress tour.
+  ///
+  /// In en, this message translates to:
+  /// **'This tour is in progress. Deleting it will discard all your progress and cannot be undone.'**
+  String get soloDeleteActiveBody;
+
+  /// Body when deleting a saved plan.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone.'**
+  String get soloDeleteBody;
+
+  /// Empty state title for My Plans.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans yet'**
+  String get soloNoPlansYet;
+
+  /// Empty state subtitle for My Plans.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a curated trip or create your own\nto see it here.'**
+  String get soloNoPlansSub;
+
+  /// CTA in the My Plans empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Trips'**
+  String get soloBrowseTrips;
+
+  /// Label on the customize-plan card.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your\nown plan'**
+  String get soloCustomizeOwnPlan;
+
+  /// Button / tooltip to save a generated plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Plan'**
+  String get soloSavePlan;
+
+  /// Confirmation after saving a plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan saved! Find it in My Plans.'**
+  String get soloPlanSaved;
+
+  /// Error when saving a plan fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save plan. Try again.'**
+  String get soloCouldNotSave;
+
+  /// Button to open the AI story sheet for a stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear the Story'**
+  String get soloHearStory;
+
+  /// Error shown when the AI story fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'The spirits of history are silent right now.'**
+  String get soloStorySilent;
+
+  /// Story audio: pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get soloStoryPause;
+
+  /// Story audio: resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get soloStoryResume;
+
+  /// Story audio: start playback.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get soloStoryListen;
+
+  /// Story audio: loading state while TTS generates.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating audio…'**
+  String get soloStoryGenerating;
+
+  /// Story audio: replay tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay from start'**
+  String get soloStoryReplay;
+
+  /// Tooltip / label to navigate to a stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate here'**
+  String get soloNavigateHere;
+
+  /// Tooltip to view the whole route on the map.
+  ///
+  /// In en, this message translates to:
+  /// **'View full route'**
+  String get soloViewFullRoute;
+
+  /// Tooltip on the curated detail map button.
+  ///
+  /// In en, this message translates to:
+  /// **'View full route on map'**
+  String get soloViewFullRouteMap;
+
+  /// Label on the full-route button.
+  ///
+  /// In en, this message translates to:
+  /// **'Full route'**
+  String get soloFullRoute;
+
+  /// Section header for trip highlights.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights'**
+  String get soloHighlights;
+
+  /// Section header for the itinerary.
+  ///
+  /// In en, this message translates to:
+  /// **'Itinerary'**
+  String get soloItinerary;
+
+  /// Title of the end-tour confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'End Tour?'**
+  String get tourEndTitle;
+
+  /// Body of the end-tour confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'This will mark the tour as completed. You can still view it in My Plans.'**
+  String get tourEndBody;
+
+  /// Confirm button to end the tour.
+  ///
+  /// In en, this message translates to:
+  /// **'End Tour'**
+  String get tourEndConfirm;
+
+  /// Confirmation after a tour is ended.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour ended. Find it under Completed in My Plans.'**
+  String get tourEnded;
+
+  /// Live tour status label.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour in Progress'**
+  String get tourInProgress;
+
+  /// Button to focus the map on the next stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Go'**
+  String get tourGo;
+
+  /// Pill on the next incomplete stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Up next'**
+  String get tourUpNext;
+
+  /// Title of the tour-complete dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour Complete!'**
+  String get tourComplete;
+
+  /// Stops-explored count in the tour-complete dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 stop explored} other{{count} stops explored}}'**
+  String tourStopsExplored(int count);
+
+  /// Congratulatory message in the tour-complete dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve experienced the heart of Egypt.\nGreat exploring! 🌟'**
+  String get tourCompleteSub;
+
+  /// Header above similar-place suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'You might also love'**
+  String get tourYouMightLove;
+
+  /// Button to dismiss the tour-complete dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get tourDone;
+
+  /// Headline of the active-tour onboarding sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'🗺️ Your Tour Has Started!'**
+  String get tourStartedTitle;
+
+  /// Subtitle of the active-tour onboarding sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s what you can do'**
+  String get tourOnboardTitle;
+
+  /// Button to dismiss the onboarding sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s Go!'**
+  String get tourLetsGo;
+
+  /// Onboarding feature title: view on map.
+  ///
+  /// In en, this message translates to:
+  /// **'View on Map'**
+  String get tourFeatViewMap;
+
+  /// Onboarding feature description: view on map.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the map icon (top-right) to see your stops on the map and navigate to any one.'**
+  String get tourFeatViewMapDesc;
+
+  /// Onboarding feature title: track progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Track Progress'**
+  String get tourFeatTrack;
+
+  /// Onboarding feature description: track progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Check off each stop as you visit it. Your progress saves automatically.'**
+  String get tourFeatTrackDesc;
+
+  /// Onboarding feature title: AI stories.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Stories'**
+  String get tourFeatStories;
+
+  /// Onboarding feature description: AI stories.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand any stop and tap \"Hear the Story\" for an AI-generated history of that place.'**
+  String get tourFeatStoriesDesc;
+
+  /// Error when trip generation fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not generate your plan.'**
+  String get resultCouldNotGenerate;
+
+  /// Loading title while the AI builds the itinerary.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning your trip…'**
+  String get resultPlanning;
+
+  /// Loading subtitle while the AI builds the itinerary.
+  ///
+  /// In en, this message translates to:
+  /// **'Our AI guide is building a personalised day-by-day itinerary for you.'**
+  String get resultPlanningSub;
+
+  /// Error title when the plan can't be loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your plan'**
+  String get resultCouldNotLoad;
+
+  /// Error when a stop has no coordinates yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t pin {name} on the map yet. Try again in a moment.'**
+  String resultCouldNotPin(String name);
+
+  /// Error when PDF export fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not export itinerary. Try again.'**
+  String get resultCouldNotExport;
+
+  /// Title of the discard-plan confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard plan?'**
+  String get resultDiscardTitle;
+
+  /// Body of the discard-plan confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'This plan will not be saved. You can always generate a new one.'**
+  String get resultDiscardBody;
+
+  /// Button to keep the plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get resultKeep;
+
+  /// Button to discard the plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get resultDiscard;
+
+  /// Tooltip on the export-PDF button.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDF'**
+  String get resultExportPdf;
+
+  /// Stat chip showing the number of stops.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 location} other{{count} locations}}'**
+  String resultLocationsCount(int count);
+
+  /// Forecast chip day label.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {num}'**
+  String resultDayNum(int num);
+
+  /// Link to view a stop on the map.
+  ///
+  /// In en, this message translates to:
+  /// **'View on Maps'**
+  String get resultViewOnMaps;
+
+  /// Suffix appended when sharing a trip plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned with Lost in Egypt 🌍'**
+  String get resultShareSuffix;
+
+  /// Quiz next-step button.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get quizNext;
+
+  /// Quiz final-step button.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get quizFinish;
+
+  /// Quiz step counter.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String quizStepOf(int current, int total);
+
+  /// Quiz step title: interests.
+  ///
+  /// In en, this message translates to:
+  /// **'What are your interests?'**
+  String get soloQuizInterestsTitle;
+
+  /// Quiz step title: areas.
+  ///
+  /// In en, this message translates to:
+  /// **'Where do you want to explore?'**
+  String get soloQuizAreasTitle;
+
+  /// Quiz step title: trip time.
+  ///
+  /// In en, this message translates to:
+  /// **'Day trips or night out?'**
+  String get soloQuizTripTimeTitle;
+
+  /// Trip time option: day.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get tripTimeDay;
+
+  /// Description under the Day option.
+  ///
+  /// In en, this message translates to:
+  /// **'Temples, markets,\nand outdoor adventures'**
+  String get tripTimeDayDesc;
+
+  /// Trip time option: night.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get tripTimeNight;
+
+  /// Description under the Night option.
+  ///
+  /// In en, this message translates to:
+  /// **'Dining, nightlife,\nand entertainment'**
+  String get tripTimeNightDesc;
+
+  /// Quiz step title: budget.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your budget?'**
+  String get soloQuizBudgetTitle;
+
+  /// Budget preset: budget tier.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get budgetPresetBudget;
+
+  /// Budget preset: mid-range tier.
+  ///
+  /// In en, this message translates to:
+  /// **'Mid-range'**
+  String get budgetPresetMid;
+
+  /// Budget preset: luxury tier.
+  ///
+  /// In en, this message translates to:
+  /// **'Luxury'**
+  String get budgetPresetLuxury;
+
+  /// Quiz step title: dates and location.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your dates & location'**
+  String get soloQuizDateTitle;
+
+  /// Label on the from-date field.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get soloDateFrom;
+
+  /// Hint in the from-date field.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get soloDateStartHint;
+
+  /// Label on the to-date field.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get soloDateTo;
+
+  /// Hint in the to-date field.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get soloDateEndHint;
+
+  /// Nights pill between the date fields.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 night} other{{count} nights}}'**
+  String soloNightsCount(int count);
+
+  /// Hint in the location picker field.
+  ///
+  /// In en, this message translates to:
+  /// **'Where are you starting from?'**
+  String get soloStartLocationHint;
+
+  /// Validation when no trip time is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select Day, Night, or both.'**
+  String get soloSelectDayNight;
+
+  /// Max-attendees label on a tour card.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count}'**
+  String tourCardUpTo(int count);
+
+  /// Badge on a tour with no reviews yet.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get tourCardNew;
+
+  /// Placeholder while reverse-geocoding a tapped point.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching address...'**
+  String get mapPickerFetching;
+
+  /// Fallback name for a picked location.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Location'**
+  String get mapPickerSelectedLocation;
+
+  /// Name when geocoding returns nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Location'**
+  String get mapPickerUnknownLocation;
+
+  /// Hint in the map-picker search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a landmark or destination...'**
+  String get mapPickerSearchHint;
+
+  /// Instruction shown before a point is picked.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap anywhere on the map to select a location'**
+  String get mapPickerTapHint;
+
+  /// Button to confirm the picked location.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Location'**
+  String get mapPickerConfirm;
+
+  /// Fallback name returned for a custom pin.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Pin Location'**
+  String get mapPickerCustomPin;
+
+  /// App bar title of the tour meetup map.
+  ///
+  /// In en, this message translates to:
+  /// **'Meetup Location'**
+  String get tourMapMeetupTitle;
+
+  /// Marker info-window snippet for the meetup point.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour Start Point'**
+  String get tourMapStartPoint;
+
+  /// Label above the meetup location name.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Point'**
+  String get tourMapMeetingPoint;
+
+  /// Header above the destinations chips.
+  ///
+  /// In en, this message translates to:
+  /// **'Destinations You Will Visit:'**
+  String get tourMapDestinations;
+
+  /// Button to open the meetup in the main map.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore in Main Map'**
+  String get tourMapExplore;
+
+  /// Button to plot the full tour route.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate Tour Route'**
+  String get tourMapNavigateRoute;
+
+  /// App bar title of the QR check-in scanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Ticket QR'**
+  String get qrTitle;
+
+  /// Instruction overlay on the scanner viewfinder.
+  ///
+  /// In en, this message translates to:
+  /// **'Point camera at tourist\'s QR ticket'**
+  String get qrPointCamera;
+
+  /// Button to dismiss a result and resume scanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Another'**
+  String get qrScanAnother;
+
+  /// Shown when a scanned booking ID has no document.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking not found'**
+  String get qrBookingNotFound;
+
+  /// Fallback tour title when the tour doc is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Tour'**
+  String get qrUnknownTour;
+
+  /// Fallback tourist name when the user doc is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Traveler'**
+  String get qrUnknownTraveler;
+
+  /// Validity badge for a confirmed, not-yet-checked-in ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid Ticket'**
+  String get qrValidTicket;
+
+  /// Validity badge for a ticket in an invalid status (shown uppercased).
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid Ticket ({status})'**
+  String qrInvalidTicket(String status);
+
+  /// Validity badge when every ticket on the booking is scanned.
+  ///
+  /// In en, this message translates to:
+  /// **'All Tickets Checked In'**
+  String get qrAllCheckedIn;
+
+  /// Validity badge when some but not all tickets are checked in.
+  ///
+  /// In en, this message translates to:
+  /// **'Partially Checked In ({checked}/{total})'**
+  String qrPartiallyCheckedIn(int checked, int total);
+
+  /// Booking-sheet row label: tour name.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour'**
+  String get qrRowTour;
+
+  /// Booking-sheet row label: tour date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get qrRowDate;
+
+  /// Booking-sheet row label: ticket count.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets'**
+  String get qrRowTickets;
+
+  /// Booking-sheet row label: amount paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get qrRowAmount;
+
+  /// Booking-sheet row label: short booking reference.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking ID'**
+  String get qrRowBookingId;
+
+  /// Ticket quantity in the booking sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ticket} other{{count} tickets}}'**
+  String qrTicketsCount(int count);
+
+  /// Suffix on the tickets row showing how many are already checked in.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} checked in'**
+  String qrCheckedInCount(int count);
+
+  /// Prompt above the partial check-in stepper.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in how many?'**
+  String get qrCheckInHowMany;
+
+  /// Check-in button for a single-ticket booking.
+  ///
+  /// In en, this message translates to:
+  /// **'Check In Tourist'**
+  String get qrCheckInTourist;
+
+  /// Check-in button for a multi-ticket booking with a chosen quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Check In {count} of {remaining} Remaining'**
+  String qrCheckInRemaining(int count, int remaining);
+
+  /// Success message when the booking becomes fully checked in.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Ticket checked in!} other{All {count} tickets checked in!}}'**
+  String qrAllTicketsCheckedIn(int count);
+
+  /// Success message after a partial check-in, with the number still remaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ticket checked in.} other{{count} tickets checked in.}}\n{remaining} remaining.'**
+  String qrCheckedInResult(int count, int remaining);
+
+  /// Generic No button.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get commonNo;
+
+  /// App bar title of the tour attendees screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendees'**
+  String get attendeesTitle;
+
+  /// Shown when the attendees stream errors.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading attendees'**
+  String get attendeesError;
+
+  /// Hint under the attendees error about a missing Firestore index.
+  ///
+  /// In en, this message translates to:
+  /// **'A Firestore index may be needed.\nCheck debug console for the link.'**
+  String get attendeesIndexHint;
+
+  /// Empty state title when a tour has no bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'No bookings yet'**
+  String get attendeesEmpty;
+
+  /// Empty state subtitle for the attendees list.
+  ///
+  /// In en, this message translates to:
+  /// **'When travelers book this tour,\nthey\'ll appear here.'**
+  String get attendeesEmptySub;
+
+  /// Summary stat label: confirmed bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get attendeesStatConfirmed;
+
+  /// Summary stat label: cancelled bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get attendeesStatCancelled;
+
+  /// Summary stat label: total bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get attendeesStatTotal;
+
+  /// Section header above confirmed attendees.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed ({count})'**
+  String attendeesSectionConfirmed(int count);
+
+  /// Section header above cancelled attendees.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled ({count})'**
+  String attendeesSectionCancelled(int count);
+
+  /// Fallback name when the attendee's user doc is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown User'**
+  String get attendeesUnknownUser;
+
+  /// Payment-status badge: paid.
+  ///
+  /// In en, this message translates to:
+  /// **'PAID'**
+  String get attendeesPaid;
+
+  /// Payment-status badge: pending.
+  ///
+  /// In en, this message translates to:
+  /// **'PENDING'**
+  String get attendeesPending;
+
+  /// Action button: call the attendee.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get attendeesCall;
+
+  /// Action button: message the attendee on WhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get attendeesWhatsApp;
+
+  /// Action button: email the attendee.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get attendeesEmail;
+
+  /// Title/confirm button for the cancel-booking dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Booking'**
+  String get attendeesCancelBooking;
+
+  /// Body of the cancel-booking confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel this booking? The traveler will be notified.'**
+  String get attendeesCancelBody;
+
+  /// App bar title of the guide dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide Dashboard'**
+  String get guideDashTitle;
+
+  /// Tooltip when live location sharing is on.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop sharing live location'**
+  String get guideDashStopSharing;
+
+  /// Tooltip when live location sharing is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Share live location with tourists'**
+  String get guideDashShareLocation;
+
+  /// Tooltip for the QR scanner action.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Ticket'**
+  String get guideDashScanTicket;
+
+  /// Empty state title when the guide has no tours.
+  ///
+  /// In en, this message translates to:
+  /// **'No tours yet'**
+  String get guideDashNoTours;
+
+  /// Empty state subtitle prompting tour creation.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first tour!'**
+  String get guideDashCreateFirst;
+
+  /// Section header above the guide's tour list.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Tours ({count})'**
+  String guideDashYourTours(int count);
+
+  /// Floating action button to create a new tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Tour'**
+  String get guideDashCreateTour;
+
+  /// Error shown when the earnings summary fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load earnings.\nCheck your connection and try again.'**
+  String get guideDashEarningsError;
+
+  /// Earnings summary stat: number of tours.
+  ///
+  /// In en, this message translates to:
+  /// **'Tours'**
+  String get guideDashStatTours;
+
+  /// Earnings summary stat: number of bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookings'**
+  String get guideDashStatBookings;
+
+  /// Earnings summary stat: total revenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get guideDashStatRevenue;
+
+  /// Max-attendees chip on a guide tour card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} max'**
+  String guideDashMax(int count);
+
+  /// Error shown when a tour's booking count fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load bookings.'**
+  String get guideDashBookingsError;
+
+  /// Confirmed-bookings badge on a guide tour card.
+  ///
+  /// In en, this message translates to:
+  /// **'📌 {count, plural, =1{1 confirmed booking} other{{count} confirmed bookings}}'**
+  String guideDashConfirmedBookings(int count);
+
+  /// Tour card action: view the tour.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get guideDashView;
+
+  /// Title of the delete-tour confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Tour'**
+  String get guideDashDeleteTitle;
+
+  /// Body of the delete-tour confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{title}\"? This cannot be undone.'**
+  String guideDashDeleteBody(String title);
+
+  /// Short weekday name: Monday.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get weekdayMon;
+
+  /// Short weekday name: Tuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get weekdayTue;
+
+  /// Short weekday name: Wednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get weekdayWed;
+
+  /// Short weekday name: Thursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get weekdayThu;
+
+  /// Short weekday name: Friday.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get weekdayFri;
+
+  /// Short weekday name: Saturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get weekdaySat;
+
+  /// Short weekday name: Sunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get weekdaySun;
+
+  /// App bar title when editing a tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Tour'**
+  String get createEditTitle;
+
+  /// App bar title when creating a tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Tour'**
+  String get createNewTitle;
+
+  /// Toast after a tour is updated.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour updated!'**
+  String get createUpdatedToast;
+
+  /// Toast after a tour is created.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour created successfully!'**
+  String get createCreatedToast;
+
+  /// Validation message for an empty required field.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get createRequired;
+
+  /// Form field label: tour title.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour Title'**
+  String get createFieldTitle;
+
+  /// Form field label: tour description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get createFieldDesc;
+
+  /// Section label above the destinations list.
+  ///
+  /// In en, this message translates to:
+  /// **'Destinations (Max 5)'**
+  String get createDestinationsLabel;
+
+  /// Hint in the destination autocomplete field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search destination...'**
+  String get createSearchDestination;
+
+  /// Form field label: tour price in EGP.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (EGP)'**
+  String get createFieldPrice;
+
+  /// Form field label: maximum attendees.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Attendees'**
+  String get createFieldMaxAttendees;
+
+  /// Section header above the selected meeting location.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Location'**
+  String get createMeetingLocation;
+
+  /// Tile prompting the guide to pick a meeting location.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Meeting Location'**
+  String get createSelectMeetingLocation;
+
+  /// Tile prompting the guide to pick a meeting time.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Meeting Time'**
+  String get createSelectMeetingTime;
+
+  /// Tile showing the chosen meeting time.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting Time: {time}'**
+  String createMeetingTimePrefix(String time);
+
+  /// Section label above the weekday chips.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule Frequency (Days)'**
+  String get createScheduleFreq;
+
+  /// Section label above the image picker (create).
+  ///
+  /// In en, this message translates to:
+  /// **'Tour Images'**
+  String get createImages;
+
+  /// Section label above the image picker (edit).
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Tour Images'**
+  String get createEditImages;
+
+  /// Submit button when editing a tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get createSaveChanges;
+
+  /// Validation snackbar: no meeting time chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a meeting time.'**
+  String get createSelectTime;
+
+  /// Validation snackbar: no image selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select at least one image.'**
+  String get createSelectImage;
+
+  /// Validation snackbar: no meeting location chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a meeting location on the map.'**
+  String get createSelectLocation;
+
+  /// Validation snackbar: no destination added.
+  ///
+  /// In en, this message translates to:
+  /// **'Please add at least one destination.'**
+  String get createAddDestination;
+
+  /// Validation snackbar: negative price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price cannot be negative.'**
+  String get createPriceNegative;
+
+  /// Validation snackbar: non-positive max attendees.
+  ///
+  /// In en, this message translates to:
+  /// **'Max attendees must be greater than zero.'**
+  String get createAttendeesZero;
+
+  /// App bar title of the tours explorer.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover Tours'**
+  String get toursDiscoverTitle;
+
+  /// Hint in the tours explorer search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search destinations, guides...'**
+  String get toursSearchHint;
+
+  /// Title of the tours filter sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get toursFilters;
+
+  /// Filter section: price range.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Range'**
+  String get toursPriceRange;
+
+  /// Filter section: minimum rating.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum Rating'**
+  String get toursMinRating;
+
+  /// Label next to the star rating filter.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}+ stars'**
+  String toursStarsPlus(int count);
+
+  /// Filter section: tour frequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get toursFrequency;
+
+  /// Frequency option: daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get toursFreqDaily;
+
+  /// Frequency option: weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get toursFreqWeekly;
+
+  /// Frequency option: weekends.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekends'**
+  String get toursFreqWeekends;
+
+  /// Frequency option: one-time.
+  ///
+  /// In en, this message translates to:
+  /// **'One-Time'**
+  String get toursFreqOneTime;
+
+  /// Button to apply the selected filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get toursApplyFilters;
+
+  /// Sort menu item: newest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest First'**
+  String get toursSortNewest;
+
+  /// Sort menu item: cheapest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheapest First'**
+  String get toursSortCheapest;
+
+  /// Sort menu item: priciest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Priciest First'**
+  String get toursSortPriciest;
+
+  /// Sort menu item: highest rated.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest Rated'**
+  String get toursSortHighestRated;
+
+  /// Sort menu item: most popular.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Popular'**
+  String get toursSortMostPopular;
+
+  /// Sort chip label: newest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get toursSortLabelNewest;
+
+  /// Sort chip label: cheapest.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheapest'**
+  String get toursSortLabelCheapest;
+
+  /// Sort chip label: priciest.
+  ///
+  /// In en, this message translates to:
+  /// **'Priciest'**
+  String get toursSortLabelPriciest;
+
+  /// Sort chip label: top rated.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Rated'**
+  String get toursSortLabelTopRated;
+
+  /// Sort chip label: popular.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get toursSortLabelPopular;
+
+  /// Results count above the tour list.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tour found} other{{count} tours found}}'**
+  String toursFoundCount(int count);
+
+  /// Error shown when the tour list fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load tours.\nCheck your connection and try again.'**
+  String get toursLoadError;
+
+  /// Empty state title for the tour list.
+  ///
+  /// In en, this message translates to:
+  /// **'No tours found'**
+  String get toursEmptyTitle;
+
+  /// Empty state subtitle when filters are active.
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your filters.'**
+  String get toursEmptyFilters;
+
+  /// Empty state subtitle when only a search is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your search query.'**
+  String get toursEmptySearch;
+
+  /// Button to clear all active filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Filters'**
+  String get toursClearFilters;
+
+  /// Header above the personalised tour carousel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended for You'**
+  String get toursRecommended;
+
+  /// App bar title of the checkout screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get bookingCheckoutTitle;
+
+  /// Snackbar shown when an unauthenticated user tries to book.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to book.'**
+  String get bookingLoginRequired;
+
+  /// Validation snackbar for an invalid wallet phone number.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid Egyptian mobile number (e.g. 01XXXXXXXXX).'**
+  String get bookingInvalidWallet;
+
+  /// Snackbar when no seats remain.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorry, this tour is now fully booked.'**
+  String get bookingFullyBooked;
+
+  /// Snackbar when fewer seats remain than requested.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Only 1 seat remaining. Please reduce your selection.} other{Only {count} seats remaining. Please reduce your selection.}}'**
+  String bookingSeatsRemaining(int count);
+
+  /// Snackbar when a card payment fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment was cancelled or failed.'**
+  String get bookingPaymentFailed;
+
+  /// Snackbar when a wallet payment fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet payment failed.'**
+  String get bookingWalletFailed;
+
+  /// Snackbar for the not-yet-available kiosk option.
+  ///
+  /// In en, this message translates to:
+  /// **'Kiosk payment coming soon!'**
+  String get bookingKioskSoon;
+
+  /// Snackbar prefix for a booking-creation failure.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking Error: {message}'**
+  String bookingErrorPrefix(String message);
+
+  /// Title of the booking-success dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking Confirmed!'**
+  String get bookingConfirmedTitle;
+
+  /// Body of the booking-success dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Your spot on \"{title}\" is reserved!'**
+  String bookingReservedBody(String title);
+
+  /// Amount-paid line in the booking-success dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} paid successfully.'**
+  String bookingPaidSuccess(String amount);
+
+  /// Button to open booking history after success.
+  ///
+  /// In en, this message translates to:
+  /// **'View My Bookings'**
+  String get bookingViewMyBookings;
+
+  /// Button to return to the home screen after success.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get bookingBackHome;
+
+  /// Section title: order summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Summary'**
+  String get bookingOrderSummary;
+
+  /// Quantity selector label.
+  ///
+  /// In en, this message translates to:
+  /// **'Guests'**
+  String get bookingGuests;
+
+  /// Section title: payment method.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get bookingPaymentMethod;
+
+  /// Payment option title: card.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit / Debit Card'**
+  String get bookingPayCardTitle;
+
+  /// Payment option subtitle: card networks.
+  ///
+  /// In en, this message translates to:
+  /// **'Visa, Mastercard, Meeza'**
+  String get bookingPayCardSub;
+
+  /// Payment option title: mobile wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Wallet'**
+  String get bookingPayWalletTitle;
+
+  /// Payment option subtitle: wallet providers.
+  ///
+  /// In en, this message translates to:
+  /// **'Vodafone Cash, Orange, Etisalat'**
+  String get bookingPayWalletSub;
+
+  /// Payment option title: Apple Pay.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Pay'**
+  String get bookingPayApplePayTitle;
+
+  /// Payment option subtitle: Apple Pay status.
+  ///
+  /// In en, this message translates to:
+  /// **'iOS only • Coming soon'**
+  String get bookingPayApplePaySub;
+
+  /// Payment option title: Fawry/kiosk.
+  ///
+  /// In en, this message translates to:
+  /// **'Fawry / Kiosk'**
+  String get bookingPayKioskTitle;
+
+  /// Payment option subtitle: Fawry outlets.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay at any 172,000+ Fawry outlets'**
+  String get bookingPayKioskSub;
+
+  /// Label for the wallet phone-number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Phone Number'**
+  String get bookingWalletPhoneLabel;
+
+  /// Security reassurance under the payment options.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments are processed securely by Paymob. Your card details are never stored locally.'**
+  String get bookingSecurityNote;
+
+  /// Header above the similar-tours carousel on checkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Because you booked this, you might enjoy'**
+  String get bookingBecauseBooked;
+
+  /// Loading overlay text during payment.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing payment...'**
+  String get bookingProcessing;
+
+  /// Total label in the checkout bottom bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get bookingTotal;
+
+  /// Note shown when paying in a non-EGP display currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Charged as EGP {amount} via Paymob'**
+  String bookingChargedNote(String amount);
+
+  /// Primary checkout button.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Securely'**
+  String get bookingPaySecurely;
+
+  /// Popup menu item to report a tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Tour'**
+  String get tourDetailReport;
+
+  /// Rating label for a tour with no reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get tourDetailNew;
+
+  /// Info row label: tour date and time.
+  ///
+  /// In en, this message translates to:
+  /// **'Date & Time'**
+  String get tourDetailDateTime;
+
+  /// Max-attendees value in the info grid.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} people'**
+  String tourDetailPeople(int count);
+
+  /// Info row label: meeting location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get tourDetailLocation;
+
+  /// Section header: tour description.
+  ///
+  /// In en, this message translates to:
+  /// **'About This Tour'**
+  String get tourDetailAbout;
+
+  /// Section header: destinations chips.
+  ///
+  /// In en, this message translates to:
+  /// **'Destinations'**
+  String get tourDetailDestinations;
+
+  /// Section header: meetup map.
+  ///
+  /// In en, this message translates to:
+  /// **'Meetup Location & Route'**
+  String get tourDetailMeetupRoute;
+
+  /// Hint overlay on the map preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to expand'**
+  String get tourDetailTapExpand;
+
+  /// Section header: schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get tourDetailSchedule;
+
+  /// Section header: image gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get tourDetailGallery;
+
+  /// Section header / fallback name for the guide.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Guide'**
+  String get tourDetailYourGuide;
+
+  /// Header above the similar-tours carousel.
+  ///
+  /// In en, this message translates to:
+  /// **'You might also enjoy'**
+  String get tourDetailYouMightEnjoy;
+
+  /// Disabled bottom button when the viewer owns the tour.
+  ///
+  /// In en, this message translates to:
+  /// **'This is your tour'**
+  String get tourDetailYourTour;
+
+  /// Primary booking button.
+  ///
+  /// In en, this message translates to:
+  /// **'Book Now'**
+  String get tourDetailBookNow;
+
+  /// Schedule text for a one-time tour.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a one-time tour.'**
+  String get tourDetailOneTime;
+
+  /// Fallback when the guide doc is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide not found'**
+  String get tourDetailGuideNotFound;
+
+  /// Guide rating subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{rating} ({count} reviews)'**
+  String tourDetailGuideRating(String rating, int count);
+
+  /// Reviews section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get tourDetailReviews;
+
+  /// Button/dialog title to add a review.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a Review'**
+  String get tourDetailWriteReview;
+
+  /// Shown when the reviews stream errors.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading reviews'**
+  String get tourDetailReviewsError;
+
+  /// Empty state for the reviews list.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet. Be the first to review!'**
+  String get tourDetailNoReviews;
+
+  /// Pagination button for reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Show more reviews'**
+  String get tourDetailShowMore;
+
+  /// Fallback reviewer name.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous'**
+  String get tourDetailAnonymous;
+
+  /// Menu item / dialog title to edit a review.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Review'**
+  String get tourDetailEditReview;
+
+  /// Menu item / dialog title to delete a review.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Review'**
+  String get tourDetailDeleteReview;
+
+  /// Menu item to report a review.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Review'**
+  String get tourDetailReportReview;
+
+  /// Hint in the edit-review text field.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your experience...'**
+  String get tourDetailUpdateHint;
+
+  /// Confirm button in the edit-review dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get tourDetailUpdate;
+
+  /// Body of the delete-review confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete your review? This action cannot be undone.'**
+  String get tourDetailDeleteReviewBody;
+
+  /// Hint in the add-review text field.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your experience...'**
+  String get tourDetailShareHint;
+
+  /// Confirm button in the add-review dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get tourDetailSubmit;
+
+  /// Generic pagination button.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get commonLoadMore;
+
+  /// Booking status badge: confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'CONFIRMED'**
+  String get bookingStatusConfirmed;
+
+  /// Booking status badge: cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'CANCELLED'**
+  String get bookingStatusCancelled;
+
+  /// Booking status badge: pending.
+  ///
+  /// In en, this message translates to:
+  /// **'PENDING'**
+  String get bookingStatusPending;
+
+  /// Booking status badge: completed.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETED'**
+  String get bookingStatusCompleted;
+
+  /// Booking status badge: checked in.
+  ///
+  /// In en, this message translates to:
+  /// **'CHECKED IN'**
+  String get bookingStatusCheckedIn;
+
+  /// Booking status badge: partially checked in.
+  ///
+  /// In en, this message translates to:
+  /// **'PARTIALLY CHECKED IN'**
+  String get bookingStatusPartial;
+
+  /// App bar title of the booking history screen.
+  ///
+  /// In en, this message translates to:
+  /// **'My Bookings'**
+  String get bookingHistTitle;
+
+  /// Shown when no user is signed in.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in'**
+  String get bookingHistLoginRequired;
+
+  /// Tab label: upcoming bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get bookingHistUpcoming;
+
+  /// Tab label: past bookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get bookingHistPast;
+
+  /// Error shown when the bookings stream fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load bookings.\nCheck your connection and try again.'**
+  String get bookingHistLoadError;
+
+  /// Empty state for the upcoming tab.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming tours'**
+  String get bookingHistNoUpcoming;
+
+  /// Empty state for the past tab.
+  ///
+  /// In en, this message translates to:
+  /// **'No past tours'**
+  String get bookingHistNoPast;
+
+  /// Empty-state hint on the upcoming tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore tours and book your next adventure!'**
+  String get bookingHistEmptyHint;
+
+  /// Placeholder when a booking has no date.
+  ///
+  /// In en, this message translates to:
+  /// **'TBD'**
+  String get bookingHistTbd;
+
+  /// Countdown when days remain.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{1 day} other{{days} days}} {hours}h {minutes}m'**
+  String bookingHistCountdownDHM(int days, int hours, int minutes);
+
+  /// Countdown when only hours remain.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m {seconds}s'**
+  String bookingHistCountdownHMS(int hours, int minutes, int seconds);
+
+  /// Countdown when under an hour remains.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m {seconds}s'**
+  String bookingHistCountdownMS(int minutes, int seconds);
+
+  /// Countdown banner wrapper.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts in {time}'**
+  String bookingHistStartsIn(String time);
+
+  /// Body of the tourist-side cancel-booking dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel this booking?'**
+  String get bookingHistCancelBody;
+
+  /// Confirm button in the cancel-booking dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, Cancel'**
+  String get bookingHistYesCancel;
+
+  /// Snackbar after a booking is cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking cancelled'**
+  String get bookingHistCancelled;
+
+  /// Snackbar after a review is submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Review submitted!'**
+  String get bookingHistReviewSubmitted;
+
+  /// Snackbar when the guide has no phone number.
+  ///
+  /// In en, this message translates to:
+  /// **'No phone number on file'**
+  String get bookingHistNoPhone;
+
+  /// Snackbar when the guide has no email.
+  ///
+  /// In en, this message translates to:
+  /// **'No email on file'**
+  String get bookingHistNoEmail;
+
+  /// Snackbar when the dialer can't be launched.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open phone app'**
+  String get bookingHistCantOpenPhone;
+
+  /// Snackbar when the email app can't be launched.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open email app'**
+  String get bookingHistCantOpenEmail;
+
+  /// Sheet title / button to leave a review.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave a Review'**
+  String get bookingHistLeaveReview;
+
+  /// Submit button in the leave-review sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Review'**
+  String get bookingHistSubmitReview;
+
+  /// Expander to show the QR ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'View QR Ticket'**
+  String get bookingHistViewQr;
+
+  /// Short booking reference under the QR code.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking ID: {id}'**
+  String bookingHistBookingId(String id);
+
+  /// Hint under the QR ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this to your guide upon arrival'**
+  String get bookingHistShowGuide;
+
+  /// Tile title to open the meeting point in the map.
+  ///
+  /// In en, this message translates to:
+  /// **'View Meeting Point'**
+  String get bookingHistViewMeeting;
+
+  /// Tile subtitle for the meeting-point action.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens in Map tab'**
+  String get bookingHistOpensMap;
+
+  /// Fallback guide name for the live-tracking sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide'**
+  String get bookingHistGuide;
+
+  /// Tile title for live guide tracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Track Guide Live'**
+  String get bookingHistTrackGuide;
+
+  /// Tile subtitle for live guide tracking.
+  ///
+  /// In en, this message translates to:
+  /// **'See your guide\'s real-time location'**
+  String get bookingHistTrackGuideSub;
+
+  /// Info row label: total paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Total paid'**
+  String get bookingHistTotalPaid;
+
+  /// Info row label: payment reference.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment ref'**
+  String get bookingHistPaymentRef;
+
+  /// Action chip: add booking to calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Calendar'**
+  String get bookingHistAddCalendar;
+
+  /// Action chip: share the ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Ticket'**
+  String get bookingHistShareTicket;
+
+  /// Action chip: call the guide.
+  ///
+  /// In en, this message translates to:
+  /// **'Call Guide'**
+  String get bookingHistCallGuide;
+
+  /// Action chip: email the guide.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Guide'**
+  String get bookingHistEmailGuide;
+
+  /// Button to book the tour again.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-book This Tour'**
+  String get bookingHistRebook;
+
+  /// Subtitle for a guide with no reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'New Guide'**
+  String get bookingHistNewGuide;
+
+  /// Label above the tour-day weather.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather on tour day'**
+  String get bookingHistWeatherDay;
+
+  /// Title of the live guide-location sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} – Live Location'**
+  String bookingHistLiveLocation(String name);
+
+  /// Overlay while the guide hasn't shared location yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for guide to share their location…'**
+  String get bookingHistWaitingLocation;
+
+  /// Calendar event title.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost in Egypt: {title}'**
+  String bookingHistCalTitle(String title);
+
+  /// Calendar event description.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting point: {location}\nBooking ID: {id}'**
+  String bookingHistCalDesc(String location, String id);
+
+  /// Shared ticket text (native share sheet).
+  ///
+  /// In en, this message translates to:
+  /// **'🏺 Lost in Egypt – Tour Ticket\n\nTour: {title}\nDate: {date}\nMeeting point: {location}\nTickets: {tickets}\nBooking ref: {ref}\n\nSee you there!'**
+  String bookingHistShareText(
+    String title,
+    String date,
+    String location,
+    int tickets,
+    String ref,
+  );
+
+  /// Camera header in landmark-lens mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Lens'**
+  String get cameraLens;
+
+  /// Camera header in AR-translation mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get cameraTranslation;
+
+  /// Header of the translation results panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation Result'**
+  String get cameraTranslationResult;
+
+  /// Shown when no landmark is recognised.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not identify any landmark'**
+  String get cameraNoLandmark;
+
+  /// Shown when a landmark is recognised but missing from the database.
+  ///
+  /// In en, this message translates to:
+  /// **'We found \"{label}\" but it\'s not in our database'**
+  String cameraNotInDb(String label);
+
+  /// Error title for an API-key/configuration problem.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuration Error'**
+  String get cameraConfigError;
+
+  /// Generic camera error title.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get cameraErrorTitle;
+
+  /// Badge label in the result sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Landmark Identified'**
+  String get cameraLandmarkIdentified;
+
+  /// Weather advisory chip in the landmark result sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{condition} · Tap for forecast'**
+  String cameraTapForecast(String condition);
+
+  /// Expand the landmark description.
+  ///
+  /// In en, this message translates to:
+  /// **'Read More'**
+  String get cameraReadMore;
+
+  /// Collapse the landmark description.
+  ///
+  /// In en, this message translates to:
+  /// **'Read Less'**
+  String get cameraReadLess;
+
+  /// Button to generate an AI story for the landmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me a story'**
+  String get cameraTellStory;
+
+  /// Loading label while the AI story is generated.
+  ///
+  /// In en, this message translates to:
+  /// **'Consulting history...'**
+  String get cameraConsulting;
+
+  /// Play the narrated story.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get cameraListen;
+
+  /// Pause the narration.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get cameraPause;
+
+  /// Resume the narration.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get cameraResume;
+
+  /// Loading label while narration audio is generated.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating...'**
+  String get cameraGenerating;
+
+  /// Tooltip to replay the narration from the beginning.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay from start'**
+  String get cameraReplay;
+
+  /// Snackbar when TTS audio generation fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not generate audio. Please try again.'**
+  String get cameraAudioGenFailed;
+
+  /// Snackbar when narration playback fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio playback failed. Please try again.'**
+  String get cameraAudioPlayFailed;
+
+  /// Open the identified landmark in the map tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on Map'**
+  String get cameraShowOnMap;
+
+  /// Dismiss the landmark result sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get cameraDone;
+
+  /// Header above nearby-landmark suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'You might also like nearby'**
+  String get cameraNearby;
+
+  /// Title of the Sphinx riddle easter-egg dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'The Sphinx\'s Riddle 🦁'**
+  String get sphinxRiddleTitle;
+
+  /// Sphinx dialog title on a correct answer.
+  ///
+  /// In en, this message translates to:
+  /// **'You May Pass 🦁'**
+  String get sphinxPassTitle;
+
+  /// Sphinx dialog title on a wrong answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect, Mortal 🌪️'**
+  String get sphinxFailTitle;
+
+  /// The Sphinx's riddle question.
+  ///
+  /// In en, this message translates to:
+  /// **'\"What walks on four legs in the morning, two at noon, and three in the evening?\"'**
+  String get sphinxRiddleBody;
+
+  /// Sphinx dialog body on a correct answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your wisdom equals the ancients. The Sphinx permits your journey to continue.'**
+  String get sphinxPassBody;
+
+  /// Sphinx dialog body on a wrong answer.
+  ///
+  /// In en, this message translates to:
+  /// **'The sands of time will swallow your ignorance. Return when you have learned.'**
+  String get sphinxFailBody;
+
+  /// Wrong answer option in the Sphinx riddle.
+  ///
+  /// In en, this message translates to:
+  /// **'An Animal'**
+  String get sphinxAnswerAnimal;
+
+  /// Correct answer option in the Sphinx riddle.
+  ///
+  /// In en, this message translates to:
+  /// **'A Human'**
+  String get sphinxAnswerHuman;
+
+  /// Title of the map trip-planner sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip Planner'**
+  String get tripPlannerTitle;
+
+  /// Button to start the planned trip.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Trip'**
+  String get tripPlannerStart;
+
+  /// Loading label while the route is being optimised.
+  ///
+  /// In en, this message translates to:
+  /// **'Optimising...'**
+  String get tripPlannerOptimising;
+
+  /// Hint in the trip-planner search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search places to add…'**
+  String get tripPlannerSearchHint;
+
+  /// Info chip showing how many stops are in the itinerary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 stop — route will be optimised by shortest distance} other{{count} stops — route will be optimised by shortest distance}}'**
+  String tripPlannerStopsInfo(int count);
+
+  /// Empty-state title for the trip planner.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan your day in Egypt'**
+  String get tripPlannerEmptyTitle;
+
+  /// Empty-state subtitle for the trip planner.
+  ///
+  /// In en, this message translates to:
+  /// **'Search above or pick from suggestions below'**
+  String get tripPlannerEmptySub;
+
+  /// Header for AI suggestions when the itinerary is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested for you'**
+  String get tripPlannerSuggested;
+
+  /// Button to add a suggested place to the itinerary.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get tripPlannerAdd;
+
+  /// Snackbar when an unauthenticated user tries to save a place.
+  ///
+  /// In en, this message translates to:
+  /// **'You must be logged in to save places.'**
+  String get placeDetailLoginToSave;
+
+  /// Distance label in metres.
+  ///
+  /// In en, this message translates to:
+  /// **'{meters} m away'**
+  String placeDetailMetersAway(int meters);
+
+  /// Distance label in kilometres (pre-formatted).
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km away'**
+  String placeDetailKmAway(String km);
+
+  /// Estimated taxi fare range.
+  ///
+  /// In en, this message translates to:
+  /// **'~{low}–{high} EGP by taxi'**
+  String placeDetailTaxiFare(int low, int high);
+
+  /// Opening-status label: open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Now'**
+  String get placeDetailOpenNow;
+
+  /// Opening-status label: closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get placeDetailClosed;
+
+  /// Button to collapse the place detail sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get placeDetailClose;
+
+  /// Action button: get directions.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get placeDetailDirections;
+
+  /// Action button: share the place.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get placeDetailShare;
+
+  /// Action button label when the place is saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get placeDetailSaved;
+
+  /// Section header: about the place.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get placeDetailAbout;
+
+  /// Fallback description when a place has none.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore the ancient wonders and hidden gems of Egypt. This location offers a unique glimpse into the rich history and culture of the region.'**
+  String get placeDetailDefaultDesc;
+
+  /// Info tile: entry fee in EGP.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} EGP Entry Fee'**
+  String placeDetailEntryFee(String price);
+
+  /// Section header: reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'What Travelers Say'**
+  String get placeDetailReviews;
+
+  /// Community-posts count for this place.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 traveler posted from here} other{{count} travelers posted from here}}'**
+  String placeDetailPostedHere(int count);
+
+  /// Button to open community posts from this place.
+  ///
+  /// In en, this message translates to:
+  /// **'See Posts'**
+  String get placeDetailSeePosts;
+
+  /// Section header: similar places.
+  ///
+  /// In en, this message translates to:
+  /// **'Similar Places'**
+  String get placeDetailSimilar;
+
+  /// Crowd badge: low density.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet right now'**
+  String get placeDetailCrowdQuiet;
+
+  /// Crowd badge: medium density.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderately busy'**
+  String get placeDetailCrowdModerate;
+
+  /// Crowd badge: high density.
+  ///
+  /// In en, this message translates to:
+  /// **'Very busy'**
+  String get placeDetailCrowdBusy;
+
+  /// Title of the community-posts sheet for a place.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts from {name}'**
+  String placeDetailPostsFrom(String name);
+
+  /// Empty state for the place's community posts.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts yet from this place.\nBe the first to share!'**
+  String get placeDetailNoPosts;
+
+  /// Map loading overlay title.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovering Egypt...'**
+  String get mapDiscovering;
+
+  /// Map loading overlay subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading places near you'**
+  String get mapLoadingNearby;
+
+  /// Title of the navigation-arrival dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve Arrived!'**
+  String get mapArrivedTitle;
+
+  /// Body of the navigation-arrival dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'You have arrived at {name}'**
+  String mapArrivedBody(String name);
+
+  /// Mini-FAB label: open the trip planner.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip'**
+  String get mapFabTrip;
+
+  /// Mini-FAB label: nearby places.
+  ///
+  /// In en, this message translates to:
+  /// **'Near Me'**
+  String get mapFabNearMe;
+
+  /// Mini-FAB label: saved places.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get mapFabSaved;
+
+  /// Trip-progress label showing the current stop index.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop {current} of {total}'**
+  String mapStopOf(int current, int total);
+
+  /// Button to advance to the next trip stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Stop'**
+  String get mapNextStop;
+
+  /// Button to finish a planned trip.
+  ///
+  /// In en, this message translates to:
+  /// **'Done! 🎉'**
+  String get mapTripDone;
+
+  /// Button to return to the active solo tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Tour'**
+  String get mapBackToTour;
+
+  /// Loading label while a route is being computed.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding route...'**
+  String get mapFindingRoute;
+
+  /// Overall route distance + duration during live navigation.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} · {duration} total'**
+  String mapEtaTotal(String distance, String duration);
+
+  /// Turn-by-turn step counter.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current}/{total}'**
+  String mapStepProgress(int current, int total);
+
+  /// Badge on an AI-suggested place nudge card.
+  ///
+  /// In en, this message translates to:
+  /// **'AI PICK'**
+  String get mapAiPick;
+
+  /// Generic loading label.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get commonLoading;
+
+  /// Hint in the map search bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Search places...'**
+  String get mapSearchHint;
+
+  /// Empty state in map search results.
+  ///
+  /// In en, this message translates to:
+  /// **'No places found'**
+  String get mapNoPlacesFound;
+
+  /// Travel mode: driving.
+  ///
+  /// In en, this message translates to:
+  /// **'Drive'**
+  String get mapModeDrive;
+
+  /// Travel mode: walking.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk'**
+  String get mapModeWalk;
+
+  /// Travel mode: public transit.
+  ///
+  /// In en, this message translates to:
+  /// **'Transit'**
+  String get mapModeTransit;
+
+  /// Number of turn-by-turn steps in a route.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 step} other{{count} steps}}'**
+  String mapStepsCount(int count);
+
+  /// Button to begin turn-by-turn navigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Navigation'**
+  String get mapStartNavigation;
+
+  /// Title of the route-steps sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Route Steps'**
+  String get mapRouteSteps;
+
+  /// Final step in the route-steps list.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrive at destination'**
+  String get mapArriveDestination;
+
+  /// Easter-egg overlay text.
+  ///
+  /// In en, this message translates to:
+  /// **'CURSE RELEASED'**
+  String get mapCurseReleased;
+
+  /// Title of the map filter sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by Category'**
+  String get mapFilterByCategory;
+
+  /// Filter-sheet status pill: zoom filter active.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom Filter ON'**
+  String get mapZoomFilterOn;
+
+  /// Filter-sheet status pill: a category is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing All'**
+  String get mapShowingAll;
+
+  /// Visible-vs-total places counter on the map.
+  ///
+  /// In en, this message translates to:
+  /// **'{visible}/{total} places'**
+  String mapPlacesCount(int visible, int total);
+
+  /// Filter-sheet subtitle for the All category.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 place • Zoom to see more} other{{count} places • Zoom to see more}}'**
+  String mapCatPlacesZoom(int count);
+
+  /// Filter-sheet subtitle for the Favorites category.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 saved place} other{{count} saved places}}'**
+  String mapCatSavedPlaces(int count);
+
+  /// Filter-sheet subtitle: places in a category.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 place} other{{count} places}}'**
+  String mapCatPlaces(int count);
+
+  /// Filter category: all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get mapCatAll;
+
+  /// Filter category: favorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get mapCatFavorites;
+
+  /// Filter category: open now.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Now'**
+  String get mapCatOpenNow;
+
+  /// Filter category: tourism.
+  ///
+  /// In en, this message translates to:
+  /// **'Tourism'**
+  String get mapCatTourism;
+
+  /// Filter category: historical.
+  ///
+  /// In en, this message translates to:
+  /// **'Historical'**
+  String get mapCatHistorical;
+
+  /// Filter category: museums.
+  ///
+  /// In en, this message translates to:
+  /// **'Museums'**
+  String get mapCatMuseums;
+
+  /// Filter category: hotels.
+  ///
+  /// In en, this message translates to:
+  /// **'Hotels'**
+  String get mapCatHotels;
+
+  /// Filter category: religious.
+  ///
+  /// In en, this message translates to:
+  /// **'Religious'**
+  String get mapCatReligious;
+
+  /// Filter category: food & dining.
+  ///
+  /// In en, this message translates to:
+  /// **'Food & Dining'**
+  String get mapCatFood;
+
+  /// Filter category: nature.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature'**
+  String get mapCatNature;
+
+  /// Filter category: entertainment.
+  ///
+  /// In en, this message translates to:
+  /// **'Entertainment'**
+  String get mapCatEntertainment;
+
+  /// Filter category: shopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get mapCatShopping;
 }
 
 class _AppLocalizationsDelegate

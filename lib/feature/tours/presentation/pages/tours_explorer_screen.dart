@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/recommendation_service.dart';
@@ -150,9 +151,26 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
     return filtered;
   }
 
+  // Frequency values stay English (compared against `t.frequency`); display localized.
+  String _frequencyLabel(AppLocalizations l10n, String f) {
+    switch (f) {
+      case 'Daily':
+        return l10n.toursFreqDaily;
+      case 'Weekly':
+        return l10n.toursFreqWeekly;
+      case 'Weekends':
+        return l10n.toursFreqWeekends;
+      case 'One-Time':
+        return l10n.toursFreqOneTime;
+      default:
+        return f;
+    }
+  }
+
   void _showFilterSheet(BuildContext context, List<TourEntity> allTours) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
     // Calculate actual max price from tours
     final maxPrice = allTours.isNotEmpty
         ? allTours.map((t) => t.price).reduce((a, b) => a > b ? a : b).ceilToDouble() + 10
@@ -183,7 +201,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Filters', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
+                      Text(l10n.toursFilters, style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
                       TextButton(
                         onPressed: () {
                           setSheetState(() {
@@ -192,14 +210,14 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                             tempFrequency = null;
                           });
                         },
-                        child: const Text('Reset'),
+                        child: Text(l10n.commonReset),
                       ),
                     ],
                   ),
                   SizedBox(height: 20.h),
 
                   // Price Range
-                  Text('Price Range', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  Text(l10n.toursPriceRange, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
                   SizedBox(height: 8.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -220,7 +238,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                   SizedBox(height: 16.h),
 
                   // Minimum Rating
-                  Text('Minimum Rating', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  Text(l10n.toursMinRating, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
                   SizedBox(height: 8.h),
                   Row(
                     children: [
@@ -237,20 +255,20 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                           ),
                         ),
                       if (tempRating > 0)
-                        Text(' ${tempRating.toInt()}+ stars', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13.sp)),
+                        Text(' ${l10n.toursStarsPlus(tempRating.toInt())}', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13.sp)),
                     ],
                   ),
                   SizedBox(height: 20.h),
 
                   // Frequency
-                  Text('Frequency', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  Text(l10n.toursFrequency, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
                   SizedBox(height: 8.h),
                   Wrap(
                     spacing: 8.w,
                     children: ['Daily', 'Weekly', 'Weekends', 'One-Time'].map((f) {
                       final isSelected = tempFrequency == f;
                       return ChoiceChip(
-                        label: Text(f),
+                        label: Text(_frequencyLabel(l10n, f)),
                         selected: isSelected,
                         selectedColor: primary.withValues(alpha: 0.2),
                         onSelected: (v) => setSheetState(() => tempFrequency = v ? f : null),
@@ -281,7 +299,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                         });
                         Navigator.pop(ctx);
                       },
-                      child: Text('Apply Filters', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                      child: Text(l10n.toursApplyFilters, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -298,6 +316,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -305,7 +324,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Discover Tours',
+          l10n.toursDiscoverTitle,
           style: TextStyle(
             color: onSurface,
             fontWeight: FontWeight.bold,
@@ -336,7 +355,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                   onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Search destinations, guides...',
+                    hintText: l10n.toursSearchHint,
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: IconButton(
                       icon: Badge(
@@ -369,15 +388,15 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                       onSelected: (v) => setState(() => _sortOption = v),
                       itemBuilder: (_) => [
-                        const PopupMenuItem(value: _SortOption.newest, child: Text('Newest First')),
-                        const PopupMenuItem(value: _SortOption.cheapest, child: Text('Cheapest First')),
-                        const PopupMenuItem(value: _SortOption.priciest, child: Text('Priciest First')),
-                        const PopupMenuItem(value: _SortOption.highestRated, child: Text('Highest Rated')),
-                        const PopupMenuItem(value: _SortOption.mostPopular, child: Text('Most Popular')),
+                        PopupMenuItem(value: _SortOption.newest, child: Text(l10n.toursSortNewest)),
+                        PopupMenuItem(value: _SortOption.cheapest, child: Text(l10n.toursSortCheapest)),
+                        PopupMenuItem(value: _SortOption.priciest, child: Text(l10n.toursSortPriciest)),
+                        PopupMenuItem(value: _SortOption.highestRated, child: Text(l10n.toursSortHighestRated)),
+                        PopupMenuItem(value: _SortOption.mostPopular, child: Text(l10n.toursSortMostPopular)),
                       ],
                       child: Chip(
                         avatar: Icon(Icons.sort, size: 16.r, color: primary),
-                        label: Text(_sortLabel(), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
+                        label: Text(_sortLabel(l10n), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
                         backgroundColor: primary.withValues(alpha: 0.08),
                         side: BorderSide(color: primary.withValues(alpha: 0.2)),
                       ),
@@ -409,7 +428,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                       Padding(
                         padding: EdgeInsetsDirectional.only(end: 8.w),
                         child: InputChip(
-                          label: Text(_selectedFrequency!, style: TextStyle(fontSize: 12.sp)),
+                          label: Text(_frequencyLabel(l10n, _selectedFrequency!), style: TextStyle(fontSize: 12.sp)),
                           onDeleted: () => setState(() { _activeFilters.remove('frequency'); _selectedFrequency = null; }),
                           backgroundColor: primary.withValues(alpha: 0.08),
                           side: BorderSide(color: primary.withValues(alpha: 0.2)),
@@ -437,7 +456,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                   child: Row(
                     children: [
                       Text(
-                        '${_applyFiltersAndSort(allTours).length} tours found',
+                        l10n.toursFoundCount(_applyFiltersAndSort(allTours).length),
                         style: TextStyle(fontSize: 13.sp, color: onSurface.withValues(alpha: 0.5)),
                       ),
                     ],
@@ -458,7 +477,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
     if (state is ExplorerToursLoading) return _buildShimmerLoading();
     if (state is ExplorerToursError) {
       return AppErrorWidget(
-        message: 'Could not load tours.\nCheck your connection and try again.',
+        message: AppLocalizations.of(context).toursLoadError,
         onRetry: () => context.read<ExplorerToursCubit>().loadTours(),
       );
     }
@@ -477,29 +496,30 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
     return const SizedBox.shrink();
   }
 
-  String _sortLabel() {
+  String _sortLabel(AppLocalizations l10n) {
     switch (_sortOption) {
-      case _SortOption.newest: return 'Newest';
-      case _SortOption.cheapest: return 'Cheapest';
-      case _SortOption.priciest: return 'Priciest';
-      case _SortOption.highestRated: return 'Top Rated';
-      case _SortOption.mostPopular: return 'Popular';
+      case _SortOption.newest: return l10n.toursSortLabelNewest;
+      case _SortOption.cheapest: return l10n.toursSortLabelCheapest;
+      case _SortOption.priciest: return l10n.toursSortLabelPriciest;
+      case _SortOption.highestRated: return l10n.toursSortLabelTopRated;
+      case _SortOption.mostPopular: return l10n.toursSortLabelPopular;
     }
   }
 
   Widget _buildEmptyState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.travel_explore, size: 80.r, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
           SizedBox(height: 20.h),
-          Text('No tours found', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
+          Text(l10n.toursEmptyTitle, style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
           SizedBox(height: 8.h),
           Text(
             _activeFilters.isNotEmpty
-                ? 'Try adjusting your filters.'
-                : 'Try adjusting your search query.',
+                ? l10n.toursEmptyFilters
+                : l10n.toursEmptySearch,
             style: TextStyle(fontSize: 16.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           ),
           if (_activeFilters.isNotEmpty) ...[
@@ -507,7 +527,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
             TextButton.icon(
               onPressed: () => setState(() { _activeFilters.clear(); _minRating = 0; _selectedFrequency = null; }),
               icon: const Icon(Icons.clear_all),
-              label: const Text('Clear All Filters'),
+              label: Text(l10n.toursClearFilters),
             ),
           ],
         ],
@@ -564,7 +584,7 @@ class _RecommendedToursCarousel extends StatelessWidget {
                 Icon(Icons.auto_awesome, size: 16.r, color: primary),
                 SizedBox(width: 6.w),
                 Text(
-                  'Recommended for You',
+                  AppLocalizations.of(context).toursRecommended,
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,

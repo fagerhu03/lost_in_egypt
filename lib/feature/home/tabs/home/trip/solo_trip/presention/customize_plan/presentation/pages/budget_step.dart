@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../theme/theme.dart';
 import '../manager/trip_planner_controller.dart';
 import '../widgets/quiz_scaffold.dart';
@@ -23,6 +24,7 @@ class BudgetStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppColors.darkPrimaryButton;
     final textColor = isDark ? AppColors.darkText : AppColors.lightText;
@@ -31,11 +33,11 @@ class BudgetStep extends StatelessWidget {
     final maxB = controller.plan.maxBudget;
 
     return QuizScaffold(
-      title: "What's your budget?",
+      title: l10n.soloQuizBudgetTitle,
       stepIndex: 4,
       onNext: onNext,
       onBack: onBack,
-      nextText: 'Finish',
+      isFinish: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -43,7 +45,7 @@ class BudgetStep extends StatelessWidget {
           Row(
             children: [
               _PresetBtn(
-                label: 'Budget',
+                label: l10n.budgetPresetBudget,
                 sub: '< 3K',
                 isSelected: minB == 500 && maxB == 3000,
                 color: const Color(0xFF22C55E),
@@ -51,7 +53,7 @@ class BudgetStep extends StatelessWidget {
               ),
               SizedBox(width: 8.w),
               _PresetBtn(
-                label: 'Mid-range',
+                label: l10n.budgetPresetMid,
                 sub: '3K–10K',
                 isSelected: minB == 3000 && maxB == 10000,
                 color: primary,
@@ -59,7 +61,7 @@ class BudgetStep extends StatelessWidget {
               ),
               SizedBox(width: 8.w),
               _PresetBtn(
-                label: 'Luxury',
+                label: l10n.budgetPresetLuxury,
                 sub: '10K+',
                 isSelected: minB == 10000 && maxB == 30000,
                 color: const Color(0xFFA855F7),

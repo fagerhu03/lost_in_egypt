@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class TranslationDraggablePanel extends StatelessWidget {
   final Map<String, String> translations;
@@ -69,7 +70,7 @@ class TranslationDraggablePanel extends StatelessWidget {
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      "Translation Result",
+                      AppLocalizations.of(context).cameraTranslationResult,
                       style: TextStyle(
                         fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         color: Theme.of(context).colorScheme.onSurface,

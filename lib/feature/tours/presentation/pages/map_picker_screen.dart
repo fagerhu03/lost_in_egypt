@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../home/tabs/map/presentation/map_config.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../home/tabs/map/data/map_repository.dart';
@@ -88,9 +89,10 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   }
 
   Future<void> _onMapTapped(LatLng location) async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _selectedLocation = location;
-      _selectedAddress = 'Fetching address...';
+      _selectedAddress = l10n.mapPickerFetching;
       _pickedMarker = Marker(
         markerId: const MarkerId('picked_location'),
         position: location,
@@ -113,11 +115,11 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         ].where((e) => e != null).join(', ');
 
         setState(() {
-          _selectedAddress = address.isNotEmpty ? address : 'Selected Location';
+          _selectedAddress = address.isNotEmpty ? address : l10n.mapPickerSelectedLocation;
         });
       } else {
         setState(() {
-          _selectedAddress = 'Unknown Location';
+          _selectedAddress = l10n.mapPickerUnknownLocation;
         });
       }
     } catch (e) {
@@ -245,7 +247,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                         focusNode: focusNode,
                         onEditingComplete: onEditingComplete,
                         decoration: InputDecoration(
-                          hintText: 'Search for a landmark or destination...',
+                          hintText: AppLocalizations.of(context).mapPickerSearchHint,
                           prefixIcon: IconButton(
                             icon: const Icon(Icons.arrow_back),
                             onPressed: () => Navigator.of(context).pop(),
@@ -272,10 +274,10 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                   borderRadius: BorderRadius.circular(8.r),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
                 ),
-                child: const Text(
-                  'Tap anywhere on the map to select a location',
+                child: Text(
+                  AppLocalizations.of(context).mapPickerTapHint,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.w500),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -302,7 +304,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _selectedAddress ?? 'Selected Location',
+                            _selectedAddress ?? AppLocalizations.of(context).mapPickerSelectedLocation,
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
                           ),
                           SizedBox(height: 4.h),
@@ -328,7 +330,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                   Navigator.of(context).pop({
                     'lat': _selectedLocation!.latitude,
                     'lng': _selectedLocation!.longitude,
-                    'name': _selectedAddress ?? 'Custom Pin Location',
+                    'name': _selectedAddress ?? AppLocalizations.of(context).mapPickerCustomPin,
                   });
                 },
                 style: ElevatedButton.styleFrom(
@@ -338,7 +340,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                   elevation: 6,
                 ),
                 child: Text(
-                  'Confirm Location',
+                  AppLocalizations.of(context).mapPickerConfirm,
                   style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),

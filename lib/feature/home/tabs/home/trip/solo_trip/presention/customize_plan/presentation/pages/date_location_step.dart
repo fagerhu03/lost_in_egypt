@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../core/utils/map_style_helper.dart';
 import '../../../../../../../../../../theme/theme.dart';
 import '../manager/trip_planner_controller.dart';
@@ -76,6 +77,7 @@ class _DateLocationStepState extends State<DateLocationStep> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppColors.darkPrimaryButton;
     final textColor = isDark ? AppColors.darkText : AppColors.lightText;
@@ -94,7 +96,7 @@ class _DateLocationStepState extends State<DateLocationStep> {
             : null;
 
     return QuizScaffold(
-      title: 'Choose your dates & location',
+      title: l10n.soloQuizDateTitle,
       stepIndex: 0,
       onNext: widget.onNext,
       onBack: widget.onBack,
@@ -103,9 +105,9 @@ class _DateLocationStepState extends State<DateLocationStep> {
         children: [
           // ── From date ────────────────────────────────────────────────────
           _DateField(
-            label: 'From',
+            label: l10n.soloDateFrom,
             value: from != null ? _fmtDate(from) : null,
-            hint: 'Start date',
+            hint: l10n.soloDateStartHint,
             fieldBg: fieldBg,
             borderColor: borderColor,
             textColor: textColor,
@@ -126,7 +128,7 @@ class _DateLocationStepState extends State<DateLocationStep> {
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
-                    '$nights ${nights == 1 ? 'night' : 'nights'}',
+                    l10n.soloNightsCount(nights),
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
@@ -141,9 +143,9 @@ class _DateLocationStepState extends State<DateLocationStep> {
 
           // ── To date ──────────────────────────────────────────────────────
           _DateField(
-            label: 'To',
+            label: l10n.soloDateTo,
             value: to != null ? _fmtDate(to) : null,
-            hint: 'End date',
+            hint: l10n.soloDateEndHint,
             fieldBg: fieldBg,
             borderColor: borderColor,
             textColor: textColor,
@@ -182,7 +184,7 @@ class _DateLocationStepState extends State<DateLocationStep> {
                     child: Text(
                       locationName != null && locationName.isNotEmpty
                           ? locationName
-                          : 'Where are you starting from?',
+                          : l10n.soloStartLocationHint,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: locationName != null && locationName.isNotEmpty

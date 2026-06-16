@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class HieroglyphicsOverlay extends StatefulWidget {
   const HieroglyphicsOverlay({super.key});
@@ -86,7 +87,7 @@ class _HieroglyphicsOverlayState extends State<HieroglyphicsOverlay>
                 return Opacity(
                   opacity: val,
                   child: Text(
-                    "CURSE RELEASED",
+                    AppLocalizations.of(context).mapCurseReleased,
                     style: TextStyle(
                       fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       fontSize: 36.sp,

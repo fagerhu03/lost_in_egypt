@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class MapLoadingOverlay extends StatelessWidget {
   final bool isLoading;
@@ -55,7 +56,7 @@ class MapLoadingOverlay extends StatelessWidget {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: primary)),
                   SizedBox(width: 10.w),
-                  Text("Loading...",
+                  Text(AppLocalizations.of(context).commonLoading,
                       style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
                 ],
               ),
