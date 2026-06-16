@@ -968,4 +968,211 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editSaveChanges => 'Save Changes';
+
+  @override
+  String get currencyConverterTitle => 'Currency Converter';
+
+  @override
+  String get currencyEnterValidAmount => 'Please enter a valid amount';
+
+  @override
+  String currencyRateUnavailable(String currency) {
+    return 'Rate not available for $currency';
+  }
+
+  @override
+  String get currencyFrom => 'From';
+
+  @override
+  String get currencyTo => 'To';
+
+  @override
+  String get currencyAmount => 'Amount';
+
+  @override
+  String get currencyEnterAmount => 'Enter amount';
+
+  @override
+  String get currencyConvert => 'Convert';
+
+  @override
+  String get currencyResult => 'Result';
+
+  @override
+  String get translatorInitFailed => 'Failed to initialize translator';
+
+  @override
+  String get translatorEnterText => 'Please enter text to translate';
+
+  @override
+  String get translatorTimedOut =>
+      'Translation timed out. Models may still be downloading — try again in a moment.';
+
+  @override
+  String get translatorFailed =>
+      'Translation failed. If offline, models may not be downloaded yet.';
+
+  @override
+  String get translatorDownloadingModels =>
+      'Downloading translation models for offline use...';
+
+  @override
+  String get translatorWorksOffline =>
+      'Works offline - models cached on device';
+
+  @override
+  String get translatorEnterTextHint => 'Enter text';
+
+  @override
+  String get translatorTranslationHint => 'Translation';
+
+  @override
+  String get translatorTranslate => 'Translate';
+
+  @override
+  String get helpFaqTitle => 'Help & FAQ';
+
+  @override
+  String get helpSecGettingStarted => 'Getting Started';
+
+  @override
+  String get helpSecMapPlaces => 'Map & Places';
+
+  @override
+  String get helpSecBookings => 'Bookings & Payments';
+
+  @override
+  String get helpSecCommunity => 'Community';
+
+  @override
+  String get helpSecAccount => 'Account & Settings';
+
+  @override
+  String get helpSecOffline => 'Offline Mode';
+
+  @override
+  String get helpSecSafety => 'Safety & Emergency';
+
+  @override
+  String get helpQDiscover => 'How do I discover landmarks?';
+
+  @override
+  String get helpADiscover =>
+      'Open the Camera tab and point your phone at any Egyptian landmark. The AI will identify it and generate a historical story read aloud by your personal guide. Each discovery is saved to your profile and counts toward your badge progress.';
+
+  @override
+  String get helpQBadges => 'How do I earn badges?';
+
+  @override
+  String get helpABadges =>
+      'Badges are earned by discovering landmarks through the Camera tab. Visit 1, 3, 5, 10, and 20 unique landmarks to unlock Novice Explorer, Tourist, Tomb Raider, Historian, and Pharaoh badges respectively. There are also hidden badges — explore and find them!';
+
+  @override
+  String get helpQGuide => 'How do I become a tour guide?';
+
+  @override
+  String get helpAGuide =>
+      'Go to Account → Apply as Guide. You\'ll need your MOTA license number, syndicate number, certified languages, and supporting documents. Applications are reviewed by our admin team and you will be notified of the outcome in-app.';
+
+  @override
+  String get helpQSavePlaces => 'Can I save places to visit later?';
+
+  @override
+  String get helpASavePlaces =>
+      'Yes! On the Map tab, tap any landmark pin and press the bookmark icon to save it. You can also save events from the Home tab by tapping the heart icon on any event card. Access all your saved places from the Map tab → Saved Places.';
+
+  @override
+  String get helpQRecognise =>
+      'My camera didn\'t recognise a landmark — what should I do?';
+
+  @override
+  String get helpARecognise =>
+      'Ensure the landmark fills most of the frame and is well lit. Tap the shutter button and wait a few seconds. If the landmark is very minor or off the main tourist trail it may not be in the database yet.';
+
+  @override
+  String get helpQBook => 'How do I book a tour?';
+
+  @override
+  String get helpABook =>
+      'Go to the Home tab and browse available guided tours, or find one on the Map tab. Choose a tour, select your date and number of tickets, then complete payment using any of the available payment methods shown at checkout (card, Apple Pay, or mobile wallet).';
+
+  @override
+  String get helpQCancel => 'How do I cancel a booking?';
+
+  @override
+  String get helpACancel =>
+      'Go to Account → My Bookings, find the booking under the Upcoming tab, and tap Cancel. Refund policies are set by each guide — check the tour details before booking.';
+
+  @override
+  String get helpQSecure => 'Is my payment information secure?';
+
+  @override
+  String get helpASecure =>
+      'Yes. Payments are processed through Paymob, a certified PCI-compliant payment gateway. Lost in Egypt never stores your card or wallet details on its servers.';
+
+  @override
+  String get helpQCurrency => 'How do I change my display currency?';
+
+  @override
+  String get helpACurrency =>
+      'Go to More → Settings → Preferred Currency. All tour prices across the app will display in your chosen currency. The actual charge at checkout is always processed in EGP via Paymob.';
+
+  @override
+  String get helpQPost => 'How do I post in the community?';
+
+  @override
+  String get helpAPost =>
+      'Tap the Community tab and press the + button. You can write text, add photos, tag a location, choose a category (Travel Story, Question, Tip, etc.), and use #hashtags or @mention other users.';
+
+  @override
+  String get helpQReport => 'How do I report a post or user?';
+
+  @override
+  String get helpAReport =>
+      'On any community post or comment, tap the ⋮ menu and select Report. Our admin team reviews all reports and takes action within 24 hours.';
+
+  @override
+  String get helpQUsername => 'How do I change my username?';
+
+  @override
+  String get helpAUsername =>
+      'Go to Account → Edit Profile. Your username (e.g. @ahmed_x1) must be 3–20 characters, lowercase letters, numbers, and underscores only, and globally unique. It is displayed on all your posts and comments.';
+
+  @override
+  String get helpQTheme => 'How do I switch between light and dark mode?';
+
+  @override
+  String get helpATheme =>
+      'Go to More → Settings and toggle the Dark Mode switch. Your preference is saved to your account and synced across devices.';
+
+  @override
+  String get helpQOfflineWhat =>
+      'What can I use without an internet connection?';
+
+  @override
+  String get helpAOfflineWhat =>
+      'Lost in Egypt is designed primarily as an online experience, but several features remain available offline:\n\n• Map pins — over 500 Egyptian landmarks are bundled locally in the app, so the map shows location markers even without internet (map tiles themselves require connectivity).\n• Cached images — places and event images you have previously viewed are stored on your device and load instantly offline.\n• Text recognition (Camera → Scan text) — ML Kit processes text entirely on-device.\n• Translator — once a language pack is downloaded, translation works offline.\n• App navigation, badges, and settings — always available.';
+
+  @override
+  String get helpQOfflineNeed =>
+      'What features require an internet connection?';
+
+  @override
+  String get helpAOfflineNeed =>
+      'The following features need an active connection:\n\n• Landmark identification via the Camera tab (uses Google Cloud Vision API)\n• AI historical story generation (uses Google Gemini)\n• Community posts, likes, and comments (Firestore)\n• Browsing and booking tours (Firestore)\n• Events feed (Firestore)\n• Currency conversion (live exchange rates)\n• SOS — nearest emergency services search (Google Places API)\n• Signing in or creating an account (Firebase Auth)';
+
+  @override
+  String get helpQOfflineImprove =>
+      'Will offline-capable features improve over time?';
+
+  @override
+  String get helpAOfflineImprove =>
+      'Yes. We plan to expand offline support in future updates, including downloadable city guides and cached tour content. Keep the app updated to get these improvements.';
+
+  @override
+  String get helpQEmergency => 'What do I do in an emergency?';
+
+  @override
+  String get helpAEmergency =>
+      'Open More → SOS. You can find the nearest police station, hospital, or fire station using your current location, or dial Egypt\'s official emergency numbers directly from the app:\n• Police: 122\n• Ambulance: 123\n• Fire: 180\n• Tourist Police: 126';
 }

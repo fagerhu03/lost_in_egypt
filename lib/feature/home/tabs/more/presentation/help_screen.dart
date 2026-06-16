@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 // ── Section model ─────────────────────────────────────────────────────────────
 class _Section {
@@ -16,177 +17,64 @@ class _FAQ {
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-const _sections = [
+List<_Section> _buildSections(AppLocalizations l10n) => [
   _Section(
-    title: "Getting Started",
+    title: l10n.helpSecGettingStarted,
     icon: Icons.explore_outlined,
     faqs: [
-      _FAQ(
-        question: "How do I discover landmarks?",
-        answer:
-            "Open the Camera tab and point your phone at any Egyptian landmark. "
-            "The AI will identify it and generate a historical story read aloud by your personal guide. "
-            "Each discovery is saved to your profile and counts toward your badge progress.",
-      ),
-      _FAQ(
-        question: "How do I earn badges?",
-        answer:
-            "Badges are earned by discovering landmarks through the Camera tab. "
-            "Visit 1, 3, 5, 10, and 20 unique landmarks to unlock Novice Explorer, Tourist, "
-            "Tomb Raider, Historian, and Pharaoh badges respectively. "
-            "There are also hidden badges — explore and find them!",
-      ),
-      _FAQ(
-        question: "How do I become a tour guide?",
-        answer:
-            "Go to Account → Apply as Guide. You'll need your MOTA license number, syndicate number, "
-            "certified languages, and supporting documents. Applications are reviewed by our admin team "
-            "and you will be notified of the outcome in-app.",
-      ),
+      _FAQ(question: l10n.helpQDiscover, answer: l10n.helpADiscover),
+      _FAQ(question: l10n.helpQBadges, answer: l10n.helpABadges),
+      _FAQ(question: l10n.helpQGuide, answer: l10n.helpAGuide),
     ],
   ),
   _Section(
-    title: "Map & Places",
+    title: l10n.helpSecMapPlaces,
     icon: Icons.map_outlined,
     faqs: [
-      _FAQ(
-        question: "Can I save places to visit later?",
-        answer:
-            "Yes! On the Map tab, tap any landmark pin and press the bookmark icon to save it. "
-            "You can also save events from the Home tab by tapping the heart icon on any event card. "
-            "Access all your saved places from the Map tab → Saved Places.",
-      ),
-      _FAQ(
-        question: "My camera didn't recognise a landmark — what should I do?",
-        answer:
-            "Ensure the landmark fills most of the frame and is well lit. "
-            "Tap the shutter button and wait a few seconds. "
-            "If the landmark is very minor or off the main tourist trail it may not be in the database yet.",
-      ),
+      _FAQ(question: l10n.helpQSavePlaces, answer: l10n.helpASavePlaces),
+      _FAQ(question: l10n.helpQRecognise, answer: l10n.helpARecognise),
     ],
   ),
   _Section(
-    title: "Bookings & Payments",
+    title: l10n.helpSecBookings,
     icon: Icons.confirmation_number_outlined,
     faqs: [
-      _FAQ(
-        question: "How do I book a tour?",
-        answer:
-            "Go to the Home tab and browse available guided tours, or find one on the Map tab. "
-            "Choose a tour, select your date and number of tickets, then complete payment "
-            "using any of the available payment methods shown at checkout (card, Apple Pay, or mobile wallet).",
-      ),
-      _FAQ(
-        question: "How do I cancel a booking?",
-        answer:
-            "Go to Account → My Bookings, find the booking under the Upcoming tab, and tap Cancel. "
-            "Refund policies are set by each guide — check the tour details before booking.",
-      ),
-      _FAQ(
-        question: "Is my payment information secure?",
-        answer:
-            "Yes. Payments are processed through Paymob, a certified PCI-compliant payment gateway. "
-            "Lost in Egypt never stores your card or wallet details on its servers.",
-      ),
-      _FAQ(
-        question: "How do I change my display currency?",
-        answer:
-            "Go to More → Settings → Preferred Currency. All tour prices across the app "
-            "will display in your chosen currency. The actual charge at checkout is always processed "
-            "in EGP via Paymob.",
-      ),
+      _FAQ(question: l10n.helpQBook, answer: l10n.helpABook),
+      _FAQ(question: l10n.helpQCancel, answer: l10n.helpACancel),
+      _FAQ(question: l10n.helpQSecure, answer: l10n.helpASecure),
+      _FAQ(question: l10n.helpQCurrency, answer: l10n.helpACurrency),
     ],
   ),
   _Section(
-    title: "Community",
+    title: l10n.helpSecCommunity,
     icon: Icons.people_outline_rounded,
     faqs: [
-      _FAQ(
-        question: "How do I post in the community?",
-        answer:
-            "Tap the Community tab and press the + button. You can write text, add photos, "
-            "tag a location, choose a category (Travel Story, Question, Tip, etc.), "
-            "and use #hashtags or @mention other users.",
-      ),
-      _FAQ(
-        question: "How do I report a post or user?",
-        answer:
-            "On any community post or comment, tap the ⋮ menu and select Report. "
-            "Our admin team reviews all reports and takes action within 24 hours.",
-      ),
+      _FAQ(question: l10n.helpQPost, answer: l10n.helpAPost),
+      _FAQ(question: l10n.helpQReport, answer: l10n.helpAReport),
     ],
   ),
   _Section(
-    title: "Account & Settings",
+    title: l10n.helpSecAccount,
     icon: Icons.manage_accounts_outlined,
     faqs: [
-      _FAQ(
-        question: "How do I change my username?",
-        answer:
-            "Go to Account → Edit Profile. Your username (e.g. @ahmed_x1) must be 3–20 characters, "
-            "lowercase letters, numbers, and underscores only, and globally unique. "
-            "It is displayed on all your posts and comments.",
-      ),
-      _FAQ(
-        question: "How do I switch between light and dark mode?",
-        answer:
-            "Go to More → Settings and toggle the Dark Mode switch. "
-            "Your preference is saved to your account and synced across devices.",
-      ),
+      _FAQ(question: l10n.helpQUsername, answer: l10n.helpAUsername),
+      _FAQ(question: l10n.helpQTheme, answer: l10n.helpATheme),
     ],
   ),
   _Section(
-    title: "Offline Mode",
+    title: l10n.helpSecOffline,
     icon: Icons.wifi_off_rounded,
     faqs: [
-      _FAQ(
-        question: "What can I use without an internet connection?",
-        answer:
-            "Lost in Egypt is designed primarily as an online experience, but several features "
-            "remain available offline:\n\n"
-            "• Map pins — over 500 Egyptian landmarks are bundled locally in the app, so the map "
-            "shows location markers even without internet (map tiles themselves require connectivity).\n"
-            "• Cached images — places and event images you have previously viewed are stored on "
-            "your device and load instantly offline.\n"
-            "• Text recognition (Camera → Scan text) — ML Kit processes text entirely on-device.\n"
-            "• Translator — once a language pack is downloaded, translation works offline.\n"
-            "• App navigation, badges, and settings — always available.",
-      ),
-      _FAQ(
-        question: "What features require an internet connection?",
-        answer:
-            "The following features need an active connection:\n\n"
-            "• Landmark identification via the Camera tab (uses Google Cloud Vision API)\n"
-            "• AI historical story generation (uses Google Gemini)\n"
-            "• Community posts, likes, and comments (Firestore)\n"
-            "• Browsing and booking tours (Firestore)\n"
-            "• Events feed (Firestore)\n"
-            "• Currency conversion (live exchange rates)\n"
-            "• SOS — nearest emergency services search (Google Places API)\n"
-            "• Signing in or creating an account (Firebase Auth)",
-      ),
-      _FAQ(
-        question: "Will offline-capable features improve over time?",
-        answer:
-            "Yes. We plan to expand offline support in future updates, including downloadable "
-            "city guides and cached tour content. Keep the app updated to get these improvements.",
-      ),
+      _FAQ(question: l10n.helpQOfflineWhat, answer: l10n.helpAOfflineWhat),
+      _FAQ(question: l10n.helpQOfflineNeed, answer: l10n.helpAOfflineNeed),
+      _FAQ(question: l10n.helpQOfflineImprove, answer: l10n.helpAOfflineImprove),
     ],
   ),
   _Section(
-    title: "Safety & Emergency",
+    title: l10n.helpSecSafety,
     icon: Icons.shield_outlined,
     faqs: [
-      _FAQ(
-        question: "What do I do in an emergency?",
-        answer:
-            "Open More → SOS. You can find the nearest police station, hospital, or fire station "
-            "using your current location, or dial Egypt's official emergency numbers directly from the app:\n"
-            "• Police: 122\n"
-            "• Ambulance: 123\n"
-            "• Fire: 180\n"
-            "• Tourist Police: 126",
-      ),
+      _FAQ(question: l10n.helpQEmergency, answer: l10n.helpAEmergency),
     ],
   ),
 ];
@@ -197,13 +85,15 @@ class HelpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final sections = _buildSections(l10n);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Help & FAQ", style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
+        title: Text(l10n.helpFaqTitle, style: const TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -211,9 +101,9 @@ class HelpScreen extends StatelessWidget {
       ),
       body: ListView.builder(
         padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 40.h),
-        itemCount: _sections.length,
+        itemCount: sections.length,
         itemBuilder: (context, si) {
-          final section = _sections[si];
+          final section = sections[si];
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

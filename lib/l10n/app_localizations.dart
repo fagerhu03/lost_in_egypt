@@ -1867,6 +1867,366 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Changes'**
   String get editSaveChanges;
+
+  /// Title of the currency converter screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency Converter'**
+  String get currencyConverterTitle;
+
+  /// Validation error when the amount is empty or non-positive.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get currencyEnterValidAmount;
+
+  /// Error when no exchange rate exists for the target currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate not available for {currency}'**
+  String currencyRateUnavailable(String currency);
+
+  /// Label above the source-currency dropdown.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get currencyFrom;
+
+  /// Label above the target-currency dropdown.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get currencyTo;
+
+  /// Label above the amount input.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get currencyAmount;
+
+  /// Hint inside the amount input.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter amount'**
+  String get currencyEnterAmount;
+
+  /// Button that performs the conversion.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert'**
+  String get currencyConvert;
+
+  /// Label above the conversion result.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get currencyResult;
+
+  /// Error when the on-device translator fails to initialize.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to initialize translator'**
+  String get translatorInitFailed;
+
+  /// Validation error when the source text is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter text to translate'**
+  String get translatorEnterText;
+
+  /// Error when translation times out.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation timed out. Models may still be downloading — try again in a moment.'**
+  String get translatorTimedOut;
+
+  /// Error when translation fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation failed. If offline, models may not be downloaded yet.'**
+  String get translatorFailed;
+
+  /// Status banner while language models download.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading translation models for offline use...'**
+  String get translatorDownloadingModels;
+
+  /// Status banner once models are cached.
+  ///
+  /// In en, this message translates to:
+  /// **'Works offline - models cached on device'**
+  String get translatorWorksOffline;
+
+  /// Hint in the source text field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter text'**
+  String get translatorEnterTextHint;
+
+  /// Hint in the read-only translation field.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get translatorTranslationHint;
+
+  /// Button that triggers translation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get translatorTranslate;
+
+  /// Title of the Help & FAQ screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & FAQ'**
+  String get helpFaqTitle;
+
+  /// Help section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting Started'**
+  String get helpSecGettingStarted;
+
+  /// Help section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Map & Places'**
+  String get helpSecMapPlaces;
+
+  /// Help section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookings & Payments'**
+  String get helpSecBookings;
+
+  /// Help section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get helpSecCommunity;
+
+  /// Help section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & Settings'**
+  String get helpSecAccount;
+
+  /// Help section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Mode'**
+  String get helpSecOffline;
+
+  /// Help section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety & Emergency'**
+  String get helpSecSafety;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I discover landmarks?'**
+  String get helpQDiscover;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the Camera tab and point your phone at any Egyptian landmark. The AI will identify it and generate a historical story read aloud by your personal guide. Each discovery is saved to your profile and counts toward your badge progress.'**
+  String get helpADiscover;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I earn badges?'**
+  String get helpQBadges;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges are earned by discovering landmarks through the Camera tab. Visit 1, 3, 5, 10, and 20 unique landmarks to unlock Novice Explorer, Tourist, Tomb Raider, Historian, and Pharaoh badges respectively. There are also hidden badges — explore and find them!'**
+  String get helpABadges;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I become a tour guide?'**
+  String get helpQGuide;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Account → Apply as Guide. You\'ll need your MOTA license number, syndicate number, certified languages, and supporting documents. Applications are reviewed by our admin team and you will be notified of the outcome in-app.'**
+  String get helpAGuide;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'Can I save places to visit later?'**
+  String get helpQSavePlaces;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes! On the Map tab, tap any landmark pin and press the bookmark icon to save it. You can also save events from the Home tab by tapping the heart icon on any event card. Access all your saved places from the Map tab → Saved Places.'**
+  String get helpASavePlaces;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'My camera didn\'t recognise a landmark — what should I do?'**
+  String get helpQRecognise;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Ensure the landmark fills most of the frame and is well lit. Tap the shutter button and wait a few seconds. If the landmark is very minor or off the main tourist trail it may not be in the database yet.'**
+  String get helpARecognise;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I book a tour?'**
+  String get helpQBook;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the Home tab and browse available guided tours, or find one on the Map tab. Choose a tour, select your date and number of tickets, then complete payment using any of the available payment methods shown at checkout (card, Apple Pay, or mobile wallet).'**
+  String get helpABook;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I cancel a booking?'**
+  String get helpQCancel;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Account → My Bookings, find the booking under the Upcoming tab, and tap Cancel. Refund policies are set by each guide — check the tour details before booking.'**
+  String get helpACancel;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'Is my payment information secure?'**
+  String get helpQSecure;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes. Payments are processed through Paymob, a certified PCI-compliant payment gateway. Lost in Egypt never stores your card or wallet details on its servers.'**
+  String get helpASecure;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I change my display currency?'**
+  String get helpQCurrency;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to More → Settings → Preferred Currency. All tour prices across the app will display in your chosen currency. The actual charge at checkout is always processed in EGP via Paymob.'**
+  String get helpACurrency;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I post in the community?'**
+  String get helpQPost;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the Community tab and press the + button. You can write text, add photos, tag a location, choose a category (Travel Story, Question, Tip, etc.), and use #hashtags or @mention other users.'**
+  String get helpAPost;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I report a post or user?'**
+  String get helpQReport;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'On any community post or comment, tap the ⋮ menu and select Report. Our admin team reviews all reports and takes action within 24 hours.'**
+  String get helpAReport;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I change my username?'**
+  String get helpQUsername;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Account → Edit Profile. Your username (e.g. @ahmed_x1) must be 3–20 characters, lowercase letters, numbers, and underscores only, and globally unique. It is displayed on all your posts and comments.'**
+  String get helpAUsername;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I switch between light and dark mode?'**
+  String get helpQTheme;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to More → Settings and toggle the Dark Mode switch. Your preference is saved to your account and synced across devices.'**
+  String get helpATheme;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'What can I use without an internet connection?'**
+  String get helpQOfflineWhat;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost in Egypt is designed primarily as an online experience, but several features remain available offline:\n\n• Map pins — over 500 Egyptian landmarks are bundled locally in the app, so the map shows location markers even without internet (map tiles themselves require connectivity).\n• Cached images — places and event images you have previously viewed are stored on your device and load instantly offline.\n• Text recognition (Camera → Scan text) — ML Kit processes text entirely on-device.\n• Translator — once a language pack is downloaded, translation works offline.\n• App navigation, badges, and settings — always available.'**
+  String get helpAOfflineWhat;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'What features require an internet connection?'**
+  String get helpQOfflineNeed;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'The following features need an active connection:\n\n• Landmark identification via the Camera tab (uses Google Cloud Vision API)\n• AI historical story generation (uses Google Gemini)\n• Community posts, likes, and comments (Firestore)\n• Browsing and booking tours (Firestore)\n• Events feed (Firestore)\n• Currency conversion (live exchange rates)\n• SOS — nearest emergency services search (Google Places API)\n• Signing in or creating an account (Firebase Auth)'**
+  String get helpAOfflineNeed;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'Will offline-capable features improve over time?'**
+  String get helpQOfflineImprove;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes. We plan to expand offline support in future updates, including downloadable city guides and cached tour content. Keep the app updated to get these improvements.'**
+  String get helpAOfflineImprove;
+
+  /// FAQ question.
+  ///
+  /// In en, this message translates to:
+  /// **'What do I do in an emergency?'**
+  String get helpQEmergency;
+
+  /// FAQ answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open More → SOS. You can find the nearest police station, hospital, or fire station using your current location, or dial Egypt\'s official emergency numbers directly from the app:\n• Police: 122\n• Ambulance: 123\n• Fire: 180\n• Tourist Police: 126'**
+  String get helpAEmergency;
 }
 
 class _AppLocalizationsDelegate

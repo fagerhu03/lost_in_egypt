@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/currency_repository.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class CurrencyConverterScreen extends StatefulWidget {
   const CurrencyConverterScreen({super.key});
@@ -46,9 +47,10 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
   }
 
   Future<void> _convert() async {
+    final l10n = AppLocalizations.of(context);
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
-      _showError('Please enter a valid amount');
+      _showError(l10n.currencyEnterValidAmount);
       return;
     }
 
@@ -68,7 +70,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
         }
       } else {
         if (mounted) {
-          _showError('Rate not available for $_toCurrency');
+          _showError(l10n.currencyRateUnavailable(_toCurrency));
           setState(() => _isConverting = false);
         }
       }
@@ -101,6 +103,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     final isDark = theme.brightness == Brightness.dark;
@@ -146,7 +149,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       ),
                       SizedBox(width: 10.w),
                       Text(
-                        "Currency Converter",
+                        l10n.currencyConverterTitle,
                         style: TextStyle(
                           fontSize: 30.sp,
                           fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -161,7 +164,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
 
                   // From Currency
                   Text(
-                    "From",
+                    l10n.currencyFrom,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -209,7 +212,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
 
                   // To Currency
                   Text(
-                    "To",
+                    l10n.currencyTo,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -233,7 +236,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
 
                   // Amount Input
                   Text(
-                    "Amount",
+                    l10n.currencyAmount,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -247,7 +250,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       decimal: true,
                     ),
                     decoration: InputDecoration(
-                      hintText: "Enter amount",
+                      hintText: l10n.currencyEnterAmount,
                       hintStyle: TextStyle(
                         color: textColor.withValues(alpha: 0.4),
                       ),
@@ -316,7 +319,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         ),
                       )
                           : Text(
-                        "Convert",
+                        l10n.currencyConvert,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -348,7 +351,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       child: Column(
                         children: [
                           Text(
-                            "Result",
+                            l10n.currencyResult,
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],

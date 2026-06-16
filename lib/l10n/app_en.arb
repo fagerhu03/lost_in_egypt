@@ -1285,5 +1285,173 @@
   "editSaveChanges": "Save Changes",
   "@editSaveChanges": {
     "description": "Primary button that saves the edited profile."
-  }
+  },
+
+  "currencyConverterTitle": "Currency Converter",
+  "@currencyConverterTitle": {
+    "description": "Title of the currency converter screen."
+  },
+  "currencyEnterValidAmount": "Please enter a valid amount",
+  "@currencyEnterValidAmount": {
+    "description": "Validation error when the amount is empty or non-positive."
+  },
+  "currencyRateUnavailable": "Rate not available for {currency}",
+  "@currencyRateUnavailable": {
+    "description": "Error when no exchange rate exists for the target currency.",
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "example": "EGP"
+      }
+    }
+  },
+  "currencyFrom": "From",
+  "@currencyFrom": {
+    "description": "Label above the source-currency dropdown."
+  },
+  "currencyTo": "To",
+  "@currencyTo": {
+    "description": "Label above the target-currency dropdown."
+  },
+  "currencyAmount": "Amount",
+  "@currencyAmount": {
+    "description": "Label above the amount input."
+  },
+  "currencyEnterAmount": "Enter amount",
+  "@currencyEnterAmount": {
+    "description": "Hint inside the amount input."
+  },
+  "currencyConvert": "Convert",
+  "@currencyConvert": {
+    "description": "Button that performs the conversion."
+  },
+  "currencyResult": "Result",
+  "@currencyResult": {
+    "description": "Label above the conversion result."
+  },
+
+  "translatorInitFailed": "Failed to initialize translator",
+  "@translatorInitFailed": {
+    "description": "Error when the on-device translator fails to initialize."
+  },
+  "translatorEnterText": "Please enter text to translate",
+  "@translatorEnterText": {
+    "description": "Validation error when the source text is empty."
+  },
+  "translatorTimedOut": "Translation timed out. Models may still be downloading — try again in a moment.",
+  "@translatorTimedOut": {
+    "description": "Error when translation times out."
+  },
+  "translatorFailed": "Translation failed. If offline, models may not be downloaded yet.",
+  "@translatorFailed": {
+    "description": "Error when translation fails."
+  },
+  "translatorDownloadingModels": "Downloading translation models for offline use...",
+  "@translatorDownloadingModels": {
+    "description": "Status banner while language models download."
+  },
+  "translatorWorksOffline": "Works offline - models cached on device",
+  "@translatorWorksOffline": {
+    "description": "Status banner once models are cached."
+  },
+  "translatorEnterTextHint": "Enter text",
+  "@translatorEnterTextHint": {
+    "description": "Hint in the source text field."
+  },
+  "translatorTranslationHint": "Translation",
+  "@translatorTranslationHint": {
+    "description": "Hint in the read-only translation field."
+  },
+  "translatorTranslate": "Translate",
+  "@translatorTranslate": {
+    "description": "Button that triggers translation."
+  },
+
+  "helpFaqTitle": "Help & FAQ",
+  "@helpFaqTitle": {
+    "description": "Title of the Help & FAQ screen."
+  },
+  "helpSecGettingStarted": "Getting Started",
+  "@helpSecGettingStarted": { "description": "Help section header." },
+  "helpSecMapPlaces": "Map & Places",
+  "@helpSecMapPlaces": { "description": "Help section header." },
+  "helpSecBookings": "Bookings & Payments",
+  "@helpSecBookings": { "description": "Help section header." },
+  "helpSecCommunity": "Community",
+  "@helpSecCommunity": { "description": "Help section header." },
+  "helpSecAccount": "Account & Settings",
+  "@helpSecAccount": { "description": "Help section header." },
+  "helpSecOffline": "Offline Mode",
+  "@helpSecOffline": { "description": "Help section header." },
+  "helpSecSafety": "Safety & Emergency",
+  "@helpSecSafety": { "description": "Help section header." },
+
+  "helpQDiscover": "How do I discover landmarks?",
+  "@helpQDiscover": { "description": "FAQ question." },
+  "helpADiscover": "Open the Camera tab and point your phone at any Egyptian landmark. The AI will identify it and generate a historical story read aloud by your personal guide. Each discovery is saved to your profile and counts toward your badge progress.",
+  "@helpADiscover": { "description": "FAQ answer." },
+  "helpQBadges": "How do I earn badges?",
+  "@helpQBadges": { "description": "FAQ question." },
+  "helpABadges": "Badges are earned by discovering landmarks through the Camera tab. Visit 1, 3, 5, 10, and 20 unique landmarks to unlock Novice Explorer, Tourist, Tomb Raider, Historian, and Pharaoh badges respectively. There are also hidden badges — explore and find them!",
+  "@helpABadges": { "description": "FAQ answer." },
+  "helpQGuide": "How do I become a tour guide?",
+  "@helpQGuide": { "description": "FAQ question." },
+  "helpAGuide": "Go to Account → Apply as Guide. You'll need your MOTA license number, syndicate number, certified languages, and supporting documents. Applications are reviewed by our admin team and you will be notified of the outcome in-app.",
+  "@helpAGuide": { "description": "FAQ answer." },
+  "helpQSavePlaces": "Can I save places to visit later?",
+  "@helpQSavePlaces": { "description": "FAQ question." },
+  "helpASavePlaces": "Yes! On the Map tab, tap any landmark pin and press the bookmark icon to save it. You can also save events from the Home tab by tapping the heart icon on any event card. Access all your saved places from the Map tab → Saved Places.",
+  "@helpASavePlaces": { "description": "FAQ answer." },
+  "helpQRecognise": "My camera didn't recognise a landmark — what should I do?",
+  "@helpQRecognise": { "description": "FAQ question." },
+  "helpARecognise": "Ensure the landmark fills most of the frame and is well lit. Tap the shutter button and wait a few seconds. If the landmark is very minor or off the main tourist trail it may not be in the database yet.",
+  "@helpARecognise": { "description": "FAQ answer." },
+  "helpQBook": "How do I book a tour?",
+  "@helpQBook": { "description": "FAQ question." },
+  "helpABook": "Go to the Home tab and browse available guided tours, or find one on the Map tab. Choose a tour, select your date and number of tickets, then complete payment using any of the available payment methods shown at checkout (card, Apple Pay, or mobile wallet).",
+  "@helpABook": { "description": "FAQ answer." },
+  "helpQCancel": "How do I cancel a booking?",
+  "@helpQCancel": { "description": "FAQ question." },
+  "helpACancel": "Go to Account → My Bookings, find the booking under the Upcoming tab, and tap Cancel. Refund policies are set by each guide — check the tour details before booking.",
+  "@helpACancel": { "description": "FAQ answer." },
+  "helpQSecure": "Is my payment information secure?",
+  "@helpQSecure": { "description": "FAQ question." },
+  "helpASecure": "Yes. Payments are processed through Paymob, a certified PCI-compliant payment gateway. Lost in Egypt never stores your card or wallet details on its servers.",
+  "@helpASecure": { "description": "FAQ answer." },
+  "helpQCurrency": "How do I change my display currency?",
+  "@helpQCurrency": { "description": "FAQ question." },
+  "helpACurrency": "Go to More → Settings → Preferred Currency. All tour prices across the app will display in your chosen currency. The actual charge at checkout is always processed in EGP via Paymob.",
+  "@helpACurrency": { "description": "FAQ answer." },
+  "helpQPost": "How do I post in the community?",
+  "@helpQPost": { "description": "FAQ question." },
+  "helpAPost": "Tap the Community tab and press the + button. You can write text, add photos, tag a location, choose a category (Travel Story, Question, Tip, etc.), and use #hashtags or @mention other users.",
+  "@helpAPost": { "description": "FAQ answer." },
+  "helpQReport": "How do I report a post or user?",
+  "@helpQReport": { "description": "FAQ question." },
+  "helpAReport": "On any community post or comment, tap the ⋮ menu and select Report. Our admin team reviews all reports and takes action within 24 hours.",
+  "@helpAReport": { "description": "FAQ answer." },
+  "helpQUsername": "How do I change my username?",
+  "@helpQUsername": { "description": "FAQ question." },
+  "helpAUsername": "Go to Account → Edit Profile. Your username (e.g. @ahmed_x1) must be 3–20 characters, lowercase letters, numbers, and underscores only, and globally unique. It is displayed on all your posts and comments.",
+  "@helpAUsername": { "description": "FAQ answer." },
+  "helpQTheme": "How do I switch between light and dark mode?",
+  "@helpQTheme": { "description": "FAQ question." },
+  "helpATheme": "Go to More → Settings and toggle the Dark Mode switch. Your preference is saved to your account and synced across devices.",
+  "@helpATheme": { "description": "FAQ answer." },
+  "helpQOfflineWhat": "What can I use without an internet connection?",
+  "@helpQOfflineWhat": { "description": "FAQ question." },
+  "helpAOfflineWhat": "Lost in Egypt is designed primarily as an online experience, but several features remain available offline:\n\n• Map pins — over 500 Egyptian landmarks are bundled locally in the app, so the map shows location markers even without internet (map tiles themselves require connectivity).\n• Cached images — places and event images you have previously viewed are stored on your device and load instantly offline.\n• Text recognition (Camera → Scan text) — ML Kit processes text entirely on-device.\n• Translator — once a language pack is downloaded, translation works offline.\n• App navigation, badges, and settings — always available.",
+  "@helpAOfflineWhat": { "description": "FAQ answer." },
+  "helpQOfflineNeed": "What features require an internet connection?",
+  "@helpQOfflineNeed": { "description": "FAQ question." },
+  "helpAOfflineNeed": "The following features need an active connection:\n\n• Landmark identification via the Camera tab (uses Google Cloud Vision API)\n• AI historical story generation (uses Google Gemini)\n• Community posts, likes, and comments (Firestore)\n• Browsing and booking tours (Firestore)\n• Events feed (Firestore)\n• Currency conversion (live exchange rates)\n• SOS — nearest emergency services search (Google Places API)\n• Signing in or creating an account (Firebase Auth)",
+  "@helpAOfflineNeed": { "description": "FAQ answer." },
+  "helpQOfflineImprove": "Will offline-capable features improve over time?",
+  "@helpQOfflineImprove": { "description": "FAQ question." },
+  "helpAOfflineImprove": "Yes. We plan to expand offline support in future updates, including downloadable city guides and cached tour content. Keep the app updated to get these improvements.",
+  "@helpAOfflineImprove": { "description": "FAQ answer." },
+  "helpQEmergency": "What do I do in an emergency?",
+  "@helpQEmergency": { "description": "FAQ question." },
+  "helpAEmergency": "Open More → SOS. You can find the nearest police station, hospital, or fire station using your current location, or dial Egypt's official emergency numbers directly from the app:\n• Police: 122\n• Ambulance: 123\n• Fire: 180\n• Tourist Police: 126",
+  "@helpAEmergency": { "description": "FAQ answer." }
 }

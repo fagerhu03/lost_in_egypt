@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class TranslatorScreen extends StatefulWidget {
   const TranslatorScreen({super.key});
@@ -66,6 +67,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   }
 
   Future<void> _initializeTranslator() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _isDownloadingModels = true);
 
     try {
@@ -84,7 +86,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
     } catch (e) {
       debugPrint("Error initializing translator: $e");
       if (mounted) {
-        _showError("Failed to initialize translator");
+        _showError(l10n.translatorInitFailed);
       }
     } finally {
       if (mounted) {
@@ -94,8 +96,9 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
   }
 
   Future<void> _translate() async {
+    final l10n = AppLocalizations.of(context);
     if (_sourceText.isEmpty) {
-      _showError("Please enter text to translate");
+      _showError(l10n.translatorEnterText);
       return;
     }
 
@@ -110,10 +113,10 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
         _targetController.text = result;
       });
     } on TimeoutException {
-      if (mounted) _showError('Translation timed out. Models may still be downloading — try again in a moment.');
+      if (mounted) _showError(l10n.translatorTimedOut);
     } catch (e) {
       debugPrint("Translation error: $e");
-      if (mounted) _showError('Translation failed. If offline, models may not be downloaded yet.');
+      if (mounted) _showError(l10n.translatorFailed);
     } finally {
       if (mounted) setState(() => _isTranslating = false);
     }
@@ -203,6 +206,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     final isDark = theme.brightness == Brightness.dark;
@@ -248,7 +252,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                         ),
                       ),
                       Text(
-                        "Translator",
+                        l10n.moreTranslator,
                         style: TextStyle(
                           fontSize: 24.sp,
                           fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -291,7 +295,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           SizedBox(width: 12.w),
                           Expanded(
                             child: Text(
-                              "Downloading translation models for offline use...",
+                              l10n.translatorDownloadingModels,
                               style: TextStyle(
                                 fontSize: 12.sp,
                                 fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -322,7 +326,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           SizedBox(width: 12.w),
                           Expanded(
                             child: Text(
-                              "Works offline - models cached on device",
+                              l10n.translatorWorksOffline,
                               style: TextStyle(
                                 fontSize: 12.sp,
                                 fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -380,7 +384,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             onChanged: (text) =>
                                 setState(() => _sourceText = text),
                             decoration: InputDecoration(
-                              hintText: "Enter text",
+                              hintText: l10n.translatorEnterTextHint,
                               hintStyle: TextStyle(
                                 color: textColor.withValues(alpha: 0.4),
                                 fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -468,7 +472,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                             maxLines: 4,
                             minLines: 3,
                             decoration: InputDecoration(
-                              hintText: "Translation",
+                              hintText: l10n.translatorTranslationHint,
                               hintStyle: TextStyle(
                                 color: textColor.withValues(alpha: 0.4),
                                 fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -530,7 +534,7 @@ class _TranslatorScreenState extends State<TranslatorScreen> {
                           ),
                         )
                             : Text(
-                          "Translate",
+                          l10n.translatorTranslate,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
