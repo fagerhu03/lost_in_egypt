@@ -731,13 +731,14 @@ class _CommunityScreenState extends State<CommunityScreen>
   // ─── CATEGORY CHIPS ──────────────────────────────────────────────────────
 
   Widget _buildCategoryChips(Color primary, Color onSurface, Color surface) {
+    final l10n = AppLocalizations.of(context);
     final categories = [
-      ('all', 'All'),
-      ('photos', 'Photos'),
-      ('questions', 'Questions'),
-      ('guides', 'Guides'),
-      ('landmarks', 'Landmarks'),
-      ('tips', '💡 Tips'),
+      ('all', l10n.communityFilterAll),
+      ('photos', l10n.communityCategoryPhotos),
+      ('questions', l10n.communityCategoryQuestions),
+      ('guides', l10n.communityCategoryGuides),
+      ('landmarks', l10n.communityCategoryLandmarks),
+      ('tips', l10n.communityFilterTips),
     ];
 
     return SizedBox(
@@ -1100,8 +1101,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                             image: DecorationImage(image: FileImage(_selectedImages[index]), fit: BoxFit.cover),
                           ),
                         ),
-                        Positioned(
-                          top: 2.h, right: 10.w,
+                        PositionedDirectional(
+                          top: 2.h, end: 10.w,
                           child: Material(
                             color: Colors.black54, shape: const CircleBorder(), clipBehavior: Clip.hardEdge,
                             child: InkWell(

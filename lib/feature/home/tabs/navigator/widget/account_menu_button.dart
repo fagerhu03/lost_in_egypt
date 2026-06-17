@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../account/presentation/account_screen.dart';
 import '../../../../../core/di/service_locator.dart';
 import '../../../notification/domain/repositories/notifications_repository.dart';
@@ -111,9 +112,9 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                 ),
 
                 if (unreadCount > 0)
-                  Positioned(
+                  PositionedDirectional(
                     top: 0,
-                    right: 0,
+                    end: 0,
                     child: Container(
                       width: 12.r,
                       height: 12.r,
@@ -173,6 +174,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
           },
 
           itemBuilder: (BuildContext context) {
+            final l10n = AppLocalizations.of(context);
             final textStyle = TextStyle(
               fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
               color: onSurface.withValues(alpha: 0.9),
@@ -188,7 +190,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                     Icon(Icons.person_outline, color: iconColor, size: 20.r),
                     SizedBox(width: 10.w),
                     Text(
-                      "My Account",
+                      l10n.accountMenuMyAccount,
                       style: textStyle.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -204,7 +206,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                       Icon(Icons.dashboard_customize, color: iconColor, size: 20.r),
                       SizedBox(width: 10.w),
                       Text(
-                        "Guide Dashboard",
+                        l10n.accountMenuGuideDashboard,
                         style: textStyle.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -221,7 +223,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                       Icon(Icons.admin_panel_settings, color: Colors.red.shade400, size: 20.r),
                       SizedBox(width: 10.w),
                       Text(
-                        "Admin Dashboard",
+                        l10n.accountMenuAdminDashboard,
                         style: textStyle.copyWith(color: Colors.red.shade400, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -240,7 +242,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                         Icon(Icons.notifications_outlined,
                             color: iconColor, size: 20.r),
                         SizedBox(width: 10.w),
-                        Text("Notification Centre", style: textStyle),
+                        Text(l10n.accountMenuNotifications, style: textStyle),
                       ],
                     ),
                     if (unreadCount > 0)
@@ -272,7 +274,7 @@ class _AccountMenuButtonState extends State<AccountMenuButton> {
                   children: [
                     Icon(Icons.logout, color: Colors.red, size: 20.r),
                     SizedBox(width: 10.w),
-                    Text("Sign Out", style: textStyle),
+                    Text(l10n.accountMenuSignOut, style: textStyle),
                   ],
                 ),
               ),

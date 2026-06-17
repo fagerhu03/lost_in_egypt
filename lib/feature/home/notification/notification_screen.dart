@@ -6,6 +6,8 @@ import 'package:lost_in_egypt/feature/home/notification/widget/empty_notificatio
 import 'package:lost_in_egypt/feature/home/notification/widget/notif_card.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/notification_settings_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/post_detail_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_post_model.dart';
@@ -187,7 +189,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        "Notifications",
+                        AppLocalizations.of(context).notificationsTitle,
                         style: TextStyle(
                           color: onSurface,
                           fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -219,7 +221,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 Border.all(color: primary.withValues(alpha: 0.25)),
                           ),
                           child: Text(
-                            "Customize your notifications!",
+                            AppLocalizations.of(context).notificationsCustomize,
                             style: TextStyle(
                               color: primary,
                               fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -262,7 +264,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               padding:
                                   EdgeInsetsDirectional.only(start: 6.w, bottom: 8.h),
                               child: Text(
-                                "Previously",
+                                AppLocalizations.of(context).notificationsPrevious,
                                 style: TextStyle(
                                   color: onSurface,
                                   fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -306,7 +308,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     isRead: notif.isRead,
                                     senderName: notif.senderName,
                                     message: notif.message,
-                                    timeText: timeago.format(notif.timestamp),
+                                    timeText: timeago.format(notif.timestamp,
+                                        locale: LocaleController.isRtl ? 'ar' : 'en'),
                                     avatarUrl: notif.senderAvatar.isEmpty
                                         ? null
                                         : notif.senderAvatar,

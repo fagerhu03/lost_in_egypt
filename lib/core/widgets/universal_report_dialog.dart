@@ -184,7 +184,8 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                       child: Column(
                         children: _reasons.map((reason) {
                           return RadioListTile<String>(
-                            title: Text(reason, style: TextStyle(fontSize: 14.sp)),
+                            title: Text(reportReasonLabel(l, reason),
+                                style: TextStyle(fontSize: 14.sp)),
                             value: reason,
                             contentPadding: EdgeInsets.zero,
                             visualDensity: const VisualDensity(horizontal: -4, vertical: -4),

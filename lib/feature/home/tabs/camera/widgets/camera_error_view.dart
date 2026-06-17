@@ -14,6 +14,23 @@ class CameraErrorView extends StatelessWidget {
     required this.cubit,
   });
 
+  String _detail(AppLocalizations l10n) {
+    switch (state.kind) {
+      case CameraErrorKind.noCameras:
+        return l10n.cameraErrNoCameras;
+      case CameraErrorKind.initFailed:
+        return l10n.cameraErrInitFailed;
+      case CameraErrorKind.translationModelsFailed:
+        return l10n.cameraErrTranslationModels;
+      case CameraErrorKind.languageModelFailed:
+        return l10n.cameraErrLanguageModel;
+      case CameraErrorKind.noTextFound:
+        return l10n.cameraErrNoText;
+      case null:
+        return state.message;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -42,7 +59,7 @@ class CameraErrorView extends StatelessWidget {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  state.message,
+                  _detail(l10n),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white70,

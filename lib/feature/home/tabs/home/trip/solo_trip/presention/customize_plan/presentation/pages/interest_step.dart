@@ -33,8 +33,9 @@ class InterestStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return QuizScaffold(
-      title: AppLocalizations.of(context).soloQuizInterestsTitle,
+      title: l10n.soloQuizInterestsTitle,
       stepIndex: 1,
       onNext: onNext,
       onBack: onBack,
@@ -44,7 +45,7 @@ class InterestStep extends StatelessWidget {
           runSpacing: 12.h,
           children: TripOptions.interests.map((item) {
             return OptionChip(
-              label: item,
+              label: tripInterestLabel(l10n, item),
               emoji: _interestEmojis[item],
               isSelected: controller.plan.interests.contains(item),
               onTap: () => controller.toggleInterest(item),

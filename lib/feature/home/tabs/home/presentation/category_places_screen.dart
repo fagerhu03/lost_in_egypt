@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../theme/theme.dart';
-import '../../../../../core/widgets/shimmer_image.dart';
+import '../../../../../core/widgets/place_photo.dart';
 import '../data/datasources/local_places_service.dart';
 import '../data/models/map_item_models.dart';
 import './place_details_screen.dart';
@@ -256,6 +257,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bg = theme.scaffoldBackgroundColor;
     final surface = theme.colorScheme.surface;
@@ -300,7 +302,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                     },
                     style: TextStyle(color: textColor, fontSize: 14.sp),
                     decoration: InputDecoration(
-                      hintText: "Search places...",
+                      hintText: l10n.mapSearchHint,
                       hintStyle:
                           TextStyle(color: secondaryTextColor, fontSize: 14.sp),
                       prefixIcon:
@@ -342,7 +344,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                   ),
                   child: PopupMenuButton<SortMode>(
                     icon: Icon(Icons.tune_rounded, color: primary, size: 22.r),
-                    tooltip: "Sort",
+                    tooltip: l10n.catSort,
                     position: PopupMenuPosition.under,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14.r)),
@@ -357,11 +359,11 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                       }
                     },
                     itemBuilder: (context) => [
-                      _sortMenuItem(SortMode.nameAsc, "Name (A → Z)", Icons.sort_by_alpha),
-                      _sortMenuItem(SortMode.nameDesc, "Name (Z → A)", Icons.sort_by_alpha),
-                      _sortMenuItem(SortMode.topRated, "Top Rated", Icons.star_rounded),
-                      _sortMenuItem(SortMode.mostVisited, "Most Reviews", Icons.people_alt_rounded),
-                      _sortMenuItem(SortMode.nearest, "Nearest", Icons.near_me_rounded),
+                      _sortMenuItem(SortMode.nameAsc, l10n.catSortNameAsc, Icons.sort_by_alpha),
+                      _sortMenuItem(SortMode.nameDesc, l10n.catSortNameDesc, Icons.sort_by_alpha),
+                      _sortMenuItem(SortMode.topRated, l10n.catSortTopRated, Icons.star_rounded),
+                      _sortMenuItem(SortMode.mostVisited, l10n.catSortMostReviews, Icons.people_alt_rounded),
+                      _sortMenuItem(SortMode.nearest, l10n.catSortNearest, Icons.near_me_rounded),
                     ],
                   ),
                 ),
@@ -375,11 +377,11 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                 ? Center(child: CircularProgressIndicator(color: primary))
                 : _hasError
                     ? _buildEmptyState(
-                        Icons.error_outline, "Something went wrong.",
+                        Icons.error_outline, l10n.catSomethingWrong,
                         secondaryTextColor)
                     : _displayedPlaces.isEmpty
                         ? _buildEmptyState(
-                            Icons.search_off_rounded, "No places found.",
+                            Icons.search_off_rounded, l10n.mapNoPlacesFound,
                             secondaryTextColor)
                         : ListView.builder(
                             controller: _scrollController,
@@ -483,6 +485,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
     Color surface,
     bool isDark,
   ) {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -516,16 +519,12 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                 SizedBox(
                   width: double.infinity,
                   height: 160.h,
-                  child: place.imagePath.startsWith('http')
-                      ? ShimmerImage(
-                          url: place.imagePath,
-                          fit: BoxFit.cover,
-                          fallbackIcon: Icons.image_not_supported_outlined,
-                          fallbackBackgroundColor: primary.withValues(alpha: 0.06),
-                          fallbackIconColor: secondaryTextColor,
-                          fallbackIconSize: 36.r,
-                        )
-                      : Image.asset(place.imagePath, fit: BoxFit.cover),
+                  child: PlacePhoto(
+                    placeId: place.id,
+                    imagePath: place.imagePath,
+                    fallbackBg: primary.withValues(alpha: 0.06),
+                    fallbackIconColor: secondaryTextColor,
+                  ),
                 ),
 
                 // Gradient overlay at bottom of image
@@ -549,9 +548,9 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                 ),
 
                 // Rating pill — top right
-                Positioned(
+                PositionedDirectional(
                   top: 10.h,
-                  right: 10.w,
+                  end: 10.w,
                   child: Container(
                     padding:
                         EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
@@ -575,7 +574,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                         Text(
                           place.rating > 0
                               ? place.rating.toStringAsFixed(1)
-                              : "N/A",
+                              : l10n.catNoRating,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12.sp,
@@ -589,9 +588,9 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
 
                 // City chip — bottom left, overlapping image edge
                 if (place.locationAddress.isNotEmpty)
-                  Positioned(
+                  PositionedDirectional(
                     bottom: 8.h,
-                    left: 10.w,
+                    start: 10.w,
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: 10.w, vertical: 4.h),
@@ -658,8 +657,8 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                         SizedBox(width: 4.w),
                         Text(
                           place.userRatingCount > 1000
-                              ? '${(place.userRatingCount / 1000).toStringAsFixed(1)}k reviews'
-                              : '${place.userRatingCount} reviews',
+                              ? l10n.catReviewsK((place.userRatingCount / 1000).toStringAsFixed(1))
+                              : l10n.catReviews(place.userRatingCount),
                           style: TextStyle(
                               color: secondaryTextColor,
                               fontSize: 12.sp,
@@ -695,7 +694,7 @@ class _CategoryPlacesScreenState extends State<CategoryPlacesScreen>
                             size: 13.r, color: primary),
                         SizedBox(width: 4.w),
                         Text(
-                          "${(Geolocator.distanceBetween(_currentPosition!.latitude, _currentPosition!.longitude, place.coordinate.latitude, place.coordinate.longitude) / 1000).toStringAsFixed(1)} km away",
+                          l10n.placeDetailKmAway((Geolocator.distanceBetween(_currentPosition!.latitude, _currentPosition!.longitude, place.coordinate.latitude, place.coordinate.longitude) / 1000).toStringAsFixed(1)),
                           style: TextStyle(
                             color: primary,
                             fontSize: 12.sp,

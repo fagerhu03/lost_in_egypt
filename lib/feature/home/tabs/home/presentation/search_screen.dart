@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
 import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
@@ -16,6 +17,8 @@ import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
 
 enum _Tab { all, places, tours }
+
+enum _SearchError { places, tours }
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -36,7 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<MapItem> _placeResults = [];
   List<TourEntity> _tourResults = [];
   bool _loading = false;
-  String? _error;
+  _SearchError? _error;
 
   // Cached full place list (loaded once)
   List<MapItem>? _allPlaces;
@@ -104,7 +107,7 @@ class _SearchScreenState extends State<SearchScreen> {
       if (mounted) setState(() { _allPlaces = places; _error = null; });
     } catch (e) {
       debugPrint('Search: failed to load places: $e');
-      if (mounted) setState(() => _error = 'Could not load places.\nCheck your connection.');
+      if (mounted) setState(() => _error = _SearchError.places);
     }
   }
 
@@ -215,7 +218,7 @@ class _SearchScreenState extends State<SearchScreen> {
       if (mounted) setState(() { _tourResults = all; _error = null; });
     } catch (e) {
       debugPrint('Search tours error: $e');
-      if (mounted) setState(() => _error = 'Could not load tours.\nCheck your connection.');
+      if (mounted) setState(() => _error = _SearchError.tours);
     }
   }
 
@@ -235,6 +238,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -264,7 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
           onChanged: _onQueryChanged,
           style: TextStyle(color: onSurface, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo']),
           decoration: InputDecoration(
-            hintText: 'Search landmarks, tours, destinations…',
+            hintText: l10n.searchHint,
             hintStyle: TextStyle(
               color: onSurface.withValues(alpha: 0.45),
               fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
@@ -299,7 +303,9 @@ class _SearchScreenState extends State<SearchScreen> {
               ? Center(child: CircularProgressIndicator(color: primary))
               : _error != null && totalCount == 0
                   ? AppErrorWidget(
-                      message: _error!,
+                      message: _error == _SearchError.places
+                          ? l10n.searchPlacesError
+                          : l10n.searchToursError,
                       onRetry: () { setState(() => _error = null); _runSearch(); },
                     )
                   : totalCount == 0
@@ -315,7 +321,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     size: 14.r, color: primary),
                                 SizedBox(width: 6.w),
                                 Text(
-                                  'Personalised by your taste',
+                                  l10n.searchPersonalised,
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     color: primary,
@@ -378,15 +384,16 @@ class _TabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
       child: Row(
         children: [
-          _chip('All', _Tab.all),
+          _chip(l10n.searchTabAll, _Tab.all),
           SizedBox(width: 8.w),
-          _chip('Places', _Tab.places),
+          _chip(l10n.searchTabPlaces, _Tab.places),
           SizedBox(width: 8.w),
-          _chip('Tours', _Tab.tours),
+          _chip(l10n.searchTabTours, _Tab.tours),
         ],
       ),
     );
@@ -438,6 +445,7 @@ class _PlaceResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -485,7 +493,7 @@ class _PlaceResultTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        _TypeBadge(label: 'Landmark', color: primary),
+                        _TypeBadge(label: l10n.searchBadgeLandmark, color: primary),
                       ],
                     ),
                     SizedBox(height: 4.h),
@@ -515,7 +523,7 @@ class _PlaceResultTile extends StatelessWidget {
                         Icon(Icons.map_outlined, color: primary.withValues(alpha: 0.7), size: 13.r),
                         SizedBox(width: 3.w),
                         Text(
-                          'View on map',
+                          l10n.searchViewOnMap,
                           style: TextStyle(
                             color: primary.withValues(alpha: 0.8),
                             fontSize: 12.sp,
@@ -555,6 +563,7 @@ class _TourResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final currencyCode = CurrencyController.currency.value;
 
     return Material(
@@ -602,7 +611,7 @@ class _TourResultTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        _TypeBadge(label: 'Tour', color: Colors.teal),
+                        _TypeBadge(label: l10n.searchBadgeTour, color: Colors.teal),
                       ],
                     ),
                     SizedBox(height: 4.h),
@@ -717,6 +726,7 @@ class _EmptyPrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -724,7 +734,7 @@ class _EmptyPrompt extends StatelessWidget {
           Icon(Icons.search, size: 64.r, color: primary.withValues(alpha: 0.25)),
           SizedBox(height: 16.h),
           Text(
-            'Search for a landmark or tour',
+            l10n.searchEmptyTitle,
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.5),
               fontSize: 16.sp,
@@ -733,7 +743,7 @@ class _EmptyPrompt extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Try "Pyramids", "Luxor", "museum"…',
+            l10n.searchEmptyHint,
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.35),
               fontSize: 13.sp,
@@ -753,6 +763,7 @@ class _NoResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -760,7 +771,7 @@ class _NoResults extends StatelessWidget {
           Icon(Icons.search_off, size: 56.r, color: onSurface.withValues(alpha: 0.2)),
           SizedBox(height: 16.h),
           Text(
-            'No results for "$query"',
+            l10n.searchNoResultsFor(query),
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.5),
               fontSize: 15.sp,

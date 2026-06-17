@@ -679,9 +679,9 @@ class _RecommendedTourCard extends StatelessWidget {
             ),
             // Rating pill
             if (tour.rating > 0)
-              Positioned(
+              PositionedDirectional(
                 top: 8.h,
-                right: 8.w,
+                end: 8.w,
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
                   decoration: BoxDecoration(

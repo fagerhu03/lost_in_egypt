@@ -819,9 +819,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                     fallbackIconColor: onSurface,
                   ),
           ),
-          Positioned(
+          PositionedDirectional(
             bottom: 0,
-            right: 0,
+            end: 0,
             child: Material(
               color: Theme.of(context).colorScheme.surface,
               shape: const CircleBorder(),
@@ -860,9 +860,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             ),
           ),
           if (_selectedImage != null)
-            Positioned(
+            PositionedDirectional(
               top: 0,
-              right: 0,
+              end: 0,
               child: GestureDetector(
                 onTap: () => setState(() => _selectedImage = null),
                 child: Container(

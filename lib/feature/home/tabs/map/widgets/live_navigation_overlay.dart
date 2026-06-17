@@ -164,9 +164,9 @@ class LiveNavigationOverlay extends StatelessWidget {
 
         // Re-center Button
         if (!isFollowingUser)
-          Positioned(
+          PositionedDirectional(
             bottom: 30.h,
-            right: 16.w,
+            end: 16.w,
             child: FloatingActionButton.small(
               heroTag: 'recenter',
               backgroundColor: primary,

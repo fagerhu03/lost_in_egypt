@@ -13,6 +13,7 @@ import 'widgets/add_event_review_sheet.dart';
 import '../../community/data/community_post_action_service.dart';
 import '../../../../../theme/theme.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class EventDetailsScreen extends StatefulWidget {
@@ -122,6 +123,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final localeCode = Localizations.localeOf(context).languageCode;
     final isDark = theme.brightness == Brightness.dark;
     final primary = isDark ? AppColors.darkNavBar : theme.colorScheme.primary;
     final bg = theme.scaffoldBackgroundColor;
@@ -222,7 +225,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                               ),
                               SizedBox(width: 6.w),
                               Text(
-                                "($reviewCount reviews)",
+                                "(${l10n.catReviews(reviewCount)})",
                                 style: TextStyle(
                                   color: secondaryTextColor,
                                   fontSize: 14.sp,
@@ -255,7 +258,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                     CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "DATE & TIME",
+                                    l10n.eventDateTime,
                                     style: TextStyle(
                                       color: primary,
                                       fontSize: 11.sp,
@@ -270,7 +273,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          DateFormat('EEEE, d MMMM yyyy').format(cairoTime),
+                                          DateFormat('EEEE, d MMMM yyyy', localeCode).format(cairoTime),
                                           style: TextStyle(
                                             color: textColor,
                                             fontSize: 16.sp,
@@ -279,7 +282,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                         ),
                                         SizedBox(height: 2.h),
                                         Text(
-                                          "${DateFormat('hh:mm a').format(cairoTime)} (Cairo Time)",
+                                          l10n.eventCairoTime(
+                                              DateFormat('hh:mm a', localeCode).format(cairoTime)),
                                           style: TextStyle(
                                             color: secondaryTextColor,
                                             fontSize: 14.sp,
@@ -324,7 +328,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                       CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "LOCATION",
+                                      l10n.eventLocation,
                                       style: TextStyle(
                                         color: primary,
                                         fontSize: 11.sp,
@@ -343,7 +347,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                               : widget.event.city
                                                       .isNotEmpty
                                                   ? widget.event.city
-                                                  : "Egypt"),
+                                                  : l10n.eventLocationEgypt),
                                       style: TextStyle(
                                         color: textColor,
                                         fontSize: 16.sp,
@@ -383,7 +387,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                         color: primary.computeLuminance() > 0.5 ? Colors.black : Colors.white, size: 16.r),
                                     SizedBox(width: 6.w),
                                     Text(
-                                      "Map",
+                                      l10n.eventMapButton,
                                       style: TextStyle(
                                         color: primary.computeLuminance() > 0.5 ? Colors.black : Colors.white,
                                         fontSize: 13.sp,
@@ -442,7 +446,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
                       // ── Description ──
                       Text(
-                        "About this Event",
+                        l10n.eventAbout,
                         style: TextStyle(
                           color: textColor,
                           fontSize: 22.sp,
@@ -454,7 +458,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                       Text(
                         widget.event.description.isNotEmpty
                             ? widget.event.description
-                            : "Join us for an unforgettable experience! This event brings together the best of culture, entertainment, and community in Egypt. Secure your tickets now and be part of something amazing.",
+                            : l10n.eventDefaultDescription,
                         style: TextStyle(
                           color: secondaryTextColor,
                           fontSize: 16.sp,
@@ -475,7 +479,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                               color: secondaryTextColor, size: 20.r),
                           SizedBox(width: 8.w),
                           Text(
-                            "Share this event",
+                            l10n.eventShareThis,
                             style: TextStyle(
                               color: secondaryTextColor,
                               fontSize: 14.sp,
@@ -493,7 +497,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                       color: primary, size: 18.r),
                                   SizedBox(width: 6.w),
                                   Text(
-                                    "View on ${widget.event.source.isNotEmpty ? widget.event.source[0].toUpperCase() + widget.event.source.substring(1) : 'Web'}",
+                                    l10n.eventViewOn(widget.event.source.isNotEmpty
+                                        ? widget.event.source[0].toUpperCase() +
+                                            widget.event.source.substring(1)
+                                        : 'Web'),
                                     style: TextStyle(
                                       color: primary,
                                       fontSize: 14.sp,
@@ -510,7 +517,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                       GestureDetector(
                         onTap: () {
                           CommunityPostActionService.instance.pendingPostContent.value =
-                            "Anyone going to ${widget.event.title}? ✨";
+                            l10n.eventPostPrompt(widget.event.title);
                           CommunityPostActionService.instance.pendingEventId = widget.event.id;
                           CommunityPostActionService.instance.pendingEventName = widget.event.title;
                           MapFocusService.instance.tabSwitchNotifier.value = 1;
@@ -544,7 +551,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                                   color: Colors.white, size: 20.r),
                               SizedBox(width: 10.w),
                               Text(
-                                "Post to Community",
+                                l10n.eventPostToCommunity,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 15.sp,
@@ -562,7 +569,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                       SizedBox(height: 32.h),
 
                       // ── Reviews Section ──
-                      _buildReviewsSection(isDark, primary, textColor, secondaryTextColor),
+                      _buildReviewsSection(l10n, isDark, primary, textColor, secondaryTextColor),
                       SizedBox(height: 120.h),
                     ],
                   ),
@@ -572,9 +579,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           ),
 
           // ── Floating back button ──
-          Positioned(
+          PositionedDirectional(
             top: MediaQuery.of(context).padding.top + 8.h,
-            left: 16.w,
+            start: 16.w,
             child: CircleAvatar(
               backgroundColor: Colors.black.withValues(alpha: 0.45),
               child: IconButton(
@@ -738,6 +745,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
 
   Widget _buildBottomBar(
       BuildContext context, Color primary, Color bg, bool isDark) {
+    final l10n = AppLocalizations.of(context);
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -761,7 +769,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Price",
+                      l10n.eventPrice,
                       style: TextStyle(
                         color: (isDark ? Colors.white : Colors.black)
                             .withValues(alpha: 0.6),
@@ -771,7 +779,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                     Text(
                       widget.event.price > 0
                           ? "EGP ${widget.event.price.toStringAsFixed(0)}"
-                          : "See Listing",
+                          : l10n.eventSeeListing,
                       style: TextStyle(
                         color: primary,
                         fontSize: 22.sp,
@@ -789,9 +797,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                         _launchUrl(widget.event.ticketLink);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Tickets are not available online for this event.')),
+                          SnackBar(
+                              content: Text(l10n.eventTicketsUnavailable)),
                         );
                       }
                     },
@@ -806,8 +813,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                     ),
                     child: Text(
                       widget.event.ticketLink.isNotEmpty
-                          ? "Get Tickets"
-                          : "RSVP Now",
+                          ? l10n.eventGetTickets
+                          : l10n.eventRsvpNow,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
@@ -823,7 +830,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
     );
   }
 
-  Widget _buildReviewsSection(bool isDark, Color primary, Color textColor, Color secondaryTextColor) {
+  Widget _buildReviewsSection(AppLocalizations l10n, bool isDark, Color primary, Color textColor, Color secondaryTextColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -831,7 +838,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Reviews",
+              l10n.tourDetailReviews,
               style: TextStyle(
                 color: textColor,
                 fontSize: 22.sp,
@@ -843,7 +850,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
               onPressed: () => AddEventReviewSheet.show(context, widget.event),
               icon: Icon(Icons.add_comment, color: primary, size: 18.r),
               label: Text(
-                "Write a Review",
+                l10n.tourDetailWriteReview,
                 style: TextStyle(
                   color: primary,
                   fontWeight: FontWeight.bold,
@@ -865,7 +872,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 20.h),
                   child: Text(
-                    "No reviews yet. Be the first to review!",
+                    l10n.tourDetailNoReviews,
                     style: TextStyle(color: secondaryTextColor),
                   ),
                 ),
@@ -899,7 +906,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                review.userName.isNotEmpty ? review.userName : 'Explorer',
+                                review.userName.isNotEmpty ? review.userName : l10n.eventReviewerFallback,
                                 style: TextStyle(
                                   color: textColor,
                                   fontWeight: FontWeight.w600,
@@ -908,7 +915,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen>
                               ),
                               SizedBox(height: 2.h),
                               Text(
-                                DateFormat('MMM d, yyyy').format(review.createdAt),
+                                DateFormat('MMM d, yyyy', l10n.localeName)
+                                    .format(review.createdAt),
                                 style: TextStyle(
                                   color: secondaryTextColor,
                                   fontSize: 12.sp,

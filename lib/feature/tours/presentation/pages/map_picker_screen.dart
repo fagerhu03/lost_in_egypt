@@ -152,8 +152,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
           ),
 
           // Custom my-location FAB (bottom-right, above the confirm button when shown)
-          Positioned(
-            right: 16.w,
+          PositionedDirectional(
+            end: 16.w,
             bottom: _selectedLocation != null ? 200.h : 32.h,
             child: Material(
               elevation: 4,

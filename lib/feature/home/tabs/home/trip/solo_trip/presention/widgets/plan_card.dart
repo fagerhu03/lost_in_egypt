@@ -307,8 +307,8 @@ class _TripThumbnailState extends State<_TripThumbnail> {
                   fit: BoxFit.cover,
                 ),
                 // Subtle icon badge so the trip type is still visible
-                Positioned(
-                  right: 8.w,
+                PositionedDirectional(
+                  end: 8.w,
                   bottom: 8.h,
                   child: Container(
                     padding: EdgeInsets.all(6.r),
@@ -347,9 +347,9 @@ class _GradientBox extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          Positioned(
+          PositionedDirectional(
             top: -16.h,
-            right: -16.w,
+            end: -16.w,
             child: Container(
               width: 90.r,
               height: 90.r,

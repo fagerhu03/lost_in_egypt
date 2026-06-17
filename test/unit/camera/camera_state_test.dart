@@ -123,21 +123,24 @@ void main() {
   // ─── CameraAnalyzing ─────────────────────────────────────────────────────
 
   group('CameraAnalyzing', () {
-    test('defaults: non-gallery, null path, non-empty default message', () {
+    test('defaults: non-gallery, null path, identifying status', () {
       const s = CameraAnalyzing();
       expect(s.isGalleryImage, isFalse);
       expect(s.capturedImagePath, isNull);
-      expect(s.message, isNotEmpty);
+      expect(s.status, CameraStatus.identifying);
+      expect(s.modelLang, isNull);
     });
 
     test('stores all fields when provided', () {
       const s = CameraAnalyzing(
         capturedImagePath: '/tmp/capture.jpg',
-        message: 'Downloading Korean model...',
+        status: CameraStatus.downloadingModel,
+        modelLang: 'Korean',
         isGalleryImage: true,
       );
       expect(s.capturedImagePath, '/tmp/capture.jpg');
-      expect(s.message, 'Downloading Korean model...');
+      expect(s.status, CameraStatus.downloadingModel);
+      expect(s.modelLang, 'Korean');
       expect(s.isGalleryImage, isTrue);
     });
   });

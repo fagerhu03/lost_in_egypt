@@ -263,8 +263,8 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                     color: gold, size: 24.r),
                               ),
                               if (count > 0)
-                                Positioned(
-                                  right: 6,
+                                PositionedDirectional(
+                                  end: 6,
                                   top: 6,
                                   child: Container(
                                     width: 16.r,

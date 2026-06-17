@@ -224,6 +224,96 @@ abstract class AppLocalizations {
   /// **'Report submitted successfully. Thank you.'**
   String get reportSuccess;
 
+  /// Report reason: pretending to be someone else.
+  ///
+  /// In en, this message translates to:
+  /// **'Impersonation'**
+  String get reportReasonImpersonation;
+
+  /// Report reason: fake/bot account.
+  ///
+  /// In en, this message translates to:
+  /// **'Fake Account'**
+  String get reportReasonFakeAccount;
+
+  /// Report reason: harassment or bullying.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment or Bullying'**
+  String get reportReasonHarassmentBullying;
+
+  /// Report reason: inappropriate profile content.
+  ///
+  /// In en, this message translates to:
+  /// **'Inappropriate Profile Content'**
+  String get reportReasonInappropriateProfile;
+
+  /// Report reason: scam or fraud.
+  ///
+  /// In en, this message translates to:
+  /// **'Scam or Fraud'**
+  String get reportReasonScamFraud;
+
+  /// Report reason: other / unlisted.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get reportReasonOther;
+
+  /// Report reason: spam or advertising.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam or Ads'**
+  String get reportReasonSpamAds;
+
+  /// Report reason: hate speech.
+  ///
+  /// In en, this message translates to:
+  /// **'Hate Speech'**
+  String get reportReasonHateSpeech;
+
+  /// Report reason: false information.
+  ///
+  /// In en, this message translates to:
+  /// **'False Information'**
+  String get reportReasonFalseInfo;
+
+  /// Report reason: explicit content.
+  ///
+  /// In en, this message translates to:
+  /// **'Explicit Content'**
+  String get reportReasonExplicitContent;
+
+  /// Report reason: harassment (post/comment).
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment'**
+  String get reportReasonHarassment;
+
+  /// Report reason: unsafe tour location or activity.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsafe Location/Activity'**
+  String get reportReasonUnsafe;
+
+  /// Report reason: inaccurate tour description.
+  ///
+  /// In en, this message translates to:
+  /// **'Inaccurate Description'**
+  String get reportReasonInaccurate;
+
+  /// Report reason: fake reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Fake Reviews'**
+  String get reportReasonFakeReviews;
+
+  /// Report reason: overpriced or hidden fees.
+  ///
+  /// In en, this message translates to:
+  /// **'Overpriced/Hidden Fees'**
+  String get reportReasonOverpriced;
+
   /// Hint on the weather banner that opens the 7-day forecast.
   ///
   /// In en, this message translates to:
@@ -241,6 +331,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'7-Day Forecast'**
   String get weather7DayForecast;
+
+  /// Short weather condition label (forecast day): sandstorm.
+  ///
+  /// In en, this message translates to:
+  /// **'Sandstorm'**
+  String get weatherCondSandstorm;
+
+  /// Current weather condition title: sandstorm warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Sandstorm Warning'**
+  String get weatherCondSandstormWarning;
+
+  /// Weather condition label: dust haze.
+  ///
+  /// In en, this message translates to:
+  /// **'Dust Haze'**
+  String get weatherCondDustHaze;
+
+  /// Weather condition label: extreme heat.
+  ///
+  /// In en, this message translates to:
+  /// **'Extreme Heat'**
+  String get weatherCondExtremeHeat;
+
+  /// Weather condition label: very hot.
+  ///
+  /// In en, this message translates to:
+  /// **'Very Hot'**
+  String get weatherCondVeryHot;
+
+  /// Weather condition label: extreme UV.
+  ///
+  /// In en, this message translates to:
+  /// **'Extreme UV'**
+  String get weatherCondExtremeUV;
+
+  /// Weather condition label: high UV.
+  ///
+  /// In en, this message translates to:
+  /// **'High UV'**
+  String get weatherCondHighUV;
+
+  /// Short weather condition label (forecast day): clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get weatherCondClear;
+
+  /// Current weather condition title: good conditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Good Conditions'**
+  String get weatherCondGood;
+
+  /// Advisory text shown during a sandstorm.
+  ///
+  /// In en, this message translates to:
+  /// **'Sandstorm in the area — avoid all outdoor locations. Wear a mask if you must travel.'**
+  String get weatherAdvisorySandstorm;
+
+  /// Advisory text shown during dust haze.
+  ///
+  /// In en, this message translates to:
+  /// **'Dust haze reducing visibility. Outdoor visits not ideal; wear sunglasses.'**
+  String get weatherAdvisoryDustHaze;
+
+  /// Advisory text during extreme heat. {temp} is the feels-like temperature in Celsius.
+  ///
+  /// In en, this message translates to:
+  /// **'Feels like {temp}°C. Visit outdoor sites before 9am or after 5pm only. Bring at least 2L of water.'**
+  String weatherAdvisoryExtremeHeat(String temp);
+
+  /// Advisory text when very hot. {temp} is the feels-like temperature in Celsius.
+  ///
+  /// In en, this message translates to:
+  /// **'Very hot ({temp}°C feels-like). Stay hydrated and seek shade often.'**
+  String weatherAdvisoryVeryHot(String temp);
+
+  /// Advisory text during extreme UV. {uv} is the UV index value.
+  ///
+  /// In en, this message translates to:
+  /// **'UV index {uv} — extreme. Sunscreen, hat, and sunglasses are essential. Limit midday exposure.'**
+  String weatherAdvisoryExtremeUV(String uv);
+
+  /// Advisory text during high UV. {uv} is the UV index value.
+  ///
+  /// In en, this message translates to:
+  /// **'UV index {uv} — high. Apply sunscreen SPF 50+ before going outdoors.'**
+  String weatherAdvisoryHighUV(String uv);
+
+  /// Advisory text when conditions are good.
+  ///
+  /// In en, this message translates to:
+  /// **'Great conditions for outdoor exploration today.'**
+  String get weatherAdvisoryGood;
+
+  /// Forecast day label for the current day.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get weatherDayToday;
+
+  /// Forecast day label for the next day.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get weatherDayTomorrow;
 
   /// Title of the Settings screen.
   ///
@@ -571,6 +769,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Year'**
   String get dobYear;
+
+  /// Birth-month dropdown display: January.
+  ///
+  /// In en, this message translates to:
+  /// **'January'**
+  String get dobMonthJanuary;
+
+  /// Birth-month dropdown display: February.
+  ///
+  /// In en, this message translates to:
+  /// **'February'**
+  String get dobMonthFebruary;
+
+  /// Birth-month dropdown display: March.
+  ///
+  /// In en, this message translates to:
+  /// **'March'**
+  String get dobMonthMarch;
+
+  /// Birth-month dropdown display: April.
+  ///
+  /// In en, this message translates to:
+  /// **'April'**
+  String get dobMonthApril;
+
+  /// Birth-month dropdown display: May.
+  ///
+  /// In en, this message translates to:
+  /// **'May'**
+  String get dobMonthMay;
+
+  /// Birth-month dropdown display: June.
+  ///
+  /// In en, this message translates to:
+  /// **'June'**
+  String get dobMonthJune;
+
+  /// Birth-month dropdown display: July.
+  ///
+  /// In en, this message translates to:
+  /// **'July'**
+  String get dobMonthJuly;
+
+  /// Birth-month dropdown display: August.
+  ///
+  /// In en, this message translates to:
+  /// **'August'**
+  String get dobMonthAugust;
+
+  /// Birth-month dropdown display: September.
+  ///
+  /// In en, this message translates to:
+  /// **'September'**
+  String get dobMonthSeptember;
+
+  /// Birth-month dropdown display: October.
+  ///
+  /// In en, this message translates to:
+  /// **'October'**
+  String get dobMonthOctober;
+
+  /// Birth-month dropdown display: November.
+  ///
+  /// In en, this message translates to:
+  /// **'November'**
+  String get dobMonthNovember;
+
+  /// Birth-month dropdown display: December.
+  ///
+  /// In en, this message translates to:
+  /// **'December'**
+  String get dobMonthDecember;
+
+  /// DOB validation error: nothing selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your date of birth.'**
+  String get dobErrorMissing;
+
+  /// DOB validation error: unparseable date.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid date of birth.'**
+  String get dobErrorInvalid;
+
+  /// DOB validation error when the chosen day exceeds the days in the month.
+  ///
+  /// In en, this message translates to:
+  /// **'{month} {year} has only {days} days.'**
+  String dobErrorTooManyDays(String month, String year, int days);
+
+  /// DOB validation error when the user is below the minimum age.
+  ///
+  /// In en, this message translates to:
+  /// **'You must be at least {minAge} years old to use this app.'**
+  String dobErrorUnderage(int minAge);
 
   /// Title of the sign-up screen.
   ///
@@ -1327,6 +1621,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your Taste'**
   String get accountYourTaste;
+
+  /// Taste pill: historical_landmark / historical.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get tasteKeyHistory;
+
+  /// Taste pill: archaeological_site.
+  ///
+  /// In en, this message translates to:
+  /// **'Ancient Sites'**
+  String get tasteKeyAncientSites;
+
+  /// Taste pill: tourist_attraction.
+  ///
+  /// In en, this message translates to:
+  /// **'Attractions'**
+  String get tasteKeyAttractions;
+
+  /// Taste pill: museum.
+  ///
+  /// In en, this message translates to:
+  /// **'Museums'**
+  String get tasteKeyMuseums;
+
+  /// Taste pill: mosque.
+  ///
+  /// In en, this message translates to:
+  /// **'Mosques'**
+  String get tasteKeyMosques;
+
+  /// Taste pill: church.
+  ///
+  /// In en, this message translates to:
+  /// **'Churches'**
+  String get tasteKeyChurches;
+
+  /// Taste pill: park.
+  ///
+  /// In en, this message translates to:
+  /// **'Parks'**
+  String get tasteKeyParks;
+
+  /// Taste pill: beach.
+  ///
+  /// In en, this message translates to:
+  /// **'Beaches'**
+  String get tasteKeyBeaches;
+
+  /// Taste pill: restaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurants'**
+  String get tasteKeyRestaurants;
+
+  /// Taste pill: cafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Cafés'**
+  String get tasteKeyCafes;
+
+  /// Taste pill: market.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets'**
+  String get tasteKeyMarkets;
+
+  /// Taste pill: shopping_mall / shopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get tasteKeyShopping;
+
+  /// Taste pill: monument.
+  ///
+  /// In en, this message translates to:
+  /// **'Monuments'**
+  String get tasteKeyMonuments;
+
+  /// Taste pill: art_gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Art'**
+  String get tasteKeyArt;
+
+  /// Taste pill: night_club.
+  ///
+  /// In en, this message translates to:
+  /// **'Nightlife'**
+  String get tasteKeyNightlife;
+
+  /// Taste pill: amusement_park.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Parks'**
+  String get tasteKeyThemeParks;
+
+  /// Taste pill: aquarium.
+  ///
+  /// In en, this message translates to:
+  /// **'Aquariums'**
+  String get tasteKeyAquariums;
+
+  /// Taste pill: zoo.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoos'**
+  String get tasteKeyZoos;
+
+  /// Taste pill: spa.
+  ///
+  /// In en, this message translates to:
+  /// **'Spas'**
+  String get tasteKeySpas;
+
+  /// Taste pill: stadium.
+  ///
+  /// In en, this message translates to:
+  /// **'Stadiums'**
+  String get tasteKeyStadiums;
+
+  /// Taste pill: entertainment tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Entertainment'**
+  String get tasteKeyEntertainment;
+
+  /// Taste pill: cultural tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural'**
+  String get tasteKeyCultural;
+
+  /// Taste pill: natural tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature'**
+  String get tasteKeyNature;
+
+  /// Taste pill: relaxation tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxation'**
+  String get tasteKeyRelaxation;
+
+  /// Taste pill: religious tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Religious'**
+  String get tasteKeyReligious;
+
+  /// Taste pill: family tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get tasteKeyFamily;
+
+  /// Taste pill: adventure tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure'**
+  String get tasteKeyAdventure;
+
+  /// Taste pill: food tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get tasteKeyFood;
+
+  /// Taste pill: ancient tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Ancient'**
+  String get tasteKeyAncient;
 
   /// Header above the account settings tiles.
   ///
@@ -4352,6 +4820,60 @@ abstract class AppLocalizations {
   /// **'{condition} · Tap for forecast'**
   String cameraTapForecast(String condition);
 
+  /// Analyzing overlay status while taking the photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Capturing...'**
+  String get cameraStatusCapturing;
+
+  /// Analyzing overlay status while the landmark is identified.
+  ///
+  /// In en, this message translates to:
+  /// **'Identifying landmark...'**
+  String get cameraStatusIdentifying;
+
+  /// Analyzing overlay status while text is translated.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating...'**
+  String get cameraStatusTranslating;
+
+  /// Analyzing overlay status while an ML-Kit language model downloads. {lang} is the language name (kept English).
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {lang} model (this may take a minute)...'**
+  String cameraStatusDownloadingModel(String lang);
+
+  /// Camera error: device has no cameras.
+  ///
+  /// In en, this message translates to:
+  /// **'No cameras available on this device'**
+  String get cameraErrNoCameras;
+
+  /// Camera error: controller failed to initialize.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to initialize camera. Please restart the app.'**
+  String get cameraErrInitFailed;
+
+  /// Camera error: translation models could not be downloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not download translation models. Please check your internet connection.'**
+  String get cameraErrTranslationModels;
+
+  /// Camera error: a language model failed to download.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download language model. Please check your internet connection.'**
+  String get cameraErrLanguageModel;
+
+  /// Camera error: no recognizable text in the image.
+  ///
+  /// In en, this message translates to:
+  /// **'No text found in the selected image.'**
+  String get cameraErrNoText;
+
   /// Expand the landmark description.
   ///
   /// In en, this message translates to:
@@ -4939,6 +5461,828 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shopping'**
   String get mapCatShopping;
+
+  /// Profile dropdown: open account.
+  ///
+  /// In en, this message translates to:
+  /// **'My Account'**
+  String get accountMenuMyAccount;
+
+  /// Profile dropdown: open guide dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide Dashboard'**
+  String get accountMenuGuideDashboard;
+
+  /// Profile dropdown: open admin dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Dashboard'**
+  String get accountMenuAdminDashboard;
+
+  /// Profile dropdown: open notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Centre'**
+  String get accountMenuNotifications;
+
+  /// Profile dropdown: sign out.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get accountMenuSignOut;
+
+  /// Home category: hotels.
+  ///
+  /// In en, this message translates to:
+  /// **'Hotels'**
+  String get homeCatHotels;
+
+  /// Home category: museums.
+  ///
+  /// In en, this message translates to:
+  /// **'Museums'**
+  String get homeCatMuseums;
+
+  /// Home category: restaurants.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurants'**
+  String get homeCatRestaurants;
+
+  /// Home category: mosques.
+  ///
+  /// In en, this message translates to:
+  /// **'Mosques'**
+  String get homeCatMosques;
+
+  /// Home category: beaches.
+  ///
+  /// In en, this message translates to:
+  /// **'Beaches'**
+  String get homeCatBeaches;
+
+  /// Home category: adventure.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure'**
+  String get homeCatAdventure;
+
+  /// Tooltip for the category sort menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get catSort;
+
+  /// Sort option: name ascending.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (A → Z)'**
+  String get catSortNameAsc;
+
+  /// Sort option: name descending.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (Z → A)'**
+  String get catSortNameDesc;
+
+  /// Sort option: top rated.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Rated'**
+  String get catSortTopRated;
+
+  /// Sort option: most reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Reviews'**
+  String get catSortMostReviews;
+
+  /// Sort option: nearest.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearest'**
+  String get catSortNearest;
+
+  /// Error state in the category places list.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong.'**
+  String get catSomethingWrong;
+
+  /// Rating placeholder when a place has no rating.
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get catNoRating;
+
+  /// Review count in thousands (e.g. 1.5k reviews).
+  ///
+  /// In en, this message translates to:
+  /// **'{count}k reviews'**
+  String catReviewsK(String count);
+
+  /// Review count on a place card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 review} other{{count} reviews}}'**
+  String catReviews(int count);
+
+  /// Event category: all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get eventCatAll;
+
+  /// Event category: cultural & heritage.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural & Heritage'**
+  String get eventCatCultural;
+
+  /// Event category: concerts & music.
+  ///
+  /// In en, this message translates to:
+  /// **'Concerts & Music'**
+  String get eventCatConcert;
+
+  /// Event category: theatre & performance.
+  ///
+  /// In en, this message translates to:
+  /// **'Theatre & Performance'**
+  String get eventCatTheatre;
+
+  /// Event category: festivals.
+  ///
+  /// In en, this message translates to:
+  /// **'Festivals'**
+  String get eventCatFestival;
+
+  /// Event category: art & exhibitions.
+  ///
+  /// In en, this message translates to:
+  /// **'Art & Exhibitions'**
+  String get eventCatArt;
+
+  /// Event category: adventure & outdoors.
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure & Outdoors'**
+  String get eventCatAdventure;
+
+  /// Event category: food & markets.
+  ///
+  /// In en, this message translates to:
+  /// **'Food & Markets'**
+  String get eventCatFood;
+
+  /// Event category: cruise & dining.
+  ///
+  /// In en, this message translates to:
+  /// **'Cruise & Dining'**
+  String get eventCatCruise;
+
+  /// Error state on the all-events list.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load events.\nCheck your connection and try again.'**
+  String get eventsLoadError;
+
+  /// Empty-state title on the all-events list.
+  ///
+  /// In en, this message translates to:
+  /// **'No events right now'**
+  String get eventsEmptyTitle;
+
+  /// Empty-state subtitle on the all-events list.
+  ///
+  /// In en, this message translates to:
+  /// **'Check back soon for upcoming events in Egypt.'**
+  String get eventsEmptySubtitle;
+
+  /// Badge on the top taste-ranked event.
+  ///
+  /// In en, this message translates to:
+  /// **'Tailored pick'**
+  String get eventTailoredPick;
+
+  /// Date & time card label on event details.
+  ///
+  /// In en, this message translates to:
+  /// **'DATE & TIME'**
+  String get eventDateTime;
+
+  /// Location card label on event details.
+  ///
+  /// In en, this message translates to:
+  /// **'LOCATION'**
+  String get eventLocation;
+
+  /// Event start time, noted as Cairo local time.
+  ///
+  /// In en, this message translates to:
+  /// **'{time} (Cairo Time)'**
+  String eventCairoTime(String time);
+
+  /// Fallback location when an event has no address.
+  ///
+  /// In en, this message translates to:
+  /// **'Egypt'**
+  String get eventLocationEgypt;
+
+  /// Button on the event location card that opens the map.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get eventMapButton;
+
+  /// Section header for the event description.
+  ///
+  /// In en, this message translates to:
+  /// **'About this Event'**
+  String get eventAbout;
+
+  /// Fallback description when an event has none.
+  ///
+  /// In en, this message translates to:
+  /// **'Join us for an unforgettable experience! This event brings together the best of culture, entertainment, and community in Egypt. Secure your tickets now and be part of something amazing.'**
+  String get eventDefaultDescription;
+
+  /// Label on the event share row.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this event'**
+  String get eventShareThis;
+
+  /// Link to the original event listing on an external source.
+  ///
+  /// In en, this message translates to:
+  /// **'View on {source}'**
+  String eventViewOn(String source);
+
+  /// Pre-filled community post text seeded from an event.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone going to {title}? ✨'**
+  String eventPostPrompt(String title);
+
+  /// Button that shares the event to the community feed.
+  ///
+  /// In en, this message translates to:
+  /// **'Post to Community'**
+  String get eventPostToCommunity;
+
+  /// Price label in the event bottom bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get eventPrice;
+
+  /// Shown in place of a price when the event has none.
+  ///
+  /// In en, this message translates to:
+  /// **'See Listing'**
+  String get eventSeeListing;
+
+  /// Snackbar when an event has no ticket link.
+  ///
+  /// In en, this message translates to:
+  /// **'Tickets are not available online for this event.'**
+  String get eventTicketsUnavailable;
+
+  /// CTA when the event has a ticket link.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Tickets'**
+  String get eventGetTickets;
+
+  /// CTA when the event has no ticket link.
+  ///
+  /// In en, this message translates to:
+  /// **'RSVP Now'**
+  String get eventRsvpNow;
+
+  /// Fallback display name for an event reviewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Explorer'**
+  String get eventReviewerFallback;
+
+  /// Hint text in the global search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search landmarks, tours, destinations…'**
+  String get searchHint;
+
+  /// Global search filter tab: all result types.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get searchTabAll;
+
+  /// Global search filter tab: places only.
+  ///
+  /// In en, this message translates to:
+  /// **'Places'**
+  String get searchTabPlaces;
+
+  /// Global search filter tab: tours only.
+  ///
+  /// In en, this message translates to:
+  /// **'Tours'**
+  String get searchTabTours;
+
+  /// Banner shown when search results are re-ranked by the user's taste vector.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalised by your taste'**
+  String get searchPersonalised;
+
+  /// Result-type badge on a place search result.
+  ///
+  /// In en, this message translates to:
+  /// **'Landmark'**
+  String get searchBadgeLandmark;
+
+  /// Result-type badge on a tour search result.
+  ///
+  /// In en, this message translates to:
+  /// **'Tour'**
+  String get searchBadgeTour;
+
+  /// Hint on a place search result that opens the map.
+  ///
+  /// In en, this message translates to:
+  /// **'View on map'**
+  String get searchViewOnMap;
+
+  /// Title of the empty prompt before the user types a query.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a landmark or tour'**
+  String get searchEmptyTitle;
+
+  /// Example queries shown under the empty search prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Try \"Pyramids\", \"Luxor\", \"museum\"…'**
+  String get searchEmptyHint;
+
+  /// Shown when a search returns no places or tours.
+  ///
+  /// In en, this message translates to:
+  /// **'No results for \"{query}\"'**
+  String searchNoResultsFor(String query);
+
+  /// Error when the searchable place list fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load places.\nCheck your connection.'**
+  String get searchPlacesError;
+
+  /// Error when the searchable tour list fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load tours.\nCheck your connection.'**
+  String get searchToursError;
+
+  /// Search hint on the guide-browse screen while the Tours tab is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Search tours...'**
+  String get guidesSearchToursHint;
+
+  /// Search hint on the guide-browse screen while the Guides tab is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Search guides...'**
+  String get guidesSearchGuidesHint;
+
+  /// Tab on the guide-browse screen: tours.
+  ///
+  /// In en, this message translates to:
+  /// **'Tours'**
+  String get guidesTabTours;
+
+  /// Tab on the guide-browse screen: guides.
+  ///
+  /// In en, this message translates to:
+  /// **'Guides'**
+  String get guidesTabGuides;
+
+  /// Empty-state title when no guides match the filters.
+  ///
+  /// In en, this message translates to:
+  /// **'No guides found'**
+  String get guidesEmptyGuidesTitle;
+
+  /// Empty-state subtitle for the guide-browse screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your search query or filters.'**
+  String get guidesEmptyHint;
+
+  /// Error when the tours list fails to load on the guide-browse screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading tours.'**
+  String get guidesErrorTours;
+
+  /// Error when the guides list fails to load.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading guides.'**
+  String get guidesErrorGuides;
+
+  /// Shown when there are no verified guides at all.
+  ///
+  /// In en, this message translates to:
+  /// **'No guides available.'**
+  String get guidesNoneAvailable;
+
+  /// Community feed category filter chip: show all posts.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get communityFilterAll;
+
+  /// Community feed category filter chip: traveler tips (short form with emoji).
+  ///
+  /// In en, this message translates to:
+  /// **'💡 Tips'**
+  String get communityFilterTips;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get soloInterestShopping;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Nightlife'**
+  String get soloInterestNightlife;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Monuments'**
+  String get soloInterestMonuments;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Museums'**
+  String get soloInterestMuseums;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Nature & Parks'**
+  String get soloInterestNature;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Beaches'**
+  String get soloInterestBeaches;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Culture & Traditions'**
+  String get soloInterestCulture;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Entertainment'**
+  String get soloInterestEntertainment;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Adventure Activities'**
+  String get soloInterestAdventure;
+
+  /// Solo-trip interest chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Local Experiences'**
+  String get soloInterestLocal;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Cairo'**
+  String get soloAreaCairo;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Luxor'**
+  String get soloAreaLuxor;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Aswan'**
+  String get soloAreaAswan;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Alexandria'**
+  String get soloAreaAlexandria;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Hurghada'**
+  String get soloAreaHurghada;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Sharm El-Sheikh'**
+  String get soloAreaSharm;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Dahab'**
+  String get soloAreaDahab;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Siwa'**
+  String get soloAreaSiwa;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'Fayoum'**
+  String get soloAreaFayoum;
+
+  /// Solo-trip area chip (display only; value stays English).
+  ///
+  /// In en, this message translates to:
+  /// **'North Coast'**
+  String get soloAreaNorthCoast;
+
+  /// Completed-vs-total stops on a My Plans card.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total} stops'**
+  String soloPlanStopsProgress(int done, int total);
+
+  /// Spoken (TTS) easter-egg narration when navigating to a tomb / Valley of the Kings.
+  ///
+  /// In en, this message translates to:
+  /// **'You dare awaken the Pharaoh... The curse is upon you.'**
+  String get mapEasterEggCurse;
+
+  /// Spoken (TTS) easter-egg narration when navigating to the Sahara desert.
+  ///
+  /// In en, this message translates to:
+  /// **'The desert consumes all.'**
+  String get mapEasterEggSandstorm;
+
+  /// Profile stat chip: number of unique landmarks the user has visited.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} Place Visited} other{{count} Places Visited}}'**
+  String profilePlacesVisited(int count);
+
+  /// Account screen app-bar title.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get accountMyProfile;
+
+  /// Notification screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTitle;
+
+  /// Notification screen: button opening the notification settings sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your notifications!'**
+  String get notificationsCustomize;
+
+  /// Notification screen: section header for older notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Previously'**
+  String get notificationsPrevious;
+
+  /// Empty notifications state title.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get notificationsEmptyTitle;
+
+  /// Empty notifications state subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your notifications will appear here once\nyou start getting them.'**
+  String get notificationsEmptyBody;
+
+  /// Empty notifications state: button to open notification settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Settings'**
+  String get notificationsSettings;
+
+  /// Generic Done button.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get commonDone;
+
+  /// Notification preferences sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Preferences'**
+  String get notifPrefTitle;
+
+  /// No description provided for @notifPrefSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what you want to be notified about.'**
+  String get notifPrefSubtitle;
+
+  /// No description provided for @notifPrefAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All Notifications'**
+  String get notifPrefAll;
+
+  /// No description provided for @notifPrefAllSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Master switch for all push alerts'**
+  String get notifPrefAllSub;
+
+  /// No description provided for @notifPrefBookings.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookings & Tours'**
+  String get notifPrefBookings;
+
+  /// No description provided for @notifPrefBookingsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmations, cancellations, updates'**
+  String get notifPrefBookingsSub;
+
+  /// No description provided for @notifPrefCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get notifPrefCommunity;
+
+  /// No description provided for @notifPrefCommunitySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Likes, comments, mentions, replies'**
+  String get notifPrefCommunitySub;
+
+  /// No description provided for @notifPrefReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get notifPrefReviews;
+
+  /// No description provided for @notifPrefReviewsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'When someone reviews your tour'**
+  String get notifPrefReviewsSub;
+
+  /// No description provided for @notifPrefGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide Updates'**
+  String get notifPrefGuide;
+
+  /// No description provided for @notifPrefGuideSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Application & language certification results'**
+  String get notifPrefGuideSub;
+
+  /// No description provided for @notifPrefDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Discovery'**
+  String get notifPrefDiscovery;
+
+  /// No description provided for @notifPrefDiscoverySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily \'Did you know?\' fact about Egypt'**
+  String get notifPrefDiscoverySub;
+
+  /// Badge name (display only; the badge id stays as the stable key).
+  ///
+  /// In en, this message translates to:
+  /// **'Novice Explorer'**
+  String get badgeNoviceExplorer;
+
+  /// No description provided for @badgeNoviceExplorerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovered your first landmark.'**
+  String get badgeNoviceExplorerDesc;
+
+  /// No description provided for @badgeTourist.
+  ///
+  /// In en, this message translates to:
+  /// **'Tourist'**
+  String get badgeTourist;
+
+  /// No description provided for @badgeTouristDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited 3 landmarks.'**
+  String get badgeTouristDesc;
+
+  /// No description provided for @badgeTombRaider.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomb Raider'**
+  String get badgeTombRaider;
+
+  /// No description provided for @badgeTombRaiderDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited 5 landmarks.'**
+  String get badgeTombRaiderDesc;
+
+  /// No description provided for @badgeHistorian.
+  ///
+  /// In en, this message translates to:
+  /// **'Historian'**
+  String get badgeHistorian;
+
+  /// No description provided for @badgeHistorianDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited 10 landmarks.'**
+  String get badgeHistorianDesc;
+
+  /// No description provided for @badgePharaoh.
+  ///
+  /// In en, this message translates to:
+  /// **'Pharaoh'**
+  String get badgePharaoh;
+
+  /// No description provided for @badgePharaohDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited 20 landmarks.'**
+  String get badgePharaohDesc;
+
+  /// No description provided for @badgeImhotep.
+  ///
+  /// In en, this message translates to:
+  /// **'High Priest Imhotep'**
+  String get badgeImhotep;
+
+  /// No description provided for @badgeImhotepDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You discovered the hidden vault of the architect.'**
+  String get badgeImhotepDesc;
+
+  /// No description provided for @badgeDeveloperPharaoh.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer Pharaoh'**
+  String get badgeDeveloperPharaoh;
+
+  /// No description provided for @badgeDeveloperPharaohDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovered the hidden developer tomb.'**
+  String get badgeDeveloperPharaohDesc;
+
+  /// No description provided for @badgeRiddleSolver.
+  ///
+  /// In en, this message translates to:
+  /// **'Riddle Solver'**
+  String get badgeRiddleSolver;
+
+  /// No description provided for @badgeRiddleSolverDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You answered the Riddle of the Sphinx.'**
+  String get badgeRiddleSolverDesc;
 }
 
 class _AppLocalizationsDelegate

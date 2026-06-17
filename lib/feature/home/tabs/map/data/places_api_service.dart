@@ -541,6 +541,32 @@ class PlacesApiService {
   static String buildPhotoUrl(String photoName, String apiKey, {int maxWidth = 800}) {
     return 'https://places.googleapis.com/v1/$photoName/media?maxWidthPx=$maxWidth&key=$apiKey';
   }
+
+  // Resolved fresh-photo URLs by placeId (`null` = looked up, no photo / failed).
+  static final Map<String, String?> _freshPhotoCache = {};
+
+  /// Resolves a fresh, working photo URL for a place by its Place ID.
+  ///
+  /// The Places photo references baked into `assets/cat_*.json` expire (the
+  /// media endpoint returns HTTP 400 "photo resource invalid"), so any surface
+  /// rendering those bundled places must re-resolve a live photo here. Reuses
+  /// the Firestore-cached [getPlaceDetails] (so it's one shared lookup per
+  /// place, not per screen open) and memoises the built URL for the session.
+  Future<String?> getFreshPhotoUrl(String placeId, {int maxWidth = 800}) async {
+    if (placeId.isEmpty) return null;
+    if (_freshPhotoCache.containsKey(placeId)) return _freshPhotoCache[placeId];
+
+    final details = await getPlaceDetails(placeId);
+    final photos = details?['photos'] as List?;
+    final photoName = (photos != null && photos.isNotEmpty)
+        ? (photos.first as Map)['name'] as String?
+        : null;
+    final url = (photoName != null && photoName.isNotEmpty && apiKey.isNotEmpty)
+        ? buildPhotoUrl(photoName, apiKey, maxWidth: maxWidth)
+        : null;
+    _freshPhotoCache[placeId] = url;
+    return url;
+  }
 }
 
 /// A search query descriptor for batch fetching.

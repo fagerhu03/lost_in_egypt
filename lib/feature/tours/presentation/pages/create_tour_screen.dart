@@ -575,8 +575,8 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                   _previewMapController = controller;
                                 },
                               ),
-                              Positioned(
-                                top: 8.h, right: 8.w,
+                              PositionedDirectional(
+                                top: 8.h, end: 8.w,
                                 child: FloatingActionButton.small(
                                   heroTag: 'edit_map',
                                   onPressed: () async {
@@ -678,8 +678,8 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                 fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.2),
                                 fallbackIconSize: 20.r,
                               ),
-                              Positioned(
-                                right: 0,
+                              PositionedDirectional(
+                                end: 0,
                                 top: 0,
                                 child: GestureDetector(
                                   onTap: () {
@@ -698,8 +698,8 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       ..._selectedImages.map((file) => Stack(
                             children: [
                               Image.file(file, width: 80.r, height: 80.r, fit: BoxFit.cover),
-                              Positioned(
-                                right: 0,
+                              PositionedDirectional(
+                                end: 0,
                                 top: 0,
                                 child: GestureDetector(
                                   onTap: () {

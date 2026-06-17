@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 enum ReportType {
   user,
@@ -109,5 +110,47 @@ class ReportModel {
           'Other'
         ];
     }
+  }
+}
+
+/// Localized display label for a report reason. The `reason` argument is the
+/// English canonical value returned by [ReportModel.getReasonsForType] — that
+/// value is what gets persisted to Firestore and read by admins (who may be in
+/// any locale), so it stays English; only the radio-tile display is localized.
+/// Mirrors the value-stays-English / display-localized resolver pattern.
+String reportReasonLabel(AppLocalizations l10n, String reason) {
+  switch (reason) {
+    case 'Impersonation':
+      return l10n.reportReasonImpersonation;
+    case 'Fake Account':
+      return l10n.reportReasonFakeAccount;
+    case 'Harassment or Bullying':
+      return l10n.reportReasonHarassmentBullying;
+    case 'Inappropriate Profile Content':
+      return l10n.reportReasonInappropriateProfile;
+    case 'Scam or Fraud':
+      return l10n.reportReasonScamFraud;
+    case 'Other':
+      return l10n.reportReasonOther;
+    case 'Spam or Ads':
+      return l10n.reportReasonSpamAds;
+    case 'Hate Speech':
+      return l10n.reportReasonHateSpeech;
+    case 'False Information':
+      return l10n.reportReasonFalseInfo;
+    case 'Explicit Content':
+      return l10n.reportReasonExplicitContent;
+    case 'Harassment':
+      return l10n.reportReasonHarassment;
+    case 'Unsafe Location/Activity':
+      return l10n.reportReasonUnsafe;
+    case 'Inaccurate Description':
+      return l10n.reportReasonInaccurate;
+    case 'Fake Reviews':
+      return l10n.reportReasonFakeReviews;
+    case 'Overpriced/Hidden Fees':
+      return l10n.reportReasonOverpriced;
+    default:
+      return reason;
   }
 }

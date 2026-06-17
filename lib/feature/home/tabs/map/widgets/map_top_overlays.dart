@@ -42,9 +42,9 @@ class MapTopOverlays extends StatelessWidget {
     return Stack(
       children: [
         // Places Count Chip
-        Positioned(
+        PositionedDirectional(
           top: 110.h,
-          left: 20.w,
+          start: 20.w,
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
@@ -86,9 +86,9 @@ class MapTopOverlays extends StatelessWidget {
         ),
 
         // Filter Button
-        Positioned(
+        PositionedDirectional(
           top: 110.h,
-          right: 20.w,
+          end: 20.w,
           child: GestureDetector(
             onTap: () async {
               final chosen = await showModalBottomSheet<String>(

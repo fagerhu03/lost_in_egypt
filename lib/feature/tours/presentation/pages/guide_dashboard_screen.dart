@@ -310,9 +310,9 @@ class _GuideTourCard extends StatelessWidget {
                     ),
                   ),
                   // Price tag
-                  Positioned(
+                  PositionedDirectional(
                     top: 10.h,
-                    right: 10.w,
+                    end: 10.w,
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(

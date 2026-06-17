@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/constants/event_categories.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
@@ -76,6 +77,7 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
@@ -96,7 +98,7 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
         backgroundColor: surface,
         elevation: 0,
         title: Text(
-          'Experiences',
+          l10n.homeExperiences,
           style: TextStyle(
             color: onSurface,
             fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
@@ -115,7 +117,7 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
           }
           if (snap.hasError) {
             return AppErrorWidget(
-              message: 'Could not load events.\nCheck your connection and try again.',
+              message: l10n.eventsLoadError,
               icon: Icons.event_busy_rounded,
               onRetry: () => setState(() {}),
             );
@@ -150,7 +152,7 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
                   Icon(Icons.event_busy, size: 60.r, color: primary.withValues(alpha: 0.25)),
                   SizedBox(height: 16.h),
                   Text(
-                    'No events right now',
+                    l10n.eventsEmptyTitle,
                     style: TextStyle(
                       color: onSurface.withValues(alpha: 0.5),
                       fontSize: 16.sp,
@@ -159,7 +161,7 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    'Check back soon for upcoming events in Egypt.',
+                    l10n.eventsEmptySubtitle,
                     style: TextStyle(
                       color: onSurface.withValues(alpha: 0.35),
                       fontSize: 13.sp,
@@ -184,7 +186,7 @@ class _AllEventsScreenState extends State<AllEventsScreen> {
                     child: TextButton(
                       onPressed: () => setState(() => _limit += _pageSize),
                       child: Text(
-                        'Load more',
+                        l10n.commonLoadMore,
                         style: TextStyle(
                           color: primary,
                           fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
@@ -235,6 +237,7 @@ class _EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final categoryInfo = EventCategories.fromId(event.eventCategory);
 
     return Container(
@@ -311,9 +314,9 @@ class _EventCard extends StatelessWidget {
                       ),
                     ),
                     // Top-left badges
-                    Positioned(
+                    PositionedDirectional(
                       top: 10.h,
-                      left: 10.w,
+                      start: 10.w,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -337,7 +340,7 @@ class _EventCard extends StatelessWidget {
                                   Icon(Icons.auto_awesome, size: 12.r, color: Colors.white),
                                   SizedBox(width: 4.w),
                                   Text(
-                                    'Tailored pick',
+                                    l10n.eventTailoredPick,
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 11.sp,
@@ -357,7 +360,7 @@ class _EventCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Text(
-                              categoryInfo.label,
+                              eventCategoryLabel(l10n, categoryInfo),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 11.sp,
@@ -370,9 +373,9 @@ class _EventCard extends StatelessWidget {
                     ),
                     // Location badge
                     if (event.venueName.isNotEmpty || event.city.isNotEmpty)
-                      Positioned(
+                      PositionedDirectional(
                         top: 10.h,
-                        right: 10.w,
+                        end: 10.w,
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                           decoration: BoxDecoration(
@@ -402,9 +405,9 @@ class _EventCard extends StatelessWidget {
                       ),
                     // Recurring badge
                     if (event.isRecurring)
-                      Positioned(
+                      PositionedDirectional(
                         bottom: 10.h,
-                        left: 10.w,
+                        start: 10.w,
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(

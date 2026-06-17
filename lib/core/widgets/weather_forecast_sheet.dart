@@ -79,7 +79,8 @@ class WeatherForecastSheet extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                weather.conditionLabel,
+                                weatherConditionLabel(l, weather.condition,
+                                    emphasis: true),
                                 style: TextStyle(
                                   color: color,
                                   fontWeight: FontWeight.w700,
@@ -149,7 +150,7 @@ class WeatherForecastSheet extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Text(
-                            weather.advisoryText,
+                            weatherAdvisoryText(l, weather),
                             style: TextStyle(
                               color: color.withValues(alpha: 0.85),
                               fontSize: 12.sp,
@@ -215,7 +216,7 @@ class WeatherForecastSheet extends StatelessWidget {
                           SizedBox(
                             width: 68.w,
                             child: Text(
-                              day.dayLabel,
+                              weatherDayLabel(l, day),
                               style: TextStyle(
                                 color: i == 0 ? primary : onSurface,
                                 fontWeight: i == 0
@@ -239,7 +240,7 @@ class WeatherForecastSheet extends StatelessWidget {
                           SizedBox(width: 6.w),
                           Expanded(
                             child: Text(
-                              day.conditionLabel,
+                              weatherConditionLabel(l, day.condition),
                               style: TextStyle(
                                 color: dayColor.withValues(alpha: 0.8),
                                 fontSize: 13.sp,

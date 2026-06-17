@@ -1,3 +1,5 @@
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+
 /// Event category constants for the events section.
 /// Each category has an emoji, display name, and Firestore key.
 class EventCategory {
@@ -118,4 +120,43 @@ class EventCategories {
       orElse: () => cultural,
     );
   }
+}
+
+/// Localized chip label for an event category — `emoji + localized name`.
+/// The `id`s are a fixed, bounded set; the const `displayName` (English) is
+/// kept as the fallback for any unrecognised id. Mirrors `mapCategoryLabel`.
+String eventCategoryLabel(AppLocalizations l10n, EventCategory cat) {
+  final String name;
+  switch (cat.id) {
+    case 'all':
+      name = l10n.eventCatAll;
+      break;
+    case 'cultural':
+      name = l10n.eventCatCultural;
+      break;
+    case 'concert':
+      name = l10n.eventCatConcert;
+      break;
+    case 'theatre':
+      name = l10n.eventCatTheatre;
+      break;
+    case 'festival':
+      name = l10n.eventCatFestival;
+      break;
+    case 'art':
+      name = l10n.eventCatArt;
+      break;
+    case 'adventure':
+      name = l10n.eventCatAdventure;
+      break;
+    case 'food':
+      name = l10n.eventCatFood;
+      break;
+    case 'cruise':
+      name = l10n.eventCatCruise;
+      break;
+    default:
+      name = cat.displayName;
+  }
+  return '${cat.emoji} $name';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class EmptyNotificationsView extends StatelessWidget {
   final VoidCallback onTapSettings;
@@ -9,6 +10,7 @@ class EmptyNotificationsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
@@ -31,7 +33,7 @@ class EmptyNotificationsView extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            "No notifications yet",
+            l10n.notificationsEmptyTitle,
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.87),
               fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -41,7 +43,7 @@ class EmptyNotificationsView extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            "Your notifications will appear here once\nyou start getting them.",
+            l10n.notificationsEmptyBody,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.55),
@@ -55,7 +57,7 @@ class EmptyNotificationsView extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.r),
             onTap: onTapSettings,
             child: Text(
-              "Notification Settings",
+              l10n.notificationsSettings,
               style: TextStyle(
                 color: primary,
                 fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],

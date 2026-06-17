@@ -74,6 +74,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportSuccess => 'Report submitted successfully. Thank you.';
 
   @override
+  String get reportReasonImpersonation => 'Impersonation';
+
+  @override
+  String get reportReasonFakeAccount => 'Fake Account';
+
+  @override
+  String get reportReasonHarassmentBullying => 'Harassment or Bullying';
+
+  @override
+  String get reportReasonInappropriateProfile =>
+      'Inappropriate Profile Content';
+
+  @override
+  String get reportReasonScamFraud => 'Scam or Fraud';
+
+  @override
+  String get reportReasonOther => 'Other';
+
+  @override
+  String get reportReasonSpamAds => 'Spam or Ads';
+
+  @override
+  String get reportReasonHateSpeech => 'Hate Speech';
+
+  @override
+  String get reportReasonFalseInfo => 'False Information';
+
+  @override
+  String get reportReasonExplicitContent => 'Explicit Content';
+
+  @override
+  String get reportReasonHarassment => 'Harassment';
+
+  @override
+  String get reportReasonUnsafe => 'Unsafe Location/Activity';
+
+  @override
+  String get reportReasonInaccurate => 'Inaccurate Description';
+
+  @override
+  String get reportReasonFakeReviews => 'Fake Reviews';
+
+  @override
+  String get reportReasonOverpriced => 'Overpriced/Hidden Fees';
+
+  @override
   String get weatherTapForForecast => 'Tap for 7-day forecast';
 
   @override
@@ -81,6 +127,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weather7DayForecast => '7-Day Forecast';
+
+  @override
+  String get weatherCondSandstorm => 'Sandstorm';
+
+  @override
+  String get weatherCondSandstormWarning => 'Sandstorm Warning';
+
+  @override
+  String get weatherCondDustHaze => 'Dust Haze';
+
+  @override
+  String get weatherCondExtremeHeat => 'Extreme Heat';
+
+  @override
+  String get weatherCondVeryHot => 'Very Hot';
+
+  @override
+  String get weatherCondExtremeUV => 'Extreme UV';
+
+  @override
+  String get weatherCondHighUV => 'High UV';
+
+  @override
+  String get weatherCondClear => 'Clear';
+
+  @override
+  String get weatherCondGood => 'Good Conditions';
+
+  @override
+  String get weatherAdvisorySandstorm =>
+      'Sandstorm in the area — avoid all outdoor locations. Wear a mask if you must travel.';
+
+  @override
+  String get weatherAdvisoryDustHaze =>
+      'Dust haze reducing visibility. Outdoor visits not ideal; wear sunglasses.';
+
+  @override
+  String weatherAdvisoryExtremeHeat(String temp) {
+    return 'Feels like $temp°C. Visit outdoor sites before 9am or after 5pm only. Bring at least 2L of water.';
+  }
+
+  @override
+  String weatherAdvisoryVeryHot(String temp) {
+    return 'Very hot ($temp°C feels-like). Stay hydrated and seek shade often.';
+  }
+
+  @override
+  String weatherAdvisoryExtremeUV(String uv) {
+    return 'UV index $uv — extreme. Sunscreen, hat, and sunglasses are essential. Limit midday exposure.';
+  }
+
+  @override
+  String weatherAdvisoryHighUV(String uv) {
+    return 'UV index $uv — high. Apply sunscreen SPF 50+ before going outdoors.';
+  }
+
+  @override
+  String get weatherAdvisoryGood =>
+      'Great conditions for outdoor exploration today.';
+
+  @override
+  String get weatherDayToday => 'Today';
+
+  @override
+  String get weatherDayTomorrow => 'Tomorrow';
 
   @override
   String get settingsTitle => 'Settings';
@@ -261,6 +372,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dobYear => 'Year';
+
+  @override
+  String get dobMonthJanuary => 'January';
+
+  @override
+  String get dobMonthFebruary => 'February';
+
+  @override
+  String get dobMonthMarch => 'March';
+
+  @override
+  String get dobMonthApril => 'April';
+
+  @override
+  String get dobMonthMay => 'May';
+
+  @override
+  String get dobMonthJune => 'June';
+
+  @override
+  String get dobMonthJuly => 'July';
+
+  @override
+  String get dobMonthAugust => 'August';
+
+  @override
+  String get dobMonthSeptember => 'September';
+
+  @override
+  String get dobMonthOctober => 'October';
+
+  @override
+  String get dobMonthNovember => 'November';
+
+  @override
+  String get dobMonthDecember => 'December';
+
+  @override
+  String get dobErrorMissing => 'Please select your date of birth.';
+
+  @override
+  String get dobErrorInvalid => 'Invalid date of birth.';
+
+  @override
+  String dobErrorTooManyDays(String month, String year, int days) {
+    return '$month $year has only $days days.';
+  }
+
+  @override
+  String dobErrorUnderage(int minAge) {
+    return 'You must be at least $minAge years old to use this app.';
+  }
 
   @override
   String get signupTitle => 'New Account';
@@ -683,6 +846,93 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountYourTaste => 'Your Taste';
+
+  @override
+  String get tasteKeyHistory => 'History';
+
+  @override
+  String get tasteKeyAncientSites => 'Ancient Sites';
+
+  @override
+  String get tasteKeyAttractions => 'Attractions';
+
+  @override
+  String get tasteKeyMuseums => 'Museums';
+
+  @override
+  String get tasteKeyMosques => 'Mosques';
+
+  @override
+  String get tasteKeyChurches => 'Churches';
+
+  @override
+  String get tasteKeyParks => 'Parks';
+
+  @override
+  String get tasteKeyBeaches => 'Beaches';
+
+  @override
+  String get tasteKeyRestaurants => 'Restaurants';
+
+  @override
+  String get tasteKeyCafes => 'Cafés';
+
+  @override
+  String get tasteKeyMarkets => 'Markets';
+
+  @override
+  String get tasteKeyShopping => 'Shopping';
+
+  @override
+  String get tasteKeyMonuments => 'Monuments';
+
+  @override
+  String get tasteKeyArt => 'Art';
+
+  @override
+  String get tasteKeyNightlife => 'Nightlife';
+
+  @override
+  String get tasteKeyThemeParks => 'Theme Parks';
+
+  @override
+  String get tasteKeyAquariums => 'Aquariums';
+
+  @override
+  String get tasteKeyZoos => 'Zoos';
+
+  @override
+  String get tasteKeySpas => 'Spas';
+
+  @override
+  String get tasteKeyStadiums => 'Stadiums';
+
+  @override
+  String get tasteKeyEntertainment => 'Entertainment';
+
+  @override
+  String get tasteKeyCultural => 'Cultural';
+
+  @override
+  String get tasteKeyNature => 'Nature';
+
+  @override
+  String get tasteKeyRelaxation => 'Relaxation';
+
+  @override
+  String get tasteKeyReligious => 'Religious';
+
+  @override
+  String get tasteKeyFamily => 'Family';
+
+  @override
+  String get tasteKeyAdventure => 'Adventure';
+
+  @override
+  String get tasteKeyFood => 'Food';
+
+  @override
+  String get tasteKeyAncient => 'Ancient';
 
   @override
   String get accountSettingsHeader => 'Account Settings:';
@@ -2406,6 +2656,38 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get cameraStatusCapturing => 'Capturing...';
+
+  @override
+  String get cameraStatusIdentifying => 'Identifying landmark...';
+
+  @override
+  String get cameraStatusTranslating => 'Translating...';
+
+  @override
+  String cameraStatusDownloadingModel(String lang) {
+    return 'Downloading $lang model (this may take a minute)...';
+  }
+
+  @override
+  String get cameraErrNoCameras => 'No cameras available on this device';
+
+  @override
+  String get cameraErrInitFailed =>
+      'Failed to initialize camera. Please restart the app.';
+
+  @override
+  String get cameraErrTranslationModels =>
+      'Could not download translation models. Please check your internet connection.';
+
+  @override
+  String get cameraErrLanguageModel =>
+      'Failed to download language model. Please check your internet connection.';
+
+  @override
+  String get cameraErrNoText => 'No text found in the selected image.';
+
+  @override
   String get cameraReadMore => 'Read More';
 
   @override
@@ -2774,4 +3056,455 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapCatShopping => 'Shopping';
+
+  @override
+  String get accountMenuMyAccount => 'My Account';
+
+  @override
+  String get accountMenuGuideDashboard => 'Guide Dashboard';
+
+  @override
+  String get accountMenuAdminDashboard => 'Admin Dashboard';
+
+  @override
+  String get accountMenuNotifications => 'Notification Centre';
+
+  @override
+  String get accountMenuSignOut => 'Sign Out';
+
+  @override
+  String get homeCatHotels => 'Hotels';
+
+  @override
+  String get homeCatMuseums => 'Museums';
+
+  @override
+  String get homeCatRestaurants => 'Restaurants';
+
+  @override
+  String get homeCatMosques => 'Mosques';
+
+  @override
+  String get homeCatBeaches => 'Beaches';
+
+  @override
+  String get homeCatAdventure => 'Adventure';
+
+  @override
+  String get catSort => 'Sort';
+
+  @override
+  String get catSortNameAsc => 'Name (A → Z)';
+
+  @override
+  String get catSortNameDesc => 'Name (Z → A)';
+
+  @override
+  String get catSortTopRated => 'Top Rated';
+
+  @override
+  String get catSortMostReviews => 'Most Reviews';
+
+  @override
+  String get catSortNearest => 'Nearest';
+
+  @override
+  String get catSomethingWrong => 'Something went wrong.';
+
+  @override
+  String get catNoRating => 'N/A';
+
+  @override
+  String catReviewsK(String count) {
+    return '${count}k reviews';
+  }
+
+  @override
+  String catReviews(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reviews',
+      one: '1 review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get eventCatAll => 'All';
+
+  @override
+  String get eventCatCultural => 'Cultural & Heritage';
+
+  @override
+  String get eventCatConcert => 'Concerts & Music';
+
+  @override
+  String get eventCatTheatre => 'Theatre & Performance';
+
+  @override
+  String get eventCatFestival => 'Festivals';
+
+  @override
+  String get eventCatArt => 'Art & Exhibitions';
+
+  @override
+  String get eventCatAdventure => 'Adventure & Outdoors';
+
+  @override
+  String get eventCatFood => 'Food & Markets';
+
+  @override
+  String get eventCatCruise => 'Cruise & Dining';
+
+  @override
+  String get eventsLoadError =>
+      'Could not load events.\nCheck your connection and try again.';
+
+  @override
+  String get eventsEmptyTitle => 'No events right now';
+
+  @override
+  String get eventsEmptySubtitle =>
+      'Check back soon for upcoming events in Egypt.';
+
+  @override
+  String get eventTailoredPick => 'Tailored pick';
+
+  @override
+  String get eventDateTime => 'DATE & TIME';
+
+  @override
+  String get eventLocation => 'LOCATION';
+
+  @override
+  String eventCairoTime(String time) {
+    return '$time (Cairo Time)';
+  }
+
+  @override
+  String get eventLocationEgypt => 'Egypt';
+
+  @override
+  String get eventMapButton => 'Map';
+
+  @override
+  String get eventAbout => 'About this Event';
+
+  @override
+  String get eventDefaultDescription =>
+      'Join us for an unforgettable experience! This event brings together the best of culture, entertainment, and community in Egypt. Secure your tickets now and be part of something amazing.';
+
+  @override
+  String get eventShareThis => 'Share this event';
+
+  @override
+  String eventViewOn(String source) {
+    return 'View on $source';
+  }
+
+  @override
+  String eventPostPrompt(String title) {
+    return 'Anyone going to $title? ✨';
+  }
+
+  @override
+  String get eventPostToCommunity => 'Post to Community';
+
+  @override
+  String get eventPrice => 'Price';
+
+  @override
+  String get eventSeeListing => 'See Listing';
+
+  @override
+  String get eventTicketsUnavailable =>
+      'Tickets are not available online for this event.';
+
+  @override
+  String get eventGetTickets => 'Get Tickets';
+
+  @override
+  String get eventRsvpNow => 'RSVP Now';
+
+  @override
+  String get eventReviewerFallback => 'Explorer';
+
+  @override
+  String get searchHint => 'Search landmarks, tours, destinations…';
+
+  @override
+  String get searchTabAll => 'All';
+
+  @override
+  String get searchTabPlaces => 'Places';
+
+  @override
+  String get searchTabTours => 'Tours';
+
+  @override
+  String get searchPersonalised => 'Personalised by your taste';
+
+  @override
+  String get searchBadgeLandmark => 'Landmark';
+
+  @override
+  String get searchBadgeTour => 'Tour';
+
+  @override
+  String get searchViewOnMap => 'View on map';
+
+  @override
+  String get searchEmptyTitle => 'Search for a landmark or tour';
+
+  @override
+  String get searchEmptyHint => 'Try \"Pyramids\", \"Luxor\", \"museum\"…';
+
+  @override
+  String searchNoResultsFor(String query) {
+    return 'No results for \"$query\"';
+  }
+
+  @override
+  String get searchPlacesError =>
+      'Could not load places.\nCheck your connection.';
+
+  @override
+  String get searchToursError =>
+      'Could not load tours.\nCheck your connection.';
+
+  @override
+  String get guidesSearchToursHint => 'Search tours...';
+
+  @override
+  String get guidesSearchGuidesHint => 'Search guides...';
+
+  @override
+  String get guidesTabTours => 'Tours';
+
+  @override
+  String get guidesTabGuides => 'Guides';
+
+  @override
+  String get guidesEmptyGuidesTitle => 'No guides found';
+
+  @override
+  String get guidesEmptyHint => 'Try adjusting your search query or filters.';
+
+  @override
+  String get guidesErrorTours => 'Error loading tours.';
+
+  @override
+  String get guidesErrorGuides => 'Error loading guides.';
+
+  @override
+  String get guidesNoneAvailable => 'No guides available.';
+
+  @override
+  String get communityFilterAll => 'All';
+
+  @override
+  String get communityFilterTips => '💡 Tips';
+
+  @override
+  String get soloInterestShopping => 'Shopping';
+
+  @override
+  String get soloInterestNightlife => 'Nightlife';
+
+  @override
+  String get soloInterestMonuments => 'Monuments';
+
+  @override
+  String get soloInterestMuseums => 'Museums';
+
+  @override
+  String get soloInterestNature => 'Nature & Parks';
+
+  @override
+  String get soloInterestBeaches => 'Beaches';
+
+  @override
+  String get soloInterestCulture => 'Culture & Traditions';
+
+  @override
+  String get soloInterestEntertainment => 'Entertainment';
+
+  @override
+  String get soloInterestAdventure => 'Adventure Activities';
+
+  @override
+  String get soloInterestLocal => 'Local Experiences';
+
+  @override
+  String get soloAreaCairo => 'Cairo';
+
+  @override
+  String get soloAreaLuxor => 'Luxor';
+
+  @override
+  String get soloAreaAswan => 'Aswan';
+
+  @override
+  String get soloAreaAlexandria => 'Alexandria';
+
+  @override
+  String get soloAreaHurghada => 'Hurghada';
+
+  @override
+  String get soloAreaSharm => 'Sharm El-Sheikh';
+
+  @override
+  String get soloAreaDahab => 'Dahab';
+
+  @override
+  String get soloAreaSiwa => 'Siwa';
+
+  @override
+  String get soloAreaFayoum => 'Fayoum';
+
+  @override
+  String get soloAreaNorthCoast => 'North Coast';
+
+  @override
+  String soloPlanStopsProgress(int done, int total) {
+    return '$done/$total stops';
+  }
+
+  @override
+  String get mapEasterEggCurse =>
+      'You dare awaken the Pharaoh... The curse is upon you.';
+
+  @override
+  String get mapEasterEggSandstorm => 'The desert consumes all.';
+
+  @override
+  String profilePlacesVisited(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Places Visited',
+      one: '$count Place Visited',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountMyProfile => 'My Profile';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get notificationsCustomize => 'Customize your notifications!';
+
+  @override
+  String get notificationsPrevious => 'Previously';
+
+  @override
+  String get notificationsEmptyTitle => 'No notifications yet';
+
+  @override
+  String get notificationsEmptyBody =>
+      'Your notifications will appear here once\nyou start getting them.';
+
+  @override
+  String get notificationsSettings => 'Notification Settings';
+
+  @override
+  String get commonDone => 'Done';
+
+  @override
+  String get notifPrefTitle => 'Notification Preferences';
+
+  @override
+  String get notifPrefSubtitle => 'Choose what you want to be notified about.';
+
+  @override
+  String get notifPrefAll => 'All Notifications';
+
+  @override
+  String get notifPrefAllSub => 'Master switch for all push alerts';
+
+  @override
+  String get notifPrefBookings => 'Bookings & Tours';
+
+  @override
+  String get notifPrefBookingsSub => 'Confirmations, cancellations, updates';
+
+  @override
+  String get notifPrefCommunity => 'Community';
+
+  @override
+  String get notifPrefCommunitySub => 'Likes, comments, mentions, replies';
+
+  @override
+  String get notifPrefReviews => 'Reviews';
+
+  @override
+  String get notifPrefReviewsSub => 'When someone reviews your tour';
+
+  @override
+  String get notifPrefGuide => 'Guide Updates';
+
+  @override
+  String get notifPrefGuideSub =>
+      'Application & language certification results';
+
+  @override
+  String get notifPrefDiscovery => 'AI Discovery';
+
+  @override
+  String get notifPrefDiscoverySub =>
+      'Daily \'Did you know?\' fact about Egypt';
+
+  @override
+  String get badgeNoviceExplorer => 'Novice Explorer';
+
+  @override
+  String get badgeNoviceExplorerDesc => 'Discovered your first landmark.';
+
+  @override
+  String get badgeTourist => 'Tourist';
+
+  @override
+  String get badgeTouristDesc => 'Visited 3 landmarks.';
+
+  @override
+  String get badgeTombRaider => 'Tomb Raider';
+
+  @override
+  String get badgeTombRaiderDesc => 'Visited 5 landmarks.';
+
+  @override
+  String get badgeHistorian => 'Historian';
+
+  @override
+  String get badgeHistorianDesc => 'Visited 10 landmarks.';
+
+  @override
+  String get badgePharaoh => 'Pharaoh';
+
+  @override
+  String get badgePharaohDesc => 'Visited 20 landmarks.';
+
+  @override
+  String get badgeImhotep => 'High Priest Imhotep';
+
+  @override
+  String get badgeImhotepDesc =>
+      'You discovered the hidden vault of the architect.';
+
+  @override
+  String get badgeDeveloperPharaoh => 'Developer Pharaoh';
+
+  @override
+  String get badgeDeveloperPharaohDesc =>
+      'Discovered the hidden developer tomb.';
+
+  @override
+  String get badgeRiddleSolver => 'Riddle Solver';
+
+  @override
+  String get badgeRiddleSolverDesc => 'You answered the Riddle of the Sphinx.';
 }

@@ -17,8 +17,11 @@ class StoryCacheService {
   String _slug(String name) =>
       name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_').trim();
 
-  Future<String> getStory(String landmarkName) async {
-    final slug = _slug(landmarkName);
+  Future<String> getStory(String landmarkName, {String locale = 'en'}) async {
+    // English keeps the original bare-slug key (no cache invalidation); Arabic
+    // gets its own `_ar` namespace so the two languages never collide.
+    final slug =
+        locale == 'ar' ? '${_slug(landmarkName)}_ar' : _slug(landmarkName);
 
     // 1. Memory hit
     if (_memCache.containsKey(slug)) return _memCache[slug]!;
@@ -46,7 +49,8 @@ class StoryCacheService {
     }
 
     // 3. Cloud Function
-    final story = await AIStorytellerService.getLandmarkStory(landmarkName);
+    final story =
+        await AIStorytellerService.getLandmarkStory(landmarkName, locale: locale);
 
     // Don't cache an empty response — let the next call retry
     if (story.isEmpty) return story;

@@ -34,6 +34,10 @@ class LocaleController {
   /// `true` when the active locale is right-to-left (Arabic).
   static bool get isRtl => locale.value.languageCode == 'ar';
 
+  /// The active ISO language code (`"en"` | `"ar"`). Passed to AI Cloud
+  /// Functions (story / trip / TTS) so generated content matches the UI language.
+  static String get localeCode => locale.value.languageCode;
+
   /// The Firestore `language` string for the active locale.
   static String get languageLabel =>
       locale.value.languageCode == 'ar' ? 'Arabic' : 'English';

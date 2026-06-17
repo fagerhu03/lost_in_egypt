@@ -8,6 +8,7 @@ import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/active_tour_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
@@ -169,7 +170,14 @@ class _ResultScreenState extends State<ResultScreen>
     _pulseAnim = Tween(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    _generate();
+    // Defer to after first frame: _generate() reads AppLocalizations.of(context),
+    // which throws if called during initState (inherited-widget lookup before the
+    // element is ready). That throw was swallowed by the async Future, leaving the
+    // screen stuck on the loading spinner forever (debug builds only — asserts are
+    // compiled out in release). Post-frame guarantees the context is ready.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _generate();
+    });
   }
 
   @override
@@ -200,6 +208,7 @@ class _ResultScreenState extends State<ResultScreen>
           'minBudget': widget.plan.minBudget,
           'maxBudget': widget.plan.maxBudget,
         },
+        'locale': LocaleController.localeCode,
       });
       final plan =
           _Plan.fromMap(Map<String, dynamic>.from(result.data as Map));
@@ -1214,7 +1223,7 @@ class _ForecastChip extends StatelessWidget {
             ),
             SizedBox(height: 2.h),
             Text(
-              f.conditionLabel,
+              weatherConditionLabel(AppLocalizations.of(context), f.condition),
               style: TextStyle(
                 fontSize: 10.sp,
                 color: accent,

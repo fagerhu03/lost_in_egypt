@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart' as intl;
 import '../domain/entities/community_post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../auth/data/models/user.dart';
@@ -295,7 +296,19 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
     if (last < content.length) {
       spans.add(TextSpan(text: content.substring(last), style: baseStyle));
     }
-    return RichText(text: TextSpan(children: spans));
+    // Align to the POST's own language, not the app locale: Arabic content reads
+    // right-to-left, English content left-to-right — regardless of the UI language.
+    // Full width is required so textAlign actually positions the (possibly short)
+    // text instead of the RichText shrink-wrapping at the column's start edge.
+    final isRtl = intl.Bidi.detectRtlDirectionality(content);
+    return SizedBox(
+      width: double.infinity,
+      child: RichText(
+        textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+        textAlign: TextAlign.start,
+        text: TextSpan(children: spans),
+      ),
+    );
   }
 
   Future<void> _navigateToProfileByUsername(String username) async {
@@ -915,9 +928,9 @@ class _CommunityPostCardState extends State<CommunityPostCard> {
 
         // Pin indicator (top-right corner)
         if (widget.post.isPinned)
-          Positioned(
+          PositionedDirectional(
             top: -6.h,
-            right: 14.w,
+            end: 14.w,
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(

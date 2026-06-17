@@ -72,6 +72,51 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reportSuccess => 'تم إرسال البلاغ بنجاح. شكرًا لك.';
 
   @override
+  String get reportReasonImpersonation => 'انتحال شخصية';
+
+  @override
+  String get reportReasonFakeAccount => 'حساب مزيّف';
+
+  @override
+  String get reportReasonHarassmentBullying => 'تحرّش أو تنمّر';
+
+  @override
+  String get reportReasonInappropriateProfile => 'محتوى ملف شخصي غير لائق';
+
+  @override
+  String get reportReasonScamFraud => 'احتيال أو نصب';
+
+  @override
+  String get reportReasonOther => 'أخرى';
+
+  @override
+  String get reportReasonSpamAds => 'محتوى غير مرغوب أو إعلانات';
+
+  @override
+  String get reportReasonHateSpeech => 'خطاب كراهية';
+
+  @override
+  String get reportReasonFalseInfo => 'معلومات كاذبة';
+
+  @override
+  String get reportReasonExplicitContent => 'محتوى صريح';
+
+  @override
+  String get reportReasonHarassment => 'تحرّش';
+
+  @override
+  String get reportReasonUnsafe => 'موقع أو نشاط غير آمن';
+
+  @override
+  String get reportReasonInaccurate => 'وصف غير دقيق';
+
+  @override
+  String get reportReasonFakeReviews => 'تقييمات مزيّفة';
+
+  @override
+  String get reportReasonOverpriced => 'أسعار مبالغ فيها أو رسوم خفية';
+
+  @override
   String get weatherTapForForecast => 'اضغط لعرض توقعات 7 أيام';
 
   @override
@@ -79,6 +124,71 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get weather7DayForecast => 'توقعات 7 أيام';
+
+  @override
+  String get weatherCondSandstorm => 'عاصفة رملية';
+
+  @override
+  String get weatherCondSandstormWarning => 'تحذير من عاصفة رملية';
+
+  @override
+  String get weatherCondDustHaze => 'ضباب ترابي';
+
+  @override
+  String get weatherCondExtremeHeat => 'حر شديد';
+
+  @override
+  String get weatherCondVeryHot => 'حار جدًا';
+
+  @override
+  String get weatherCondExtremeUV => 'أشعة فوق بنفسجية شديدة';
+
+  @override
+  String get weatherCondHighUV => 'أشعة فوق بنفسجية عالية';
+
+  @override
+  String get weatherCondClear => 'صحو';
+
+  @override
+  String get weatherCondGood => 'أحوال جيدة';
+
+  @override
+  String get weatherAdvisorySandstorm =>
+      'عاصفة رملية في المنطقة — تجنّب جميع الأماكن المفتوحة. ارتدِ كمامة إذا اضطررت للخروج.';
+
+  @override
+  String get weatherAdvisoryDustHaze =>
+      'ضباب ترابي يقلّل الرؤية. الزيارات الخارجية غير مناسبة؛ ارتدِ نظارة شمسية.';
+
+  @override
+  String weatherAdvisoryExtremeHeat(String temp) {
+    return 'الإحساس الحراري $temp°م. زر المواقع المفتوحة قبل التاسعة صباحًا أو بعد الخامسة مساءً فقط. احمل ما لا يقل عن لترين من الماء.';
+  }
+
+  @override
+  String weatherAdvisoryVeryHot(String temp) {
+    return 'حار جدًا (الإحساس الحراري $temp°م). حافظ على ترطيب جسمك وابحث عن الظل كثيرًا.';
+  }
+
+  @override
+  String weatherAdvisoryExtremeUV(String uv) {
+    return 'مؤشر الأشعة فوق البنفسجية $uv — شديد. واقي الشمس والقبعة والنظارة الشمسية ضرورية. قلّل التعرّض وقت الظهيرة.';
+  }
+
+  @override
+  String weatherAdvisoryHighUV(String uv) {
+    return 'مؤشر الأشعة فوق البنفسجية $uv — مرتفع. ضع واقي شمس بمعامل حماية 50+ قبل الخروج.';
+  }
+
+  @override
+  String get weatherAdvisoryGood =>
+      'أحوال رائعة لاستكشاف الأماكن المفتوحة اليوم.';
+
+  @override
+  String get weatherDayToday => 'اليوم';
+
+  @override
+  String get weatherDayTomorrow => 'غدًا';
 
   @override
   String get settingsTitle => 'الإعدادات';
@@ -259,6 +369,58 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get dobYear => 'السنة';
+
+  @override
+  String get dobMonthJanuary => 'يناير';
+
+  @override
+  String get dobMonthFebruary => 'فبراير';
+
+  @override
+  String get dobMonthMarch => 'مارس';
+
+  @override
+  String get dobMonthApril => 'أبريل';
+
+  @override
+  String get dobMonthMay => 'مايو';
+
+  @override
+  String get dobMonthJune => 'يونيو';
+
+  @override
+  String get dobMonthJuly => 'يوليو';
+
+  @override
+  String get dobMonthAugust => 'أغسطس';
+
+  @override
+  String get dobMonthSeptember => 'سبتمبر';
+
+  @override
+  String get dobMonthOctober => 'أكتوبر';
+
+  @override
+  String get dobMonthNovember => 'نوفمبر';
+
+  @override
+  String get dobMonthDecember => 'ديسمبر';
+
+  @override
+  String get dobErrorMissing => 'يرجى اختيار تاريخ ميلادك.';
+
+  @override
+  String get dobErrorInvalid => 'تاريخ ميلاد غير صالح.';
+
+  @override
+  String dobErrorTooManyDays(String month, String year, int days) {
+    return '$month $year يحتوي على $days يومًا فقط.';
+  }
+
+  @override
+  String dobErrorUnderage(int minAge) {
+    return 'يجب أن يكون عمرك $minAge عامًا على الأقل لاستخدام التطبيق.';
+  }
 
   @override
   String get signupTitle => 'حساب جديد';
@@ -683,6 +845,93 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountYourTaste => 'ذوقك';
+
+  @override
+  String get tasteKeyHistory => 'تاريخ';
+
+  @override
+  String get tasteKeyAncientSites => 'مواقع أثرية';
+
+  @override
+  String get tasteKeyAttractions => 'معالم سياحية';
+
+  @override
+  String get tasteKeyMuseums => 'متاحف';
+
+  @override
+  String get tasteKeyMosques => 'مساجد';
+
+  @override
+  String get tasteKeyChurches => 'كنائس';
+
+  @override
+  String get tasteKeyParks => 'حدائق';
+
+  @override
+  String get tasteKeyBeaches => 'شواطئ';
+
+  @override
+  String get tasteKeyRestaurants => 'مطاعم';
+
+  @override
+  String get tasteKeyCafes => 'مقاهي';
+
+  @override
+  String get tasteKeyMarkets => 'أسواق';
+
+  @override
+  String get tasteKeyShopping => 'تسوّق';
+
+  @override
+  String get tasteKeyMonuments => 'آثار';
+
+  @override
+  String get tasteKeyArt => 'فنون';
+
+  @override
+  String get tasteKeyNightlife => 'حياة ليلية';
+
+  @override
+  String get tasteKeyThemeParks => 'مدن ملاهٍ';
+
+  @override
+  String get tasteKeyAquariums => 'أحواض مائية';
+
+  @override
+  String get tasteKeyZoos => 'حدائق حيوان';
+
+  @override
+  String get tasteKeySpas => 'منتجعات صحية';
+
+  @override
+  String get tasteKeyStadiums => 'ملاعب';
+
+  @override
+  String get tasteKeyEntertainment => 'ترفيه';
+
+  @override
+  String get tasteKeyCultural => 'ثقافي';
+
+  @override
+  String get tasteKeyNature => 'طبيعة';
+
+  @override
+  String get tasteKeyRelaxation => 'استرخاء';
+
+  @override
+  String get tasteKeyReligious => 'ديني';
+
+  @override
+  String get tasteKeyFamily => 'عائلي';
+
+  @override
+  String get tasteKeyAdventure => 'مغامرة';
+
+  @override
+  String get tasteKeyFood => 'طعام';
+
+  @override
+  String get tasteKeyAncient => 'قديم';
 
   @override
   String get accountSettingsHeader => 'إعدادات الحساب:';
@@ -2424,6 +2673,38 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get cameraStatusCapturing => 'جارٍ الالتقاط...';
+
+  @override
+  String get cameraStatusIdentifying => 'جارٍ التعرّف على المعلم...';
+
+  @override
+  String get cameraStatusTranslating => 'جارٍ الترجمة...';
+
+  @override
+  String cameraStatusDownloadingModel(String lang) {
+    return 'جارٍ تنزيل حزمة اللغة $lang (قد يستغرق هذا دقيقة)...';
+  }
+
+  @override
+  String get cameraErrNoCameras => 'لا توجد كاميرا متاحة على هذا الجهاز';
+
+  @override
+  String get cameraErrInitFailed =>
+      'تعذّر تشغيل الكاميرا. يرجى إعادة تشغيل التطبيق.';
+
+  @override
+  String get cameraErrTranslationModels =>
+      'تعذّر تنزيل حزم الترجمة. يرجى التحقق من اتصالك بالإنترنت.';
+
+  @override
+  String get cameraErrLanguageModel =>
+      'تعذّر تنزيل حزمة اللغة. يرجى التحقق من اتصالك بالإنترنت.';
+
+  @override
+  String get cameraErrNoText => 'لم يُعثر على نص في الصورة المحددة.';
+
+  @override
   String get cameraReadMore => 'اقرأ المزيد';
 
   @override
@@ -2807,4 +3088,455 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mapCatShopping => 'التسوق';
+
+  @override
+  String get accountMenuMyAccount => 'حسابي';
+
+  @override
+  String get accountMenuGuideDashboard => 'لوحة المرشد';
+
+  @override
+  String get accountMenuAdminDashboard => 'لوحة المسؤول';
+
+  @override
+  String get accountMenuNotifications => 'مركز الإشعارات';
+
+  @override
+  String get accountMenuSignOut => 'تسجيل الخروج';
+
+  @override
+  String get homeCatHotels => 'الفنادق';
+
+  @override
+  String get homeCatMuseums => 'المتاحف';
+
+  @override
+  String get homeCatRestaurants => 'المطاعم';
+
+  @override
+  String get homeCatMosques => 'المساجد';
+
+  @override
+  String get homeCatBeaches => 'الشواطئ';
+
+  @override
+  String get homeCatAdventure => 'مغامرة';
+
+  @override
+  String get catSort => 'ترتيب';
+
+  @override
+  String get catSortNameAsc => 'الاسم (أ → ي)';
+
+  @override
+  String get catSortNameDesc => 'الاسم (ي → أ)';
+
+  @override
+  String get catSortTopRated => 'الأعلى تقييمًا';
+
+  @override
+  String get catSortMostReviews => 'الأكثر تقييمات';
+
+  @override
+  String get catSortNearest => 'الأقرب';
+
+  @override
+  String get catSomethingWrong => 'حدث خطأ ما.';
+
+  @override
+  String get catNoRating => 'غير متاح';
+
+  @override
+  String catReviewsK(String count) {
+    return '$count ألف تقييم';
+  }
+
+  @override
+  String catReviews(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تقييم',
+      many: '$count تقييمًا',
+      few: '$count تقييمات',
+      two: 'تقييمان',
+      one: 'تقييم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get eventCatAll => 'الكل';
+
+  @override
+  String get eventCatCultural => 'ثقافة وتراث';
+
+  @override
+  String get eventCatConcert => 'حفلات وموسيقى';
+
+  @override
+  String get eventCatTheatre => 'مسرح وعروض';
+
+  @override
+  String get eventCatFestival => 'مهرجانات';
+
+  @override
+  String get eventCatArt => 'فنون ومعارض';
+
+  @override
+  String get eventCatAdventure => 'مغامرات وأنشطة خارجية';
+
+  @override
+  String get eventCatFood => 'طعام وأسواق';
+
+  @override
+  String get eventCatCruise => 'رحلات بحرية وعشاء';
+
+  @override
+  String get eventsLoadError =>
+      'تعذّر تحميل الفعاليات.\nتحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get eventsEmptyTitle => 'لا توجد فعاليات حاليًا';
+
+  @override
+  String get eventsEmptySubtitle =>
+      'عُد قريبًا لمتابعة الفعاليات القادمة في مصر.';
+
+  @override
+  String get eventTailoredPick => 'اختيار مخصص لك';
+
+  @override
+  String get eventDateTime => 'التاريخ والوقت';
+
+  @override
+  String get eventLocation => 'الموقع';
+
+  @override
+  String eventCairoTime(String time) {
+    return '$time (بتوقيت القاهرة)';
+  }
+
+  @override
+  String get eventLocationEgypt => 'مصر';
+
+  @override
+  String get eventMapButton => 'الخريطة';
+
+  @override
+  String get eventAbout => 'عن هذه الفعالية';
+
+  @override
+  String get eventDefaultDescription =>
+      'انضم إلينا في تجربة لا تُنسى! تجمع هذه الفعالية أفضل ما في الثقافة والترفيه والمجتمع في مصر. احجز تذاكرك الآن وكن جزءًا من شيء مميز.';
+
+  @override
+  String get eventShareThis => 'شارك هذه الفعالية';
+
+  @override
+  String eventViewOn(String source) {
+    return 'العرض على $source';
+  }
+
+  @override
+  String eventPostPrompt(String title) {
+    return 'هل سيذهب أحد إلى $title؟ ✨';
+  }
+
+  @override
+  String get eventPostToCommunity => 'انشر في المجتمع';
+
+  @override
+  String get eventPrice => 'السعر';
+
+  @override
+  String get eventSeeListing => 'عرض التفاصيل';
+
+  @override
+  String get eventTicketsUnavailable =>
+      'التذاكر غير متوفرة عبر الإنترنت لهذه الفعالية.';
+
+  @override
+  String get eventGetTickets => 'احصل على التذاكر';
+
+  @override
+  String get eventRsvpNow => 'سجّل الآن';
+
+  @override
+  String get eventReviewerFallback => 'مستكشف';
+
+  @override
+  String get searchHint => 'ابحث عن المعالم والجولات والوجهات…';
+
+  @override
+  String get searchTabAll => 'الكل';
+
+  @override
+  String get searchTabPlaces => 'الأماكن';
+
+  @override
+  String get searchTabTours => 'الجولات';
+
+  @override
+  String get searchPersonalised => 'مخصّص حسب ذوقك';
+
+  @override
+  String get searchBadgeLandmark => 'معلم';
+
+  @override
+  String get searchBadgeTour => 'جولة';
+
+  @override
+  String get searchViewOnMap => 'العرض على الخريطة';
+
+  @override
+  String get searchEmptyTitle => 'ابحث عن معلم أو جولة';
+
+  @override
+  String get searchEmptyHint => 'جرّب «الأهرامات» أو «الأقصر» أو «متحف»…';
+
+  @override
+  String searchNoResultsFor(String query) {
+    return 'لا توجد نتائج لـ «$query»';
+  }
+
+  @override
+  String get searchPlacesError => 'تعذّر تحميل الأماكن.\nتحقق من اتصالك.';
+
+  @override
+  String get searchToursError => 'تعذّر تحميل الجولات.\nتحقق من اتصالك.';
+
+  @override
+  String get guidesSearchToursHint => 'ابحث عن الجولات...';
+
+  @override
+  String get guidesSearchGuidesHint => 'ابحث عن المرشدين...';
+
+  @override
+  String get guidesTabTours => 'الجولات';
+
+  @override
+  String get guidesTabGuides => 'المرشدون';
+
+  @override
+  String get guidesEmptyGuidesTitle => 'لا يوجد مرشدون';
+
+  @override
+  String get guidesEmptyHint => 'حاول تعديل بحثك أو عوامل التصفية.';
+
+  @override
+  String get guidesErrorTours => 'تعذّر تحميل الجولات.';
+
+  @override
+  String get guidesErrorGuides => 'تعذّر تحميل المرشدين.';
+
+  @override
+  String get guidesNoneAvailable => 'لا يوجد مرشدون متاحون.';
+
+  @override
+  String get communityFilterAll => 'الكل';
+
+  @override
+  String get communityFilterTips => '💡 نصائح';
+
+  @override
+  String get soloInterestShopping => 'التسوق';
+
+  @override
+  String get soloInterestNightlife => 'الحياة الليلية';
+
+  @override
+  String get soloInterestMonuments => 'الآثار';
+
+  @override
+  String get soloInterestMuseums => 'المتاحف';
+
+  @override
+  String get soloInterestNature => 'الطبيعة والحدائق';
+
+  @override
+  String get soloInterestBeaches => 'الشواطئ';
+
+  @override
+  String get soloInterestCulture => 'الثقافة والتقاليد';
+
+  @override
+  String get soloInterestEntertainment => 'الترفيه';
+
+  @override
+  String get soloInterestAdventure => 'أنشطة المغامرة';
+
+  @override
+  String get soloInterestLocal => 'التجارب المحلية';
+
+  @override
+  String get soloAreaCairo => 'القاهرة';
+
+  @override
+  String get soloAreaLuxor => 'الأقصر';
+
+  @override
+  String get soloAreaAswan => 'أسوان';
+
+  @override
+  String get soloAreaAlexandria => 'الإسكندرية';
+
+  @override
+  String get soloAreaHurghada => 'الغردقة';
+
+  @override
+  String get soloAreaSharm => 'شرم الشيخ';
+
+  @override
+  String get soloAreaDahab => 'دهب';
+
+  @override
+  String get soloAreaSiwa => 'سيوة';
+
+  @override
+  String get soloAreaFayoum => 'الفيوم';
+
+  @override
+  String get soloAreaNorthCoast => 'الساحل الشمالي';
+
+  @override
+  String soloPlanStopsProgress(int done, int total) {
+    return '$done/$total محطات';
+  }
+
+  @override
+  String get mapEasterEggCurse => 'تجرؤ على إيقاظ الفرعون... اللعنة حلّت عليك.';
+
+  @override
+  String get mapEasterEggSandstorm => 'الصحراء تبتلع كل شيء.';
+
+  @override
+  String profilePlacesVisited(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مكان مُزار',
+      many: '$count مكانًا مُزارًا',
+      few: '$count أماكن مُزارة',
+      two: 'مكانان مُزاران',
+      one: 'مكان واحد مُزار',
+      zero: 'لا أماكن مُزارة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountMyProfile => 'ملفّي الشخصي';
+
+  @override
+  String get notificationsTitle => 'الإشعارات';
+
+  @override
+  String get notificationsCustomize => 'خصّص إشعاراتك!';
+
+  @override
+  String get notificationsPrevious => 'سابقًا';
+
+  @override
+  String get notificationsEmptyTitle => 'لا إشعارات بعد';
+
+  @override
+  String get notificationsEmptyBody =>
+      'ستظهر إشعاراتك هنا بمجرد\nأن تبدأ بتلقّيها.';
+
+  @override
+  String get notificationsSettings => 'إعدادات الإشعارات';
+
+  @override
+  String get commonDone => 'تم';
+
+  @override
+  String get notifPrefTitle => 'تفضيلات الإشعارات';
+
+  @override
+  String get notifPrefSubtitle => 'اختر ما تريد أن يصلك إشعار بشأنه.';
+
+  @override
+  String get notifPrefAll => 'كل الإشعارات';
+
+  @override
+  String get notifPrefAllSub => 'المفتاح الرئيسي لجميع التنبيهات';
+
+  @override
+  String get notifPrefBookings => 'الحجوزات والجولات';
+
+  @override
+  String get notifPrefBookingsSub => 'التأكيدات والإلغاءات والتحديثات';
+
+  @override
+  String get notifPrefCommunity => 'المجتمع';
+
+  @override
+  String get notifPrefCommunitySub => 'الإعجابات والتعليقات والإشارات والردود';
+
+  @override
+  String get notifPrefReviews => 'التقييمات';
+
+  @override
+  String get notifPrefReviewsSub => 'عندما يقيّم أحدهم جولتك';
+
+  @override
+  String get notifPrefGuide => 'تحديثات المرشد';
+
+  @override
+  String get notifPrefGuideSub => 'نتائج الطلب وشهادات اللغة';
+
+  @override
+  String get notifPrefDiscovery => 'اكتشاف بالذكاء الاصطناعي';
+
+  @override
+  String get notifPrefDiscoverySub => 'حقيقة يومية ‘هل تعلم؟’ عن مصر';
+
+  @override
+  String get badgeNoviceExplorer => 'مستكشف مبتدئ';
+
+  @override
+  String get badgeNoviceExplorerDesc => 'اكتشفت أول معلم لك.';
+
+  @override
+  String get badgeTourist => 'سائح';
+
+  @override
+  String get badgeTouristDesc => 'زرت 3 معالم.';
+
+  @override
+  String get badgeTombRaider => 'مقتحم المقابر';
+
+  @override
+  String get badgeTombRaiderDesc => 'زرت 5 معالم.';
+
+  @override
+  String get badgeHistorian => 'مؤرّخ';
+
+  @override
+  String get badgeHistorianDesc => 'زرت 10 معالم.';
+
+  @override
+  String get badgePharaoh => 'فرعون';
+
+  @override
+  String get badgePharaohDesc => 'زرت 20 معلمًا.';
+
+  @override
+  String get badgeImhotep => 'كبير الكهنة إيمحوتب';
+
+  @override
+  String get badgeImhotepDesc => 'اكتشفت خزنة المهندس الخفية.';
+
+  @override
+  String get badgeDeveloperPharaoh => 'فرعون المطوّرين';
+
+  @override
+  String get badgeDeveloperPharaohDesc => 'اكتشفت مقبرة المطوّر الخفية.';
+
+  @override
+  String get badgeRiddleSolver => 'حلّال الألغاز';
+
+  @override
+  String get badgeRiddleSolverDesc => 'أجبت على لغز أبو الهول.';
 }

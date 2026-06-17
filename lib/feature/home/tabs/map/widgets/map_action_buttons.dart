@@ -33,9 +33,9 @@ class MapActionButtons extends StatelessWidget {
       children: [
         // My Location FAB
         if (!state.isNavigationMode)
-          Positioned(
+          PositionedDirectional(
             bottom: state.selectedPlace != null ? 350.h : 110.h,
-            right: 20.w,
+            end: 20.w,
             child: FloatingActionButton(
               heroTag: "location_btn",
               backgroundColor: chipBg(),
@@ -49,9 +49,9 @@ class MapActionButtons extends StatelessWidget {
             ),
           ),
         if (state.isNavigationMode)
-          Positioned(
+          PositionedDirectional(
             bottom: 280.h,
-            right: 20.w,
+            end: 20.w,
             child: FloatingActionButton(
               heroTag: "location_btn",
               backgroundColor: chipBg(),
@@ -67,9 +67,9 @@ class MapActionButtons extends StatelessWidget {
 
         // Reset Filter FAB
         if (state.selectedUiCategoryId != 'all' && !state.isNavigationMode)
-          Positioned(
+          PositionedDirectional(
             bottom: state.selectedPlace != null ? 350.h : 110.h,
-            left: 20.w,
+            start: 20.w,
             child: FloatingActionButton.extended(
               heroTag: "reset_filter_btn",
               backgroundColor: chipBg(),

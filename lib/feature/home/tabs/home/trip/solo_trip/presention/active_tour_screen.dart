@@ -15,6 +15,7 @@ import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
 import 'package:lost_in_egypt/core/services/story_cache_service.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/core/services/weather_service.dart';
 import 'package:lost_in_egypt/core/utils/dataset_resolver.dart';
@@ -600,6 +601,7 @@ class _WeatherBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final color = weather.isOutdoorAdvisory
         ? weather.severityColor
         : const Color(0xFF2E7D32);
@@ -621,7 +623,7 @@ class _WeatherBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${weather.tempDisplay}  •  ${weather.conditionLabel}',
+                  '${weather.tempDisplay}  •  ${weatherConditionLabel(l10n, weather.condition, emphasis: true)}',
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
@@ -631,7 +633,7 @@ class _WeatherBanner extends StatelessWidget {
                 if (weather.isOutdoorAdvisory) ...[
                   SizedBox(height: 2.h),
                   Text(
-                    weather.advisoryText,
+                    weatherAdvisoryText(l10n, weather),
                     style: TextStyle(
                       fontSize: 11.sp,
                       color: color.withValues(alpha: 0.85),
@@ -1484,7 +1486,8 @@ class _StorySheetState extends State<_StorySheet> {
   Future<void> _fetchStory() async {
     setState(() { _loading = true; _error = false; });
     try {
-      final story = await StoryCacheService.instance.getStory(widget.stopName);
+      final story = await StoryCacheService.instance
+          .getStory(widget.stopName, locale: LocaleController.localeCode);
       if (mounted) setState(() { _story = story; _loading = false; });
     } catch (_) {
       if (mounted) setState(() { _error = true; _loading = false; });
@@ -1520,7 +1523,8 @@ class _StorySheetState extends State<_StorySheet> {
     }
     setState(() => _loadingAudio = true);
     try {
-      final bytes = await AIStorytellerService.getStoryAudio(_story!);
+      final bytes = await AIStorytellerService.getStoryAudio(_story!,
+          locale: LocaleController.localeCode);
       if (bytes == null || !mounted) {
         if (mounted) setState(() => _loadingAudio = false);
         return;

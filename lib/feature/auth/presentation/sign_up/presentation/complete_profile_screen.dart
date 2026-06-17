@@ -38,7 +38,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
     if (dobResult.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(dobResult.error!)),
+        SnackBar(
+          content: Text(dobErrorMessage(
+            AppLocalizations.of(context),
+            dobResult.error!,
+            monthName: _selectedMonth,
+            year: _selectedYear,
+            maxDay: dobResult.maxDay,
+          )),
+        ),
       );
       return;
     }
@@ -114,6 +122,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                           _selectedMonth,
                           l10n.dobMonth,
                           (v) => setState(() => _selectedMonth = v),
+                          itemLabel: (m) => dobMonthLabel(l10n, m),
                         ),
                       ),
                       SizedBox(width: 10.w),
@@ -176,8 +185,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     List<String> items,
     String? value,
     String hint,
-    Function(String?) onChanged,
-  ) {
+    Function(String?) onChanged, {
+    String Function(String)? itemLabel,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF7A8450).withValues(alpha: 0.70),
@@ -199,7 +209,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               .map(
                 (e) => DropdownMenuItem(
                   value: e,
-                  child: Text(e),
+                  child: Text(itemLabel != null ? itemLabel(e) : e),
                 ),
               )
               .toList(),

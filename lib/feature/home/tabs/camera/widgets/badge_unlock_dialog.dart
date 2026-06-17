@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../account/domain/badge_model.dart';
+import '../../account/domain/badge_constants.dart';
 import 'dart:math' as math;
 
 class BadgeUnlockDialog extends StatefulWidget {
@@ -163,7 +165,7 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
 
               SizedBox(height: 32.h),
               Text(
-                widget.badge.name,
+                badgeName(AppLocalizations.of(context), widget.badge),
                 style: TextStyle(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w600,
@@ -175,7 +177,7 @@ class _BadgeUnlockDialogState extends State<BadgeUnlockDialog>
               ),
               SizedBox(height: 12.h),
               Text(
-                widget.badge.description,
+                badgeDescription(AppLocalizations.of(context), widget.badge),
                 style: TextStyle(
                   fontSize: 15.sp,
                   color: bodyTextColor,

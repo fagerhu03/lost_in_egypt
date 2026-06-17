@@ -33,8 +33,9 @@ class AreaStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return QuizScaffold(
-      title: AppLocalizations.of(context).soloQuizAreasTitle,
+      title: l10n.soloQuizAreasTitle,
       stepIndex: 2,
       onNext: onNext,
       onBack: onBack,
@@ -44,7 +45,7 @@ class AreaStep extends StatelessWidget {
           runSpacing: 12.h,
           children: TripOptions.areas.map((item) {
             return OptionChip(
-              label: item,
+              label: tripAreaLabel(l10n, item),
               emoji: _areaEmojis[item],
               isSelected: controller.plan.areas.contains(item),
               onTap: () => controller.toggleArea(item),

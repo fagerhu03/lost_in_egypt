@@ -53,8 +53,8 @@ class _NotificationBellIconState extends State<NotificationBellIcon> {
               },
             ),
             if (unreadCount > 0)
-              Positioned(
-                right: 8.w,
+              PositionedDirectional(
+                end: 8.w,
                 top: 8.h,
                 child: Container(
                   padding: EdgeInsets.all(4.r),

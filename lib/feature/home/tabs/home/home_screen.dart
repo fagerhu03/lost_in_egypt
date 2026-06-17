@@ -31,6 +31,27 @@ import './presentation/all_events_screen.dart';
 import './presentation/event_details_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
+/// Localized label for a home-grid category. The `LocalMockData` ids are a
+/// fixed set; the English `title` is kept as the fallback for any new id.
+String _homeCategoryLabel(AppLocalizations l10n, String id, String fallback) {
+  switch (id) {
+    case 'cat_hotel':
+      return l10n.homeCatHotels;
+    case 'cat_museum':
+      return l10n.homeCatMuseums;
+    case 'cat_restaurant':
+      return l10n.homeCatRestaurants;
+    case 'cat_mosque':
+      return l10n.homeCatMosques;
+    case 'cat_beach':
+      return l10n.homeCatBeaches;
+    case 'cat_adventure':
+      return l10n.homeCatAdventure;
+    default:
+      return fallback;
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -384,9 +405,10 @@ class _HomeScreenState extends State<HomeScreen>
               itemCount: LocalMockData.categories.length.clamp(0, 6),
               itemBuilder: (context, index) {
                 final category = LocalMockData.categories[index];
+                final catLabel = _homeCategoryLabel(l10n, category.id, category.title);
                 return _categoryCard(
                   icon: category.iconPath,
-                  title: category.title,
+                  title: catLabel,
                   surface: surface,
                   textColor: textColor,
                   shadow: cardShadow,
@@ -397,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen>
                       MaterialPageRoute(
                         builder: (context) => CategoryPlacesScreen(
                           categoryId: category.id,
-                          categoryTitle: category.title,
+                          categoryTitle: catLabel,
                         ),
                       ),
                     );
@@ -586,7 +608,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         ),
                         child: Text(
-                          cat.label,
+                          eventCategoryLabel(l10n, cat),
                           style: TextStyle(
                             color: isSelected ? Colors.white : textColor.withValues(alpha: 0.7),
                             fontSize: 12.sp,
@@ -866,9 +888,9 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
             // Category pill — top-left
-            Positioned(
+            PositionedDirectional(
               top: 8.h,
-              left: 8.w,
+              start: 8.w,
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                 decoration: BoxDecoration(
@@ -883,9 +905,9 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             // Rating pill — top-right (matches places)
             if (event.rating > 0)
-              Positioned(
+              PositionedDirectional(
                 top: 8.h,
-                right: 8.w,
+                end: 8.w,
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                   decoration: BoxDecoration(
@@ -1064,9 +1086,9 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
             // Rating pill
-            Positioned(
+            PositionedDirectional(
               top: 8.h,
-              right: 8.w,
+              end: 8.w,
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                 decoration: BoxDecoration(
@@ -1424,9 +1446,9 @@ class _ForYouSkeletonCard extends StatelessWidget {
           children: [
             Container(color: base),
             // Rating pill placeholder — top-right, matches real card's pill
-            Positioned(
+            PositionedDirectional(
               top: 10.h,
-              right: 10.w,
+              end: 10.w,
               child: Container(
                 width: 34.w,
                 height: 16.h,

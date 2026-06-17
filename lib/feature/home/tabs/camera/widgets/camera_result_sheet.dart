@@ -7,6 +7,7 @@ import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
@@ -153,7 +154,8 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
     setState(() => isLoadingAudio = true);
 
     try {
-      final audioBytes = await AIStorytellerService.getStoryAudio(story!);
+      final audioBytes = await AIStorytellerService.getStoryAudio(story!,
+          locale: LocaleController.localeCode);
       if (audioBytes == null || !mounted) {
         if (mounted) {
           setState(() => isLoadingAudio = false);
@@ -264,7 +266,9 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                               SizedBox(width: 6.w),
                               Expanded(
                                 child: Text(
-                                  l10n.cameraTapForecast(weather.conditionLabel),
+                                  l10n.cameraTapForecast(weatherConditionLabel(
+                                      l10n, weather.condition,
+                                      emphasis: true)),
                                   style: TextStyle(
                                     color: color,
                                     fontSize: 12.sp,
@@ -325,7 +329,8 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                             : () async {
                                 setState(() => isLoadingStory = true);
                                 final storyResult = await AIStorytellerService
-                                    .getLandmarkStory(widget.place.title);
+                                    .getLandmarkStory(widget.place.title,
+                                        locale: LocaleController.localeCode);
                                 setState(() {
                                   story = storyResult;
                                   isLoadingStory = false;

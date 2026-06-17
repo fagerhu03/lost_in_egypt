@@ -383,9 +383,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                             ),
                           ),
                         ),
-                        Positioned(
+                        PositionedDirectional(
                           top: 8.h,
-                          right: 8.w,
+                          end: 8.w,
                           child: Container(
                             padding: EdgeInsets.all(8.r),
                             decoration: BoxDecoration(
@@ -686,9 +686,9 @@ class _GalleryViewerDialogState extends State<_GalleryViewerDialog> {
             },
           ),
           // Close button
-          Positioned(
+          PositionedDirectional(
             top: 40.h,
-            right: 20.w,
+            end: 20.w,
             child: IconButton(
               icon: Icon(Icons.close, color: Colors.white, size: 32.r),
               onPressed: () => Navigator.pop(context),
@@ -1339,9 +1339,9 @@ class _SimilarTourCard extends StatelessWidget {
               ),
             ),
             if (tour.rating > 0)
-              Positioned(
+              PositionedDirectional(
                 top: 8.h,
-                right: 8.w,
+                end: 8.w,
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
                   decoration: BoxDecoration(

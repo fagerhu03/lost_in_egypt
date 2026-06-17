@@ -112,8 +112,8 @@ class _FullScreenTourMapScreenState extends State<FullScreenTourMapScreen> {
           ),
 
           // Custom zoom controls
-          Positioned(
-            right: 16.w,
+          PositionedDirectional(
+            end: 16.w,
             top: 100.h,
             child: Column(
               children: [

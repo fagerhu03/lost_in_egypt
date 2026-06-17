@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
+import 'package:lost_in_egypt/core/widgets/place_photo.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
@@ -188,10 +189,13 @@ class _PlaceDetailsScreenState extends State<PlaceDetailsScreen> {
                           },
                         )
                       : widget.place.imagePath.isNotEmpty
-                          ? ShimmerImage(
-                              url: widget.place.imagePath,
+                          ? PlacePhoto(
+                              placeId: widget.place.id,
+                              imagePath: widget.place.imagePath,
                               fit: BoxFit.cover,
-                              fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.15),
+                              fallbackBg: Colors.grey.withValues(alpha: 0.15),
+                              fallbackIconColor:
+                                  primary.withValues(alpha: 0.5),
                             )
                           : Container(color: primary.withValues(alpha: isDark ? 0.15 : 0.08)),
 

@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lost_in_egypt/l10n/app_localizations.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -816,21 +817,26 @@ class _MapScreenViewState extends State<MapScreenView>
   void _startLiveNavigation() async {
     final state = context.read<MapBloc>().state;
     final dest = state.navigationDestination;
-    
+    final l10n = AppLocalizations.of(context);
+    // Speak the easter-egg narration in the user's locale (Arabic voice in RTL).
+    final ttsLang = LocaleController.isRtl ? 'ar' : 'en-US';
+
     // Easter Egg: Mummy's Curse
     if (dest != null && (dest.title.toLowerCase().contains('valley of the kings') || dest.title.toLowerCase().contains('tomb'))) {
+      await _flutterTts.setLanguage(ttsLang);
       await _flutterTts.setPitch(0.4);
       await _flutterTts.setSpeechRate(0.3);
-      await _flutterTts.speak("You dare awaken the Pharaoh... The curse is upon you.");
+      await _flutterTts.speak(l10n.mapEasterEggCurse);
     }
-    
+
     // Easter Egg: Sandstorm Mode
     if (dest != null && dest.title.toLowerCase().contains('sahara desert')) {
       if (!mounted) return;
       SandstormOverlay.show(context);
+      await _flutterTts.setLanguage(ttsLang);
       await _flutterTts.setPitch(0.6);
       await _flutterTts.setSpeechRate(0.4);
-      await _flutterTts.speak("The desert consumes all.");
+      await _flutterTts.speak(l10n.mapEasterEggSandstorm);
     }
 
     if (!mounted) return;
@@ -1152,9 +1158,9 @@ class _MapScreenViewState extends State<MapScreenView>
                                           ),
                                         ),
                                         // Category badge
-                                        Positioned(
+                                        PositionedDirectional(
                                           top: 8.h,
-                                          left: 8.w,
+                                          start: 8.w,
                                           child: Container(
                                             padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
                                             decoration: BoxDecoration(
@@ -1228,9 +1234,9 @@ class _MapScreenViewState extends State<MapScreenView>
 
               // ── Weather chip ──────────────────────────────────────────────
               if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
-                Positioned(
+                PositionedDirectional(
                   top: 110.h,
-                  right: 76.w,
+                  end: 76.w,
                   child: ValueListenableBuilder<WeatherContext?>(
                     valueListenable: WeatherController.weather,
                     builder: (_, weather, _) {
@@ -1269,9 +1275,9 @@ class _MapScreenViewState extends State<MapScreenView>
                 ),
 
               if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
-                Positioned(
+                PositionedDirectional(
                   top: 110.h,
-                  right: 20.w,
+                  end: 20.w,
                   child: Material(
                     color: state.selectedUiCategoryId == 'all' ? chipBg() : primary.withValues(alpha: isDark ? 0.90 : 0.95),
                     borderRadius: BorderRadius.circular(30.r),
@@ -1352,9 +1358,9 @@ class _MapScreenViewState extends State<MapScreenView>
                 ),
 
               if (!state.isSearchActive && !state.isNavigationMode && !_isTripActive)
-                Positioned(
+                PositionedDirectional(
                   top: 110.h,
-                  left: 20.w,
+                  start: 20.w,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1495,9 +1501,9 @@ class _MapScreenViewState extends State<MapScreenView>
                 ),
 
               if (state.selectedUiCategoryId != 'all' && !state.isSearchActive && !state.isNavigationMode)
-                Positioned(
+                PositionedDirectional(
                   bottom: state.selectedPlace != null ? 350.h : 110.h,
-                  left: 20.w,
+                  start: 20.w,
                   child: FloatingActionButton.extended(
                     heroTag: "reset_filter_btn",
                     backgroundColor: chipBg(),
@@ -1912,8 +1918,8 @@ class _MapScreenViewState extends State<MapScreenView>
 
               // ─── RE-CENTER BUTTON (when user pans away during live nav) ───
               if (state.isLiveNavigating && !_isFollowingUser)
-                Positioned(
-                  bottom: 30.h, right: 16.w,
+                PositionedDirectional(
+                  bottom: 30.h, end: 16.w,
                   child: FloatingActionButton.small(
                     heroTag: 'recenter',
                     backgroundColor: primary,

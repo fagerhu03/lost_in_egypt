@@ -21,6 +21,8 @@ import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/theme/app_theme.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'core/di/service_locator.dart' as di;
 
@@ -111,6 +113,18 @@ void main() async {
   } catch (e) {
     debugPrint("LocalNotifications Initialization Error: $e");
   }
+
+  // intl date-symbol data for Arabic so DateFormat(..., 'ar') renders Arabic
+  // month/weekday names (en_US is bundled by default). Used by the event
+  // detail screen's localized dates.
+  try {
+    await initializeDateFormatting('ar');
+  } catch (e) {
+    debugPrint("Date formatting init error: $e");
+  }
+
+  // Arabic relative-time strings for the `timeago` package (notification list).
+  timeago.setLocaleMessages('ar', timeago.ArMessages());
 
   // ── FCM setup ───────────────────────────────────────────────────────────────
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

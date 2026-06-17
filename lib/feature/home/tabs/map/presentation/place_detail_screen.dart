@@ -494,9 +494,9 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       ),
                     ),
                   ),
-                  Positioned(
+                  PositionedDirectional(
                     top: 10.h,
-                    right: 10.w,
+                    end: 10.w,
                     child: GestureDetector(
                       onTap: widget.onClose,
                       child: Container(

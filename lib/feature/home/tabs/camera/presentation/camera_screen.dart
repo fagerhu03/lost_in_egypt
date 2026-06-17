@@ -261,8 +261,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
           // Zoom slider
           if (!showGalleryImage && controller != null && controller.value.isInitialized && state.minZoom < state.maxZoom)
-            Positioned(
-              right: 16.w,
+            PositionedDirectional(
+              end: 16.w,
               bottom: 180.h,
               top: 220.h,
               child: RotatedBox(

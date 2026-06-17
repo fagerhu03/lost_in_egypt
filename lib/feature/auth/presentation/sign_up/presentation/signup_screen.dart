@@ -92,7 +92,13 @@ class _SignupScreenState extends State<SignupScreen> {
       year: _selectedYear,
     );
     if (dobResult.error != null) {
-      _showError(dobResult.error!);
+      _showError(dobErrorMessage(
+        l10n,
+        dobResult.error!,
+        monthName: _selectedMonth,
+        year: _selectedYear,
+        maxDay: dobResult.maxDay,
+      ));
       return false;
     }
 
@@ -180,6 +186,7 @@ class _SignupScreenState extends State<SignupScreen> {
         value: _selectedMonth,
         hint: AppLocalizations.of(context).dobMonth,
         items: _months,
+        itemLabel: (m) => dobMonthLabel(AppLocalizations.of(context), m),
         onChanged: (v) => setState(() {
           _selectedMonth = v;
           if (_selectedDay != null && !_days.contains(_selectedDay)) {
@@ -212,6 +219,7 @@ class _SignupScreenState extends State<SignupScreen> {
     required String hint,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    String Function(String)? itemLabel,
   }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -246,7 +254,8 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           dropdownColor: const Color(0xFFFCFBE8),
           items: items
-              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+              .map((e) => DropdownMenuItem(
+                  value: e, child: Text(itemLabel != null ? itemLabel(e) : e)))
               .toList(),
           onChanged: onChanged,
         ),

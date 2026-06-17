@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/widget/guide_card.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/universal_profile_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/guide/widget/guide_trip_type_tab.dart';
@@ -35,6 +36,23 @@ class GuideBodyView extends StatefulWidget {
 }
 
 enum _SortOption { newest, cheapest, priciest, highestRated, mostPopular }
+
+/// Tour frequency values stay English (compared against Firestore `frequency`);
+/// only the display is localized.
+String _frequencyLabel(AppLocalizations l10n, String value) {
+  switch (value) {
+    case 'Daily':
+      return l10n.toursFreqDaily;
+    case 'Weekly':
+      return l10n.toursFreqWeekly;
+    case 'Weekends':
+      return l10n.toursFreqWeekends;
+    case 'One-Time':
+      return l10n.toursFreqOneTime;
+    default:
+      return value;
+  }
+}
 
 class _GuideBodyViewState extends State<GuideBodyView> {
   String? _profileImageUrl;
@@ -163,6 +181,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
   void _showFilterSheet(BuildContext context, double maxTourPrice) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     RangeValues tempPrice = _priceRange;
     double tempRating = _minRating;
@@ -186,7 +205,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Filters', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
+                      Text(l10n.toursFilters, style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
                       TextButton(
                         onPressed: () {
                           setSheetState(() {
@@ -195,7 +214,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                             tempFrequency = null;
                           });
                         },
-                        child: const Text('Reset'),
+                        child: Text(l10n.commonReset),
                       ),
                     ],
                   ),
@@ -203,7 +222,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
 
                   if (_tabIndex == 0) ...[
                     // Price Range (Tours only)
-                    Text('Price Range', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                    Text(l10n.toursPriceRange, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
                     SizedBox(height: 8.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -225,7 +244,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                   ],
 
                   // Minimum Rating (Both)
-                  Text('Minimum Rating', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  Text(l10n.toursMinRating, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
                   SizedBox(height: 8.h),
                   Row(
                     children: [
@@ -242,21 +261,21 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           ),
                         ),
                       if (tempRating > 0)
-                        Text(' ${tempRating.toInt()}+ stars', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13.sp)),
+                        Text(' ${l10n.toursStarsPlus(tempRating.toInt())}', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13.sp)),
                     ],
                   ),
                   SizedBox(height: 20.h),
 
                   if (_tabIndex == 0) ...[
                     // Frequency (Tours only)
-                    Text('Frequency', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                    Text(l10n.toursFrequency, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
                     SizedBox(height: 8.h),
                     Wrap(
                       spacing: 8.w,
                       children: ['Daily', 'Weekly', 'Weekends', 'One-Time'].map((f) {
                         final isSelected = tempFrequency == f;
                         return ChoiceChip(
-                          label: Text(f),
+                          label: Text(_frequencyLabel(l10n, f)),
                           selected: isSelected,
                           selectedColor: primary.withValues(alpha: 0.2),
                           onSelected: (v) => setSheetState(() => tempFrequency = v ? f : null),
@@ -288,7 +307,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                         });
                         Navigator.pop(ctx);
                       },
-                      child: Text('Apply Filters', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                      child: Text(l10n.toursApplyFilters, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -302,6 +321,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -349,7 +369,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                             textInputAction: TextInputAction.search,
                             style: TextStyle(color: isDark ? onSurface : Colors.white, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
-                              hintText: _tabIndex == 0 ? "Search tours..." : "Search guides...",
+                              hintText: _tabIndex == 0 ? l10n.guidesSearchToursHint : l10n.guidesSearchGuidesHint,
                               hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo']),
                               border: InputBorder.none,
                               prefixIcon: Icon(Icons.search, color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85)),
@@ -393,17 +413,17 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                           onSelected: (v) => setState(() => _sortOption = v),
                           itemBuilder: (_) => [
-                            const PopupMenuItem(value: _SortOption.newest, child: Text('Newest First')),
-                            const PopupMenuItem(value: _SortOption.highestRated, child: Text('Top Rated')),
-                            const PopupMenuItem(value: _SortOption.mostPopular, child: Text('Most Popular')),
+                            PopupMenuItem(value: _SortOption.newest, child: Text(l10n.toursSortNewest)),
+                            PopupMenuItem(value: _SortOption.highestRated, child: Text(l10n.toursSortLabelTopRated)),
+                            PopupMenuItem(value: _SortOption.mostPopular, child: Text(l10n.toursSortMostPopular)),
                             if (_tabIndex == 0) ...[
-                              const PopupMenuItem(value: _SortOption.cheapest, child: Text('Cheapest First')),
-                              const PopupMenuItem(value: _SortOption.priciest, child: Text('Priciest First')),
+                              PopupMenuItem(value: _SortOption.cheapest, child: Text(l10n.toursSortCheapest)),
+                              PopupMenuItem(value: _SortOption.priciest, child: Text(l10n.toursSortPriciest)),
                             ],
                           ],
                           child: Chip(
                             avatar: Icon(Icons.sort, size: 16.r, color: primary),
-                            label: Text(_sortLabel(), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
+                            label: Text(_sortLabel(l10n), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
                             backgroundColor: primary.withValues(alpha: 0.08),
                             side: BorderSide(color: primary.withValues(alpha: 0.2)),
                           ),
@@ -434,7 +454,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                           Padding(
                             padding: EdgeInsetsDirectional.only(end: 8.w),
                             child: InputChip(
-                              label: Text(_selectedFrequency!, style: TextStyle(fontSize: 12.sp)),
+                              label: Text(_frequencyLabel(l10n, _selectedFrequency!), style: TextStyle(fontSize: 12.sp)),
                               onDeleted: () => setState(() { _activeFilters.remove('frequency'); _selectedFrequency = null; }),
                               backgroundColor: primary.withValues(alpha: 0.08),
                               side: BorderSide(color: primary.withValues(alpha: 0.2)),
@@ -462,7 +482,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                               _tabIndex = 0;
                               // Ensure sort option is valid for tours
                             }),
-                            child: GuideTripTypeTab(title: 'Tours', selected: _tabIndex == 0),
+                            child: GuideTripTypeTab(title: l10n.guidesTabTours, selected: _tabIndex == 0),
                           ),
                         ),
                         SizedBox(width: 4.w),
@@ -474,7 +494,7 @@ class _GuideBodyViewState extends State<GuideBodyView> {
                                 _sortOption = _SortOption.highestRated;
                               }
                             }),
-                            child: GuideTripTypeTab(title: 'Guides', selected: _tabIndex == 1),
+                            child: GuideTripTypeTab(title: l10n.guidesTabGuides, selected: _tabIndex == 1),
                           ),
                         ),
                       ],
@@ -494,39 +514,41 @@ class _GuideBodyViewState extends State<GuideBodyView> {
     );
   }
 
-  String _sortLabel() {
+  String _sortLabel(AppLocalizations l10n) {
     switch (_sortOption) {
-      case _SortOption.newest: return 'Newest';
-      case _SortOption.cheapest: return 'Cheapest';
-      case _SortOption.priciest: return 'Priciest';
-      case _SortOption.highestRated: return 'Top Rated';
-      case _SortOption.mostPopular: return 'Popular';
+      case _SortOption.newest: return l10n.toursSortLabelNewest;
+      case _SortOption.cheapest: return l10n.toursSortLabelCheapest;
+      case _SortOption.priciest: return l10n.toursSortLabelPriciest;
+      case _SortOption.highestRated: return l10n.toursSortLabelTopRated;
+      case _SortOption.mostPopular: return l10n.toursSortLabelPopular;
     }
   }
 
-  Widget _buildEmptyState(String queryType) {
+  Widget _buildEmptyState(String title) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.search_off, size: 80.r, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
           SizedBox(height: 20.h),
-          Text('No $queryType found', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
+          Text(title, style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
           SizedBox(height: 8.h),
-          const Text('Try adjusting your search query or filters.'),
+          Text(l10n.guidesEmptyHint),
         ],
       ),
     );
   }
 
   Widget _buildToursList() {
+    final l10n = AppLocalizations.of(context);
     return BlocBuilder<ExplorerToursCubit, ExplorerToursState>(
       builder: (context, state) {
         if (state is ExplorerToursLoading) return const Center(child: CircularProgressIndicator());
-        if (state is ExplorerToursError) return const Center(child: Text('Error loading tours.'));
+        if (state is ExplorerToursError) return Center(child: Text(l10n.guidesErrorTours));
         if (state is ExplorerToursLoaded) {
           final filtered = _applyToursFiltersAndSort(state.tours);
-          if (filtered.isEmpty) return _buildEmptyState('tours');
+          if (filtered.isEmpty) return _buildEmptyState(l10n.toursEmptyTitle);
           return ListView.separated(
             padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 24.h),
             itemCount: filtered.length,
@@ -540,18 +562,19 @@ class _GuideBodyViewState extends State<GuideBodyView> {
   }
 
   Widget _buildGuidesList() {
+    final l10n = AppLocalizations.of(context);
     return StreamBuilder<QuerySnapshot>(
       stream: _guidesStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        if (snapshot.hasError) return const Center(child: Text('Error loading guides.'));
+        if (snapshot.hasError) return Center(child: Text(l10n.guidesErrorGuides));
         final docs = snapshot.data?.docs ?? [];
-        if (docs.isEmpty) return const Center(child: Text('No guides available.'));
+        if (docs.isEmpty) return Center(child: Text(l10n.guidesNoneAvailable));
 
         final allGuides = docs.map((d) => UserModel.fromMap(d.data() as Map<String, dynamic>, d.id)).toList();
         final filteredGuides = _applyGuidesFiltersAndSort(allGuides);
 
-        if (filteredGuides.isEmpty) return _buildEmptyState('guides');
+        if (filteredGuides.isEmpty) return _buildEmptyState(l10n.guidesEmptyGuidesTitle);
 
         return ListView.separated(
           padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 24.h),

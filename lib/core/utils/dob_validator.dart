@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+
+/// Reason a date-of-birth failed validation. Resolved to a localized message by
+/// [dobErrorMessage] at the call site (the validator itself stays
+/// locale-agnostic — part of the deferred model-level localization batch).
+enum DobError { missing, invalid, tooManyDays, underage }
 
 /// Single source of truth for date-of-birth validation across the signup flow.
 /// Used by [SignupScreen] (email/password) and [CompleteProfileScreen] (social
@@ -44,35 +50,29 @@ class DobValidator {
   ///
   /// Validation order matches what users expect: presence → parse → calendar
   /// reality (Feb 30, Apr 31, …) → age gate.
-  static ({DateTime? dob, String? error}) validate({
+  static ({DateTime? dob, DobError? error, int maxDay}) validate({
     required String? monthName,
     required String? day,
     required String? year,
   }) {
     if (monthName == null || day == null || year == null) {
-      return (dob: null, error: 'Please select your date of birth.');
+      return (dob: null, error: DobError.missing, maxDay: 0);
     }
     final mIdx = monthIndex(monthName);
     final d = int.tryParse(day);
     final y = int.tryParse(year);
     if (mIdx == 0 || d == null || y == null) {
-      return (dob: null, error: 'Invalid date of birth.');
+      return (dob: null, error: DobError.invalid, maxDay: 0);
     }
     final maxDay = DateUtils.getDaysInMonth(y, mIdx);
     if (d < 1 || d > maxDay) {
-      return (
-        dob: null,
-        error: '$monthName $y has only $maxDay days.',
-      );
+      return (dob: null, error: DobError.tooManyDays, maxDay: maxDay);
     }
     final dob = DateTime(y, mIdx, d);
     if (calculateAge(dob) < minAge) {
-      return (
-        dob: null,
-        error: 'You must be at least $minAge years old to use this app.',
-      );
+      return (dob: null, error: DobError.underage, maxDay: maxDay);
     }
-    return (dob: dob, error: null);
+    return (dob: dob, error: null, maxDay: maxDay);
   }
 
   /// Year picker values, newest first. Defaults to the [minAge]-year offset so
@@ -91,5 +91,66 @@ class DobValidator {
       age--;
     }
     return age;
+  }
+}
+
+/// Localized display label for a birth-month name. The `monthName` argument is
+/// the English canonical value from [DobValidator.months] — that value is the
+/// dropdown's `value` and is used by [DobValidator.monthIndex] (`indexOf`), so
+/// it stays English; only the dropdown display is localized.
+String dobMonthLabel(AppLocalizations l10n, String monthName) {
+  switch (monthName) {
+    case 'January':
+      return l10n.dobMonthJanuary;
+    case 'February':
+      return l10n.dobMonthFebruary;
+    case 'March':
+      return l10n.dobMonthMarch;
+    case 'April':
+      return l10n.dobMonthApril;
+    case 'May':
+      return l10n.dobMonthMay;
+    case 'June':
+      return l10n.dobMonthJune;
+    case 'July':
+      return l10n.dobMonthJuly;
+    case 'August':
+      return l10n.dobMonthAugust;
+    case 'September':
+      return l10n.dobMonthSeptember;
+    case 'October':
+      return l10n.dobMonthOctober;
+    case 'November':
+      return l10n.dobMonthNovember;
+    case 'December':
+      return l10n.dobMonthDecember;
+    default:
+      return monthName;
+  }
+}
+
+/// Localized message for a [DobError] returned by [DobValidator.validate].
+/// `monthName` / `year` / `maxDay` come from the same validation call and the
+/// picker state (only needed for [DobError.tooManyDays]).
+String dobErrorMessage(
+  AppLocalizations l10n,
+  DobError error, {
+  String? monthName,
+  String? year,
+  int maxDay = 0,
+}) {
+  switch (error) {
+    case DobError.missing:
+      return l10n.dobErrorMissing;
+    case DobError.invalid:
+      return l10n.dobErrorInvalid;
+    case DobError.tooManyDays:
+      return l10n.dobErrorTooManyDays(
+        monthName == null ? '' : dobMonthLabel(l10n, monthName),
+        year ?? '',
+        maxDay,
+      );
+    case DobError.underage:
+      return l10n.dobErrorUnderage(DobValidator.minAge);
   }
 }

@@ -83,22 +83,80 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   /// Converts a canonical taste-vector key (e.g. "historical_landmark",
-  /// "pharaonic") into a human-readable label for the "Your Taste" pills.
-  String _prettyTasteKey(String key) {
-    const overrides = {
-      'historical_landmark': 'History',
-      'archaeological_site': 'Ancient Sites',
-      'tourist_attraction': 'Attractions',
-      'amusement_park': 'Theme Parks',
-      'art_gallery': 'Art',
-      'night_club': 'Nightlife',
-      'shopping_mall': 'Shopping',
-    };
-    if (overrides.containsKey(key)) return overrides[key]!;
-    return key
-        .split('_')
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
+  /// "pharaonic") into a localized, human-readable label for the "Your Taste"
+  /// pills. The known canonical keys (Places API types + recommendation tags)
+  /// are a bounded set and are localized; any unrecognised key falls back to an
+  /// English title-cased form (the open-ended long tail — same fallback pattern
+  /// as `mapCategoryLabel` / `eventCategoryLabel`).
+  String _prettyTasteKey(AppLocalizations l10n, String key) {
+    switch (key) {
+      case 'historical_landmark':
+      case 'historical':
+        return l10n.tasteKeyHistory;
+      case 'archaeological_site':
+        return l10n.tasteKeyAncientSites;
+      case 'tourist_attraction':
+        return l10n.tasteKeyAttractions;
+      case 'museum':
+        return l10n.tasteKeyMuseums;
+      case 'mosque':
+        return l10n.tasteKeyMosques;
+      case 'church':
+        return l10n.tasteKeyChurches;
+      case 'park':
+        return l10n.tasteKeyParks;
+      case 'beach':
+        return l10n.tasteKeyBeaches;
+      case 'restaurant':
+        return l10n.tasteKeyRestaurants;
+      case 'cafe':
+        return l10n.tasteKeyCafes;
+      case 'market':
+        return l10n.tasteKeyMarkets;
+      case 'shopping_mall':
+      case 'shopping':
+        return l10n.tasteKeyShopping;
+      case 'monument':
+        return l10n.tasteKeyMonuments;
+      case 'art_gallery':
+        return l10n.tasteKeyArt;
+      case 'night_club':
+        return l10n.tasteKeyNightlife;
+      case 'amusement_park':
+        return l10n.tasteKeyThemeParks;
+      case 'aquarium':
+        return l10n.tasteKeyAquariums;
+      case 'zoo':
+        return l10n.tasteKeyZoos;
+      case 'spa':
+        return l10n.tasteKeySpas;
+      case 'stadium':
+        return l10n.tasteKeyStadiums;
+      case 'entertainment':
+        return l10n.tasteKeyEntertainment;
+      case 'cultural':
+        return l10n.tasteKeyCultural;
+      case 'natural':
+        return l10n.tasteKeyNature;
+      case 'relaxation':
+        return l10n.tasteKeyRelaxation;
+      case 'religious':
+        return l10n.tasteKeyReligious;
+      case 'family':
+        return l10n.tasteKeyFamily;
+      case 'adventure':
+        return l10n.tasteKeyAdventure;
+      case 'food':
+        return l10n.tasteKeyFood;
+      case 'ancient':
+        return l10n.tasteKeyAncient;
+      default:
+        return key
+            .split('_')
+            .map((w) =>
+                w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+            .join(' ');
+    }
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
@@ -184,7 +242,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        'My Profile',
+                        AppLocalizations.of(context).accountMyProfile,
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
@@ -282,7 +340,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                                     size: 18.r),
                                                 SizedBox(width: 8.w),
                                                 Text(
-                                                  "$trueVisitedCount Places Visited",
+                                                  AppLocalizations.of(context)
+                                                      .profilePlacesVisited(
+                                                          trueVisitedCount),
                                                   style: TextStyle(
                                                     fontSize: 14.sp,
                                                     fontWeight: FontWeight.bold,
@@ -362,7 +422,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                                                               20.r),
                                                                 ),
                                                                 child: Text(
-                                                                  _prettyTasteKey(k),
+                                                                  _prettyTasteKey(l10n, k),
                                                                   style: TextStyle(
                                                                     fontSize: 12.sp,
                                                                     fontWeight:
@@ -627,7 +687,7 @@ class _AccountScreenState extends State<AccountScreen> {
         SizedBox(
           width: 64.w,
           child: Text(
-            badge.name,
+            badgeName(AppLocalizations.of(context), badge),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 10.sp,

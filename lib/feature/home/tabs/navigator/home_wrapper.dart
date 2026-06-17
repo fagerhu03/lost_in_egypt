@@ -164,36 +164,70 @@ class _HomeWrapperState extends State<HomeWrapper>
                     ),
                   ],
                 ),
-                child: ConvexAppBar(
-                  controller: _tabController,
-                  initialActiveIndex: index,
-                  style: TabStyle.react,
-                  height: 55.h,
-                  curveSize: 90,
-                  backgroundColor: bg,
-                  activeColor: primary,
-                  color: inactive,
-                  elevation: 0,
-                  items: navItems,
-                  onTap: (i) {
-                    setState(() {
-                      index = i;
-                      _isNavBarVisible = true;
-                    });
-                    MapFocusService.instance.activeTabNotifier.value = i;
-                    _tabController.animateTo(i);
-                    // Smooth slide between tabs — kills the hard-snap visual
-                    // ("ugly refresh") people kept complaining about.
-                    _pageController.animateToPage(
-                      i,
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOut,
-                    );
-                  },
+                // Keep all 5 nav labels on one line. The package default label
+                // has no fontSize (inherits ~14px, unscaled) and no maxLines, so
+                // "Community" wrapped on narrow phones. Two guards: an explicit
+                // screenutil-scaled label size via _NavBarStyle, and a clamped OS
+                // text scale so a large system font can't re-wrap it.
+                child: MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.0,
+                  child: StyleProvider(
+                    style: _NavBarStyle(),
+                    child: ConvexAppBar(
+                      controller: _tabController,
+                      initialActiveIndex: index,
+                      style: TabStyle.react,
+                      height: 55.h,
+                      curveSize: 90,
+                      backgroundColor: bg,
+                      activeColor: primary,
+                      color: inactive,
+                      elevation: 0,
+                      items: navItems,
+                      onTap: (i) {
+                        setState(() {
+                          index = i;
+                          _isNavBarVisible = true;
+                        });
+                        MapFocusService.instance.activeTabNotifier.value = i;
+                        _tabController.animateTo(i);
+                        // Smooth slide between tabs — kills the hard-snap visual
+                        // ("ugly refresh") people kept complaining about.
+                        _pageController.animateToPage(
+                          i,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOut,
+                        );
+                      },
+                    ),
+                  ),
                 ),
               )
             : const SizedBox.shrink(),
       ),
     );
+  }
+}
+
+/// Bottom-nav style override. Mirrors the package's internal defaults (icon
+/// sizing) but gives the label an explicit screenutil-scaled font size so it
+/// scales down with the rest of the UI on small screens and stays on one line.
+/// The package default leaves `fontSize` unset (inherits the ~14px ambient
+/// body style, which doesn't shrink on narrow phones → "Community" wrapped).
+class _NavBarStyle extends StyleHook {
+  _NavBarStyle();
+
+  @override
+  double? get iconSize => null; // fallback to IconTheme (package default)
+
+  @override
+  double get activeIconMargin => (ACTION_LAYOUT_SIZE - ACTION_INNER_BUTTON_SIZE) / 4;
+
+  @override
+  double get activeIconSize => ACTION_INNER_BUTTON_SIZE;
+
+  @override
+  TextStyle textStyle(Color color, String? fontFamily) {
+    return TextStyle(color: color, fontFamily: fontFamily, fontSize: 11.sp);
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class NotificationSettingsSheet {
   static void open(BuildContext context) {
@@ -91,6 +92,7 @@ class _SheetBodyState extends State<_SheetBody> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
 
@@ -110,7 +112,7 @@ class _SheetBodyState extends State<_SheetBody> {
             ),
             SizedBox(height: 14.h),
             Text(
-              "Notification Preferences",
+              l10n.notifPrefTitle,
               style: TextStyle(
                 color: onSurface,
                 fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -120,7 +122,7 @@ class _SheetBodyState extends State<_SheetBody> {
             ),
             SizedBox(height: 4.h),
             Text(
-              "Choose what you want to be notified about.",
+              l10n.notifPrefSubtitle,
               style: TextStyle(
                 color: onSurface.withValues(alpha: 0.65),
                 fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
@@ -136,8 +138,8 @@ class _SheetBodyState extends State<_SheetBody> {
             else ...[
               _ToggleTile(
                 icon: Icons.notifications_rounded,
-                title: "All Notifications",
-                subtitle: "Master switch for all push alerts",
+                title: l10n.notifPrefAll,
+                subtitle: l10n.notifPrefAllSub,
                 value: _masterEnabled,
                 enabled: true,
                 onChanged: (v) {
@@ -154,8 +156,8 @@ class _SheetBodyState extends State<_SheetBody> {
                   children: [
                     _ToggleTile(
                       icon: Icons.confirmation_number_rounded,
-                      title: "Bookings & Tours",
-                      subtitle: "Confirmations, cancellations, updates",
+                      title: l10n.notifPrefBookings,
+                      subtitle: l10n.notifPrefBookingsSub,
                       value: _bookingsEnabled,
                       enabled: _masterEnabled,
                       onChanged: (v) {
@@ -166,8 +168,8 @@ class _SheetBodyState extends State<_SheetBody> {
                     SizedBox(height: 8.h),
                     _ToggleTile(
                       icon: Icons.people_alt_rounded,
-                      title: "Community",
-                      subtitle: "Likes, comments, mentions, replies",
+                      title: l10n.notifPrefCommunity,
+                      subtitle: l10n.notifPrefCommunitySub,
                       value: _communityEnabled,
                       enabled: _masterEnabled,
                       onChanged: (v) {
@@ -178,8 +180,8 @@ class _SheetBodyState extends State<_SheetBody> {
                     SizedBox(height: 8.h),
                     _ToggleTile(
                       icon: Icons.star_rounded,
-                      title: "Reviews",
-                      subtitle: "When someone reviews your tour",
+                      title: l10n.notifPrefReviews,
+                      subtitle: l10n.notifPrefReviewsSub,
                       value: _reviewsEnabled,
                       enabled: _masterEnabled,
                       onChanged: (v) {
@@ -190,8 +192,8 @@ class _SheetBodyState extends State<_SheetBody> {
                     SizedBox(height: 8.h),
                     _ToggleTile(
                       icon: Icons.verified_user_rounded,
-                      title: "Guide Updates",
-                      subtitle: "Application & language certification results",
+                      title: l10n.notifPrefGuide,
+                      subtitle: l10n.notifPrefGuideSub,
                       value: _guideUpdatesEnabled,
                       enabled: _masterEnabled,
                       onChanged: (v) {
@@ -202,8 +204,8 @@ class _SheetBodyState extends State<_SheetBody> {
                     SizedBox(height: 8.h),
                     _ToggleTile(
                       icon: Icons.auto_awesome_rounded,
-                      title: "AI Discovery",
-                      subtitle: "Daily 'Did you know?' fact about Egypt",
+                      title: l10n.notifPrefDiscovery,
+                      subtitle: l10n.notifPrefDiscoverySub,
                       value: _dailyDiscoveryEnabled,
                       enabled: _masterEnabled,
                       onChanged: (v) {
@@ -227,9 +229,9 @@ class _SheetBodyState extends State<_SheetBody> {
                         borderRadius: BorderRadius.circular(12.r)),
                     elevation: 4,
                   ),
-                  child: const Text(
-                    "Done",
-                    style: TextStyle(
+                  child: Text(
+                    l10n.commonDone,
+                    style: const TextStyle(
                         fontFamily: "Marcellus", fontFamilyFallback: ['Cairo'], fontWeight: FontWeight.w600),
                   ),
                 ),

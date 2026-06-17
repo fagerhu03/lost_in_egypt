@@ -69,9 +69,9 @@ class GuideCard extends StatelessWidget {
                     fallbackIconColor: const Color(0xFFEDE9D9),
                     fallbackIconSize: 52.r,
                   ),
-                  Positioned(
+                  PositionedDirectional(
                     top: 4.h,
-                    right: 4.w,
+                    end: 4.w,
                     child: Container(
                       width: 18.r,
                       height: 18.r,

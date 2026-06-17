@@ -440,7 +440,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen> {
         ),
         SizedBox(height: 6.h),
         Text(
-          badge.name,
+          badgeName(AppLocalizations.of(context), badge),
           style: TextStyle(
             fontSize: 10.sp,
             fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,

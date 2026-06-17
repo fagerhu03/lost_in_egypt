@@ -12,6 +12,7 @@ import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/core/services/place_photos_service.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/core/services/story_cache_service.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import 'package:lost_in_egypt/l10n/app_localizations.dart';
@@ -332,9 +333,9 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                       ),
                       // Depth circles — only shown when no photo yet
                       if (_photoUrl == null) ...[
-                        Positioned(
+                        PositionedDirectional(
                           top: -40.h,
-                          right: -40.w,
+                          end: -40.w,
                           child: Container(
                             width: 200.r,
                             height: 200.r,
@@ -344,9 +345,9 @@ class _CuratedTripDetailScreenState extends State<CuratedTripDetailScreen>
                             ),
                           ),
                         ),
-                        Positioned(
+                        PositionedDirectional(
                           bottom: 60.h,
-                          left: -30.w,
+                          start: -30.w,
                           child: Container(
                             width: 140.r,
                             height: 140.r,
@@ -1070,7 +1071,8 @@ class _TripStorySheetState extends State<_TripStorySheet> {
   Future<void> _fetchStory() async {
     setState(() { _loading = true; _error = false; });
     try {
-      final story = await StoryCacheService.instance.getStory(widget.tripTitle);
+      final story = await StoryCacheService.instance
+          .getStory(widget.tripTitle, locale: LocaleController.localeCode);
       if (mounted) setState(() { _story = story; _loading = false; });
     } catch (_) {
       if (mounted) setState(() { _error = true; _loading = false; });
@@ -1106,7 +1108,8 @@ class _TripStorySheetState extends State<_TripStorySheet> {
     }
     setState(() => _loadingAudio = true);
     try {
-      final bytes = await AIStorytellerService.getStoryAudio(_story!);
+      final bytes = await AIStorytellerService.getStoryAudio(_story!,
+          locale: LocaleController.localeCode);
       if (bytes == null || !mounted) {
         if (mounted) setState(() => _loadingAudio = false);
         return;

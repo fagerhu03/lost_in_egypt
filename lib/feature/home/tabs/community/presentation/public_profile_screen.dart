@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../auth/data/models/user.dart';
 import '../../../../../core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
@@ -155,7 +156,9 @@ class PublicProfileScreen extends StatelessWidget {
                                         Icon(Icons.place, color: Colors.amber, size: 18.r),
                                         SizedBox(width: 8.w),
                                         Text(
-                                          "$trueVisitedCount Places Visited",
+                                          AppLocalizations.of(context)
+                                              .profilePlacesVisited(
+                                                  trueVisitedCount),
                                           style: TextStyle(
                                             fontSize: 14.sp,
                                             fontWeight: FontWeight.bold,

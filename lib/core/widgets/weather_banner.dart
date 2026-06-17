@@ -23,7 +23,7 @@ class _WeatherBannerState extends State<WeatherBanner> {
   @override
   void didUpdateWidget(WeatherBanner oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.weather.conditionLabel != widget.weather.conditionLabel) {
+    if (oldWidget.weather.condition != widget.weather.condition) {
       _dismissed = false;
     }
   }
@@ -94,7 +94,8 @@ class _WeatherBannerState extends State<WeatherBanner> {
                     children: [
                       Flexible(
                         child: Text(
-                          widget.weather.conditionLabel,
+                          weatherConditionLabel(l, widget.weather.condition,
+                              emphasis: true),
                           style: TextStyle(
                             color: titleColor,
                             fontWeight: FontWeight.w600,
@@ -116,7 +117,7 @@ class _WeatherBannerState extends State<WeatherBanner> {
                   ),
                   SizedBox(height: 3.h),
                   Text(
-                    widget.weather.advisoryText,
+                    weatherAdvisoryText(l, widget.weather),
                     style: TextStyle(
                       color: bodyColor,
                       fontSize: 12.sp,

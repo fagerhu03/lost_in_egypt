@@ -95,9 +95,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           // Skip button — hidden on last slide
           if (!isLast)
-            Positioned(
+            PositionedDirectional(
               top: MediaQuery.of(context).padding.top + 12,
-              right: 20.w,
+              end: 20.w,
               child: TextButton(
                 onPressed: _goToStart,
                 style: TextButton.styleFrom(

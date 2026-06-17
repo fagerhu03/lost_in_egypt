@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../presentation/bloc/camera_state.dart';
 
 class CameraAnalyzingView extends StatelessWidget {
@@ -14,8 +15,22 @@ class CameraAnalyzingView extends StatelessWidget {
     this.controller,
   });
 
+  String _statusLabel(AppLocalizations l10n) {
+    switch (state.status) {
+      case CameraStatus.capturing:
+        return l10n.cameraStatusCapturing;
+      case CameraStatus.identifying:
+        return l10n.cameraStatusIdentifying;
+      case CameraStatus.translating:
+        return l10n.cameraStatusTranslating;
+      case CameraStatus.downloadingModel:
+        return l10n.cameraStatusDownloadingModel(state.modelLang ?? '');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Show captured still image if available (avoids camera freeze effect)
     final capturedPath = state.capturedImagePath;
 
@@ -76,7 +91,7 @@ class CameraAnalyzingView extends StatelessWidget {
                     const CircularProgressIndicator(color: Color(0xFFE6A44A)),
                     SizedBox(height: 16.h),
                     Text(
-                      state.message,
+                      _statusLabel(l10n),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18.sp,

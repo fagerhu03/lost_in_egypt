@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 // WMO weather code sets for conditions relevant to Egypt.
 // These are the standard WMO 4677 interpretation codes that Open-Meteo returns.
 const _sandstormCodes = {30, 31, 32, 33, 34, 35, 98};
 const _dustHazeCodes = {6, 7, 8, 9};
+
+/// Canonical weather condition, resolved in flag-priority order. Display text is
+/// produced by [weatherConditionLabel] / [weatherAdvisoryText] so the model
+/// itself stays locale-agnostic (the deferred model-level localization batch).
+enum WeatherCondition {
+  sandstorm,
+  dustHaze,
+  extremeHeat,
+  veryHot,
+  extremeUV,
+  highUV,
+  clear,
+}
 
 // ── Day Forecast ──────────────────────────────────────────────────────────────
 
@@ -33,24 +47,14 @@ class DayForecast {
   bool get isOutdoorAdvisory =>
       isSandstorm || isDustHaze || isExtremeHeat || isExtremeUV;
 
-  String get dayLabel {
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-    final diff = date.difference(todayStart).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Tomorrow';
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days[date.weekday - 1];
-  }
-
-  String get conditionLabel {
-    if (isSandstorm) return 'Sandstorm';
-    if (isDustHaze) return 'Dust Haze';
-    if (isExtremeHeat) return 'Extreme Heat';
-    if (isVeryHot) return 'Very Hot';
-    if (isExtremeUV) return 'Extreme UV';
-    if (isHighUV) return 'High UV';
-    return 'Clear';
+  WeatherCondition get condition {
+    if (isSandstorm) return WeatherCondition.sandstorm;
+    if (isDustHaze) return WeatherCondition.dustHaze;
+    if (isExtremeHeat) return WeatherCondition.extremeHeat;
+    if (isVeryHot) return WeatherCondition.veryHot;
+    if (isExtremeUV) return WeatherCondition.extremeUV;
+    if (isHighUV) return WeatherCondition.highUV;
+    return WeatherCondition.clear;
   }
 
   Color get severityColor {
@@ -114,36 +118,14 @@ class WeatherContext {
   String get tempDisplay => '${tempC.toStringAsFixed(0)}°C';
   String get feelsLikeDisplay => 'Feels ${feelsLikeC.toStringAsFixed(0)}°C';
 
-  String get conditionLabel {
-    if (isSandstorm) return 'Sandstorm Warning';
-    if (isDustHaze) return 'Dust Haze';
-    if (isExtremeHeat) return 'Extreme Heat';
-    if (isVeryHot) return 'Very Hot';
-    if (isExtremeUV) return 'Extreme UV';
-    if (isHighUV) return 'High UV';
-    return 'Good Conditions';
-  }
-
-  String get advisoryText {
-    if (isSandstorm) {
-      return 'Sandstorm in the area — avoid all outdoor locations. Wear a mask if you must travel.';
-    }
-    if (isDustHaze) {
-      return 'Dust haze reducing visibility. Outdoor visits not ideal; wear sunglasses.';
-    }
-    if (isExtremeHeat) {
-      return 'Feels like ${feelsLikeC.toStringAsFixed(0)}°C. Visit outdoor sites before 9am or after 5pm only. Bring at least 2L of water.';
-    }
-    if (isVeryHot) {
-      return 'Very hot (${feelsLikeC.toStringAsFixed(0)}°C feels-like). Stay hydrated and seek shade often.';
-    }
-    if (isExtremeUV) {
-      return 'UV index ${uvIndex.toStringAsFixed(0)} — extreme. Sunscreen, hat, and sunglasses are essential. Limit midday exposure.';
-    }
-    if (isHighUV) {
-      return 'UV index ${uvIndex.toStringAsFixed(0)} — high. Apply sunscreen SPF 50+ before going outdoors.';
-    }
-    return 'Great conditions for outdoor exploration today.';
+  WeatherCondition get condition {
+    if (isSandstorm) return WeatherCondition.sandstorm;
+    if (isDustHaze) return WeatherCondition.dustHaze;
+    if (isExtremeHeat) return WeatherCondition.extremeHeat;
+    if (isVeryHot) return WeatherCondition.veryHot;
+    if (isExtremeUV) return WeatherCondition.extremeUV;
+    if (isHighUV) return WeatherCondition.highUV;
+    return WeatherCondition.clear;
   }
 
   Color get severityColor {
@@ -179,4 +161,81 @@ class WeatherContext {
         'isExtremeUV': isExtremeUV,
         'isHighUV': isHighUV,
       };
+}
+
+// ── Localized display resolvers ─────────────────────────────────────────────
+// Top-level functions (mirroring `mapCategoryLabel` / `eventCategoryLabel`) so
+// the model stays free of BuildContext / AppLocalizations.
+
+/// Localized short condition label. [emphasis] selects the stronger
+/// current-conditions wording used by [WeatherContext] ("Sandstorm Warning" /
+/// "Good Conditions"); the plain forecast-day wording ("Sandstorm" / "Clear")
+/// is the default for [DayForecast].
+String weatherConditionLabel(
+  AppLocalizations l10n,
+  WeatherCondition condition, {
+  bool emphasis = false,
+}) {
+  switch (condition) {
+    case WeatherCondition.sandstorm:
+      return emphasis ? l10n.weatherCondSandstormWarning : l10n.weatherCondSandstorm;
+    case WeatherCondition.dustHaze:
+      return l10n.weatherCondDustHaze;
+    case WeatherCondition.extremeHeat:
+      return l10n.weatherCondExtremeHeat;
+    case WeatherCondition.veryHot:
+      return l10n.weatherCondVeryHot;
+    case WeatherCondition.extremeUV:
+      return l10n.weatherCondExtremeUV;
+    case WeatherCondition.highUV:
+      return l10n.weatherCondHighUV;
+    case WeatherCondition.clear:
+      return emphasis ? l10n.weatherCondGood : l10n.weatherCondClear;
+  }
+}
+
+/// Localized advisory paragraph for the current weather (interpolates the
+/// feels-like temperature / UV index where relevant).
+String weatherAdvisoryText(AppLocalizations l10n, WeatherContext w) {
+  switch (w.condition) {
+    case WeatherCondition.sandstorm:
+      return l10n.weatherAdvisorySandstorm;
+    case WeatherCondition.dustHaze:
+      return l10n.weatherAdvisoryDustHaze;
+    case WeatherCondition.extremeHeat:
+      return l10n.weatherAdvisoryExtremeHeat(w.feelsLikeC.toStringAsFixed(0));
+    case WeatherCondition.veryHot:
+      return l10n.weatherAdvisoryVeryHot(w.feelsLikeC.toStringAsFixed(0));
+    case WeatherCondition.extremeUV:
+      return l10n.weatherAdvisoryExtremeUV(w.uvIndex.toStringAsFixed(0));
+    case WeatherCondition.highUV:
+      return l10n.weatherAdvisoryHighUV(w.uvIndex.toStringAsFixed(0));
+    case WeatherCondition.clear:
+      return l10n.weatherAdvisoryGood;
+  }
+}
+
+/// Localized forecast day label ("Today" / "Tomorrow" / weekday abbreviation).
+String weatherDayLabel(AppLocalizations l10n, DayForecast day) {
+  final now = DateTime.now();
+  final todayStart = DateTime(now.year, now.month, now.day);
+  final diff = day.date.difference(todayStart).inDays;
+  if (diff == 0) return l10n.weatherDayToday;
+  if (diff == 1) return l10n.weatherDayTomorrow;
+  switch (day.date.weekday) {
+    case DateTime.monday:
+      return l10n.weekdayMon;
+    case DateTime.tuesday:
+      return l10n.weekdayTue;
+    case DateTime.wednesday:
+      return l10n.weekdayWed;
+    case DateTime.thursday:
+      return l10n.weekdayThu;
+    case DateTime.friday:
+      return l10n.weekdayFri;
+    case DateTime.saturday:
+      return l10n.weekdaySat;
+    default:
+      return l10n.weekdaySun;
+  }
 }

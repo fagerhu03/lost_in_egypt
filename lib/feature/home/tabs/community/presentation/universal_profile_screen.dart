@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
@@ -314,7 +315,8 @@ class _UniversalProfileScreenState extends State<UniversalProfileScreen> {
               Icon(Icons.place, color: Colors.amber, size: 20.r),
               SizedBox(width: 8.w),
               Text(
-                "$trueVisitedCount Places Visited",
+                AppLocalizations.of(context)
+                    .profilePlacesVisited(trueVisitedCount),
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
@@ -542,9 +544,9 @@ class _UniversalGuideHeaderCard extends StatelessWidget {
                 fallbackIconSize: 50.r,
               ),
             ),
-            Positioned(
+            PositionedDirectional(
               top: 4.h,
-              right: 4.w,
+              end: 4.w,
               child: Container(
                 padding: EdgeInsets.all(4.r),
                 decoration: BoxDecoration(color: isDark ? Colors.black54 : Colors.white, shape: BoxShape.circle),

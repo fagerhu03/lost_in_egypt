@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/core/constants/trip_options.dart';
 import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/l10n/app_localizations.dart';
@@ -277,14 +278,14 @@ class _PlanCard extends StatelessWidget {
                     size: 14.r, color: textColor.withValues(alpha: 0.5)),
                 SizedBox(width: 4.w),
                 Text(
-                  plan.areas.join(', '),
+                  plan.areas.map((a) => tripAreaLabel(l10n, a)).join(', '),
                   style: TextStyle(
                       fontSize: 12.sp,
                       color: textColor.withValues(alpha: 0.5)),
                 ),
                 const Spacer(),
                 Text(
-                  '${plan.completedStops}/${plan.totalStops} stops',
+                  l10n.soloPlanStopsProgress(plan.completedStops, plan.totalStops),
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: plan.status == SoloPlanStatus.completed

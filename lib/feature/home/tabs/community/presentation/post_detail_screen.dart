@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 
@@ -496,8 +497,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (last < text.length) {
       spans.add(TextSpan(text: text.substring(last), style: baseStyle));
     }
-    if (spans.isEmpty) return Text(text, style: baseStyle);
-    return RichText(text: TextSpan(children: spans));
+    // Align to the comment's own language (Arabic → RTL, English → LTR), not the
+    // app locale. Full width so textAlign positions short comments correctly.
+    final isRtl = intl.Bidi.detectRtlDirectionality(text);
+    final dir = isRtl ? TextDirection.rtl : TextDirection.ltr;
+    return SizedBox(
+      width: double.infinity,
+      child: spans.isEmpty
+          ? Text(text,
+              style: baseStyle, textAlign: TextAlign.start, textDirection: dir)
+          : RichText(
+              textDirection: dir,
+              textAlign: TextAlign.start,
+              text: TextSpan(children: spans),
+            ),
+    );
   }
 
   Future<void> _navigateToProfileByUsername(String username) async {
