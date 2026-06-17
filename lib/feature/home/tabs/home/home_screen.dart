@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
@@ -18,6 +18,9 @@ import 'package:lost_in_egypt/feature/tours/domain/entities/tour_entity.dart';
 import 'package:lost_in_egypt/feature/tours/presentation/pages/tour_detail_screen.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
+import 'package:lost_in_egypt/core/services/place_photos_service.dart';
+import 'package:lost_in_egypt/core/constants/event_categories.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../theme/theme.dart';
 import '../navigator/widget/account_menu_button.dart';
 import './data/datasources/local_mock_data.dart';
@@ -25,7 +28,29 @@ import './data/datasources/local_places_service.dart';
 import './data/models/map_item_models.dart';
 import './presentation/category_places_screen.dart';
 import './presentation/all_events_screen.dart';
+import './presentation/event_details_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+
+/// Localized label for a home-grid category. The `LocalMockData` ids are a
+/// fixed set; the English `title` is kept as the fallback for any new id.
+String _homeCategoryLabel(AppLocalizations l10n, String id, String fallback) {
+  switch (id) {
+    case 'cat_hotel':
+      return l10n.homeCatHotels;
+    case 'cat_museum':
+      return l10n.homeCatMuseums;
+    case 'cat_restaurant':
+      return l10n.homeCatRestaurants;
+    case 'cat_mosque':
+      return l10n.homeCatMosques;
+    case 'cat_beach':
+      return l10n.homeCatBeaches;
+    case 'cat_adventure':
+      return l10n.homeCatAdventure;
+    default:
+      return fallback;
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -40,15 +65,18 @@ class _HomeScreenState extends State<HomeScreen>
   bool get wantKeepAlive => true;
   String? _profileImageUrl;
   String? _firstName;
-  late Future<QuerySnapshot> _eventsFuture;
+  List<EventModel> _curatedEvents = [];
+  String _selectedEventCategory = 'all';
   List<PlaceModel> _popularPlaces = [];
   List<PlaceModel> _forYouPlaces = [];
   bool _loadingForYou = true;
+  bool _loadingEvents = true;
 
   // Session-level caches — avoids re-fetching on hot rebuilds / tab switches / back-nav
   static List<PlaceModel>? _cachedAllPlaces;
   static List<PlaceModel>? _cachedPopular;
   static List<PlaceModel>? _cachedForYou;
+  static List<EventModel>? _cachedEvents;
   static DateTime? _forYouCacheTime;
 
   @override
@@ -62,12 +90,62 @@ class _HomeScreenState extends State<HomeScreen>
       _forYouPlaces = _cachedForYou!;
       _loadingForYou = false;
     }
-
-    _eventsFuture =
-        FirebaseFirestore.instance.collection('events').orderBy('date').limit(5).get();
+    if (_cachedEvents != null) {
+      _curatedEvents = _cachedEvents!;
+      _loadingEvents = false;
+    }
 
     _fetchUserProfile();
     _loadPopularPlaces();
+    _loadEvents();
+  }
+
+  Future<void> _loadEvents() async {
+    if (_cachedEvents != null) return;
+    try {
+      // Load live events from Firestore
+      List<EventModel> firestoreEvents = [];
+      try {
+        final snap = await FirebaseFirestore.instance
+            .collection('events')
+            .limit(30)
+            .get();
+        firestoreEvents = snap.docs
+            .map((d) => EventModel.fromMap(d.data(), d.id))
+            .toList();
+      } catch (e) {
+        debugPrint("Firestore events error: $e");
+      }
+      
+      final merged = firestoreEvents;
+
+      // Filter out past non-recurring events
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final active = merged.where((e) {
+        if (e.isRecurring) return true; // recurring events never expire
+        return !e.date.isBefore(today);  // keep if date is today or future
+      }).toList();
+
+      // Prioritize Passboard and Eventbrite events at the top
+      active.sort((a, b) {
+        final aLive = a.source == 'passboard' || a.source == 'eventbrite';
+        final bLive = b.source == 'passboard' || b.source == 'eventbrite';
+        if (aLive && !bLive) return -1;
+        if (!aLive && bLive) return 1;
+        return b.importance.compareTo(a.importance);
+      });
+
+      if (!mounted) return;
+      _cachedEvents = active;
+      setState(() {
+        _curatedEvents = active;
+        _loadingEvents = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loadingEvents = false);
+    }
   }
 
   Future<void> _loadPopularPlaces() async {
@@ -241,6 +319,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -291,12 +370,12 @@ class _HomeScreenState extends State<HomeScreen>
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Text(
-                  "${_greetingForTimeOfDay()}, $_firstName 👋",
+                  l10n.homeGreeting(_greetingForTimeOfDay(l10n), _firstName!),
                   style: TextStyle(
                     color: primary,
                     fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   ),
                 ),
               ),
@@ -304,11 +383,11 @@ class _HomeScreenState extends State<HomeScreen>
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Text(
-                "Where do you want to go?",
+                l10n.homeWhereToGo,
                 style: TextStyle(
                   color: textColor.withValues(alpha: 0.9),
                   fontSize: 22.sp,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ),
@@ -326,9 +405,10 @@ class _HomeScreenState extends State<HomeScreen>
               itemCount: LocalMockData.categories.length.clamp(0, 6),
               itemBuilder: (context, index) {
                 final category = LocalMockData.categories[index];
+                final catLabel = _homeCategoryLabel(l10n, category.id, category.title);
                 return _categoryCard(
                   icon: category.iconPath,
-                  title: category.title,
+                  title: catLabel,
                   surface: surface,
                   textColor: textColor,
                   shadow: cardShadow,
@@ -339,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen>
                       MaterialPageRoute(
                         builder: (context) => CategoryPlacesScreen(
                           categoryId: category.id,
-                          categoryTitle: category.title,
+                          categoryTitle: catLabel,
                         ),
                       ),
                     );
@@ -364,11 +444,11 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      "Popular Places",
+                      l10n.homePopularPlaces,
                       style: TextStyle(
                         color: textColor.withValues(alpha: 0.9),
                         fontSize: 22.sp,
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ],
@@ -379,7 +459,7 @@ class _HomeScreenState extends State<HomeScreen>
                 height: 200.h,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.only(left: 16.w),
+                  padding: EdgeInsetsDirectional.only(start: 16.w),
                   itemCount: _popularPlaces.length,
                   itemBuilder: (context, index) {
                     final place = _popularPlaces[index];
@@ -411,11 +491,11 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      "For You",
+                      l10n.homeForYou,
                       style: TextStyle(
                         color: textColor.withValues(alpha: 0.9),
                         fontSize: 22.sp,
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                     SizedBox(width: 8.w),
@@ -429,7 +509,7 @@ class _HomeScreenState extends State<HomeScreen>
                   height: 200.h,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.only(left: 16.w),
+                    padding: EdgeInsetsDirectional.only(start: 16.w),
                     itemCount: 3,
                     itemBuilder: (_, _) => const _ForYouSkeletonCard(),
                   ),
@@ -439,7 +519,7 @@ class _HomeScreenState extends State<HomeScreen>
                   height: 200.h,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.only(left: 16.w),
+                    padding: EdgeInsetsDirectional.only(start: 16.w),
                     itemCount: _forYouPlaces.length,
                     itemBuilder: (context, index) {
                       return _popularPlaceCard(
@@ -472,11 +552,11 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                       SizedBox(width: 8.w),
                       Text(
-                        "Events",
+                        l10n.homeExperiences,
                         style: TextStyle(
                           color: textColor.withValues(alpha: 0.9),
                           fontSize: 22.sp,
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         ),
                       ),
                     ],
@@ -485,67 +565,104 @@ class _HomeScreenState extends State<HomeScreen>
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const AllEventsScreen()),
+                        MaterialPageRoute(builder: (_) => AllEventsScreen(events: _curatedEvents)),
                       );
                     },
                     child: Text(
-                      "see all >",
+                      l10n.homeSeeAll,
                       style: TextStyle(
                         color: primary,
                         fontWeight: FontWeight.bold,
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 8.h),
+            // Category filter chips
             SizedBox(
-              height: 160.h,
-              child: FutureBuilder<QuerySnapshot>(
-                future: _eventsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: theme.colorScheme.primary,
+              height: 36.h,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsetsDirectional.only(start: 16.w),
+                itemCount: EventCategories.values.length,
+                itemBuilder: (context, index) {
+                  final cat = EventCategories.values[index];
+                  final isSelected = _selectedEventCategory == cat.id;
+                  return Padding(
+                    padding: EdgeInsetsDirectional.only(end: 8.w),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedEventCategory = cat.id);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: isSelected ? primary : surface,
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color: isSelected ? primary : textColor.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: Text(
+                          eventCategoryLabel(l10n, cat),
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : textColor.withValues(alpha: 0.7),
+                            fontSize: 12.sp,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
+                          ),
+                        ),
                       ),
-                    );
-                  }
-                  if (snapshot.hasError || !snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(
-                      child: Text(
-                        "No events at the moment",
-                        style: TextStyle(color: secondaryTextColor),
-                      ),
-                    );
-                  }
-
-                  final docs = snapshot.data!.docs;
-
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.only(left: 16.w),
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
-                      final event = EventModel.fromMap(data, docs[index].id);
-                      final imageUrl = event.imagePath.isNotEmpty
-                          ? event.imagePath
-                          : ((data['images'] as List?)?.firstOrNull?.toString() ?? '');
-
-                      return _eventCard(
-                        title: event.title,
-                        imagePath: imageUrl,
-                        surface: surface,
-                        textColor: textColor,
-                        shadow: cardShadow,
-                      );
-                    },
+                    ),
                   );
                 },
               ),
+            ),
+            SizedBox(height: 10.h),
+            // Events carousel
+            SizedBox(
+              height: 200.h,
+              child: _loadingEvents
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: theme.colorScheme.primary,
+                      ),
+                    )
+                  : Builder(
+                      builder: (context) {
+                        final filtered = _selectedEventCategory == 'all'
+                            ? _curatedEvents
+                            : _curatedEvents
+                                .where((e) => e.eventCategory == _selectedEventCategory)
+                                .toList();
+                        if (filtered.isEmpty) {
+                          return Center(
+                            child: Text(
+                              l10n.homeNoEventsInCategory,
+                              style: TextStyle(color: secondaryTextColor),
+                            ),
+                          );
+                        }
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsetsDirectional.only(start: 16.w),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            return _eventCard(
+                              event: filtered[index],
+                              surface: surface,
+                              textColor: textColor,
+                              shadow: cardShadow,
+                              primary: primary,
+                            );
+                          },
+                        );
+                      },
+                    ),
             ),
             SizedBox(height: 25.h),
             // ── Popular Tours ──
@@ -572,12 +689,12 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    "Plan your trip",
+                    l10n.homePlanYourTrip,
                     style: TextStyle(
                       color: textColor.withValues(alpha: 0.9),
                       fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     ),
                   ),
                 ],
@@ -590,7 +707,8 @@ class _HomeScreenState extends State<HomeScreen>
                 children: [
                   Expanded(
                     child: _tripCard(
-                      title: "Guides",
+                      title: l10n.homeTripGuides,
+                      iconAsset: "assets/icons/guide.png",
                       surface: surface,
                       textColor: textColor,
                       shadow: cardShadow,
@@ -608,7 +726,8 @@ class _HomeScreenState extends State<HomeScreen>
                   SizedBox(width: 12.w),
                   Expanded(
                     child: _tripCard(
-                      title: "Solo trip",
+                      title: l10n.homeTripSolo,
+                      iconAsset: "assets/icons/solo_trip.png",
                       surface: surface,
                       textColor: textColor,
                       shadow: cardShadow,
@@ -694,7 +813,7 @@ class _HomeScreenState extends State<HomeScreen>
                 style: TextStyle(
                   color: textColor.withValues(alpha: 0.9),
                   fontWeight: FontWeight.w600,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ],
@@ -705,111 +824,158 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _eventCard({
-    required String title,
-    required String imagePath,
+    required EventModel event,
     required Color surface,
     required Color textColor,
     required BoxShadow shadow,
+    required Color primary,
   }) {
-    return Container(
-      width: 200.w,
-      margin: EdgeInsets.only(right: 12.w),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [shadow],
-        border: Border.all(
-          color: (Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black)
-              .withValues(alpha: 0.06),
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16.r),
-        clipBehavior: Clip.hardEdge,
-        child: InkWell(
-          onTap: () {},
+    final imagePath = event.imagePath;
+    final categoryInfo = EventCategories.fromId(event.eventCategory);
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EventDetailsScreen(event: event),
+          ),
+        );
+      },
+      child: Container(
+        width: 170.w,
+        margin: EdgeInsetsDirectional.only(end: 12.w),
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16.r),
-                  topRight: Radius.circular(16.r),
-                ),
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      height: 117.h,
-                      width: double.infinity,
-                      child: imagePath.startsWith('http')
-                          ? CachedNetworkImage(
-                              imageUrl: imagePath,
-                              fit: BoxFit.contain,
-                              placeholder: (context, url) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.broken_image, color: Colors.grey),
-                              ),
-                            )
-                          : Image.asset(
-                              imagePath,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.image_not_supported),
-                              ),
-                            ),
+          boxShadow: [shadow],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Full-bleed image
+            imagePath.startsWith('http')
+                ? ShimmerImage(
+                    url: imagePath,
+                    fit: BoxFit.cover,
+                    fallbackIcon: Icons.image_not_supported_outlined,
+                    fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+                    fallbackIconColor: primary.withValues(alpha: 0.3),
+                    fallbackIconSize: 32.r,
+                  )
+                : Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      color: primary.withValues(alpha: 0.06),
+                      child: Icon(Icons.image_not_supported_outlined,
+                          color: primary.withValues(alpha: 0.3), size: 32.r),
                     ),
-                    Positioned(
-                      top: 10.h,
-                      right: 10.w,
-                      child: Material(
-                        color: Colors.white.withValues(alpha: 0.35),
-                        shape: const CircleBorder(),
-                        clipBehavior: Clip.hardEdge,
-                        child: InkWell(
-                          onTap: () {},
-                          customBorder: const CircleBorder(),
-                          child: SizedBox(
-                            width: 32.r,
-                            height: 32.r,
-                            child: Icon(
-                              Icons.favorite_border,
-                              size: 18.r,
-                              color: Colors.red.shade400,
-                            ),
-                          ),
+                  ),
+            // Gradient overlay
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.65),
+                    ],
+                    stops: const [0.4, 1.0],
+                  ),
+                ),
+              ),
+            ),
+            // Category pill — top-left
+            PositionedDirectional(
+              top: 8.h,
+              start: 8.w,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  color: primary.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  categoryInfo.emoji,
+                  style: TextStyle(fontSize: 11.sp),
+                ),
+              ),
+            ),
+            // Rating pill — top-right (matches places)
+            if (event.rating > 0)
+              PositionedDirectional(
+                top: 8.h,
+                end: 8.w,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade700,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star_rounded, size: 12.r, color: Colors.white),
+                      SizedBox(width: 2.w),
+                      Text(
+                        event.rating.toStringAsFixed(1) + (event.reviewCount > 0 ? " (${event.reviewCount})" : ""),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+            // Title + City — bottom (matches places)
+            Positioned(
+              bottom: 10.h,
+              left: 10.w,
+              right: 10.w,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (event.city.isNotEmpty || event.venueName.isNotEmpty) ...[
+                    SizedBox(height: 3.h),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_rounded,
+                            size: 11.r, color: Colors.white.withValues(alpha: 0.8)),
+                        SizedBox(width: 2.w),
+                        Expanded(
+                          child: Text(
+                            event.venueName.isNotEmpty ? event.venueName : event.city,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 11.sp,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
+                ],
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: textColor.withValues(alpha: 0.9),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: "Marcellus",
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -817,6 +983,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _tripCard({
     required String title,
+    required String iconAsset,
     required Color surface,
     required Color textColor,
     required BoxShadow shadow,
@@ -847,9 +1014,7 @@ class _HomeScreenState extends State<HomeScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                title == "Guides"
-                    ? "assets/icons/guide.png"
-                    : "assets/icons/solo_trip.png",
+                iconAsset,
                 width: 80.r,
                 color: isDark
                     ? AppColors.darkNavBar.withValues(alpha: 0.9)
@@ -863,7 +1028,7 @@ class _HomeScreenState extends State<HomeScreen>
                   color: textColor.withValues(alpha: 0.9),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: "Marcellus",
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ],
@@ -873,11 +1038,11 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  String _greetingForTimeOfDay() {
+  String _greetingForTimeOfDay(AppLocalizations l10n) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return l10n.greetingMorning;
+    if (hour < 17) return l10n.greetingAfternoon;
+    return l10n.greetingEvening;
   }
 
   Widget _popularPlaceCard({
@@ -891,7 +1056,7 @@ class _HomeScreenState extends State<HomeScreen>
       onTap: () => MapFocusService.instance.triggerFocus(place),
       child: Container(
         width: 170.w,
-        margin: EdgeInsets.only(right: 12.w),
+        margin: EdgeInsetsDirectional.only(end: 12.w),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [shadow],
@@ -900,30 +1065,10 @@ class _HomeScreenState extends State<HomeScreen>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            place.imagePath.startsWith('http')
-                ? CachedNetworkImage(
-                    imageUrl: place.imagePath,
-                    fit: BoxFit.cover,
-                    placeholder: (_, _) => Container(
-                      color: primary.withValues(alpha: 0.08),
-                      child: Center(
-                        child: SizedBox(
-                          width: 20.r,
-                          height: 20.r,
-                          child: CircularProgressIndicator(
-                            color: primary,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                    errorWidget: (_, _, _) => Container(
-                      color: primary.withValues(alpha: 0.06),
-                      child: Icon(Icons.image_not_supported_outlined,
-                          color: primary.withValues(alpha: 0.3), size: 32.r),
-                    ),
-                  )
-                : Image.asset(place.imagePath, fit: BoxFit.cover),
+            _PlacePhoto(
+              place: place,
+              primary: primary,
+            ),
             // Gradient overlay
             Positioned.fill(
               child: DecoratedBox(
@@ -941,9 +1086,9 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
             // Rating pill
-            Positioned(
+            PositionedDirectional(
               top: 8.h,
-              right: 8.w,
+              end: 8.w,
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                 decoration: BoxDecoration(
@@ -981,7 +1126,7 @@ class _HomeScreenState extends State<HomeScreen>
                       color: Colors.white,
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       height: 1.2,
                     ),
                     maxLines: 2,
@@ -1056,11 +1201,11 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    "Popular Tours",
+                    AppLocalizations.of(context).homePopularTours,
                     style: TextStyle(
                       color: textColor.withValues(alpha: 0.9),
                       fontSize: 22.sp,
-                      fontFamily: "Marcellus",
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     ),
                   ),
                 ],
@@ -1071,7 +1216,7 @@ class _HomeScreenState extends State<HomeScreen>
               height: 200.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.only(left: 16.w),
+                padding: EdgeInsetsDirectional.only(start: 16.w),
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
                   final data = docs[index].data() as Map<String, dynamic>;
@@ -1111,7 +1256,7 @@ class _HomeScreenState extends State<HomeScreen>
                     },
                     child: Container(
                       width: 220.w,
-                      margin: EdgeInsets.only(right: 12.w),
+                      margin: EdgeInsetsDirectional.only(end: 12.w),
                       decoration: BoxDecoration(
                         color: surface,
                         borderRadius: BorderRadius.circular(16.r),
@@ -1125,27 +1270,15 @@ class _HomeScreenState extends State<HomeScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(
+                          ShimmerImage(
+                            url: hasImage ? tour.images.first : null,
                             height: 120.h,
                             width: double.infinity,
-                            child: hasImage
-                                ? CachedNetworkImage(
-                                    imageUrl: tour.images.first,
-                                    fit: BoxFit.cover,
-                                    placeholder: (_, _) => Container(
-                                      color: primary.withValues(alpha: 0.08),
-                                    ),
-                                    errorWidget: (_, _, _) => Container(
-                                      color: primary.withValues(alpha: 0.06),
-                                      child: Icon(Icons.tour,
-                                          color: primary.withValues(alpha: 0.3)),
-                                    ),
-                                  )
-                                : Container(
-                                    color: primary.withValues(alpha: 0.06),
-                                    child: Icon(Icons.tour,
-                                        color: primary.withValues(alpha: 0.3), size: 40.r),
-                                  ),
+                            fit: BoxFit.cover,
+                            fallbackIcon: Icons.tour,
+                            fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+                            fallbackIconColor: primary.withValues(alpha: 0.3),
+                            fallbackIconSize: 40.r,
                           ),
                           Padding(
                             padding: EdgeInsets.fromLTRB(10.w, 8.h, 10.w, 8.h),
@@ -1158,7 +1291,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     color: textColor.withValues(alpha: 0.9),
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.bold,
-                                    fontFamily: "Marcellus",
+                                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1222,6 +1355,71 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
+// ── Place photo resolver ──────────────────────────────────────────────────────
+//
+// The bundled `cat_*.json` / dataset `imagePath` values are baked Google Places
+// API photo URLs whose photo references EXPIRE — Google returns
+// `400 INVALID_ARGUMENT: "retrieve it from Places API endpoints"`, so they can't
+// be rendered directly (that's why every home place image broke). We instead
+// fetch a fresh, durable `lh3.googleusercontent.com` CDN URL at runtime via
+// PlacePhotosService (memory + 30-day Firestore cache, keyed on the stable Place
+// ID), so each place hits the Places API at most once per month globally.
+class _PlacePhoto extends StatelessWidget {
+  final PlaceModel place;
+  final Color primary;
+  const _PlacePhoto({required this.place, required this.primary});
+
+  bool get _isStalePlacesUrl =>
+      place.imagePath.contains('places.googleapis.com');
+
+  @override
+  Widget build(BuildContext context) {
+    Widget fallback() => ColoredBox(
+          color: primary.withValues(alpha: 0.06),
+          child: Icon(Icons.image_not_supported_outlined,
+              color: primary.withValues(alpha: 0.3), size: 32.r),
+        );
+
+    ShimmerImage netImage(String url) => ShimmerImage(
+          url: url,
+          fit: BoxFit.cover,
+          fallbackIcon: Icons.image_not_supported_outlined,
+          fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+          fallbackIconColor: primary.withValues(alpha: 0.3),
+          fallbackIconSize: 32.r,
+        );
+
+    // A real, stable CDN URL (not a Places photo endpoint) — render directly.
+    if (place.imagePath.startsWith('http') && !_isStalePlacesUrl) {
+      return netImage(place.imagePath);
+    }
+
+    // A bundled asset path — render directly.
+    if (!place.imagePath.startsWith('http')) {
+      return Image.asset(place.imagePath,
+          fit: BoxFit.cover, errorBuilder: (_, _, _) => fallback());
+    }
+
+    // Stale Places photo URL (or empty) → resolve a fresh one, cached by Place ID.
+    return FutureBuilder<String?>(
+      future: PlacePhotosService.instance
+          .getPhotoUrl(place.id, '${place.title}, Egypt'),
+      builder: (context, snap) {
+        final url = snap.data;
+        if (url != null && url.isNotEmpty) return netImage(url);
+        if (snap.connectionState == ConnectionState.waiting) {
+          return Shimmer.fromColors(
+            baseColor: primary.withValues(alpha: 0.06),
+            highlightColor: primary.withValues(alpha: 0.12),
+            child: ColoredBox(color: primary.withValues(alpha: 0.06)),
+          );
+        }
+        return fallback();
+      },
+    );
+  }
+}
+
 // ── Skeleton card mirroring _popularPlaceCard's silhouette so the "For You"
 // loading state reads as content-in-progress rather than four grey slabs.
 class _ForYouSkeletonCard extends StatelessWidget {
@@ -1236,7 +1434,7 @@ class _ForYouSkeletonCard extends StatelessWidget {
 
     return Container(
       width: 170.w,
-      margin: EdgeInsets.only(right: 12.w),
+      margin: EdgeInsetsDirectional.only(end: 12.w),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
@@ -1248,9 +1446,9 @@ class _ForYouSkeletonCard extends StatelessWidget {
           children: [
             Container(color: base),
             // Rating pill placeholder — top-right, matches real card's pill
-            Positioned(
+            PositionedDirectional(
               top: 10.h,
-              right: 10.w,
+              end: 10.w,
               child: Container(
                 width: 34.w,
                 height: 16.h,
@@ -1366,10 +1564,10 @@ class _HeroBannerState extends State<_HeroBanner> {
               color: Colors.black.withValues(alpha: 0.08),
             ),
             Padding(
-              padding: EdgeInsets.only(
+              padding: EdgeInsetsDirectional.only(
                 top: MediaQuery.of(context).padding.top + 8,
-                left: 16.w,
-                right: 16.w,
+                start: 16.w,
+                end: 16.w,
               ),
               child: Row(
                 children: [

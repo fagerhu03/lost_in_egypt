@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../core/constants/trip_options.dart';
 import '../manager/trip_planner_controller.dart';
 import '../widgets/option_chip.dart';
@@ -31,18 +33,19 @@ class AreaStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return QuizScaffold(
-      title: 'Where do you want to explore?',
+      title: l10n.soloQuizAreasTitle,
       stepIndex: 2,
       onNext: onNext,
       onBack: onBack,
       child: SingleChildScrollView(
         child: Wrap(
-          spacing: 10,
-          runSpacing: 12,
+          spacing: 10.w,
+          runSpacing: 12.h,
           children: TripOptions.areas.map((item) {
             return OptionChip(
-              label: item,
+              label: tripAreaLabel(l10n, item),
               emoji: _areaEmojis[item],
               isSelected: controller.plan.areas.contains(item),
               onTap: () => controller.toggleArea(item),

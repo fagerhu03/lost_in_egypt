@@ -12,12 +12,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
+import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
 import 'package:lost_in_egypt/core/services/story_cache_service.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
 import 'package:lost_in_egypt/core/services/weather_service.dart';
+import 'package:lost_in_egypt/core/utils/dataset_resolver.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import '../../../../../../../theme/theme.dart';
 
@@ -42,6 +47,11 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
 
   Duration _elapsed = Duration.zero;
   Timer? _timer;
+
+  /// Cached map dataset for resolving synthetic stop names to real placeIds
+  /// before recording signals. Empty until [_loadDataset] completes; signal
+  /// recording falls back to a namespaced synthetic ID if resolution fails.
+  List<MapItem> _dataset = const [];
 
   @override
   void initState() {
@@ -69,7 +79,18 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
     }
 
     _loadWeather();
+    _loadDataset();
     _showOnboardingIfNeeded();
+  }
+
+  /// Fires once per tour. Best-effort: if it fails we fall back to a
+  /// namespaced synthetic placeId at signal time. MapRepository is cached, so
+  /// subsequent screens that need the dataset don't pay this cost again.
+  Future<void> _loadDataset() async {
+    try {
+      final items = await sl<MapRepository>().fetchAllMapItemsLimited();
+      if (mounted) setState(() => _dataset = items);
+    } catch (_) {}
   }
 
   @override
@@ -194,13 +215,38 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       );
       if (completed) {
         final stop = _plan.days[dayIndex].stops[stopIndex];
-        RecommendationService.recordSignal(
-          placeId: stop.name.toLowerCase().replaceAll(' ', '_'),
-          placeName: stop.name,
-          types: [stop.placeType],
-          signalType: 'visit',
-          source: 'active_tour',
-        );
+        // Try to resolve the AI-generated stop name to a real dataset entry so
+        // the signal is recorded against the canonical placeId (matches the
+        // Places API ID used by every other surface). Falls back to a clearly
+        // namespaced synthetic ID when resolution fails — the taste vector
+        // still updates either way.
+        final resolved = stop.hasCoordinates && _dataset.isNotEmpty
+            ? DatasetResolver.resolve(
+                name: stop.name,
+                lat: stop.lat!,
+                lng: stop.lng!,
+                dataset: _dataset,
+              )
+            : null;
+        if (resolved != null) {
+          RecommendationService.recordSignal(
+            placeId: resolved.id,
+            placeName: resolved.title,
+            types: [resolved.category],
+            tags: resolved.tags,
+            signalType: 'visit',
+            source: 'active_tour',
+          );
+        } else {
+          RecommendationService.recordSignal(
+            placeId:
+                'tour_stop:${stop.name.toLowerCase().replaceAll(RegExp(r"\s+"), "_")}',
+            placeName: stop.name,
+            types: [stop.placeType],
+            signalType: 'visit',
+            source: 'active_tour',
+          );
+        }
       }
       final updatedDays = List<SavedPlanDay>.from(_plan.days);
       updatedDays[dayIndex] =
@@ -225,19 +271,19 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
   }
 
   Future<void> _endTour() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('End Tour?'),
-        content: const Text(
-            'This will mark the tour as completed. You can still view it in My Plans.'),
+        title: Text(l10n.tourEndTitle),
+        content: Text(l10n.tourEndBody),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l10n.commonCancel)),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('End Tour', style: TextStyle(color: Colors.red))),
+              child: Text(l10n.tourEndConfirm, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -249,7 +295,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Tour ended. Find it under Completed in My Plans.'),
+          content: Text(l10n.tourEnded),
           backgroundColor: AppColors.lightPrimaryButton,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -270,6 +316,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
         planTitle: _plan.title,
         stopsCompleted: _plan.totalStops,
         completedStops: _plan.days.expand((d) => d.stops).toList(),
+        dataset: _dataset,
         onDone: () {
           Navigator.pop(ctx);
           Navigator.pop(context);
@@ -307,7 +354,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
         title: Text(
           _plan.title,
           style: TextStyle(
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             color: textColor,
             fontSize: 17.sp,
           ),
@@ -315,7 +362,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
         actions: [
           IconButton(
             icon: Icon(Icons.map_outlined, color: gold),
-            tooltip: 'View full route',
+            tooltip: AppLocalizations.of(context).soloViewFullRoute,
             onPressed: _viewFullRoute,
           ),
         ],
@@ -352,7 +399,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                     ),
                     SizedBox(width: 8.w),
                     Text(
-                      'Tour in Progress',
+                      AppLocalizations.of(context).tourInProgress,
                       style: TextStyle(
                         color: gold,
                         fontWeight: FontWeight.w700,
@@ -432,7 +479,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                                     size: 12.r, color: Colors.white),
                                 SizedBox(width: 4.w),
                                 Text(
-                                  'Go',
+                                  AppLocalizations.of(context).tourGo,
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     color: Colors.white,
@@ -477,7 +524,7 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                       child: Text(
                         day.label,
                         style: TextStyle(
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           fontWeight: FontWeight.w700,
                           color: gold,
                           fontSize: 14.sp,
@@ -525,9 +572,9 @@ class _ActiveTourScreenState extends State<ActiveTourScreen>
                   child: const CircularProgressIndicator(
                       strokeWidth: 2, color: Colors.white))
               : Icon(Icons.stop_circle_outlined, size: 18.r, color: Colors.white),
-          label: const Text(
-            'End Tour',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          label: Text(
+            AppLocalizations.of(context).tourEndConfirm,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red.shade700,
@@ -554,6 +601,7 @@ class _WeatherBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final color = weather.isOutdoorAdvisory
         ? weather.severityColor
         : const Color(0xFF2E7D32);
@@ -575,7 +623,7 @@ class _WeatherBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${weather.tempDisplay}  •  ${weather.conditionLabel}',
+                  '${weather.tempDisplay}  •  ${weatherConditionLabel(l10n, weather.condition, emphasis: true)}',
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
@@ -585,7 +633,7 @@ class _WeatherBanner extends StatelessWidget {
                 if (weather.isOutdoorAdvisory) ...[
                   SizedBox(height: 2.h),
                   Text(
-                    weather.advisoryText,
+                    weatherAdvisoryText(l10n, weather),
                     style: TextStyle(
                       fontSize: 11.sp,
                       color: color.withValues(alpha: 0.85),
@@ -723,7 +771,7 @@ class _StopTileState extends State<_StopTile> {
                                   decoration: stop.completed
                                       ? TextDecoration.lineThrough
                                       : null,
-                                  fontFamily: 'Marcellus',
+                                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                 ),
                               ),
                             ),
@@ -737,7 +785,7 @@ class _StopTileState extends State<_StopTile> {
                                   borderRadius: BorderRadius.circular(10.r),
                                 ),
                                 child: Text(
-                                  'Up next',
+                                  AppLocalizations.of(context).tourUpNext,
                                   style: TextStyle(
                                     fontSize: 10.sp,
                                     color: Colors.white,
@@ -763,7 +811,7 @@ class _StopTileState extends State<_StopTile> {
                   if (widget.onNavigate != null)
                     IconButton(
                       icon: Icon(Icons.navigation_rounded, color: gold, size: 20.r),
-                      tooltip: 'Navigate here',
+                      tooltip: AppLocalizations.of(context).soloNavigateHere,
                       onPressed: widget.onNavigate,
                       constraints: const BoxConstraints(),
                       padding: EdgeInsets.all(6.r),
@@ -816,7 +864,7 @@ class _StopTileState extends State<_StopTile> {
                               size: 15.r, color: gold),
                           SizedBox(width: 6.w),
                           Text(
-                            'Hear the Story',
+                            AppLocalizations.of(context).soloHearStory,
                             style: TextStyle(
                               fontSize: 13.sp,
                               color: gold,
@@ -848,13 +896,11 @@ class _TourOnboardingSheet extends StatelessWidget {
     final textColor = isDark ? AppColors.darkText : AppColors.lightBox;
     final gold = AppColors.lightPrimaryButton;
 
-    const features = [
-      (Icons.map_outlined, 'View on Map',
-          'Tap the map icon (top-right) to see your stops on the map and navigate to any one.'),
-      (Icons.check_circle_outline_rounded, 'Track Progress',
-          'Check off each stop as you visit it. Your progress saves automatically.'),
-      (Icons.auto_stories_outlined, 'AI Stories',
-          'Expand any stop and tap "Hear the Story" for an AI-generated history of that place.'),
+    final l10n = AppLocalizations.of(context);
+    final features = [
+      (Icons.map_outlined, l10n.tourFeatViewMap, l10n.tourFeatViewMapDesc),
+      (Icons.check_circle_outline_rounded, l10n.tourFeatTrack, l10n.tourFeatTrackDesc),
+      (Icons.auto_stories_outlined, l10n.tourFeatStories, l10n.tourFeatStoriesDesc),
     ];
 
     return Container(
@@ -878,9 +924,9 @@ class _TourOnboardingSheet extends StatelessWidget {
           ),
           SizedBox(height: 20.h),
           Text(
-            '🗺️ Your Tour Has Started!',
+            l10n.tourStartedTitle,
             style: TextStyle(
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
               color: textColor,
@@ -888,7 +934,7 @@ class _TourOnboardingSheet extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Here\'s what you can do',
+            l10n.tourOnboardTitle,
             style: TextStyle(
               fontSize: 14.sp,
               color: textColor.withValues(alpha: 0.5),
@@ -920,7 +966,7 @@ class _TourOnboardingSheet extends StatelessWidget {
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               color: textColor,
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                           SizedBox(height: 3.h),
@@ -952,11 +998,11 @@ class _TourOnboardingSheet extends StatelessWidget {
                 elevation: 0,
               ),
               child: Text(
-                'Let\'s Go!',
+                l10n.tourLetsGo,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 15.sp,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ),
@@ -974,12 +1020,14 @@ class _TourCompleteDialog extends StatefulWidget {
   final int stopsCompleted;
   final VoidCallback onDone;
   final List<SavedPlanStop> completedStops;
+  final List<MapItem> dataset;
 
   const _TourCompleteDialog({
     required this.planTitle,
     required this.stopsCompleted,
     required this.onDone,
     this.completedStops = const [],
+    this.dataset = const [],
   });
 
   @override
@@ -1008,26 +1056,76 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
-      final types = widget.completedStops
-          .map((s) => s.placeType)
-          .toSet()
-          .take(3)
+      if (widget.dataset.isEmpty) return;
+
+      // Resolve completed AI stops to real dataset MapItems so we can both
+      // (a) exclude them from the suggestion pool, and (b) use the last
+      // resolved stop's coords as the proximity anchor.
+      final completedIds = <String>{};
+      MapItem? anchorStop;
+      for (final stop in widget.completedStops) {
+        if (!stop.hasCoordinates) continue;
+        final match = DatasetResolver.resolve(
+          name: stop.name,
+          lat: stop.lat!,
+          lng: stop.lng!,
+          dataset: widget.dataset,
+        );
+        if (match != null) {
+          completedIds.add(match.id);
+          anchorStop = match;
+        }
+      }
+
+      // Anchor for proximity sort: last resolved stop, then first stop with
+      // coords, then Cairo centre as last resort.
+      double anchorLat = 30.0444;
+      double anchorLng = 31.2357;
+      if (anchorStop != null) {
+        anchorLat = anchorStop.coordinate.latitude;
+        anchorLng = anchorStop.coordinate.longitude;
+      } else {
+        final firstWithCoords =
+            widget.completedStops.where((s) => s.hasCoordinates).firstOrNull;
+        if (firstWithCoords != null) {
+          anchorLat = firstWithCoords.lat!;
+          anchorLng = firstWithCoords.lng!;
+        }
+      }
+
+      // Take the 50 nearest dataset entries that weren't just visited.
+      // Pre-filter is needed because the Cloud Function caps candidates at
+      // 200 — and we want the engine's similarity scoring to operate on a
+      // tight relevant pool, not the whole 500-item dataset.
+      final pool = widget.dataset
+          .where((m) => !completedIds.contains(m.id))
           .toList();
-      final candidates = types.map((t) => {
-        'placeId': t,
-        'name': t,
-        'types': [t],
-        'tags': <String>[],
-        'lat': 30.0444,
-        'lng': 31.2357,
-      }).toList();
+      pool.sort((a, b) {
+        final da = Geolocator.distanceBetween(anchorLat, anchorLng,
+            a.coordinate.latitude, a.coordinate.longitude);
+        final db = Geolocator.distanceBetween(anchorLat, anchorLng,
+            b.coordinate.latitude, b.coordinate.longitude);
+        return da.compareTo(db);
+      });
+      final candidates = pool.take(50).map((m) => {
+            'placeId': m.id,
+            'name': m.title,
+            'types': [m.category],
+            'tags': m.tags,
+            'lat': m.coordinate.latitude,
+            'lng': m.coordinate.longitude,
+          }).toList();
       if (candidates.isEmpty) return;
+
       final fn = FirebaseFunctions.instance.httpsCallable('recommendPlaces');
       final result = await fn.call({
         'candidates': candidates,
         'context': 'similar',
         'limit': 3,
-        'excludeSeen': true,
+        // 50-item pool is "small" by the project's threshold — letting the
+        // server filter against `soloPlanSeen` would drain it after a few
+        // completed tours.
+        'excludeSeen': false,
       });
       final ranked = (result.data['recommendations'] as List?) ?? [];
       final names = ranked
@@ -1092,11 +1190,11 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                 ),
                 SizedBox(height: 20.h),
                 Text(
-                  'Tour Complete!',
+                  AppLocalizations.of(context).tourComplete,
                   style: TextStyle(
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     color: textColor,
                   ),
                 ),
@@ -1124,7 +1222,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                       Icon(Icons.place_rounded, size: 18.r, color: gold),
                       SizedBox(width: 8.w),
                       Text(
-                        '${widget.stopsCompleted} stops explored',
+                        AppLocalizations.of(context).tourStopsExplored(widget.stopsCompleted),
                         style: TextStyle(
                           fontSize: 14.sp,
                           color: gold,
@@ -1136,7 +1234,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  'You\'ve experienced the heart of Egypt.\nGreat exploring! 🌟',
+                  AppLocalizations.of(context).tourCompleteSub,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13.sp,
@@ -1149,7 +1247,7 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'You might also love',
+                      AppLocalizations.of(context).tourYouMightLove,
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
@@ -1190,11 +1288,11 @@ class _TourCompleteDialogState extends State<_TourCompleteDialog>
                       elevation: 0,
                     ),
                     child: Text(
-                      'Done',
+                      AppLocalizations.of(context).tourDone,
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w700,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ),
@@ -1247,7 +1345,7 @@ class _TransitBanner extends StatelessWidget {
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
                     color: gold,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -1388,7 +1486,8 @@ class _StorySheetState extends State<_StorySheet> {
   Future<void> _fetchStory() async {
     setState(() { _loading = true; _error = false; });
     try {
-      final story = await StoryCacheService.instance.getStory(widget.stopName);
+      final story = await StoryCacheService.instance
+          .getStory(widget.stopName, locale: LocaleController.localeCode);
       if (mounted) setState(() { _story = story; _loading = false; });
     } catch (_) {
       if (mounted) setState(() { _error = true; _loading = false; });
@@ -1424,7 +1523,8 @@ class _StorySheetState extends State<_StorySheet> {
     }
     setState(() => _loadingAudio = true);
     try {
-      final bytes = await AIStorytellerService.getStoryAudio(_story!);
+      final bytes = await AIStorytellerService.getStoryAudio(_story!,
+          locale: LocaleController.localeCode);
       if (bytes == null || !mounted) {
         if (mounted) setState(() => _loadingAudio = false);
         return;
@@ -1485,7 +1585,7 @@ class _StorySheetState extends State<_StorySheet> {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       color: textColor,
                     ),
                   ),
@@ -1522,7 +1622,7 @@ class _StorySheetState extends State<_StorySheet> {
                 child: Column(
                   children: [
                     Text(
-                      'The spirits of history are silent right now.',
+                      AppLocalizations.of(context).soloStorySilent,
                       style: TextStyle(
                           fontSize: 14.sp,
                           color: textColor.withValues(alpha: 0.6)),
@@ -1530,7 +1630,7 @@ class _StorySheetState extends State<_StorySheet> {
                     SizedBox(height: 12.h),
                     TextButton(
                       onPressed: _fetchStory,
-                      child: Text('Try again', style: TextStyle(color: gold)),
+                      child: Text(AppLocalizations.of(context).commonTryAgain, style: TextStyle(color: gold)),
                     ),
                   ],
                 ),
@@ -1568,12 +1668,12 @@ class _StorySheetState extends State<_StorySheet> {
                             ),
                       label: Text(
                         _loadingAudio
-                            ? 'Generating audio…'
+                            ? AppLocalizations.of(context).soloStoryGenerating
                             : _isPlaying
-                                ? 'Pause'
+                                ? AppLocalizations.of(context).soloStoryPause
                                 : _isPaused
-                                    ? 'Resume'
-                                    : 'Listen',
+                                    ? AppLocalizations.of(context).soloStoryResume
+                                    : AppLocalizations.of(context).soloStoryListen,
                         style: const TextStyle(
                             color: Colors.white, fontWeight: FontWeight.w600),
                       ),
@@ -1591,7 +1691,7 @@ class _StorySheetState extends State<_StorySheet> {
                     IconButton.filled(
                       onPressed: _loadingAudio ? null : _handleReplay,
                       icon: const Icon(Icons.replay_rounded),
-                      tooltip: 'Replay from start',
+                      tooltip: AppLocalizations.of(context).soloStoryReplay,
                       style: IconButton.styleFrom(
                         backgroundColor: gold.withValues(alpha: 0.15),
                         foregroundColor: gold,

@@ -1,10 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/weather_controller.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 import '../../../../core/widgets/shimmer_loading_widget.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 import '../../domain/entities/tour_entity.dart';
@@ -83,6 +86,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
       context: 'tours',
       limit: 6,
       excludeSeen: false,
+      weather: WeatherController.weather.value,
     );
     if (!mounted) return;
     if (result == null || result.recommendations.isEmpty) {
@@ -147,9 +151,26 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
     return filtered;
   }
 
+  // Frequency values stay English (compared against `t.frequency`); display localized.
+  String _frequencyLabel(AppLocalizations l10n, String f) {
+    switch (f) {
+      case 'Daily':
+        return l10n.toursFreqDaily;
+      case 'Weekly':
+        return l10n.toursFreqWeekly;
+      case 'Weekends':
+        return l10n.toursFreqWeekends;
+      case 'One-Time':
+        return l10n.toursFreqOneTime;
+      default:
+        return f;
+    }
+  }
+
   void _showFilterSheet(BuildContext context, List<TourEntity> allTours) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
     // Calculate actual max price from tours
     final maxPrice = allTours.isNotEmpty
         ? allTours.map((t) => t.price).reduce((a, b) => a > b ? a : b).ceilToDouble() + 10
@@ -168,19 +189,19 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
-                    child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2))),
+                    child: Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2.r))),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Filters', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                      Text(l10n.toursFilters, style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
                       TextButton(
                         onPressed: () {
                           setSheetState(() {
@@ -189,15 +210,15 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                             tempFrequency = null;
                           });
                         },
-                        child: const Text('Reset'),
+                        child: Text(l10n.commonReset),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // Price Range
-                  Text('Price Range', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-                  const SizedBox(height: 8),
+                  Text(l10n.toursPriceRange, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  SizedBox(height: 8.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -214,57 +235,57 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                     labels: RangeLabels('${tempPrice.start.round()}', '${tempPrice.end.round()}'),
                     onChanged: (v) => setSheetState(() => tempPrice = v),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // Minimum Rating
-                  Text('Minimum Rating', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-                  const SizedBox(height: 8),
+                  Text(l10n.toursMinRating, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
                       for (int i = 1; i <= 5; i++)
                         GestureDetector(
                           onTap: () => setSheetState(() => tempRating = tempRating == i.toDouble() ? 0 : i.toDouble()),
                           child: Padding(
-                            padding: const EdgeInsets.only(right: 4),
+                            padding: EdgeInsetsDirectional.only(end: 4.w),
                             child: Icon(
                               i <= tempRating ? Icons.star : Icons.star_border,
                               color: Colors.amber,
-                              size: 32,
+                              size: 32.r,
                             ),
                           ),
                         ),
                       if (tempRating > 0)
-                        Text(' ${tempRating.toInt()}+ stars', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13)),
+                        Text(' ${l10n.toursStarsPlus(tempRating.toInt())}', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13.sp)),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // Frequency
-                  Text('Frequency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-                  const SizedBox(height: 8),
+                  Text(l10n.toursFrequency, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                  SizedBox(height: 8.h),
                   Wrap(
-                    spacing: 8,
+                    spacing: 8.w,
                     children: ['Daily', 'Weekly', 'Weekends', 'One-Time'].map((f) {
                       final isSelected = tempFrequency == f;
                       return ChoiceChip(
-                        label: Text(f),
+                        label: Text(_frequencyLabel(l10n, f)),
                         selected: isSelected,
                         selectedColor: primary.withValues(alpha: 0.2),
                         onSelected: (v) => setSheetState(() => tempFrequency = v ? f : null),
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Apply
                   SizedBox(
                     width: double.infinity,
-                    height: 52,
+                    height: 52.h,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                       ),
                       onPressed: () {
                         setState(() {
@@ -278,7 +299,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                         });
                         Navigator.pop(ctx);
                       },
-                      child: const Text('Apply Filters', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(l10n.toursApplyFilters, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -293,9 +314,9 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final onSurface = theme.colorScheme.onSurface;
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -303,12 +324,12 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Discover Tours',
+          l10n.toursDiscoverTitle,
           style: TextStyle(
             color: onSurface,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Marcellus',
-            fontSize: 24,
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
+            fontSize: 24.sp,
           ),
         ),
         centerTitle: false,
@@ -329,12 +350,12 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
             children: [
               // Search Bar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 child: TextField(
                   onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: 'Search destinations, guides...',
+                    hintText: l10n.toursSearchHint,
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: IconButton(
                       icon: Badge(
@@ -346,9 +367,9 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                     ),
                     filled: true,
                     fillColor: theme.colorScheme.surface,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                    contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16.w),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(30.r),
                       borderSide: BorderSide.none,
                     ),
                   ),
@@ -357,36 +378,36 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
 
               // Sort + Active Filter Chips row
               SizedBox(
-                height: 44,
+                height: 44.h,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
                   children: [
                     // Sort chip
                     PopupMenuButton<_SortOption>(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                       onSelected: (v) => setState(() => _sortOption = v),
                       itemBuilder: (_) => [
-                        const PopupMenuItem(value: _SortOption.newest, child: Text('Newest First')),
-                        const PopupMenuItem(value: _SortOption.cheapest, child: Text('Cheapest First')),
-                        const PopupMenuItem(value: _SortOption.priciest, child: Text('Priciest First')),
-                        const PopupMenuItem(value: _SortOption.highestRated, child: Text('Highest Rated')),
-                        const PopupMenuItem(value: _SortOption.mostPopular, child: Text('Most Popular')),
+                        PopupMenuItem(value: _SortOption.newest, child: Text(l10n.toursSortNewest)),
+                        PopupMenuItem(value: _SortOption.cheapest, child: Text(l10n.toursSortCheapest)),
+                        PopupMenuItem(value: _SortOption.priciest, child: Text(l10n.toursSortPriciest)),
+                        PopupMenuItem(value: _SortOption.highestRated, child: Text(l10n.toursSortHighestRated)),
+                        PopupMenuItem(value: _SortOption.mostPopular, child: Text(l10n.toursSortMostPopular)),
                       ],
                       child: Chip(
-                        avatar: Icon(Icons.sort, size: 16, color: primary),
-                        label: Text(_sortLabel(), style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w600)),
+                        avatar: Icon(Icons.sort, size: 16.r, color: primary),
+                        label: Text(_sortLabel(l10n), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
                         backgroundColor: primary.withValues(alpha: 0.08),
                         side: BorderSide(color: primary.withValues(alpha: 0.2)),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     // Active filter chips
                     if (_activeFilters.contains('price'))
                       Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: EdgeInsetsDirectional.only(end: 8.w),
                         child: InputChip(
-                          label: Text('EGP ${_priceRange.start.round()}-${_priceRange.end.round()}', style: const TextStyle(fontSize: 12)),
+                          label: Text('EGP ${_priceRange.start.round()}-${_priceRange.end.round()}', style: TextStyle(fontSize: 12.sp)),
                           onDeleted: () => setState(() => _activeFilters.remove('price')),
                           backgroundColor: primary.withValues(alpha: 0.08),
                           side: BorderSide(color: primary.withValues(alpha: 0.2)),
@@ -394,10 +415,10 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                       ),
                     if (_activeFilters.contains('rating'))
                       Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: EdgeInsetsDirectional.only(end: 8.w),
                         child: InputChip(
-                          avatar: const Icon(Icons.star, color: Colors.amber, size: 16),
-                          label: Text('${_minRating.toInt()}+', style: const TextStyle(fontSize: 12)),
+                          avatar: Icon(Icons.star, color: Colors.amber, size: 16.r),
+                          label: Text('${_minRating.toInt()}+', style: TextStyle(fontSize: 12.sp)),
                           onDeleted: () => setState(() { _activeFilters.remove('rating'); _minRating = 0; }),
                           backgroundColor: primary.withValues(alpha: 0.08),
                           side: BorderSide(color: primary.withValues(alpha: 0.2)),
@@ -405,9 +426,9 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                       ),
                     if (_activeFilters.contains('frequency') && _selectedFrequency != null)
                       Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: EdgeInsetsDirectional.only(end: 8.w),
                         child: InputChip(
-                          label: Text(_selectedFrequency!, style: const TextStyle(fontSize: 12)),
+                          label: Text(_frequencyLabel(l10n, _selectedFrequency!), style: TextStyle(fontSize: 12.sp)),
                           onDeleted: () => setState(() { _activeFilters.remove('frequency'); _selectedFrequency = null; }),
                           backgroundColor: primary.withValues(alpha: 0.08),
                           side: BorderSide(color: primary.withValues(alpha: 0.2)),
@@ -416,7 +437,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
 
               // Recommended for You — personalised tour carousel
               if (state is ExplorerToursLoaded &&
@@ -431,12 +452,12 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
               // Results count
               if (state is ExplorerToursLoaded)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
                   child: Row(
                     children: [
                       Text(
-                        '${_applyFiltersAndSort(allTours).length} tours found',
-                        style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.5)),
+                        l10n.toursFoundCount(_applyFiltersAndSort(allTours).length),
+                        style: TextStyle(fontSize: 13.sp, color: onSurface.withValues(alpha: 0.5)),
                       ),
                     ],
                   ),
@@ -456,7 +477,7 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
     if (state is ExplorerToursLoading) return _buildShimmerLoading();
     if (state is ExplorerToursError) {
       return AppErrorWidget(
-        message: 'Could not load tours.\nCheck your connection and try again.',
+        message: AppLocalizations.of(context).toursLoadError,
         onRetry: () => context.read<ExplorerToursCubit>().loadTours(),
       );
     }
@@ -464,10 +485,10 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
       final filtered = _applyFiltersAndSort(allTours);
       if (filtered.isEmpty) return _buildEmptyState(theme);
       return ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 20.h),
         itemCount: filtered.length,
         itemBuilder: (context, index) => Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: EdgeInsets.only(bottom: 16.h),
           child: TourCard(tour: filtered[index]),
         ),
       );
@@ -475,37 +496,38 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
     return const SizedBox.shrink();
   }
 
-  String _sortLabel() {
+  String _sortLabel(AppLocalizations l10n) {
     switch (_sortOption) {
-      case _SortOption.newest: return 'Newest';
-      case _SortOption.cheapest: return 'Cheapest';
-      case _SortOption.priciest: return 'Priciest';
-      case _SortOption.highestRated: return 'Top Rated';
-      case _SortOption.mostPopular: return 'Popular';
+      case _SortOption.newest: return l10n.toursSortLabelNewest;
+      case _SortOption.cheapest: return l10n.toursSortLabelCheapest;
+      case _SortOption.priciest: return l10n.toursSortLabelPriciest;
+      case _SortOption.highestRated: return l10n.toursSortLabelTopRated;
+      case _SortOption.mostPopular: return l10n.toursSortLabelPopular;
     }
   }
 
   Widget _buildEmptyState(ThemeData theme) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.travel_explore, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
-          const SizedBox(height: 20),
-          const Text('No tours found', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
+          Icon(Icons.travel_explore, size: 80.r, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+          SizedBox(height: 20.h),
+          Text(l10n.toursEmptyTitle, style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
+          SizedBox(height: 8.h),
           Text(
             _activeFilters.isNotEmpty
-                ? 'Try adjusting your filters.'
-                : 'Try adjusting your search query.',
-            style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                ? l10n.toursEmptyFilters
+                : l10n.toursEmptySearch,
+            style: TextStyle(fontSize: 16.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
           ),
           if (_activeFilters.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             TextButton.icon(
               onPressed: () => setState(() { _activeFilters.clear(); _minRating = 0; _selectedFrequency = null; }),
               icon: const Icon(Icons.clear_all),
-              label: const Text('Clear All Filters'),
+              label: Text(l10n.toursClearFilters),
             ),
           ],
         ],
@@ -515,13 +537,13 @@ class _ToursExplorerViewState extends State<ToursExplorerView> {
 
   Widget _buildShimmerLoading() {
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 20.h),
       itemCount: 4,
       itemBuilder: (context, index) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
+        padding: EdgeInsets.only(bottom: 16.h),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: const ShimmerLoadingWidget.rectangular(height: 280),
+          borderRadius: BorderRadius.circular(20.r),
+          child: ShimmerLoadingWidget.rectangular(height: 280.h),
         ),
       ),
     );
@@ -551,50 +573,50 @@ class _RecommendedToursCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 4),
+      padding: EdgeInsets.only(top: 4.h, bottom: 4.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 6),
+            padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 6.h),
             child: Row(
               children: [
-                Icon(Icons.auto_awesome, size: 16, color: primary),
-                const SizedBox(width: 6),
+                Icon(Icons.auto_awesome, size: 16.r, color: primary),
+                SizedBox(width: 6.w),
                 Text(
-                  'Recommended for You',
+                  AppLocalizations.of(context).toursRecommended,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
                     color: onSurface,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                   ),
                 ),
               ],
             ),
           ),
           SizedBox(
-            height: 180,
+            height: 180.h,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               itemCount: loading ? 3 : tours.length,
               itemBuilder: (context, i) {
                 if (loading) {
                   return Padding(
-                    padding: const EdgeInsets.only(right: 12),
+                    padding: EdgeInsetsDirectional.only(end: 12.w),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: const ShimmerLoadingWidget.rectangular(
-                        width: 220,
-                        height: 180,
+                      borderRadius: BorderRadius.circular(16.r),
+                      child: ShimmerLoadingWidget.rectangular(
+                        width: 220.w,
+                        height: 180.h,
                       ),
                     ),
                   );
                 }
                 final tour = tours[i];
                 return Padding(
-                  padding: const EdgeInsets.only(right: 12),
+                  padding: EdgeInsetsDirectional.only(end: 12.w),
                   child: _RecommendedTourCard(tour: tour),
                 );
               },
@@ -619,9 +641,9 @@ class _RecommendedTourCard extends StatelessWidget {
         MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
       ),
       child: Container(
-        width: 220,
+        width: 220.w,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           color: theme.colorScheme.surface,
           boxShadow: [
             BoxShadow(
@@ -636,27 +658,14 @@ class _RecommendedTourCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Image
-            if (tour.images.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: tour.images.first,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                ),
-                errorWidget: (_, __, ___) => Container(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                  child: Icon(Icons.tour,
-                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                      size: 36),
-                ),
-              )
-            else
-              Container(
-                color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                child: Icon(Icons.tour,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                    size: 36),
-              ),
+            ShimmerImage(
+              url: tour.images.isNotEmpty ? tour.images.first : null,
+              fit: BoxFit.cover,
+              fallbackIcon: Icons.tour,
+              fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
+              fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
+              fallbackIconSize: 36.r,
+            ),
             // Gradient overlay
             const DecoratedBox(
               decoration: BoxDecoration(
@@ -670,26 +679,26 @@ class _RecommendedTourCard extends StatelessWidget {
             ),
             // Rating pill
             if (tour.rating > 0)
-              Positioned(
-                top: 8,
-                right: 8,
+              PositionedDirectional(
+                top: 8.h,
+                end: 8.w,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: Colors.amber.shade700,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded,
-                          size: 12, color: Colors.white),
-                      const SizedBox(width: 2),
+                      Icon(Icons.star_rounded,
+                          size: 12.r, color: Colors.white),
+                      SizedBox(width: 2.w),
                       Text(
                         tour.rating.toStringAsFixed(1),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -699,37 +708,37 @@ class _RecommendedTourCard extends StatelessWidget {
               ),
             // Title + meeting location
             Positioned(
-              bottom: 10,
-              left: 10,
-              right: 10,
+              bottom: 10.h,
+              left: 10.w,
+              right: 10.w,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     tour.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       height: 1.2,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (tour.meetingLocationName.isNotEmpty) ...[
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3.h),
                     Row(
                       children: [
-                        const Icon(Icons.place,
-                            size: 11, color: Colors.white70),
-                        const SizedBox(width: 2),
+                        Icon(Icons.place,
+                            size: 11.r, color: Colors.white70),
+                        SizedBox(width: 2.w),
                         Expanded(
                           child: Text(
                             tour.meetingLocationName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 11,
+                              fontSize: 11.sp,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

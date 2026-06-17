@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 
 import '../bloc/map_bloc.dart';
@@ -24,6 +26,7 @@ class MapTopOverlays extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
@@ -39,14 +42,14 @@ class MapTopOverlays extends StatelessWidget {
     return Stack(
       children: [
         // Places Count Chip
-        Positioned(
-          top: 110,
-          left: 20,
+        PositionedDirectional(
+          top: 110.h,
+          start: 20.w,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: chipBg(),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
                     color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))
@@ -59,20 +62,21 @@ class MapTopOverlays extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '$visibleMarkersCount/${state.allItems.length} places',
+                  l10n.mapPlacesCount(visibleMarkersCount, state.allItems.length),
                   style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                       color: onSurface.withValues(alpha: 0.9)),
                 ),
                 if (state.selectedUiCategoryId != 'all')
                   Text(
-                    MapConfig.categories
-                        .firstWhere((c) => c.id == state.selectedUiCategoryId,
-                            orElse: () => const UiCategory('', 'Unknown', ''))
-                        .label,
+                    mapCategoryLabel(
+                        l10n,
+                        MapConfig.categories.firstWhere(
+                            (c) => c.id == state.selectedUiCategoryId,
+                            orElse: () => const UiCategory('', 'Unknown', ''))),
                     style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 10.sp,
                         color: primary,
                         fontWeight: FontWeight.w600),
                   ),
@@ -82,9 +86,9 @@ class MapTopOverlays extends StatelessWidget {
         ),
 
         // Filter Button
-        Positioned(
-          top: 110,
-          right: 20,
+        PositionedDirectional(
+          top: 110.h,
+          end: 20.w,
           child: GestureDetector(
             onTap: () async {
               final chosen = await showModalBottomSheet<String>(
@@ -106,12 +110,12 @@ class MapTopOverlays extends StatelessWidget {
               }
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
               decoration: BoxDecoration(
                 color: state.selectedUiCategoryId == 'all'
                     ? chipBg()
                     : primary.withValues(alpha: isDark ? 0.90 : 0.95),
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(30.r),
                 boxShadow: [
                   BoxShadow(
                       color: shadowColor, blurRadius: 14, offset: const Offset(0, 6))
@@ -127,16 +131,16 @@ class MapTopOverlays extends StatelessWidget {
                     color: state.selectedUiCategoryId == 'all'
                         ? onSurface.withValues(alpha: 0.9)
                         : Colors.white,
-                    size: 20,
+                    size: 20.r,
                   ),
                   if (state.selectedUiCategoryId != 'all') ...[
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6.w),
                     Text(
                       MapConfig.categories
                           .firstWhere((c) => c.id == state.selectedUiCategoryId,
                               orElse: () => const UiCategory('', '', ''))
                           .icon,
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.sp),
                     ),
                   ],
                 ],

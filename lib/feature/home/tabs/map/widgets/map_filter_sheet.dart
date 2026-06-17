@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/presentation/map_config.dart';
 import '../../home/data/models/map_item_models.dart';
 
@@ -23,6 +25,7 @@ class MapFilterSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     final surface = theme.colorScheme.surface;
@@ -59,36 +62,36 @@ class MapFilterSheet extends StatelessWidget {
             children: [
               // Handle bar
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: onSurface.withValues(alpha: isDark ? 0.25 : 0.18),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
 
               // Title
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 child: Row(
                   children: [
                     Text(
-                      "Filter by Category",
+                      l10n.mapFilterByCategory,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,
                       ),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: selectedCategory == 'all'
                             ? primary.withValues(alpha: 0.12)
                             : Colors.green.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                           color: selectedCategory == 'all'
                               ? primary.withValues(alpha: 0.25)
@@ -96,9 +99,9 @@ class MapFilterSheet extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        selectedCategory == 'all' ? 'Zoom Filter ON' : 'Showing All',
+                        selectedCategory == 'all' ? l10n.mapZoomFilterOn : l10n.mapShowingAll,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: selectedCategory == 'all' ? primary : Colors.green,
                           fontWeight: FontWeight.w600,
                         ),
@@ -108,7 +111,7 @@ class MapFilterSheet extends StatelessWidget {
                 ),
               ),
 
-              Divider(height: 1, color: dividerColor),
+              Divider(height: 1.h, color: dividerColor),
 
               // Category list
               Expanded(
@@ -135,13 +138,13 @@ class MapFilterSheet extends StatelessWidget {
                       color: surface,
                       child: ListTile(
                         leading: Container(
-                          width: 40,
-                          height: 40,
+                          width: 40.r,
+                          height: 40.r,
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? primary.withValues(alpha: 0.14)
                                 : onSurface.withValues(alpha: 0.06),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                             border: Border.all(
                               color: (isDark ? Colors.white : Colors.black)
                                   .withValues(alpha: 0.06),
@@ -150,12 +153,12 @@ class MapFilterSheet extends StatelessWidget {
                           child: Center(
                             child: Text(
                               category.icon,
-                              style: const TextStyle(fontSize: 20),
+                              style: TextStyle(fontSize: 20.sp),
                             ),
                           ),
                         ),
                         title: Text(
-                          category.label,
+                          mapCategoryLabel(l10n, category),
                           style: TextStyle(
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                             color: isSelected ? primary : onSurface,
@@ -163,12 +166,12 @@ class MapFilterSheet extends StatelessWidget {
                         ),
                         subtitle: Text(
                           category.id == 'all'
-                              ? '$count places • Zoom to see more'
+                              ? l10n.mapCatPlacesZoom(count)
                               : category.id == 'favorites'
-                                  ? '$count saved places'
-                                  : '$count places',
+                                  ? l10n.mapCatSavedPlaces(count)
+                                  : l10n.mapCatPlaces(count),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: onSurface.withValues(alpha: 0.70),
                           ),
                         ),

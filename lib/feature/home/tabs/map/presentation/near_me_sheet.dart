@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class NearMeSheet extends StatefulWidget {
@@ -208,22 +209,17 @@ class _NearMeSheetState extends State<NearMeSheet> {
                               final np = _nearbyPlaces[index];
                               final topReason = np.reasons.isNotEmpty ? np.reasons.first : null;
                               return ListTile(
-                                leading: Container(
+                                leading: ShimmerImage(
+                                  url: np.item.imagePaths.isNotEmpty
+                                      ? np.item.imagePaths.first
+                                      : null,
                                   width: 48.r,
                                   height: 48.r,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.r),
-                                    color: onSurface.withValues(alpha: 0.05),
-                                    image: np.item.imagePaths.isNotEmpty
-                                        ? DecorationImage(
-                                            image: NetworkImage(np.item.imagePaths.first),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
-                                  ),
-                                  child: np.item.imagePaths.isEmpty
-                                      ? Icon(Icons.place, color: primary.withValues(alpha: 0.5))
-                                      : null,
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  fit: BoxFit.cover,
+                                  fallbackIcon: Icons.place,
+                                  fallbackBackgroundColor: onSurface.withValues(alpha: 0.05),
+                                  fallbackIconColor: primary.withValues(alpha: 0.5),
                                 ),
                                 title: Text(
                                   np.item.title,

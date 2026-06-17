@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../bloc/create_tour_cubit.dart';
 import '../bloc/create_tour_state.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
 import 'package:lost_in_egypt/core/utils/map_style_helper.dart';
@@ -20,7 +22,7 @@ import 'package:lost_in_egypt/feature/home/notification/data/models/notification
 
 class CreateTourScreen extends StatefulWidget {
   final TourEntity? tourToEdit;
-  
+
   const CreateTourScreen({super.key, this.tourToEdit});
 
   @override
@@ -54,6 +56,15 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
   List<MapItem> _availablePlaces = [];
   bool _isLoadingPlaces = true;
   GoogleMapController? _previewMapController;
+  String? _mapStyle;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MapStyleHelper.getStyle(context).then((style) {
+      if (mounted) setState(() => _mapStyle = style);
+    });
+  }
 
   @override
   void dispose() {
@@ -82,10 +93,32 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
       _selectedLng = t.meetingLongitude;
       _existingImages = List.from(t.images);
       _selectedMeetingTime = t.meetingTime;
-      
+
       if (t.frequency != 'One-Time') {
         _selectedWeekdays.addAll(t.frequency.split(', '));
       }
+    }
+  }
+
+  // Weekday values stay English (persisted in `frequency`); only the display is localized.
+  String _weekdayLabel(AppLocalizations l10n, String day) {
+    switch (day) {
+      case 'Mon':
+        return l10n.weekdayMon;
+      case 'Tue':
+        return l10n.weekdayTue;
+      case 'Wed':
+        return l10n.weekdayWed;
+      case 'Thu':
+        return l10n.weekdayThu;
+      case 'Fri':
+        return l10n.weekdayFri;
+      case 'Sat':
+        return l10n.weekdaySat;
+      case 'Sun':
+        return l10n.weekdaySun;
+      default:
+        return day;
     }
   }
 
@@ -186,30 +219,31 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
   }
 
   void _submit() {
+    final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
     if (_selectedMeetingTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a meeting time.')),
+        SnackBar(content: Text(l10n.createSelectTime)),
       );
       return;
     }
     if (_selectedImages.isEmpty && _existingImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one image.')),
+        SnackBar(content: Text(l10n.createSelectImage)),
       );
       return;
     }
 
     if (_selectedLat == null || _selectedLng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a meeting location on the map.')),
+        SnackBar(content: Text(l10n.createSelectLocation)),
       );
       return;
     }
 
     if (_destinations.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one destination.')),
+        SnackBar(content: Text(l10n.createAddDestination)),
       );
       return;
     }
@@ -217,7 +251,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final price = double.tryParse(_priceController.text) ?? 0.0;
     if (price < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Price cannot be negative.')),
+        SnackBar(content: Text(l10n.createPriceNegative)),
       );
       return;
     }
@@ -225,7 +259,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final attendees = int.tryParse(_maxAttendeesController.text) ?? 10;
     if (attendees <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Max attendees must be greater than zero.')),
+        SnackBar(content: Text(l10n.createAttendeesZero)),
       );
       return;
     }
@@ -270,9 +304,10 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.tourToEdit != null ? 'Edit Tour' : 'Create New Tour')),
+      appBar: AppBar(title: Text(widget.tourToEdit != null ? l10n.createEditTitle : l10n.createNewTitle)),
       body: BlocConsumer<CreateTourCubit, CreateTourState>(
         listener: (context, state) {
           if (state is CreateTourError) {
@@ -283,7 +318,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
             final isEdit = widget.tourToEdit != null;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(isEdit ? 'Tour updated!' : 'Tour created successfully!'),
+                content: Text(isEdit ? l10n.createUpdatedToast : l10n.createCreatedToast),
                 backgroundColor: Colors.green,
               ),
             );
@@ -299,7 +334,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.r),
             child: Form(
               key: _formKey,
               child: Column(
@@ -307,19 +342,19 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                 children: [
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Tour Title', border: OutlineInputBorder()),
-                    validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                    decoration: InputDecoration(labelText: l10n.createFieldTitle, border: const OutlineInputBorder()),
+                    validator: (val) => val == null || val.isEmpty ? l10n.createRequired : null,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   TextFormField(
                     controller: _descController,
-                    decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+                    decoration: InputDecoration(labelText: l10n.createFieldDesc, border: const OutlineInputBorder()),
                     maxLines: 3,
-                    validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                    validator: (val) => val == null || val.isEmpty ? l10n.createRequired : null,
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Destinations (Max 5)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 16.h),
+                  Text(l10n.createDestinationsLabel, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8.h),
                   if (_destinations.isNotEmpty)
                     ReorderableListView.builder(
                       shrinkWrap: true,
@@ -337,18 +372,18 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                           key: ValueKey(_destinations[index]),
                           color: Theme.of(context).colorScheme.surface,
                           elevation: 0,
-                          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                          margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 0),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r),
                             side: BorderSide(color: borderColor),
                           ),
                           child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
                             title: Text(_destinations[index], style: TextStyle(fontWeight: FontWeight.w500, color: textColor)),
                             leading: CircleAvatar(
-                              radius: 12,
+                              radius: 12.r,
                               backgroundColor: const Color(0xFFC79A00),
-                              child: Text('${index + 1}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                              child: Text('${index + 1}', style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.bold)),
                             ),
                             trailing: IconButton(
                               icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
@@ -378,12 +413,12 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                         elevation: 4,
                                         color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(8.r),
                                           side: BorderSide(color: isDark ? Colors.grey.shade700 : Colors.grey.shade300),
                                         ),
                                         child: SizedBox(
-                                          height: 200,
-                                          width: MediaQuery.of(context).size.width - 80,
+                                          height: 200.h,
+                                          width: MediaQuery.of(context).size.width - 80.w,
                                           child: ListView.builder(
                                             padding: EdgeInsets.zero,
                                             itemCount: options.length,
@@ -392,7 +427,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                               return InkWell(
                                                 onTap: () => onSelected(option),
                                                 child: Padding(
-                                                  padding: const EdgeInsets.all(16.0),
+                                                  padding: EdgeInsets.all(16.r),
                                                   child: Text(option.title, style: TextStyle(color: textColor)),
                                                 ),
                                               );
@@ -427,22 +462,22 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                       controller: controller,
                                       focusNode: focusNode,
                                       onEditingComplete: onEditingComplete,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Search destination...',
-                                        border: OutlineInputBorder(),
+                                      decoration: InputDecoration(
+                                        hintText: l10n.createSearchDestination,
+                                        border: const OutlineInputBorder(),
                                       ),
                                     );
                                   },
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                               IconButton(
                                 icon: const Icon(Icons.map_outlined),
                                 color: const Color(0xFFC79A00),
                                 onPressed: () async {
                                   final result = await Navigator.pushNamed(context, '/map_picker');
                                   if (result != null && result is Map<String, dynamic>) {
-                                    final title = result['name'] ?? result['address'] ?? 'Unknown Location';
+                                    final title = result['name'] ?? result['address'] ?? l10n.mapPickerUnknownLocation;
                                     if (!_destinations.contains(title)) {
                                       setState(() {
                                         _destinations.add(title);
@@ -453,69 +488,69 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                               ),
                             ],
                           ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Row(
                     children: [
                       Expanded(
                         child: TextFormField(
                           controller: _priceController,
-                          decoration: const InputDecoration(labelText: 'Price (EGP)', prefixText: 'EGP ', border: OutlineInputBorder()),
+                          decoration: InputDecoration(labelText: l10n.createFieldPrice, prefixText: 'EGP ', border: const OutlineInputBorder()),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                          validator: (val) => val == null || val.isEmpty ? l10n.createRequired : null,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       Expanded(
                         child: TextFormField(
                           controller: _maxAttendeesController,
-                          decoration: const InputDecoration(labelText: 'Max Attendees', border: OutlineInputBorder()),
+                          decoration: InputDecoration(labelText: l10n.createFieldMaxAttendees, border: const OutlineInputBorder()),
                           keyboardType: TextInputType.number,
-                          validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                          validator: (val) => val == null || val.isEmpty ? l10n.createRequired : null,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   if (_selectedLat != null && _selectedLng != null)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Meeting Location', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
+                        Text(l10n.createMeetingLocation, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 8.h),
                         if (_selectedLocationName != null && _selectedLocationName!.isNotEmpty) ...[
                           Text(
                             _selectedLocationName!,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               color: isDark ? Colors.white : Colors.black87,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                         ],
                         if (_selectedAddress != null && _selectedAddress!.isNotEmpty) ...[
                           Text(
                             _selectedAddress!,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                         ],
                         Text(
                           '${_selectedLat!.toStringAsFixed(6)}, ${_selectedLng!.toStringAsFixed(6)}',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12.h),
                         Container(
-                          height: 160,
-                          margin: const EdgeInsets.only(bottom: 16),
+                          height: 160.h,
+                          margin: EdgeInsets.only(bottom: 16.h),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(color: borderColor),
                           ),
                           clipBehavior: Clip.hardEdge,
@@ -535,13 +570,13 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                 zoomControlsEnabled: false,
                                 mapToolbarEnabled: false,
                                 myLocationButtonEnabled: false,
+                                style: _mapStyle,
                                 onMapCreated: (controller) {
                                   _previewMapController = controller;
-                                  MapStyleHelper.applyTheme(controller, context);
                                 },
                               ),
-                              Positioned(
-                                top: 8, right: 8,
+                              PositionedDirectional(
+                                top: 8.h, end: 8.w,
                                 child: FloatingActionButton.small(
                                   heroTag: 'edit_map',
                                   onPressed: () async {
@@ -565,11 +600,11 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                     )
                   else
                     ListTile(
-                      title: const Text('Select Meeting Location'),
+                      title: Text(l10n.createSelectMeetingLocation),
                       trailing: const Icon(Icons.map, color: Color(0xFFC79A00)),
                       shape: RoundedRectangleBorder(
                         side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                       onTap: () async {
                         final result = await Navigator.pushNamed(context, '/map_picker');
@@ -583,29 +618,29 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                         }
                       },
                     ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   ListTile(
                     title: Text(_selectedMeetingTime == null
-                        ? 'Select Meeting Time'
-                        : 'Meeting Time: ${DateFormat('yyyy-MM-dd HH:mm').format(_selectedMeetingTime!)}'),
+                        ? l10n.createSelectMeetingTime
+                        : l10n.createMeetingTimePrefix(DateFormat('yyyy-MM-dd HH:mm').format(_selectedMeetingTime!))),
                     trailing: const Icon(Icons.calendar_today),
                     shape: RoundedRectangleBorder(
                       side: BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                     onTap: _pickDateTime,
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Schedule Frequency (Days)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 16.h),
+                  Text(l10n.createScheduleFreq, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8.h),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
+                    spacing: 8.w,
+                    runSpacing: 4.h,
                     children: _weekdays.map((day) {
                       final isSelected = _selectedWeekdays.contains(day);
                       return ChoiceChip(
                         label: Text(
-                          day,
+                          _weekdayLabel(l10n, day),
                           style: TextStyle(
                             color: isSelected ? Colors.black : textColor,
                           ),
@@ -625,33 +660,26 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 24),
-                  Text(widget.tourToEdit != null ? 'Edit Tour Images' : 'Tour Images', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus")),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 24.h),
+                  Text(widget.tourToEdit != null ? l10n.createEditImages : l10n.createImages, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: textColor, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'])),
+                  SizedBox(height: 8.h),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 8.w,
+                    runSpacing: 8.h,
                     children: [
                       ..._existingImages.map((url) => Stack(
                             children: [
-                              CachedNetworkImage(
-                                imageUrl: url,
-                                width: 80,
-                                height: 80,
+                              ShimmerImage(
+                                url: url,
+                                width: 80.r,
+                                height: 80.r,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  width: 80, height: 80,
-                                  color: Colors.grey.withValues(alpha: 0.2),
-                                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  width: 80, height: 80,
-                                  color: Colors.grey.withValues(alpha: 0.2),
-                                  child: const Icon(Icons.error, size: 20),
-                                ),
+                                fallbackIcon: Icons.error,
+                                fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.2),
+                                fallbackIconSize: 20.r,
                               ),
-                              Positioned(
-                                right: 0,
+                              PositionedDirectional(
+                                end: 0,
                                 top: 0,
                                 child: GestureDetector(
                                   onTap: () {
@@ -661,7 +689,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                   },
                                   child: Container(
                                     color: Colors.black54,
-                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                    child: Icon(Icons.close, color: Colors.white, size: 18.r),
                                   ),
                                 ),
                               ),
@@ -669,9 +697,9 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                           )),
                       ..._selectedImages.map((file) => Stack(
                             children: [
-                              Image.file(file, width: 80, height: 80, fit: BoxFit.cover),
-                              Positioned(
-                                right: 0,
+                              Image.file(file, width: 80.r, height: 80.r, fit: BoxFit.cover),
+                              PositionedDirectional(
+                                end: 0,
                                 top: 0,
                                 child: GestureDetector(
                                   onTap: () {
@@ -681,7 +709,7 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                                   },
                                   child: Container(
                                     color: Colors.black54,
-                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                    child: Icon(Icons.close, color: Colors.white, size: 18.r),
                                   ),
                                 ),
                               ),
@@ -690,24 +718,24 @@ class _CreateTourScreenState extends State<CreateTourScreen> {
                       GestureDetector(
                         onTap: _pickImages,
                         child: Container(
-                          width: 80,
-                          height: 80,
+                          width: 80.r,
+                          height: 80.r,
                           color: isDark ? Colors.white10 : Colors.grey.withAlpha(50),
                           child: Icon(Icons.add_a_photo, color: isDark ? Colors.white54 : Colors.grey),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                   ElevatedButton(
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
                       backgroundColor: const Color(0xFFC79A00),
                     ),
-                    child: Text(widget.tourToEdit != null ? 'Save Changes' : 'Create Tour', style: const TextStyle(fontSize: 18, color: Colors.white)),
+                    child: Text(widget.tourToEdit != null ? l10n.createSaveChanges : l10n.guideDashCreateTour, style: TextStyle(fontSize: 18.sp, color: Colors.white)),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                 ],
               ),
             ),

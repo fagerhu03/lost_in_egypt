@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lost_in_egypt/feature/auth/domain/entities/user_entity.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
+import 'package:lost_in_egypt/feature/auth/domain/entities/user_entity.dart';
 
 class AdminGuideDetailsScreen extends StatelessWidget {
   final UserEntity applicant;
@@ -19,18 +22,18 @@ class AdminGuideDetailsScreen extends StatelessWidget {
       context: context,
       builder: (_) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(10),
+        insetPadding: EdgeInsets.all(10.r),
         child: InteractiveViewer(
           panEnabled: true,
           minScale: 0.5,
           maxScale: 4.0,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             child: CachedNetworkImage(
               imageUrl: imageUrl,
               fit: BoxFit.contain,
               placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-              errorWidget: (context, url, error) => const Icon(Icons.error, color: Colors.white, size: 50),
+              errorWidget: (context, url, error) => Icon(Icons.error, color: Colors.white, size: 50.r),
             ),
           ),
         ),
@@ -58,43 +61,43 @@ class AdminGuideDetailsScreen extends StatelessWidget {
             // Header Info
             Container(
               color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.r),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: CachedNetworkImageProvider(applicant.profileImageUrl),
-                    child: null,
+                  ShimmerAvatar(
+                    url: applicant.profileImageUrl,
+                    radius: 50.r,
+                    iconSize: 50.r,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     '${applicant.firstName} ${applicant.lastName}',
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF714611)),
+                    style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold, color: const Color(0xFF714611)),
                   ),
-                  const SizedBox(height: 8),
-                  Text(applicant.email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                  SizedBox(height: 8.h),
+                  Text(applicant.email, style: TextStyle(fontSize: 16.sp, color: Colors.grey)),
                   if (applicant.phoneNumber.isNotEmpty)
-                    Text('Phone: ${applicant.phoneNumber}', style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                    Text('Phone: ${applicant.phoneNumber}', style: TextStyle(fontSize: 16.sp, color: Colors.grey)),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            
+            SizedBox(height: 16.h),
+
             // Details Card
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Card(
                 color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.r),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDetailRow('MOTA License', applicant.motaLicenseNumber ?? 'N/A'),
+                      _buildDetailRow('MOTA License', applicant.motaLicenseNumber),
                       const Divider(),
-                      _buildDetailRow('Syndicate ID', applicant.syndicateNumber ?? 'N/A'),
+                      _buildDetailRow('Syndicate ID', applicant.syndicateNumber),
                       const Divider(),
                       _buildDetailRow('Languages', applicant.certifiedLanguages.isNotEmpty ? applicant.certifiedLanguages.join(', ') : 'None listed'),
                     ],
@@ -102,27 +105,27 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Documents Grid
             if (docs.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Text(
                   'Uploaded Documents',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF714611)),
+                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: const Color(0xFF714611)),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12.w,
+                    mainAxisSpacing: 12.h,
                     childAspectRatio: 0.8,
                   ),
                   itemCount: docs.length,
@@ -138,30 +141,27 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                       child: Container(
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(color: Colors.grey.shade300),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Expanded(
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                child: CachedNetworkImage(
-                                  imageUrl: docUrl,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                  errorWidget: (context, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
-                                ),
+                              child: ShimmerImage(
+                                url: docUrl,
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+                                fallbackIcon: Icons.broken_image,
+                                fallbackIconColor: Colors.grey,
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(8.r),
                               color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
                               child: Text(
                                 label,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
                                 maxLines: 2,
                               ),
                             ),
@@ -172,14 +172,14 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                   },
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
             ],
           ],
         ),
       ),
       bottomNavigationBar: SafeArea(
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
             boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
@@ -196,11 +196,11 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                   label: const Text('Reject', style: TextStyle(color: Colors.red)),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.red),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
@@ -211,7 +211,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
                   label: const Text('Approve', style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
                   ),
                 ),
               ),
@@ -224,7 +224,7 @@ class AdminGuideDetailsScreen extends StatelessWidget {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

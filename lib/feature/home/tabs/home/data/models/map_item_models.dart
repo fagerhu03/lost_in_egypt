@@ -443,6 +443,30 @@ class EventModel implements MapItem {
 
   final DateTime date;
 
+  /// External link for purchasing tickets (empty = no online tickets).
+  final String ticketLink;
+
+  /// Display name of the venue (e.g. "Cairo Opera House").
+  final String venueName;
+
+  /// City where the event takes place (e.g. "Cairo", "Luxor").
+  final String city;
+
+  /// Event type category id (e.g. "cultural", "concert", "adventure").
+  final String eventCategory;
+
+  /// Whether this event recurs (nightly, weekly, etc.).
+  final bool isRecurring;
+
+  /// Human-readable recurrence description (e.g. "Nightly at 7 PM").
+  final String recurrenceText;
+
+  /// Data source — "curated", "eventbrite", "admin", or "serpapi" (legacy).
+  final String source;
+
+  /// Number of reviews submitted for this event
+  final int reviewCount;
+
   const EventModel({
     required this.id,
     required this.title,
@@ -451,6 +475,7 @@ class EventModel implements MapItem {
     this.imagePaths = const [],
     required this.locationAddress,
     required this.rating,
+    this.reviewCount = 0,
     required this.price,
     required this.duration,
     required this.weather,
@@ -458,6 +483,13 @@ class EventModel implements MapItem {
     required this.date,
     this.tags = const [],
     this.importance = 5,
+    this.ticketLink = '',
+    this.venueName = '',
+    this.city = '',
+    this.eventCategory = 'cultural',
+    this.isRecurring = false,
+    this.recurrenceText = '',
+    this.source = 'curated',
   });
 
   Map<String, dynamic> toMap() {
@@ -468,6 +500,7 @@ class EventModel implements MapItem {
       'imagePaths': imagePaths,
       'locationAddress': locationAddress,
       'rating': rating,
+      'reviewCount': reviewCount,
       'price': price,
       'duration': duration,
       'weather': weather,
@@ -476,7 +509,80 @@ class EventModel implements MapItem {
       'isEvent': true,
       'tags': tags,
       'importance': importance,
+      'ticketLink': ticketLink,
+      'venueName': venueName,
+      'city': city,
+      'eventCategory': eventCategory,
+      'isRecurring': isRecurring,
+      'recurrenceText': recurrenceText,
+      'source': source,
     };
+  }
+
+  /// Serialize for SharedPreferences caching (no Firestore types).
+  Map<String, dynamic> toJsonMap() {
+    return {
+      'id': id,
+      'title': title,
+      'lat': coordinate.latitude,
+      'lng': coordinate.longitude,
+      'imagePath': imagePath,
+      'imagePaths': imagePaths,
+      'locationAddress': locationAddress,
+      'rating': rating,
+      'reviewCount': reviewCount,
+      'price': price,
+      'duration': duration,
+      'weather': weather,
+      'description': description,
+      'date': date.toIso8601String(),
+      'tags': tags,
+      'importance': importance,
+      'ticketLink': ticketLink,
+      'venueName': venueName,
+      'city': city,
+      'eventCategory': eventCategory,
+      'isRecurring': isRecurring,
+      'recurrenceText': recurrenceText,
+      'source': source,
+    };
+  }
+
+  /// Deserialize from SharedPreferences JSON cache.
+  factory EventModel.fromJsonMap(Map<String, dynamic> map) {
+    return EventModel(
+      id: map['id'] ?? '',
+      title: map['title'] ?? '',
+      coordinate: GeoPoint(
+        (map['lat'] ?? 30.0444).toDouble(),
+        (map['lng'] ?? 31.2357).toDouble(),
+      ),
+      imagePath: map['imagePath'] ?? '',
+      imagePaths: (map['imagePaths'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      locationAddress: map['locationAddress'] ?? '',
+      rating: (map['rating'] ?? 0).toDouble(),
+      reviewCount: (map['reviewCount'] ?? 0).toInt(),
+      price: (map['price'] ?? 0).toDouble(),
+      duration: map['duration'] ?? '',
+      weather: map['weather'] ?? '',
+      description: map['description'] ?? '',
+      date: DateTime.tryParse(map['date'] ?? '') ?? DateTime.now(),
+      tags: (map['tags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      importance: (map['importance'] ?? 5).toInt(),
+      ticketLink: map['ticketLink'] ?? '',
+      venueName: map['venueName'] ?? '',
+      city: map['city'] ?? '',
+      eventCategory: map['eventCategory'] ?? 'cultural',
+      isRecurring: map['isRecurring'] ?? false,
+      recurrenceText: map['recurrenceText'] ?? '',
+      source: map['source'] ?? 'curated',
+    );
   }
 
   factory EventModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -491,6 +597,7 @@ class EventModel implements MapItem {
           [],
       locationAddress: map['locationAddress'] ?? '',
       rating: (map['rating'] ?? 0).toDouble(),
+      reviewCount: (map['reviewCount'] ?? 0).toInt(),
       price: (map['price'] ?? 0).toDouble(),
       duration: map['duration'] ?? '',
       weather: map['weather'] ?? '',
@@ -501,6 +608,13 @@ class EventModel implements MapItem {
               .toList() ??
           const [],
       importance: (map['importance'] ?? 5).toInt(),
+      ticketLink: map['ticketLink'] ?? '',
+      venueName: map['venueName'] ?? '',
+      city: map['city'] ?? '',
+      eventCategory: map['eventCategory'] ?? 'cultural',
+      isRecurring: map['isRecurring'] ?? false,
+      recurrenceText: map['recurrenceText'] ?? '',
+      source: map['source'] ?? 'curated',
     );
   }
 }

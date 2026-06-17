@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import '../bloc/map_state.dart';
 
@@ -44,11 +46,11 @@ class LiveNavigationOverlay extends StatelessWidget {
           right: 0,
           child: SafeArea(
             child: Container(
-              margin: const EdgeInsets.all(12),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              margin: EdgeInsets.all(12.r),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               decoration: BoxDecoration(
                 color: surface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [
                   BoxShadow(
                       color: shadowColor, blurRadius: 16, spreadRadius: 1)
@@ -63,15 +65,15 @@ class LiveNavigationOverlay extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(8.r),
                           decoration: BoxDecoration(
                             color: primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Icon(Icons.navigation_rounded,
-                              color: primary, size: 22),
+                              color: primary, size: 22.r),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,18 +82,18 @@ class LiveNavigationOverlay extends StatelessWidget {
                                 currentStep.instruction,
                                 style: TextStyle(
                                   color: onSurface,
-                                  fontSize: 15,
+                                  fontSize: 15.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4.h),
                               Text(
                                 '${currentStep.distance} · ${currentStep.duration}',
                                 style: TextStyle(
                                   color: onSurface.withValues(alpha: 0.5),
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                 ),
                               ),
                             ],
@@ -101,54 +103,54 @@ class LiveNavigationOverlay extends StatelessWidget {
                     ),
                     // Overall ETA
                     Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: EdgeInsets.only(top: 8.h),
                       child: Row(
                         children: [
                           Icon(Icons.flag_rounded,
-                              color: primary, size: 16),
-                          const SizedBox(width: 6),
+                              color: primary, size: 16.r),
+                          SizedBox(width: 6.w),
                           Text(
                             '${state.currentRoute!.distance} · ${state.currentRoute!.duration} total',
                             style: TextStyle(
                               color: onSurface.withValues(alpha: 0.6),
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     // Step progress bar
                     Row(
                       children: [
                         Text(
-                          'Step ${state.currentStepIndex + 1}/${state.currentRoute!.steps.length}',
+                          AppLocalizations.of(context).mapStepProgress(state.currentStepIndex + 1, state.currentRoute!.steps.length),
                           style: TextStyle(
-                              color: onSurface.withValues(alpha: 0.5), fontSize: 12),
+                              color: onSurface.withValues(alpha: 0.5), fontSize: 12.sp),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Expanded(
                           child: LinearProgressIndicator(
                             value: (state.currentStepIndex + 1) /
                                 state.currentRoute!.steps.length,
                             backgroundColor: onSurface.withValues(alpha: 0.1),
                             valueColor: AlwaysStoppedAnimation(primary),
-                            minHeight: 4,
-                            borderRadius: BorderRadius.circular(2),
+                            minHeight: 4.h,
+                            borderRadius: BorderRadius.circular(2.r),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         GestureDetector(
                           onTap: onStopNavigation,
                           child: Container(
-                            padding: const EdgeInsets.all(6),
+                            padding: EdgeInsets.all(6.r),
                             decoration: BoxDecoration(
                               color: Colors.red.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.stop_rounded,
-                                color: Colors.red, size: 18),
+                            child: Icon(Icons.stop_rounded,
+                                color: Colors.red, size: 18.r),
                           ),
                         ),
                       ],
@@ -162,15 +164,15 @@ class LiveNavigationOverlay extends StatelessWidget {
 
         // Re-center Button
         if (!isFollowingUser)
-          Positioned(
-            bottom: 30,
-            right: 16,
+          PositionedDirectional(
+            bottom: 30.h,
+            end: 16.w,
             child: FloatingActionButton.small(
               heroTag: 'recenter',
               backgroundColor: primary,
               onPressed: onRecenter,
-              child: const Icon(Icons.my_location_rounded,
-                  color: Colors.white, size: 20),
+              child: Icon(Icons.my_location_rounded,
+                  color: Colors.white, size: 20.r),
             ),
           ),
       ],

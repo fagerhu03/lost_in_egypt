@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import '../../../../theme/theme.dart';
 import '../camera/presentation/camera_screen.dart';
@@ -12,12 +13,16 @@ import '../more/presentation/more_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 class HomeWrapper extends StatefulWidget {
-  const HomeWrapper({super.key});
+  /// Static key so AuthGate StreamBuilder rebuilds never create a fresh State
+  /// (which would reset the active tab index to 0 — the recurring "back takes
+  /// you to Home" bug).
+  static final globalKey = GlobalKey<_HomeWrapperState>();
+
+  HomeWrapper() : super(key: globalKey);
 
   @override
   State<HomeWrapper> createState() => _HomeWrapperState();
 }
-
 class _HomeWrapperState extends State<HomeWrapper>
     with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
@@ -27,7 +32,6 @@ class _HomeWrapperState extends State<HomeWrapper>
   bool _isNavBarVisible = true;
 
   late List<Widget> _pages;
-  late List<TabItem> _navItems;
 
   @override
   void initState() {
@@ -42,14 +46,6 @@ class _HomeWrapperState extends State<HomeWrapper>
       MoreScreen(),
     ];
 
-    _navItems = const [
-      TabItem(icon: Icons.home_filled, title: "Home"),
-      TabItem(icon: Icons.people_rounded, title: "Community"),
-      TabItem(icon: Icons.location_pin, title: "Map"),
-      TabItem(icon: Icons.camera_alt_rounded, title: "Camera"),
-      TabItem(icon: Icons.more_horiz, title: "More"),
-    ];
-
     MapFocusService.instance.tabSwitchNotifier.addListener(_handleTabSwitch);
   }
 
@@ -61,6 +57,7 @@ class _HomeWrapperState extends State<HomeWrapper>
       index = i;
       _isNavBarVisible = true;
     });
+    MapFocusService.instance.activeTabNotifier.value = i;
 
     _tabController.animateTo(i);
     _pageController.animateToPage(
@@ -81,7 +78,19 @@ class _HomeWrapperState extends State<HomeWrapper>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
+
+    // Built in build() (not initState) so the labels re-localise when the
+    // locale flips — HomeWrapper's static GlobalKey preserves State across
+    // AuthGate rebuilds, so an initState-built list would stay stale.
+    final navItems = <TabItem>[
+      TabItem(icon: Icons.home_filled, title: l.navHome),
+      TabItem(icon: Icons.people_rounded, title: l.navCommunity),
+      TabItem(icon: Icons.location_pin, title: l.navMap),
+      TabItem(icon: Icons.camera_alt_rounded, title: l.navCamera),
+      TabItem(icon: Icons.more_horiz, title: l.navMore),
+    ];
 
     // ✅ navbar background from AppColors in dark mode
     final bg = isDark
@@ -130,6 +139,11 @@ class _HomeWrapperState extends State<HomeWrapper>
               index = i;
               _isNavBarVisible = true;
             });
+            // NOTE: do NOT write activeTabNotifier here. PageView fires this
+            // callback for every intermediate index during animateToPage, so
+            // a Home→More tap would briefly tick i=1,2,3 before settling at 4.
+            // The user-intent handlers (onTap + _handleTabSwitch) always hold
+            // the final target — they are the only legitimate writers.
             _tabController.animateTo(i);
           },
           children: _pages,
@@ -150,35 +164,70 @@ class _HomeWrapperState extends State<HomeWrapper>
                     ),
                   ],
                 ),
-                child: ConvexAppBar(
-                  controller: _tabController,
-                  initialActiveIndex: index,
-                  style: TabStyle.react,
-                  height: 55.h,
-                  curveSize: 90,
-                  backgroundColor: bg,
-                  activeColor: primary,
-                  color: inactive,
-                  elevation: 0,
-                  items: _navItems,
-                  onTap: (i) {
-                    setState(() {
-                      index = i;
-                      _isNavBarVisible = true;
-                    });
-                    _tabController.animateTo(i);
-                    // Smooth slide between tabs — kills the hard-snap visual
-                    // ("ugly refresh") people kept complaining about.
-                    _pageController.animateToPage(
-                      i,
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOut,
-                    );
-                  },
+                // Keep all 5 nav labels on one line. The package default label
+                // has no fontSize (inherits ~14px, unscaled) and no maxLines, so
+                // "Community" wrapped on narrow phones. Two guards: an explicit
+                // screenutil-scaled label size via _NavBarStyle, and a clamped OS
+                // text scale so a large system font can't re-wrap it.
+                child: MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.0,
+                  child: StyleProvider(
+                    style: _NavBarStyle(),
+                    child: ConvexAppBar(
+                      controller: _tabController,
+                      initialActiveIndex: index,
+                      style: TabStyle.react,
+                      height: 55.h,
+                      curveSize: 90,
+                      backgroundColor: bg,
+                      activeColor: primary,
+                      color: inactive,
+                      elevation: 0,
+                      items: navItems,
+                      onTap: (i) {
+                        setState(() {
+                          index = i;
+                          _isNavBarVisible = true;
+                        });
+                        MapFocusService.instance.activeTabNotifier.value = i;
+                        _tabController.animateTo(i);
+                        // Smooth slide between tabs — kills the hard-snap visual
+                        // ("ugly refresh") people kept complaining about.
+                        _pageController.animateToPage(
+                          i,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOut,
+                        );
+                      },
+                    ),
+                  ),
                 ),
               )
             : const SizedBox.shrink(),
       ),
     );
+  }
+}
+
+/// Bottom-nav style override. Mirrors the package's internal defaults (icon
+/// sizing) but gives the label an explicit screenutil-scaled font size so it
+/// scales down with the rest of the UI on small screens and stays on one line.
+/// The package default leaves `fontSize` unset (inherits the ~14px ambient
+/// body style, which doesn't shrink on narrow phones → "Community" wrapped).
+class _NavBarStyle extends StyleHook {
+  _NavBarStyle();
+
+  @override
+  double? get iconSize => null; // fallback to IconTheme (package default)
+
+  @override
+  double get activeIconMargin => (ACTION_LAYOUT_SIZE - ACTION_INNER_BUTTON_SIZE) / 4;
+
+  @override
+  double get activeIconSize => ACTION_INNER_BUTTON_SIZE;
+
+  @override
+  TextStyle textStyle(Color color, String? fontFamily) {
+    return TextStyle(color: color, fontFamily: fontFamily, fontSize: 11.sp);
   }
 }

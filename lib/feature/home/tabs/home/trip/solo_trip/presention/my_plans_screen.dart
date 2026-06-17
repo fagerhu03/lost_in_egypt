@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/core/constants/trip_options.dart';
 import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/core/services/solo_plan_service.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../theme/theme.dart';
 import 'active_tour_screen.dart';
 
@@ -9,6 +12,7 @@ class MyPlansScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor =
         isDark ? AppColors.darkBackground : AppColors.lightBackground;
@@ -24,25 +28,25 @@ class MyPlansScreen extends StatelessWidget {
           elevation: 0,
           leading: IconButton(
             icon:
-                Icon(Icons.chevron_left_rounded, color: textColor, size: 28),
+                Icon(Icons.chevron_left_rounded, color: textColor, size: 28.r),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
-            'My Plans',
+            l10n.accountMyPlans,
             style: TextStyle(
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               color: textColor,
-              fontSize: 20,
+              fontSize: 20.sp,
             ),
           ),
           bottom: TabBar(
             labelColor: gold,
             unselectedLabelColor: textColor.withValues(alpha: 0.5),
             indicatorColor: gold,
-            tabs: const [
-              Tab(text: 'All'),
-              Tab(text: 'Saved'),
-              Tab(text: 'Completed'),
+            tabs: [
+              Tab(text: l10n.soloTabAll),
+              Tab(text: l10n.soloStatusSaved),
+              Tab(text: l10n.soloStatusCompleted),
             ],
           ),
         ),
@@ -59,7 +63,7 @@ class MyPlansScreen extends StatelessWidget {
             if (snap.hasError) {
               return Center(
                 child: Text(
-                  'Could not load plans',
+                  l10n.soloCouldNotLoadPlans,
                   style: TextStyle(color: textColor.withValues(alpha: 0.5)),
                 ),
               );
@@ -125,9 +129,9 @@ class _PlanList extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.r),
       itemCount: plans.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => SizedBox(height: 12.h),
       itemBuilder: (_, i) => _PlanCard(
         plan: plans[i],
         textColor: textColor,
@@ -153,11 +157,11 @@ class _PlanCard extends StatelessWidget {
     required this.isDark,
   });
 
-  String get _statusLabel {
+  String _statusLabel(AppLocalizations l10n) {
     return switch (plan.status) {
-      SoloPlanStatus.active => 'Active',
-      SoloPlanStatus.saved => 'Saved',
-      SoloPlanStatus.completed => 'Completed',
+      SoloPlanStatus.active => l10n.soloStatusActive,
+      SoloPlanStatus.saved => l10n.soloStatusSaved,
+      SoloPlanStatus.completed => l10n.soloStatusCompleted,
     };
   }
 
@@ -172,6 +176,7 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final cardColor =
         isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
     final isActive = plan.status == SoloPlanStatus.active;
@@ -186,10 +191,10 @@ class _PlanCard extends StatelessWidget {
           : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: isActive
               ? Border.all(color: gold, width: 1.5)
               : Border.all(color: Colors.transparent),
@@ -212,24 +217,24 @@ class _PlanCard extends StatelessWidget {
                   child: Text(
                     plan.title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
                       color: textColor,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: _statusColor(context).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
-                    _statusLabel,
+                    _statusLabel(l10n),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                       color: _statusColor(context),
                     ),
@@ -238,25 +243,25 @@ class _PlanCard extends StatelessWidget {
               ],
             ),
             if (plan.tagline.isNotEmpty) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 plan.tagline,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   color: textColor.withValues(alpha: 0.55),
                 ),
               ),
             ],
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // Progress bar
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.r),
               child: LinearProgressIndicator(
                 value: plan.progress,
-                minHeight: 6,
+                minHeight: 6.h,
                 backgroundColor: gold.withValues(alpha: 0.12),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   plan.status == SoloPlanStatus.completed
@@ -265,24 +270,24 @@ class _PlanCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             Row(
               children: [
                 Icon(Icons.place_outlined,
-                    size: 14, color: textColor.withValues(alpha: 0.5)),
-                const SizedBox(width: 4),
+                    size: 14.r, color: textColor.withValues(alpha: 0.5)),
+                SizedBox(width: 4.w),
                 Text(
-                  plan.areas.join(', '),
+                  plan.areas.map((a) => tripAreaLabel(l10n, a)).join(', '),
                   style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: textColor.withValues(alpha: 0.5)),
                 ),
                 const Spacer(),
                 Text(
-                  '${plan.completedStops}/${plan.totalStops} stops',
+                  l10n.soloPlanStopsProgress(plan.completedStops, plan.totalStops),
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: plan.status == SoloPlanStatus.completed
                         ? Colors.green.shade600
                         : gold,
@@ -293,7 +298,7 @@ class _PlanCard extends StatelessWidget {
             ),
 
             if (isActive) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Row(
                 children: [
                   // Delete active tour
@@ -301,15 +306,15 @@ class _PlanCard extends StatelessWidget {
                     onPressed: () => _deletePlan(context, isActive: true),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: Colors.red.withValues(alpha: 0.4)),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 12),
+                      padding: EdgeInsets.symmetric(
+                          vertical: 10.h, horizontal: 12.w),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12.r)),
                     ),
                     child: Icon(Icons.delete_outline_rounded,
-                        color: Colors.red.shade700, size: 18),
+                        color: Colors.red.shade700, size: 18.r),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () => Navigator.push(
@@ -317,18 +322,18 @@ class _PlanCard extends StatelessWidget {
                         MaterialPageRoute(
                             builder: (_) => ActiveTourScreen(plan: plan)),
                       ),
-                      icon: const Icon(Icons.play_arrow_rounded,
-                          size: 16, color: Colors.white),
-                      label: const Text(
-                        'Continue Tour',
-                        style: TextStyle(
+                      icon: Icon(Icons.play_arrow_rounded,
+                          size: 16.r, color: Colors.white),
+                      label: Text(
+                        l10n.soloContinueTour,
+                        style: const TextStyle(
                             color: Colors.white, fontWeight: FontWeight.w700),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: gold,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        padding: EdgeInsets.symmetric(vertical: 10.h),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12.r)),
                         elevation: 0,
                       ),
                     ),
@@ -338,7 +343,7 @@ class _PlanCard extends StatelessWidget {
             ],
 
             if (plan.status == SoloPlanStatus.saved) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Row(
                 children: [
                   Expanded(
@@ -348,37 +353,37 @@ class _PlanCard extends StatelessWidget {
                         side:
                             BorderSide(color: Colors.red.withValues(alpha: 0.4)),
                         padding:
-                            const EdgeInsets.symmetric(vertical: 8),
+                            EdgeInsets.symmetric(vertical: 8.h),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10.r)),
                       ),
                       child: Text(
-                        'Delete',
+                        l10n.commonDelete,
                         style: TextStyle(
-                            color: Colors.red.shade700, fontSize: 13),
+                            color: Colors.red.shade700, fontSize: 13.sp),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     flex: 2,
                     child: ElevatedButton.icon(
                       onPressed: () => _startTour(context),
-                      icon: const Icon(Icons.play_arrow_rounded,
-                          size: 16, color: Colors.white),
-                      label: const Text(
-                        'Start Tour',
+                      icon: Icon(Icons.play_arrow_rounded,
+                          size: 16.r, color: Colors.white),
+                      label: Text(
+                        l10n.soloStartTour,
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
-                            fontSize: 13),
+                            fontSize: 13.sp),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: gold,
                         padding:
-                            const EdgeInsets.symmetric(vertical: 8),
+                            EdgeInsets.symmetric(vertical: 8.h),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10.r)),
                         elevation: 0,
                       ),
                     ),
@@ -393,6 +398,7 @@ class _PlanCard extends StatelessWidget {
   }
 
   Future<void> _startTour(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     try {
       await SoloPlanService.instance.startTour(plan.id);
       final started = plan.copyWith(
@@ -408,7 +414,7 @@ class _PlanCard extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Could not start tour. Try again.'),
+          content: Text(l10n.soloCouldNotStart),
           backgroundColor: Colors.red.shade700,
         ),
       );
@@ -416,23 +422,22 @@ class _PlanCard extends StatelessWidget {
   }
 
   Future<void> _deletePlan(BuildContext context, {bool isActive = false}) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete plan?'),
+        title: Text(l10n.soloDeletePlanTitle),
         content: Text(
-          isActive
-              ? 'This tour is in progress. Deleting it will discard all your progress and cannot be undone.'
-              : 'This cannot be undone.',
+          isActive ? l10n.soloDeleteActiveBody : l10n.soloDeleteBody,
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l10n.commonCancel)),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete',
-                  style: TextStyle(color: Colors.red))),
+              child: Text(l10n.commonDelete,
+                  style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -451,38 +456,39 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.map_outlined, size: 56, color: gold.withValues(alpha: 0.4)),
-          const SizedBox(height: 16),
+          Icon(Icons.map_outlined, size: 56.r, color: gold.withValues(alpha: 0.4)),
+          SizedBox(height: 16.h),
           Text(
-            'No plans yet',
+            l10n.soloNoPlansYet,
             style: TextStyle(
-              fontSize: 18,
-              fontFamily: 'Marcellus',
+              fontSize: 18.sp,
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               color: textColor.withValues(alpha: 0.6),
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
-            'Save a curated trip or create your own\nto see it here.',
+            l10n.soloNoPlansSub,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: textColor.withValues(alpha: 0.4),
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 22),
+          SizedBox(height: 22.h),
           ElevatedButton.icon(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.explore_outlined,
-                size: 18, color: Colors.white),
-            label: const Text(
-              'Browse Trips',
-              style: TextStyle(
+            icon: Icon(Icons.explore_outlined,
+                size: 18.r, color: Colors.white),
+            label: Text(
+              l10n.soloBrowseTrips,
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),
@@ -490,9 +496,9 @@ class _EmptyState extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: gold,
               padding:
-                  const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                  EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14.r)),
               elevation: 0,
             ),
           ),

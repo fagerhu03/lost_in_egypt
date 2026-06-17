@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 
 // 4 highest-signal questions from quiz_schema.json
@@ -199,7 +200,7 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
               // ── Header ─────────────────────────────────────────────────
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -208,9 +209,9 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
                         Text(
                           'Step ${_currentPage + 1} of $total',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: onSurface.withValues(alpha: 0.45),
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                         const Spacer(),
@@ -220,18 +221,18 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
                             'Skip quiz',
                             style: TextStyle(
                               color: onSurface.withValues(alpha: 0.4),
-                              fontSize: 13,
+                              fontSize: 13.sp,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                       child: LinearProgressIndicator(
                         value: (_currentPage + 1) / total,
-                        minHeight: 4,
+                        minHeight: 4.h,
                         backgroundColor: primary.withValues(alpha: 0.12),
                         valueColor: AlwaysStoppedAnimation<Color>(primary),
                       ),
@@ -242,25 +243,25 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
 
               // ── Top branding ────────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: 8.h),
                 child: Column(
                   children: [
-                    Icon(Icons.auto_awesome, color: primary, size: 26),
-                    const SizedBox(height: 6),
+                    Icon(Icons.auto_awesome, color: primary, size: 26.r),
+                    SizedBox(height: 6.h),
                     Text(
                       'Personalise Your Journey',
                       style: TextStyle(
-                        fontFamily: 'Marcellus',
-                        fontSize: 22,
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
+                        fontSize: 22.sp,
                         fontWeight: FontWeight.w700,
                         color: onSurface,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       'Help us show you places you\'ll love',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         color: onSurface.withValues(alpha: 0.5),
                       ),
                     ),
@@ -290,10 +291,10 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
               // ── Next / Finish button ────────────────────────────────────
               Padding(
                 padding: EdgeInsets.fromLTRB(
-                    24, 12, 24, MediaQuery.of(context).padding.bottom + 20),
+                    24.w, 12.h, 24.w, MediaQuery.of(context).padding.bottom + 20.h),
                 child: SizedBox(
                   width: double.infinity,
-                  height: 54,
+                  height: 54.h,
                   child: ElevatedButton(
                     onPressed: (_canAdvance && !_submitting) ? _next : null,
                     style: ElevatedButton.styleFrom(
@@ -301,15 +302,15 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
                       disabledBackgroundColor: primary.withValues(alpha: 0.35),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14.r),
                       ),
                       elevation: 0,
                     ),
                     child: _submitting
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
+                        ? SizedBox(
+                            width: 22.r,
+                            height: 22.r,
+                            child: const CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2.5,
                             ),
@@ -318,9 +319,9 @@ class _TasteQuizScreenState extends State<TasteQuizScreen> {
                             _currentPage == _kQuestions.length - 1
                                 ? 'Start Exploring'
                                 : 'Next',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontFamily: 'Marcellus',
+                            style: TextStyle(
+                              fontSize: 17.sp,
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -357,50 +358,50 @@ class _QuestionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             question.prompt,
             style: TextStyle(
-              fontFamily: 'Marcellus',
-              fontSize: 20,
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
+              fontSize: 20.sp,
               fontWeight: FontWeight.w700,
               color: onSurface,
               height: 1.3,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             question.subtitle,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 13.sp,
               color: onSurface.withValues(alpha: 0.45),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Expanded(
             child: SingleChildScrollView(
               child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
+                spacing: 10.w,
+                runSpacing: 10.h,
                 children: question.options.map((opt) {
                   final isSelected = selected.contains(opt.id);
                   return GestureDetector(
                     onTap: () => onToggle(opt),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 14.h),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? primary.withValues(alpha: 0.14)
                             : (isDark
                                 ? onSurface.withValues(alpha: 0.06)
                                 : Colors.white.withValues(alpha: 0.75)),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14.r),
                         border: Border.all(
                           color: isSelected
                               ? primary
@@ -420,19 +421,19 @@ class _QuestionPage extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(opt.icon, style: const TextStyle(fontSize: 20)),
-                          const SizedBox(width: 8),
+                          Text(opt.icon, style: TextStyle(fontSize: 20.sp)),
+                          SizedBox(width: 8.w),
                           Text(
                             opt.label,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontWeight: isSelected
                                   ? FontWeight.w700
                                   : FontWeight.w500,
                               color: isSelected
                                   ? primary
                                   : onSurface.withValues(alpha: 0.75),
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                         ],

@@ -46,7 +46,7 @@ class TrianglePanel extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 32.sp,
                     fontWeight: FontWeight.w700,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     color: const Color(0xFF4D5420),
                   ),
                 ),
@@ -65,7 +65,7 @@ class TrianglePanel extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16.sp,
                     height: 1.4,
-                    fontFamily: 'Marcellus',
+                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     color: const Color(0xFF4D5420),
                   ),
                 ),
@@ -88,7 +88,7 @@ class TrianglePanel extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16.sp,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         fontWeight: FontWeight.w700,
                       ),
                     ),

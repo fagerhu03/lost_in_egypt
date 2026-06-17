@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lost_in_egypt/feature/auth/data/repository_impl/auth_repository_impl.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+import 'package:lost_in_egypt/core/utils/dob_validator.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -20,87 +23,30 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   String? _selectedDay;
   String? _selectedYear;
 
-  final List<String> _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
+  static const List<String> _months = DobValidator.months;
 
-  List<String> get _days => List<String>.generate(31, (i) => (i + 1).toString());
+  List<String> get _days =>
+      DobValidator.daysFor(monthName: _selectedMonth, year: _selectedYear);
 
-  List<String> get _years {
-    final int currentYear = DateTime.now().year;
-    return List<String>.generate(100, (i) => (currentYear - i).toString());
-  }
-
-  int _calculateAge(DateTime birthDate) {
-    final now = DateTime.now();
-    int age = now.year - birthDate.year;
-
-    if (now.month < birthDate.month ||
-        (now.month == birthDate.month && now.day < birthDate.day)) {
-      age--;
-    }
-
-    return age;
-  }
+  List<String> get _years => DobValidator.yearsList();
 
   Future<void> _handleFinalize() async {
-    if (_selectedMonth == null || _selectedDay == null || _selectedYear == null) {
+    final dobResult = DobValidator.validate(
+      monthName: _selectedMonth,
+      day: _selectedDay,
+      year: _selectedYear,
+    );
+    if (dobResult.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select your Date of Birth")),
-      );
-      return;
-    }
-
-    try {
-      final int day = int.parse(_selectedDay!);
-      final int year = int.parse(_selectedYear!);
-      final int monthIndex = _months.indexOf(_selectedMonth!) + 1; // 1–12
-
-      // Months that never have 31 days
-      const monthsWith30Days = ['April', 'June', 'September', 'November'];
-
-      // 1) February cannot have 30 or 31
-      if (_selectedMonth == 'February' && (day == 30 || day == 31)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("February cannot have 30 or 31 days.")),
-        );
-        return;
-      }
-
-      // 2) Months that cannot have 31 days
-      if (day == 31 &&
-          (monthsWith30Days.contains(_selectedMonth) ||
-              _selectedMonth == 'February')) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("The selected month cannot have 31 days.")),
-        );
-        return;
-      }
-
-      final DateTime dob = DateTime(year, monthIndex, day);
-
-      // General safety: ensure the constructed date is valid
-      if (dob.year != year || dob.month != monthIndex || dob.day != day) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please select a valid Date of Birth")),
-        );
-        return;
-      }
-
-      // Age must be at least 16
-      final int age = _calculateAge(dob);
-      if (age < 16) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("You must be at least 16 years old to use this app."),
-          ),
-        );
-        return;
-      }
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a valid Date of Birth")),
+        SnackBar(
+          content: Text(dobErrorMessage(
+            AppLocalizations.of(context),
+            dobResult.error!,
+            monthName: _selectedMonth,
+            year: _selectedYear,
+            maxDay: dobResult.maxDay,
+          )),
+        ),
       );
       return;
     }
@@ -137,6 +83,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -146,26 +93,26 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
+              padding: EdgeInsets.symmetric(horizontal: 30.w),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "One Last Step",
+                  Text(
+                    l10n.completeProfileTitle,
                     style: TextStyle(
-                      fontSize: 24,
-                      color: Color(0xff634700),
-                      fontFamily: "Marcellus",
+                      fontSize: 24.sp,
+                      color: const Color(0xff634700),
+                      fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    "We need your birthdate to customize your journey in Egypt.",
+                  SizedBox(height: 15.h),
+                  Text(
+                    l10n.completeProfileSubtitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontFamily: "Marcellus"),
+                    style: TextStyle(fontSize: 16.sp, fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo']),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30.h),
                   
                   Row(
                     children: [
@@ -173,52 +120,53 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         child: _dropdown(
                           _months,
                           _selectedMonth,
-                          "Month",
+                          l10n.dobMonth,
                           (v) => setState(() => _selectedMonth = v),
+                          itemLabel: (m) => dobMonthLabel(l10n, m),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       Expanded(
                         child: _dropdown(
                           _days,
                           _selectedDay,
-                          "Day",
+                          l10n.dobDay,
                           (v) => setState(() => _selectedDay = v),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       Expanded(
                         child: _dropdown(
                           _years,
                           _selectedYear,
-                          "Year",
+                          l10n.dobYear,
                           (v) => setState(() => _selectedYear = v),
                         ),
                       ),
                     ],
                   ),
             
-                  const SizedBox(height: 40),
-            
+                  SizedBox(height: 40.h),
+
                   GestureDetector(
                     onTap: _isLoading ? null : _handleFinalize,
                     child: Container(
                       width: double.infinity,
-                      height: 50,
+                      height: 50.h,
                       decoration: BoxDecoration(
                         color: const Color(0xFFD6A00F),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Center(
-                        child: _isLoading 
+                        child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.black87)
-                          : const Text(
-                            "Complete Setup",
+                          : Text(
+                            l10n.completeProfileButton,
                             style: TextStyle(
                               color: Colors.black87,
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                       ),
@@ -237,14 +185,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     List<String> items,
     String? value,
     String hint,
-    Function(String?) onChanged,
-  ) {
+    Function(String?) onChanged, {
+    String Function(String)? itemLabel,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF7A8450).withValues(alpha: 0.70),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
@@ -260,7 +209,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               .map(
                 (e) => DropdownMenuItem(
                   value: e,
-                  child: Text(e),
+                  child: Text(itemLabel != null ? itemLabel(e) : e),
                 ),
               )
               .toList(),

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
 import '../../../../core/utils/error_handler.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +15,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../feature/home/tabs/map/data/datasources/map_focus_service.dart';
 import '../../../../feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:http/http.dart' as http;
-import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/widgets/shimmer_avatar.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 import '../../data/models/tour_model.dart';
 import '../../../auth/data/models/user.dart';
 import '../../../../feature/home/tabs/community/presentation/universal_profile_screen.dart';
@@ -24,6 +27,7 @@ import '../../../../feature/home/notification/data/datasources/notifications_dat
 import '../../../../feature/home/notification/data/models/notification_model.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/guide_location_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/utils/map_style_helper.dart';
@@ -32,16 +36,37 @@ import '../../../../core/utils/map_style_helper.dart';
 // Main screen
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Booking-status values stay English in Firestore; only the badge display is localized.
+String _bookingStatusLabel(AppLocalizations l10n, String status) {
+  switch (status) {
+    case 'confirmed':
+      return l10n.bookingStatusConfirmed;
+    case 'cancelled':
+      return l10n.bookingStatusCancelled;
+    case 'pending':
+      return l10n.bookingStatusPending;
+    case 'completed':
+      return l10n.bookingStatusCompleted;
+    case 'checked_in':
+      return l10n.bookingStatusCheckedIn;
+    case 'partially_checked_in':
+      return l10n.bookingStatusPartial;
+    default:
+      return status.toUpperCase();
+  }
+}
+
 class BookingHistoryScreen extends StatelessWidget {
   const BookingHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('My Bookings'), centerTitle: true),
-        body: const Center(child: Text('Please log in')),
+        appBar: AppBar(title: Text(l10n.bookingHistTitle), centerTitle: true),
+        body: Center(child: Text(l10n.bookingHistLoginRequired)),
       );
     }
 
@@ -49,12 +74,12 @@ class BookingHistoryScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My Bookings'),
+          title: Text(l10n.bookingHistTitle),
           centerTitle: true,
           bottom: TabBar(
-            tabs: const [
-              Tab(text: 'Upcoming'),
-              Tab(text: 'Past'),
+            tabs: [
+              Tab(text: l10n.bookingHistUpcoming),
+              Tab(text: l10n.bookingHistPast),
             ],
             labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           ),
@@ -92,6 +117,7 @@ class _BookingTabState extends State<_BookingTab> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final now = DateTime.now();
+    final l10n = AppLocalizations.of(context);
 
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -106,7 +132,7 @@ class _BookingTabState extends State<_BookingTab> {
         }
         if (snapshot.hasError) {
           return AppErrorWidget(
-            message: 'Could not load bookings.\nCheck your connection and try again.',
+            message: l10n.bookingHistLoadError,
             icon: Icons.book_outlined,
           );
         }
@@ -128,19 +154,19 @@ class _BookingTabState extends State<_BookingTab> {
               children: [
                 Icon(
                   widget.upcoming ? Icons.explore_outlined : Icons.history,
-                  size: 80,
+                  size: 80.r,
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
-                  widget.upcoming ? 'No upcoming tours' : 'No past tours',
-                  style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                  widget.upcoming ? l10n.bookingHistNoUpcoming : l10n.bookingHistNoPast,
+                  style: TextStyle(fontSize: 18.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                 ),
                 if (widget.upcoming) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
-                    'Explore tours and book your next adventure!',
-                    style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
+                    l10n.bookingHistEmptyHint,
+                    style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
                   ),
                 ],
               ],
@@ -152,14 +178,14 @@ class _BookingTabState extends State<_BookingTab> {
         final hasMore = allDocs.length == _limit;
 
         return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 32.h),
           itemCount: docs.length + (hasMore ? 1 : 0),
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (_, _) => SizedBox(height: 12.h),
           itemBuilder: (context, i) {
             if (i == docs.length) {
               return TextButton(
                 onPressed: () => setState(() => _limit += _pageSize),
-                child: const Text('Load more'),
+                child: Text(l10n.commonLoadMore),
               );
             }
             final data = docs[i].data() as Map<String, dynamic>;
@@ -185,6 +211,7 @@ class _BookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final status = data['status'] ?? 'pending';
     final date = (data['date'] as Timestamp?)?.toDate();
     final tourId = data['tourId'] ?? '';
@@ -202,7 +229,7 @@ class _BookingCard extends StatelessWidget {
       future: FirebaseFirestore.instance.collection('tours').doc(tourId).get(),
       builder: (context, snap) {
         final tourData = snap.data?.data() as Map<String, dynamic>?;
-        final title = tourData?['title'] ?? 'Unknown Tour';
+        final title = tourData?['title'] ?? l10n.qrUnknownTour;
         final images = tourData?['images'] as List?;
         final imageUrl = images?.isNotEmpty == true ? images!.first as String? : null;
         final location = tourData?['meetingLocationName'] ?? '';
@@ -222,11 +249,11 @@ class _BookingCard extends StatelessWidget {
               ),
             );
           },
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: Container(
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.08)),
               boxShadow: [
                 BoxShadow(
@@ -240,49 +267,47 @@ class _BookingCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ListTile(
-                  contentPadding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: imageUrl != null
-                        ? CachedNetworkImage(imageUrl: imageUrl, width: 56, height: 56, fit: BoxFit.cover)
-                        : Container(
-                            width: 56,
-                            height: 56,
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: Icon(Icons.landscape, color: theme.colorScheme.onSurfaceVariant),
-                          ),
+                  contentPadding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 0),
+                  leading: ShimmerImage(
+                    url: imageUrl,
+                    width: 56.r,
+                    height: 56.r,
+                    borderRadius: BorderRadius.circular(10.r),
+                    fallbackIcon: Icons.landscape,
+                    fallbackBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    fallbackIconColor: theme.colorScheme.onSurfaceVariant,
                   ),
-                  title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.sp)),
                   subtitle: location.isNotEmpty
-                      ? Text(location, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)))
+                      ? Text(location, style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)))
                       : null,
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
-                      status.toUpperCase(),
-                      style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
+                      _bookingStatusLabel(l10n, status),
+                      style: TextStyle(color: statusColor, fontSize: 11.sp, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-                const Divider(height: 1, indent: 16, endIndent: 16),
+                Divider(height: 1.h, indent: 16.w, endIndent: 16.w),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                  padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
                   child: Row(
                     children: [
-                      Icon(Icons.calendar_today, size: 14, color: theme.colorScheme.primary),
-                      const SizedBox(width: 4),
+                      Icon(Icons.calendar_today, size: 14.r, color: theme.colorScheme.primary),
+                      SizedBox(width: 4.w),
                       Text(
-                        date != null ? DateFormat('MMM d, yyyy · h:mm a').format(date) : 'TBD',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+                        date != null ? DateFormat('MMM d, yyyy · h:mm a').format(date) : l10n.bookingHistTbd,
+                        style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                       const Spacer(),
                       Text(
-                        '$quantity ticket${quantity > 1 ? 's' : ''} · EGP ${totalEGP.toStringAsFixed(0)}',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
+                        '${l10n.qrTicketsCount(quantity)} · EGP ${totalEGP.toStringAsFixed(0)}',
+                        style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -337,6 +362,7 @@ class _CountdownBannerState extends State<_CountdownBanner> {
   @override
   Widget build(BuildContext context) {
     if (_remaining == Duration.zero) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
     final d = _remaining.inDays;
     final h = _remaining.inHours % 24;
     final m = _remaining.inMinutes % 60;
@@ -344,31 +370,31 @@ class _CountdownBannerState extends State<_CountdownBanner> {
 
     String label;
     if (d > 0) {
-      label = '$d day${d > 1 ? 's' : ''} ${h}h ${m}m';
+      label = l10n.bookingHistCountdownDHM(d, h, m);
     } else if (h > 0) {
-      label = '${h}h ${m}m ${s}s';
+      label = l10n.bookingHistCountdownHMS(h, m, s);
     } else {
-      label = '${m}m ${s}s';
+      label = l10n.bookingHistCountdownMS(m, s);
     }
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 7.h, horizontal: 16.w),
       decoration: BoxDecoration(
         color: widget.theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(16.r),
+          bottomRight: Radius.circular(16.r),
         ),
       ),
       child: Row(
         children: [
-          Icon(Icons.timer_outlined, size: 14, color: widget.theme.colorScheme.primary),
-          const SizedBox(width: 6),
+          Icon(Icons.timer_outlined, size: 14.r, color: widget.theme.colorScheme.primary),
+          SizedBox(width: 6.w),
           Text(
-            'Starts in $label',
+            l10n.bookingHistStartsIn(label),
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
               color: widget.theme.colorScheme.primary,
             ),
@@ -463,17 +489,18 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Future<void> _cancelBooking() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel Booking'),
-        content: const Text('Are you sure you want to cancel this booking?'),
+        title: Text(l10n.attendeesCancelBooking),
+        content: Text(l10n.bookingHistCancelBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonNo)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Yes, Cancel'),
+            child: Text(l10n.bookingHistYesCancel),
           ),
         ],
       ),
@@ -532,7 +559,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking cancelled')),
+          SnackBar(content: Text(l10n.bookingHistCancelled)),
         );
         Navigator.pop(context);
       }
@@ -547,6 +574,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   void _addToCalendar() {
+    final l10n = AppLocalizations.of(context);
     final dateTs = widget.bookingData['date'] as Timestamp?;
     final title = widget.tourData['title'] ?? 'Tour';
     final location = widget.tourData['meetingLocationName'] ?? '';
@@ -556,8 +584,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     final end = start.add(const Duration(hours: 2));
 
     Add2Calendar.addEvent2Cal(Event(
-      title: 'Lost in Egypt: $title',
-      description: 'Meeting point: $location\nBooking ID: ${widget.bookingId}',
+      title: l10n.bookingHistCalTitle(title),
+      description: l10n.bookingHistCalDesc(location, widget.bookingId),
       location: location,
       startDate: start,
       endDate: end,
@@ -565,25 +593,21 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   void _shareTicket() {
+    final l10n = AppLocalizations.of(context);
     final title = widget.tourData['title'] ?? 'Tour';
     final dateTs = widget.bookingData['date'] as Timestamp?;
-    final date = dateTs != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(dateTs.toDate()) : 'TBD';
+    final date = dateTs != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(dateTs.toDate()) : l10n.bookingHistTbd;
     final location = widget.tourData['meetingLocationName'] ?? '';
     final quantity = (widget.bookingData['quantity'] as num?)?.toInt() ?? 1;
 
     Share.share(
-      '🏺 Lost in Egypt – Tour Ticket\n\n'
-      'Tour: $title\n'
-      'Date: $date\n'
-      'Meeting point: $location\n'
-      'Tickets: $quantity\n'
-      'Booking ref: ${widget.bookingId}\n\n'
-      'See you there!',
+      l10n.bookingHistShareText(title, date, location, quantity, widget.bookingId),
     );
   }
 
   Future<void> _contactGuide({bool callPhone = false}) async {
     if (_guideData == null) return;
+    final l10n = AppLocalizations.of(context);
     final phone = _guideData!['phoneNumber'] as String?;
     final email = _guideData!['email'] as String?;
 
@@ -597,7 +621,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     if (uri == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(callPhone ? 'No phone number on file' : 'No email on file')),
+          SnackBar(content: Text(callPhone ? l10n.bookingHistNoPhone : l10n.bookingHistNoEmail)),
         );
       }
       return;
@@ -608,13 +632,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(callPhone ? 'Could not open phone app' : 'Could not open email app')),
+          SnackBar(content: Text(callPhone ? l10n.bookingHistCantOpenPhone : l10n.bookingHistCantOpenEmail)),
         );
       }
     }
   }
 
   void _showLeaveReviewSheet() {
+    final l10n = AppLocalizations.of(context);
     double rating = 5;
     final commentCtrl = TextEditingController();
 
@@ -625,30 +650,30 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+        padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, MediaQuery.of(ctx).viewInsets.bottom + 24.h),
         child: StatefulBuilder(
           builder: (ctx, setLS) => Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Leave a Review', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
+              Text(l10n.bookingHistLeaveReview, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+              SizedBox(height: 16.h),
               Row(
                 children: List.generate(5, (i) => IconButton(
-                  icon: Icon(i < rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 32),
+                  icon: Icon(i < rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 32.r),
                   onPressed: () => setLS(() => rating = (i + 1).toDouble()),
                 )),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextField(
                 controller: commentCtrl,
                 maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: 'Share your experience...',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: l10n.tourDetailShareHint,
+                  border: const OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -683,20 +708,26 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       ));
                       final reviewSignal = rating >= 4 ? 'visit' : rating <= 2 ? 'dismiss' : null;
                       if (reviewSignal != null) {
+                        final destinations = (widget.tourData['destinations'] as List?)?.join(' ') ?? '';
+                        final inferred = RecommendationMappings.inferKeysFromText(
+                          '${widget.tourData['title'] ?? ''} $destinations ${widget.tourData['description'] ?? ''}',
+                        );
                         RecommendationService.recordSignal(
                           placeId: tourId,
                           placeName: widget.tourData['title'] ?? '',
-                          types: ['tourist_attraction'],
-                          tags: ['cultural'],
+                          types: inferred['types']!,
+                          tags: inferred['tags']!,
                           signalType: reviewSignal,
                           source: 'review',
                         );
                       }
-                      if (mounted) {
+                      if (ctx.mounted) {
                         Navigator.pop(ctx);
+                      }
+                      if (mounted) {
                         setState(() => _hasReviewed = true);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Review submitted!')),
+                          SnackBar(content: Text(l10n.bookingHistReviewSubmitted)),
                         );
                       }
                     } catch (e) {
@@ -707,7 +738,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       }
                     }
                   },
-                  child: const Text('Submit Review'),
+                  child: Text(l10n.bookingHistSubmitReview),
                 ),
               ),
             ],
@@ -764,6 +795,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final status = widget.bookingData['status'] ?? 'pending';
     final dateTs = widget.bookingData['date'] as Timestamp?;
     final tourDate = dateTs?.toDate();
@@ -791,21 +823,23 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         slivers: [
           // ── Hero header ──────────────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 220,
+            expandedHeight: 220.h,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: imageUrl != null
-                  ? CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover)
-                  : Container(
-                      color: theme.colorScheme.primaryContainer,
-                      child: Icon(Icons.landscape, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
-                    ),
+              background: ShimmerImage(
+                url: imageUrl,
+                fit: BoxFit.cover,
+                fallbackIcon: Icons.landscape,
+                fallbackBackgroundColor: theme.colorScheme.primaryContainer,
+                fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
+                fallbackIconSize: 80.r,
+              ),
             ),
           ),
 
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -815,42 +849,42 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                     children: [
                       Expanded(
                         child: Text(title,
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                            style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold)),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
-                          status.toUpperCase(),
+                          _bookingStatusLabel(l10n, status),
                           style: TextStyle(
-                              color: statusColor, fontSize: 12, fontWeight: FontWeight.bold),
+                              color: statusColor, fontSize: 12.sp, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // ── Info grid ────────────────────────────────────────────
-                  _InfoRow(Icons.calendar_today, 'Date',
-                      tourDate != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(tourDate) : 'TBD',
+                  _InfoRow(Icons.calendar_today, l10n.qrRowDate,
+                      tourDate != null ? DateFormat('EEE, MMM d yyyy · h:mm a').format(tourDate) : l10n.bookingHistTbd,
                       theme),
-                  _InfoRow(Icons.place_outlined, 'Meeting point', location, theme),
-                  _InfoRow(Icons.confirmation_number_outlined, 'Tickets',
-                      '$quantity ticket${quantity > 1 ? 's' : ''}', theme),
-                  _InfoRow(Icons.payments_outlined, 'Total paid',
+                  _InfoRow(Icons.place_outlined, l10n.tourMapMeetingPoint, location, theme),
+                  _InfoRow(Icons.confirmation_number_outlined, l10n.qrRowTickets,
+                      l10n.qrTicketsCount(quantity), theme),
+                  _InfoRow(Icons.payments_outlined, l10n.bookingHistTotalPaid,
                       'EGP ${totalEGP.toStringAsFixed(0)}', theme),
                   if (paymentRef.isNotEmpty)
-                    _InfoRow(Icons.receipt_outlined, 'Payment ref', paymentRef, theme),
+                    _InfoRow(Icons.receipt_outlined, l10n.bookingHistPaymentRef, paymentRef, theme),
 
                   // ── Guide info ───────────────────────────────────────────
                   if (_guideData != null) ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     const Divider(),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     _GuideRow(
                       guideData: _guideData!,
                       guideId: widget.tourData['guideId'] ?? '',
@@ -860,34 +894,34 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
                   // ── Weather ──────────────────────────────────────────────
                   if (_weatherData != null && !isCancelled) ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     const Divider(),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     _WeatherRow(weatherData: _weatherData!, theme: theme),
                   ],
 
                   // ── Countdown ────────────────────────────────────────────
                   if (widget.upcoming && tourDate != null && !isCancelled) ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     const Divider(),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     _CountdownBanner(tourDate: tourDate, theme: theme),
                   ],
 
                   // ── QR Code ticket ───────────────────────────────────────
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   const Divider(),
                   InkWell(
                     onTap: () => setState(() => _qrVisible = !_qrVisible),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       child: Row(
                         children: [
                           Icon(Icons.qr_code, color: theme.colorScheme.primary),
-                          const SizedBox(width: 12),
-                          const Text('View QR Ticket',
-                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                          SizedBox(width: 12.w),
+                          Text(l10n.bookingHistViewQr,
+                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp)),
                           const Spacer(),
                           Icon(_qrVisible ? Icons.expand_less : Icons.expand_more),
                         ],
@@ -899,14 +933,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       child: Column(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(16.r),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16.r),
                             ),
                             child: QrImageView(
                               data: widget.bookingId.isEmpty ? 'invalid' : widget.bookingId,
-                              size: 180,
+                              size: 180.r,
                               eyeStyle: const QrEyeStyle(
                                 eyeShape: QrEyeShape.square,
                                 color: Colors.black,
@@ -917,24 +951,24 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           Text(
-                            'Booking ID: ${widget.bookingId.substring(0, 8).toUpperCase()}',
+                            l10n.bookingHistBookingId(widget.bookingId.substring(0, 8).toUpperCase()),
                             style: TextStyle(
                               fontFamily: 'monospace',
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
-                            'Show this to your guide upon arrival',
+                            l10n.bookingHistShowGuide,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                         ],
                       ),
                     ),
@@ -968,24 +1002,24 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                           MapFocusService.instance.triggerFocus(mapItem);
                         });
                       },
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                         child: Row(
                           children: [
                             Icon(Icons.map_outlined, color: theme.colorScheme.primary),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('View Meeting Point',
-                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                                Text('Opens in Map tab',
-                                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                                Text(l10n.bookingHistViewMeeting,
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp)),
+                                Text(l10n.bookingHistOpensMap,
+                                    style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                               ],
                             ),
                             const Spacer(),
-                            Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
+                            Icon(Icons.open_in_new, size: 18.r, color: theme.colorScheme.primary),
                           ],
                         ),
                       ),
@@ -1000,26 +1034,26 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         widget.tourData['guideId'] ?? '',
                         _guideData != null
                             ? '${_guideData!['firstName'] ?? ''} ${_guideData!['lastName'] ?? ''}'.trim()
-                            : 'Guide',
+                            : l10n.bookingHistGuide,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                         child: Row(
                           children: [
                             Icon(Icons.location_on_rounded, color: Colors.green.shade600),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Track Guide Live',
-                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                                Text('See your guide\'s real-time location',
-                                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                                Text(l10n.bookingHistTrackGuide,
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp)),
+                                Text(l10n.bookingHistTrackGuideSub,
+                                    style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                               ],
                             ),
                             const Spacer(),
-                            Icon(Icons.chevron_right, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+                            Icon(Icons.chevron_right, size: 18.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                           ],
                         ),
                       ),
@@ -1028,23 +1062,23 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
                   // ── Utility actions (chips) ──────────────────────────────
                   if (!isCancelled || _guideData != null) ...[
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     const Divider(),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 8.w,
+                      runSpacing: 8.h,
                       children: [
                         if (!isCancelled) ...[
                           _ActionChip(
                             icon: Icons.calendar_month,
-                            label: 'Add to Calendar',
+                            label: l10n.bookingHistAddCalendar,
                             onTap: _addToCalendar,
                             theme: theme,
                           ),
                           _ActionChip(
                             icon: Icons.share,
-                            label: 'Share Ticket',
+                            label: l10n.bookingHistShareTicket,
                             onTap: _shareTicket,
                             theme: theme,
                           ),
@@ -1052,13 +1086,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         if (_guideData != null) ...[
                           _ActionChip(
                             icon: Icons.phone_outlined,
-                            label: 'Call Guide',
+                            label: l10n.bookingHistCallGuide,
                             onTap: () => _contactGuide(callPhone: true),
                             theme: theme,
                           ),
                           _ActionChip(
                             icon: Icons.email_outlined,
-                            label: 'Email Guide',
+                            label: l10n.bookingHistEmailGuide,
                             onTap: () => _contactGuide(callPhone: false),
                             theme: theme,
                           ),
@@ -1069,63 +1103,63 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
                   // ── Primary / destructive actions (full-width buttons) ────
                   if (!widget.upcoming && !isCancelled && !_hasReviewed) ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
-                        icon: const Icon(Icons.star_rounded, size: 20),
-                        label: const Text('Leave a Review',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        icon: Icon(Icons.star_rounded, size: 20.r),
+                        label: Text(l10n.bookingHistLeaveReview,
+                            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.amber[700],
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                         ),
                         onPressed: _showLeaveReviewSheet,
                       ),
                     ),
                   ],
                   if (!widget.upcoming) ...[
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
-                        icon: const Icon(Icons.refresh_rounded, size: 20),
-                        label: const Text('Re-book This Tour',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        icon: Icon(Icons.refresh_rounded, size: 20.r),
+                        label: Text(l10n.bookingHistRebook,
+                            style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
                         style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                         ),
                         onPressed: () => _rebook(context),
                       ),
                     ),
                   ],
                   if (widget.upcoming && !isCancelled) ...[
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         icon: Icon(Icons.cancel_outlined,
-                            size: 18, color: _cancelling ? Colors.red.withValues(alpha: 0.4) : Colors.red),
-                        label: Text('Cancel Booking',
+                            size: 18.r, color: _cancelling ? Colors.red.withValues(alpha: 0.4) : Colors.red),
+                        label: Text(l10n.attendeesCancelBooking,
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                               color: _cancelling ? Colors.red.withValues(alpha: 0.4) : Colors.red,
                             )),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
                               color: _cancelling ? Colors.red.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.6)),
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          padding: EdgeInsets.symmetric(vertical: 13.h),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                         ),
                         onPressed: _cancelling ? null : _cancelBooking,
                       ),
                     ),
                   ],
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                 ],
               ),
             ),
@@ -1151,20 +1185,20 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: theme.colorScheme.primary),
-          const SizedBox(width: 12),
+          Icon(icon, size: 18.r, color: theme.colorScheme.primary),
+          SizedBox(width: 12.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label,
-                  style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
-              const SizedBox(height: 2),
+                  style: TextStyle(fontSize: 11.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+              SizedBox(height: 2.h),
               Text(value,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500)),
             ],
           ),
         ],
@@ -1182,13 +1216,14 @@ class _GuideRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final name = '${guideData['firstName'] ?? ''} ${guideData['lastName'] ?? ''}'.trim();
     final avatar = guideData['profileImageUrl'] as String?;
     final rating = (guideData['rating'] as num?)?.toDouble() ?? 0;
     final reviewCount = (guideData['reviewCount'] as num?)?.toInt() ?? 0;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       onTap: guideId.isNotEmpty
           ? () {
               final userModel = UserModel.fromMap(guideData, guideId);
@@ -1201,39 +1236,37 @@ class _GuideRow extends StatelessWidget {
             }
           : null,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: EdgeInsets.symmetric(vertical: 4.h),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 24,
-              child: (avatar != null && avatar.isNotEmpty)
-                  ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 48, height: 48, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person)))
-                  : const Icon(Icons.person),
+            ShimmerAvatar(
+              url: avatar,
+              radius: 24.r,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name.isNotEmpty ? name : 'Your Guide',
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-                const SizedBox(height: 2),
+                Text(name.isNotEmpty ? name : l10n.tourDetailYourGuide,
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp)),
+                SizedBox(height: 2.h),
                 reviewCount > 0
                     ? Row(
                         children: [
-                          const Icon(Icons.star, size: 14, color: Colors.amber),
-                          const SizedBox(width: 4),
+                          Icon(Icons.star, size: 14.r, color: Colors.amber),
+                          SizedBox(width: 4.w),
                           Text('${rating.toStringAsFixed(1)} ($reviewCount)',
-                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+                              style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                         ],
                       )
-                    : Text('New Guide',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                    : Text(l10n.bookingHistNewGuide,
+                        style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
               ],
             ),
             const Spacer(),
-            Icon(Icons.verified, size: 18, color: theme.colorScheme.primary),
-            const SizedBox(width: 4),
-            Icon(Icons.chevron_right, size: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+            Icon(Icons.verified, size: 18.r, color: theme.colorScheme.primary),
+            SizedBox(width: 4.w),
+            Icon(Icons.chevron_right, size: 18.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
           ],
         ),
       ),
@@ -1259,6 +1292,7 @@ class _WeatherRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     try {
       final daily = weatherData['daily'] as Map<String, dynamic>?;
       if (daily == null) return const SizedBox.shrink();
@@ -1272,23 +1306,23 @@ class _WeatherRow extends StatelessWidget {
       final minT = (minTemps?.first as num?)?.toStringAsFixed(0) ?? '--';
 
       return Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(14.r),
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           children: [
-            Text(_weatherEmoji(code), style: const TextStyle(fontSize: 32)),
-            const SizedBox(width: 14),
+            Text(_weatherEmoji(code), style: TextStyle(fontSize: 32.sp)),
+            SizedBox(width: 14.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Weather on tour day',
-                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
-                const SizedBox(height: 2),
+                Text(l10n.bookingHistWeatherDay,
+                    style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                SizedBox(height: 2.h),
                 Text('$maxT°C / $minT°C',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
               ],
             ),
           ],
@@ -1317,6 +1351,15 @@ class _GuideTrackingSheet extends StatefulWidget {
 class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
   GoogleMapController? _mapController;
   bool _cameraMoved = false;
+  String? _mapStyle;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MapStyleHelper.getStyle(context).then((style) {
+      if (mounted) setState(() => _mapStyle = style);
+    });
+  }
 
   @override
   void dispose() {
@@ -1328,6 +1371,7 @@ class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
@@ -1339,28 +1383,28 @@ class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
         children: [
           // Handle + title
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
             child: Column(
               children: [
                 Container(
-                  width: 40, height: 4,
+                  width: 40.w, height: 4.h,
                   decoration: BoxDecoration(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14.h),
                 Row(
                   children: [
-                    Icon(Icons.location_on_rounded, color: Colors.green.shade600, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.location_on_rounded, color: Colors.green.shade600, size: 20.r),
+                    SizedBox(width: 8.w),
                     Text(
-                      '${widget.guideName} – Live Location',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      l10n.bookingHistLiveLocation(widget.guideName),
+                      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
               ],
             ),
           ),
@@ -1403,9 +1447,9 @@ class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
                         markers: markers,
                         myLocationButtonEnabled: false,
                         zoomControlsEnabled: false,
+                        style: _mapStyle,
                         onMapCreated: (controller) {
                           _mapController = controller;
-                          MapStyleHelper.applyTheme(controller, context);
                           if (loc != null && !_cameraMoved) {
                             _cameraMoved = true;
                             controller.animateCamera(
@@ -1416,27 +1460,27 @@ class _GuideTrackingSheetState extends State<_GuideTrackingSheet> {
                       ),
                       if (loc == null)
                         Positioned(
-                          bottom: 20,
-                          left: 20,
-                          right: 20,
+                          bottom: 20.h,
+                          left: 20.w,
+                          right: 20.w,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                             decoration: BoxDecoration(
                               color: theme.scaffoldBackgroundColor.withValues(alpha: 0.92),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14.r),
                               border: Border.all(color: primary.withValues(alpha: 0.15)),
                             ),
                             child: Row(
                               children: [
                                 SizedBox(
-                                  width: 16, height: 16,
+                                  width: 16.w, height: 16.h,
                                   child: CircularProgressIndicator(strokeWidth: 2, color: primary),
                                 ),
-                                const SizedBox(width: 10),
-                                const Expanded(
+                                SizedBox(width: 10.w),
+                                Expanded(
                                   child: Text(
-                                    'Waiting for guide to share their location…',
-                                    style: TextStyle(fontSize: 13),
+                                    l10n.bookingHistWaitingLocation,
+                                    style: const TextStyle(fontSize: 13),
                                   ),
                                 ),
                               ],
@@ -1473,22 +1517,22 @@ class _ActionChip extends StatelessWidget {
     final c = theme.colorScheme.primary;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(24.r),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
         decoration: BoxDecoration(
           color: c.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
           border: Border.all(color: c.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: onTap == null ? c.withValues(alpha: 0.4) : c),
-            const SizedBox(width: 6),
+            Icon(icon, size: 16.r, color: onTap == null ? c.withValues(alpha: 0.4) : c),
+            SizedBox(width: 6.w),
             Text(label,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   color: onTap == null ? c.withValues(alpha: 0.4) : c,
                   fontWeight: FontWeight.w600,
                 )),

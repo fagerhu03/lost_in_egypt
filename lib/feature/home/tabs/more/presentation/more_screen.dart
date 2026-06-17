@@ -8,6 +8,7 @@ import 'package:lost_in_egypt/feature/home/tabs/more/presentation/help_screen.da
 import 'package:lost_in_egypt/feature/home/tabs/more/presentation/contact_us_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/presentation/sos_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/more/data/settings_repository.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
@@ -42,6 +43,7 @@ class _MoreScreenState extends State<MoreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final patternOpacity = isDark ? 0.1 : 0.4;
@@ -76,12 +78,12 @@ class _MoreScreenState extends State<MoreScreen> {
                       Expanded(
                         child: Center(
                           child: Text(
-                            "More",
+                            l10n.moreTitle,
                             style: TextStyle(
                               fontSize: 30.sp,
                               fontWeight: FontWeight.w500,
                               color: textColor.withValues(alpha: 0.75),
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                         ),
@@ -95,7 +97,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   SizedBox(height: 18.h),
 
                   _MoreTile(
-                    title: "Currency",
+                    title: l10n.moreCurrency,
                     icon: Icons.currency_exchange_rounded,
                     onTap: () => Navigator.push(
                       context,
@@ -106,7 +108,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   SizedBox(height: 12.h),
 
                   _MoreTile(
-                    title: "Settings",
+                    title: l10n.settingsTitle,
                     icon: Icons.settings_outlined,
                     onTap: () async {
                       await Navigator.push(
@@ -120,7 +122,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   SizedBox(height: 12.h),
 
                   _MoreTile(
-                    title: "Help",
+                    title: l10n.moreHelp,
                     icon: Icons.help_outline_rounded,
                     onTap: () => Navigator.push(
                       context,
@@ -130,7 +132,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   SizedBox(height: 12.h),
 
                   _MoreTile(
-                    title: "Translator",
+                    title: l10n.moreTranslator,
                     icon: Icons.translate_rounded,
                     onTap: () => Navigator.push(
                       context,
@@ -141,7 +143,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   SizedBox(height: 12.h),
 
                   _MoreTile(
-                    title: "Contact us",
+                    title: l10n.moreContactUs,
                     icon: Icons.mail_outline_rounded,
                     onTap: () => Navigator.push(
                       context,
@@ -178,11 +180,11 @@ class _MoreScreenState extends State<MoreScreen> {
                               color: Colors.white, size: 22.r),
                           SizedBox(width: 10.w),
                           Text(
-                            "SOS — Emergency Numbers",
+                            l10n.moreSosButton,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16.sp,
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                             ),
@@ -258,7 +260,7 @@ class _MoreTile extends StatelessWidget {
                     color: onSurface.withValues(alpha: 0.88),
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   ),
                 ),
               ),

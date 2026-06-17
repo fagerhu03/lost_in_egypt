@@ -85,17 +85,27 @@ class CameraReady extends CameraState {
   }
 }
 
+/// Transient status shown on the full-screen analyzing overlay. The Cubit has
+/// no BuildContext, so it emits the semantic status and `CameraAnalyzingView`
+/// resolves it to localized display text (the model-level localization batch).
+enum CameraStatus { capturing, identifying, translating, downloadingModel }
+
 /// Currently analyzing an image
 class CameraAnalyzing extends CameraState {
   final bool isGalleryImage;
   /// Path to the captured/gallery image to display as a still preview during analysis.
   final String? capturedImagePath;
-  final String message;
+  final CameraStatus status;
+  /// Language name being downloaded — set only when [status] is
+  /// [CameraStatus.downloadingModel]. ML-Kit language names stay English (they
+  /// double as data keys), as elsewhere in the translator.
+  final String? modelLang;
 
   const CameraAnalyzing({
-    this.isGalleryImage = false, 
+    this.isGalleryImage = false,
     this.capturedImagePath,
-    this.message = 'Identifying landmark…',
+    this.status = CameraStatus.identifying,
+    this.modelLang,
   });
 }
 
@@ -115,12 +125,27 @@ class CameraNoLandmarkFound extends CameraState {
   const CameraNoLandmarkFound({this.identifiedLabel});
 }
 
+/// Camera-specific error kind the Cubit can flag without a BuildContext. When
+/// set, `CameraErrorView` shows the localized message; otherwise it falls back
+/// to [CameraError.message] (dynamic ErrorHandler / API text, which the
+/// app-wide error layer keeps in English).
+enum CameraErrorKind {
+  noCameras,
+  initFailed,
+  translationModelsFailed,
+  languageModelFailed,
+  noTextFound,
+}
+
 /// Error state
 class CameraError extends CameraState {
+  /// English fallback / dynamic detail (ErrorHandler or API message). Used when
+  /// [kind] is null.
   final String message;
+  final CameraErrorKind? kind;
   final bool isApiKeyError;
 
-  const CameraError(this.message, {this.isApiKeyError = false});
+  const CameraError(this.message, {this.kind, this.isApiKeyError = false});
 }
 
 /// Easter Egg state for Sphinx Riddle

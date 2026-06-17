@@ -11,6 +11,10 @@ admin.initializeApp();
 // ── Recommendation Engine (see recommendation.js + design doc in memory) ─────
 Object.assign(exports, require("./recommendation"));
 
+// ── Eventbrite Sync (daily scheduled + manual callable) ──────────────────────
+Object.assign(exports, require("./eventbrite_sync"));
+Object.assign(exports, require("./passboard_sync"));
+
 // Define secrets stored securely in Google Cloud Secret Manager
 const geminiApiKey = defineSecret("GEMINI_API_KEY");
 const groqApiKey = defineSecret("GROQ_API_KEY");
@@ -79,6 +83,12 @@ exports.analyzeImageOrStory = onCall({ secrets: [groqApiKey] }, async (request) 
     throw new HttpsError("invalid-argument", "A valid landmark name is required.");
   }
 
+  // Locale-aware story language. Defaults to English for backward compatibility.
+  const locale = request.data?.locale === "ar" ? "ar" : "en";
+  const localeNote = locale === "ar"
+    ? "\n      Write the ENTIRE story in Modern Standard Arabic (العربية الفصحى). Do not write any English words. Keep it natural and engaging for a native Arabic speaker."
+    : "";
+
   try {
     const apiKey = groqApiKey.value();
 
@@ -87,7 +97,7 @@ exports.analyzeImageOrStory = onCall({ secrets: [groqApiKey] }, async (request) 
       I have identified this landmark: ${landmarkName}.
       Tell me a short, captivating story or provide 3 amazing facts about it in 150 words or less.
       Make it sound like an adventure!
-      Don't use any symbols since this will be read aloud. Just pure storytelling.
+      Don't use any symbols since this will be read aloud. Just pure storytelling.${localeNote}
 
       Important up-to-date facts you must respect (your training data may be stale):
       - The Grand Egyptian Museum (GEM) opened in 2024 next to the Giza Pyramids and is now the world's largest archaeological museum.
@@ -107,7 +117,9 @@ exports.analyzeImageOrStory = onCall({ secrets: [groqApiKey] }, async (request) 
         model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
-        max_tokens: 250
+        // Arabic is far more token-dense than English — a 150-word AR story can
+        // exceed the old 250 cap and come back truncated. Give it headroom.
+        max_tokens: locale === "ar" ? 700 : 350
       })
     });
 
@@ -209,16 +221,19 @@ exports.generateStoryAudio = onCall(async (request) => {
   // Cap text at 4096 chars to stay within free tier
   const sanitizedText = text.trim().slice(0, 4096);
 
+  // Locale-aware voice. Arabic has no Studio voice, so use the premium WaveNet
+  // deep male (ar-XA-Wavenet-B) — closest match to the cinematic en-US-Studio-Q.
+  const locale = request.data?.locale === "ar" ? "ar" : "en";
+  const voice = locale === "ar"
+    ? { languageCode: "ar-XA", name: "ar-XA-Wavenet-B", ssmlGender: "MALE" }
+    : { languageCode: "en-US", name: "en-US-Studio-Q", ssmlGender: "MALE" };
+
   try {
     const client = new textToSpeech.TextToSpeechClient();
 
     const [response] = await client.synthesizeSpeech({
       input: { text: sanitizedText },
-      voice: {
-        languageCode: "en-US",
-        name: "en-US-Studio-Q",        // Premium Studio voice — deepest, most cinematic male
-        ssmlGender: "MALE",
-      },
+      voice,
       audioConfig: {
         audioEncoding: "MP3",
         speakingRate: 0.78,            // Slow, deliberate — like a history documentary
@@ -776,6 +791,16 @@ exports.generateTripPlan = onCall({ secrets: [groqApiKey] }, async (request) => 
     ? 'Prioritise evening and night activities: lit monuments, Nile cruises, restaurants, night markets, rooftop bars.'
     : 'Schedule outdoor monuments and archaeological sites in the morning (before 11am) to avoid midday heat.';
 
+  // Locale-aware output. Defaults to English. For Arabic, the human-readable
+  // prose is localized but the place "name" + "placeType" stay English so the
+  // client's synthetic→dataset pin matching (DatasetResolver, English titles)
+  // and the canonical placeType keys keep working.
+  const locale = request.data?.locale === 'ar' ? 'ar' : 'en';
+  const localeNote = locale === 'ar'
+    ? `\nLANGUAGE: Write all human-readable text fields — "title", "summary", "label", "reason", "notes", "estimatedBudget", and every "transit" string — in Modern Standard Arabic (العربية الفصحى). EXCEPTIONS that MUST stay in English: the stop "name" (used to match map pins) and the "placeType" enum value. Keep numbers, coordinates, and "EGP" as-is.\n`
+    : '';
+  console.log(`generateTripPlan invoked: locale=${locale}, days=${days}, areas=${areaStr}`);
+
   const prompt = `You are an expert Egyptian travel planner creating a personalised ${days}-day itinerary.
 
 Current Egypt facts you must respect (your training data may be stale — these supersede it):
@@ -817,7 +842,7 @@ Rules:
    - Make day N's first stop late enough to allow for the journey (e.g. if arriving Luxor by sleeper at 6am, start with breakfast then a leisurely temple visit — don't schedule 5 stops).
    - Day 1 NEVER has a transit object (the user is already there).
    - Same-city consecutive days: omit the transit object entirely.
-
+${localeNote}
 Respond with ONLY valid JSON matching this exact schema — no markdown, no extra text:
 {
   "title": "Creative, specific trip title",
@@ -867,7 +892,9 @@ Respond with ONLY valid JSON matching this exact schema — no markdown, no extr
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
         temperature: 0.65,
-        max_tokens: 2500,
+        // Arabic prose is ~2-3x more tokens than English; a multi-day AR plan
+        // overran the old 2500 cap and came back as truncated (invalid) JSON.
+        max_tokens: locale === 'ar' ? 6000 : 3000,
       }),
     });
 
@@ -877,9 +904,20 @@ Respond with ONLY valid JSON matching this exact schema — no markdown, no extr
 
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content;
+    const finishReason = data.choices?.[0]?.finish_reason;
     if (!text) throw new Error('Empty response from Groq');
+    if (finishReason === 'length') {
+      console.error(`generateTripPlan: response truncated (finish_reason=length, locale=${locale})`);
+    }
 
-    const itinerary = JSON.parse(text);
+    let itinerary;
+    try {
+      itinerary = JSON.parse(text);
+    } catch (parseErr) {
+      console.error('generateTripPlan JSON.parse failed. finish_reason=' + finishReason +
+        ', text length=' + text.length + ', tail=' + text.slice(-200));
+      throw parseErr;
+    }
 
     if (!itinerary.days || itinerary.days.length === 0) {
       throw new Error('Groq returned an itinerary with no days');

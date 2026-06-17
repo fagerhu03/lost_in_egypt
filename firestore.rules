@@ -100,10 +100,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // ── Events (read-only for authenticated users) ────────────────────────────
+    // ── Events (read-only for authenticated users, but write allowed for upserting curated events) ──
     match /events/{eventId} {
       allow read: if isAuth();
-      allow write: if isAdmin();
+      allow write: if isAuth();
+    }
+
+    // ── Event Reviews ─────────────────────────────────────────────────────────
+    match /event_reviews/{reviewId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // ── Reports ───────────────────────────────────────────────────────────────
@@ -161,6 +168,26 @@ service cloud.firestore {
     // ── Places API photo cache ────────────────────────────────────────────────
     // Cached by authenticated clients; one doc per curated trip ID (slug).
     match /place_photos/{tripId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+
+    // ── Places API detail cache (30-day TTL) ──────────────────────────────────
+    // One doc per Places API place ID. Stores the raw API response so future
+    // sessions on any device can skip the per-tap getPlaceDetails billing.
+    match /place_details/{placeId} {
+      allow read: if isAuth();
+      allow write: if isAuth();
+    }
+
+    // ── Places API bulk snapshot (60-day TTL) ─────────────────────────────────
+    // Sharded cache of the ~54-query startup batch. One meta doc + N shard
+    // docs (~100 places each, well under the 1 MiB doc limit). Survives
+    // reinstalls and benefits every device/user — only the first global
+    // cold-starter pays the Places API cost. Schema:
+    //   places_snapshot/v1_meta       → { shardCount, totalCount, cachedAt }
+    //   places_snapshot/v1_shard_0..N → { places: [...raw API JSON...] }
+    match /places_snapshot/{docId} {
       allow read: if isAuth();
       allow write: if isAuth();
     }

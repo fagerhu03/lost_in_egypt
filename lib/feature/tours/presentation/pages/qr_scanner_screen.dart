@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../core/utils/error_handler.dart';
+import '../../../../core/widgets/shimmer_avatar.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({super.key});
@@ -30,6 +32,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     if (bookingId == null || bookingId.isEmpty) return;
     if (_processing || bookingId == _lastScanned) return;
 
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _processing = true;
       _lastScanned = bookingId;
@@ -42,8 +45,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
           .doc(bookingId)
           .get();
 
+      if (!mounted) return;
       if (!doc.exists) {
-        _showResult(context, valid: false, message: 'Booking not found');
+        _showResult(context, valid: false, message: l10n.qrBookingNotFound);
         return;
       }
 
@@ -71,12 +75,14 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         alreadyCheckedIn: status == 'checked_in' || status == 'partially_checked_in',
       );
     } catch (e) {
+      if (!mounted) return;
       _showResult(context, valid: false, message: ErrorHandler.handleGenericError(e));
     }
   }
 
   void _showResult(BuildContext context, {required bool valid, required String message}) {
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -85,10 +91,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
           children: [
             Icon(
               valid ? Icons.check_circle : Icons.error,
-              size: 64,
+              size: 64.r,
               color: valid ? Colors.green : Colors.red,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(message, textAlign: TextAlign.center),
           ],
         ),
@@ -98,7 +104,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               Navigator.pop(ctx);
               _resumeScanner();
             },
-            child: const Text('Scan Another'),
+            child: Text(l10n.qrScanAnother),
           ),
         ],
       ),
@@ -114,12 +120,13 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     required bool alreadyCheckedIn,
   }) {
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
     final status = bookingData['status'] ?? '';
     final isValid = status == 'confirmed' || status == 'checked_in' ||
         status == 'partially_checked_in';
     final theme = Theme.of(context);
 
-    final tourTitle = tourData?['title'] ?? 'Unknown Tour';
+    final tourTitle = tourData?['title'] ?? l10n.qrUnknownTour;
     final tourDate = (bookingData['date'] as Timestamp?)?.toDate();
     final quantity = (bookingData['quantity'] as num?)?.toInt() ?? 1;
     final totalEGP = (bookingData['totalAmountEGP'] as num?)?.toDouble() ?? 0;
@@ -144,7 +151,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         int checkingIn = remaining > 0 ? remaining : 0;
         return StatefulBuilder(
           builder: (ctx, setBS) => Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+            padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 40.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,10 +159,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 // Validity indicator
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                     decoration: BoxDecoration(
                       color: (isValid ? Colors.green : Colors.red).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(24.r),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -164,80 +171,81 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                           isValid ? Icons.verified : Icons.cancel,
                           color: isValid ? Colors.green : Colors.red,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
                           remaining == 0
-                              ? 'All Tickets Checked In'
+                              ? l10n.qrAllCheckedIn
                               : status == 'partially_checked_in'
-                                  ? 'Partially Checked In ($alreadyCheckedInCount/$quantity)'
+                                  ? l10n.qrPartiallyCheckedIn(alreadyCheckedInCount, quantity)
                                   : isValid
-                                      ? 'Valid Ticket'
-                                      : 'Invalid Ticket (${status.toUpperCase()})',
+                                      ? l10n.qrValidTicket
+                                      : l10n.qrInvalidTicket('$status'.toUpperCase()),
                           style: TextStyle(
                             color: isValid ? Colors.green : Colors.red,
                             fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                            fontSize: 15.sp,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // Tourist info
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      child: (avatar != null && avatar.isNotEmpty)
-                          ? ClipOval(child: CachedNetworkImage(imageUrl: avatar, width: 60, height: 60, fit: BoxFit.cover, errorWidget: (_, _, _) => const Icon(Icons.person, size: 28)))
-                          : const Icon(Icons.person, size: 28),
+                    ShimmerAvatar(
+                      url: avatar,
+                      radius: 30.r,
+                      iconSize: 28.r,
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14.w),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          touristName.isNotEmpty ? touristName : 'Unknown Traveler',
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                          touristName.isNotEmpty ? touristName : l10n.qrUnknownTraveler,
+                          style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.bold),
                         ),
                         if (username.isNotEmpty)
                           Text(
                             '@$username',
                             style: TextStyle(
-                                fontSize: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                                fontSize: 13.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                       ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
                 const Divider(),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
                 // Booking details
-                _SheetRow(Icons.tour_outlined, 'Tour', tourTitle),
+                _SheetRow(Icons.tour_outlined, l10n.qrRowTour, tourTitle),
                 if (tourDate != null)
-                  _SheetRow(Icons.calendar_today, 'Date',
+                  _SheetRow(Icons.calendar_today, l10n.qrRowDate,
                       DateFormat('EEE, MMM d · h:mm a').format(tourDate)),
-                _SheetRow(Icons.confirmation_number_outlined, 'Tickets',
-                    '$quantity ticket${quantity > 1 ? 's' : ''}'
-                    '${alreadyCheckedInCount > 0 ? ' · $alreadyCheckedInCount checked in' : ''}'),
-                _SheetRow(Icons.payments_outlined, 'Amount',
+                _SheetRow(Icons.confirmation_number_outlined, l10n.qrRowTickets,
+                    l10n.qrTicketsCount(quantity) +
+                        (alreadyCheckedInCount > 0
+                            ? ' · ${l10n.qrCheckedInCount(alreadyCheckedInCount)}'
+                            : '')),
+                _SheetRow(Icons.payments_outlined, l10n.qrRowAmount,
                     'EGP ${totalEGP.toStringAsFixed(0)}'),
-                _SheetRow(Icons.receipt_outlined, 'Booking ID',
+                _SheetRow(Icons.receipt_outlined, l10n.qrRowBookingId,
                     bookingId.substring(0, 8).toUpperCase()),
 
                 // Partial check-in stepper (only when tickets remain)
                 if (isValid && remaining > 0 && quantity > 1) ...[
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Row(
                     children: [
                       Text(
-                        'Check in how many?',
+                        l10n.qrCheckInHowMany,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
@@ -250,12 +258,12 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         color: theme.colorScheme.primary,
                       ),
                       SizedBox(
-                        width: 32,
+                        width: 32.w,
                         child: Text(
                           '$checkingIn',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18.sp, fontWeight: FontWeight.bold),
                         ),
                       ),
                       IconButton(
@@ -269,7 +277,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   ),
                 ],
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // Check-in button
                 if (isValid && remaining > 0)
@@ -278,11 +286,11 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     child: FilledButton.icon(
                       icon: const Icon(Icons.check_circle_outline),
                       label: Text(quantity == 1
-                          ? 'Check In Tourist'
-                          : 'Check In $checkingIn of $remaining Remaining'),
+                          ? l10n.qrCheckInTourist
+                          : l10n.qrCheckInRemaining(checkingIn, remaining)),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                       ),
                       onPressed: () async {
                         try {
@@ -297,18 +305,19 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             'status': newStatus,
                             'checkedInCount': newCheckedIn,
                           });
-                          if (mounted) {
+                          if (context.mounted) {
                             Navigator.pop(ctx);
                             _showResult(
                               context,
                               valid: true,
                               message: newStatus == 'checked_in'
-                                  ? 'All $quantity tickets checked in!'
-                                  : '$checkingIn ticket${checkingIn > 1 ? 's' : ''} checked in.\n${quantity - newCheckedIn} remaining.',
+                                  ? l10n.qrAllTicketsCheckedIn(quantity)
+                                  : l10n.qrCheckedInResult(
+                                      checkingIn, quantity - newCheckedIn),
                             );
                           }
                         } catch (e) {
-                          if (mounted) {
+                          if (context.mounted) {
                             Navigator.pop(ctx);
                             _showResult(context, valid: false, message: ErrorHandler.handleGenericError(e));
                           }
@@ -324,7 +333,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         Navigator.pop(ctx);
                         _resumeScanner();
                       },
-                      child: const Text('Scan Another'),
+                      child: Text(l10n.qrScanAnother),
                     ),
                   ),
               ],
@@ -346,9 +355,10 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan Ticket QR'),
+        title: Text(l10n.qrTitle),
         centerTitle: true,
         actions: [
           IconButton(
@@ -378,15 +388,15 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              margin: const EdgeInsets.only(bottom: 48),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              margin: EdgeInsets.only(bottom: 48.h),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(24.r),
               ),
-              child: const Text(
-                'Point camera at tourist\'s QR ticket',
-                style: TextStyle(color: Colors.white, fontSize: 14),
+              child: Text(
+                l10n.qrPointCamera,
+                style: TextStyle(color: Colors.white, fontSize: 14.sp),
               ),
             ),
           ),
@@ -464,15 +474,15 @@ class _SheetRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: theme.colorScheme.primary),
-          const SizedBox(width: 10),
-          Text('$label: ', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.55), fontSize: 13)),
+          Icon(icon, size: 18.r, color: theme.colorScheme.primary),
+          SizedBox(width: 10.w),
+          Text('$label: ', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.55), fontSize: 13.sp)),
           Expanded(
             child: Text(value,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
                 overflow: TextOverflow.ellipsis),
           ),
         ],

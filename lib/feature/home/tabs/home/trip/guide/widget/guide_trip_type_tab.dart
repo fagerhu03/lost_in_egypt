@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/theme/theme.dart';
 
 class GuideTripTypeTab extends StatelessWidget {
@@ -37,10 +38,10 @@ class GuideTripTypeTab extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
-        height: 52,
+        height: 52.h,
         decoration: BoxDecoration(
           color: selected ? activeColor : inactiveBg,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: isDark
                 ? AppColors.darkText.withValues(alpha: 0.08)
@@ -52,7 +53,7 @@ class GuideTripTypeTab extends StatelessWidget {
           title,
           style: TextStyle(
             color: selected ? selectedTextColor : inactiveText,
-            fontSize: 20,
+            fontSize: 20.sp,
             height: 0.9,
             fontWeight: FontWeight.w600,
           ),

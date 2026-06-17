@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class YourPlanScreen extends StatelessWidget {
   const YourPlanScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -15,18 +18,18 @@ class YourPlanScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
-        title: const Text("Membership", style: TextStyle(fontFamily: 'Marcellus')),
+        title: Text(l10n.accountMembership, style: const TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: onSurface,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 40.h),
         children: [
           // Current plan card
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.r),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
@@ -35,7 +38,7 @@ class YourPlanScreen extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               border: Border.all(color: primary.withValues(alpha: 0.4), width: 1.5),
               boxShadow: [
                 BoxShadow(
@@ -50,63 +53,63 @@ class YourPlanScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.workspace_premium_rounded, color: primary, size: 28),
-                    const SizedBox(width: 10),
+                    Icon(Icons.workspace_premium_rounded, color: primary, size: 28.r),
+                    SizedBox(width: 10.w),
                     Text(
-                      "Explorer — Free",
+                      l10n.planExplorerFree,
                       style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: 'Marcellus',
+                        fontSize: 20.sp,
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         color: primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.green.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                       ),
-                      child: const Text(
-                        "Active",
-                        style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 12),
+                      child: Text(
+                        l10n.planActive,
+                        style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 12.sp),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
-                  "Your current plan — enjoy all the core features of Lost in Egypt at no cost.",
-                  style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.65), height: 1.5),
+                  l10n.planCurrentDesc,
+                  style: TextStyle(fontSize: 13.sp, color: onSurface.withValues(alpha: 0.65), height: 1.5),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 28),
+          SizedBox(height: 28.h),
 
           Text(
-            "What's included",
+            l10n.planWhatsIncluded,
             style: TextStyle(
-              fontSize: 17,
-              fontFamily: 'Marcellus',
+              fontSize: 17.sp,
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               fontWeight: FontWeight.w700,
               color: onSurface,
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
 
           ...[
-            (Icons.camera_alt_outlined, "AI Landmark Discovery", "Identify unlimited landmarks with your camera"),
-            (Icons.auto_stories_outlined, "AI Historical Stories", "Hear captivating stories about every landmark you find"),
-            (Icons.map_outlined, "Interactive Map", "Explore 500+ Egyptian landmarks with GPS and routing"),
-            (Icons.tour_outlined, "Browse & Book Tours", "Browse guided tours and book with certified guides"),
-            (Icons.emoji_events_outlined, "Badges & Gamification", "Earn badges as you explore more of Egypt"),
-            (Icons.people_outline, "Community Feed", "Share discoveries and connect with fellow travellers"),
-            (Icons.translate_outlined, "Translator", "Translate text using your camera in real-time"),
-            (Icons.currency_exchange_outlined, "Currency Converter", "Convert between 16 currencies instantly"),
-            (Icons.notifications_outlined, "Booking Notifications", "Get notified about your tour confirmations"),
+            (Icons.camera_alt_outlined, l10n.planFeatDiscoveryTitle, l10n.planFeatDiscoveryDesc),
+            (Icons.auto_stories_outlined, l10n.planFeatStoriesTitle, l10n.planFeatStoriesDesc),
+            (Icons.map_outlined, l10n.planFeatMapTitle, l10n.planFeatMapDesc),
+            (Icons.tour_outlined, l10n.planFeatToursTitle, l10n.planFeatToursDesc),
+            (Icons.emoji_events_outlined, l10n.planFeatBadgesTitle, l10n.planFeatBadgesDesc),
+            (Icons.people_outline, l10n.planFeatCommunityTitle, l10n.planFeatCommunityDesc),
+            (Icons.translate_outlined, l10n.planFeatTranslatorTitle, l10n.planFeatTranslatorDesc),
+            (Icons.currency_exchange_outlined, l10n.planFeatCurrencyTitle, l10n.planFeatCurrencyDesc),
+            (Icons.notifications_outlined, l10n.planFeatNotificationsTitle, l10n.planFeatNotificationsDesc),
           ].map((e) => _FeatureRow(
                 icon: e.$1,
                 title: e.$2,
@@ -117,15 +120,15 @@ class YourPlanScreen extends StatelessWidget {
                 isDark: isDark,
               )),
 
-          const SizedBox(height: 28),
+          SizedBox(height: 28.h),
           Divider(color: onSurface.withValues(alpha: 0.1)),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.r),
             decoration: BoxDecoration(
               color: surface,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
                   color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.06),
@@ -139,26 +142,24 @@ class YourPlanScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.rocket_launch_outlined, color: primary, size: 22),
-                    const SizedBox(width: 8),
+                    Icon(Icons.rocket_launch_outlined, color: primary, size: 22.r),
+                    SizedBox(width: 8.w),
                     Text(
-                      "Coming soon",
+                      l10n.planComingSoon,
                       style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'Marcellus',
+                        fontSize: 16.sp,
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         color: onSurface,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
-                  "We're working on premium features including offline mode, "
-                  "exclusive guided experiences, and advanced trip planning tools. "
-                  "Stay tuned — and the core app will always remain free.",
+                  l10n.planComingSoonDesc,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: onSurface.withValues(alpha: 0.65),
                     height: 1.55,
                   ),
@@ -194,33 +195,33 @@ class _FeatureRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 38.r,
+            height: 38.r,
             decoration: BoxDecoration(
               color: primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: primary, size: 18),
+            child: Icon(icon, color: primary, size: 18.r),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
                     style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600, color: onSurface)),
+                        fontSize: 14.sp, fontWeight: FontWeight.w600, color: onSurface)),
                 Text(subtitle,
-                    style: TextStyle(fontSize: 12, color: onSurface.withValues(alpha: 0.6), height: 1.4)),
+                    style: TextStyle(fontSize: 12.sp, color: onSurface.withValues(alpha: 0.6), height: 1.4)),
               ],
             ),
           ),
-          const Icon(Icons.check_circle, color: Colors.green, size: 18),
+          Icon(Icons.check_circle, color: Colors.green, size: 18.r),
         ],
       ),
     );

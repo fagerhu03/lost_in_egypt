@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'hieroglyphics_overlay.dart';
 import 'ufo_overlay.dart';
 import 'sandstorm_overlay.dart';
@@ -21,16 +23,16 @@ class MapSearchBar extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
-    
+
     final shadowColor = isDark
         ? Colors.white.withValues(alpha: 0.18)
         : Colors.black.withValues(alpha: 0.18);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
         color: surface.withValues(alpha: isDark ? 0.92 : 0.97),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: shadowColor,
@@ -44,20 +46,20 @@ class MapSearchBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Icon(
             Icons.search_rounded,
             color: onSurface.withValues(alpha: 0.5),
-            size: 22,
+            size: 22.r,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: TextField(
               controller: searchController,
               focusNode: searchFocusNode,
               style: TextStyle(
                 color: onSurface,
-                fontSize: 15,
+                fontSize: 15.sp,
               ),
               textInputAction: TextInputAction.search,
               onSubmitted: (value) {
@@ -77,13 +79,13 @@ class MapSearchBar extends StatelessWidget {
                 }
               },
               decoration: InputDecoration(
-                hintText: 'Search places...',
+                hintText: AppLocalizations.of(context).mapSearchHint,
                 hintStyle: TextStyle(
                   color: onSurface.withValues(alpha: 0.4),
-                  fontSize: 15,
+                  fontSize: 15.sp,
                 ),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                contentPadding: EdgeInsets.symmetric(vertical: 14.h),
               ),
             ),
           ),
@@ -94,17 +96,17 @@ class MapSearchBar extends StatelessWidget {
                 onTap: onClearSearch,
                 customBorder: const CircleBorder(),
                 child: Padding(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10.r),
                   child: Icon(
                     Icons.close_rounded,
                     color: onSurface.withValues(alpha: 0.5),
-                    size: 20,
+                    size: 20.r,
                   ),
                 ),
               ),
             )
           else
-            const SizedBox(width: 14),
+            SizedBox(width: 14.w),
         ],
       ),
     );

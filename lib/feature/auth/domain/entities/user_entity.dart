@@ -12,6 +12,10 @@ class UserEntity extends Equatable {
   // Profile Fields
   final String phoneNumber;
   final String nationality;
+  /// ISO 3166-1 alpha-2 country code (e.g. "EG", "US"). Used by the
+  /// recommendation engine's country-prior cold-start path. Written by phone
+  /// signup + phone verification + edit profile.
+  final String nationalityCode;
   final String bio;
   final List<String> interests;
   final List<String> visitedLandmarks;
@@ -42,6 +46,12 @@ class UserEntity extends Equatable {
   // Timestamps
   final DateTime createdAt;
 
+  /// Written by the recommendation engine's `applyQuizAnswers` Cloud Function
+  /// when the user finishes the taste quiz. Used by AuthGate to skip the quiz
+  /// gate on returning logins (per-user, survives device switch + cache clear).
+  /// Null = quiz never completed.
+  final DateTime? quizCompletedAt;
+
   // Guide Fields
   final String applicationStatus; // 'none', 'pending', 'rejected', 'approved'
   final String motaLicenseNumber;
@@ -64,6 +74,7 @@ class UserEntity extends Equatable {
     required this.profileImageUrl,
     this.phoneNumber = '',
     this.nationality = '',
+    this.nationalityCode = '',
     this.bio = '',
     this.interests = const [],
     this.visitedLandmarks = const [],
@@ -83,6 +94,7 @@ class UserEntity extends Equatable {
     this.notifGuideUpdates = true,
     this.notifDailyDiscovery = true,
     required this.createdAt,
+    this.quizCompletedAt,
     this.applicationStatus = 'none',
     this.motaLicenseNumber = '',
     this.syndicateNumber = '',
@@ -105,6 +117,7 @@ class UserEntity extends Equatable {
     profileImageUrl,
     phoneNumber,
     nationality,
+    nationalityCode,
     bio,
     interests,
     visitedLandmarks,
@@ -124,6 +137,7 @@ class UserEntity extends Equatable {
     notifGuideUpdates,
     notifDailyDiscovery,
     createdAt,
+    quizCompletedAt,
     applicationStatus,
     motaLicenseNumber,
     syndicateNumber,

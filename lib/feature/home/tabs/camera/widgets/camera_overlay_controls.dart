@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../presentation/bloc/camera_cubit.dart';
 import '../presentation/bloc/camera_state.dart';
 
@@ -25,17 +27,17 @@ class CameraOverlayControls extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
       decoration: BoxDecoration(
         color: isDark ? Colors.black54 : Colors.white70,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: isDark ? Colors.white30 : Colors.black26),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           dropdownColor: isDark ? Colors.black87 : Colors.white,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 12),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 12.sp),
           icon: Icon(Icons.arrow_drop_down, color: isDark ? Colors.white : Colors.black87),
           isExpanded: true,
           onChanged: (String? newValue) {
@@ -57,18 +59,18 @@ class CameraOverlayControls extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 10,
+            padding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 10.h,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back,
                     color: Colors.white,
-                    size: 28,
+                    size: 28.r,
                   ),
                   onPressed: () {
                     if (showGalleryImage) {
@@ -86,23 +88,23 @@ class CameraOverlayControls extends StatelessWidget {
                       state.flashMode == FlashMode.always ? Icons.flash_on :
                       Icons.highlight, // Torch
                       color: Colors.white,
-                      size: 28,
+                      size: 28.r,
                     ),
                     onPressed: () => cubit.toggleFlash(),
                   ),
                 Text(
-                  showGalleryImage ? "Translation" : "Lens",
-                  style: const TextStyle(
-                    fontFamily: "Marcellus",
+                  showGalleryImage ? AppLocalizations.of(context).cameraTranslation : AppLocalizations.of(context).cameraLens,
+                  style: TextStyle(
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 20.sp,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.flip_camera_ios,
                     color: Colors.white,
-                    size: 28,
+                    size: 28.r,
                   ),
                   onPressed: showGalleryImage ? null : () => cubit.flipCamera(),
                 ),
@@ -110,19 +112,19 @@ class CameraOverlayControls extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Align(
               alignment: Alignment.centerRight,
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   if (state.isTranslateMode)
                     _buildLanguageDropdown(
                       context: context,
                       value: state.sourceLang,
                       onChanged: (newLang) => cubit.setSourceLanguage(newLang),
                     ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   if (state.isTranslateMode)
                     _buildLanguageDropdown(
                       context: context,
@@ -135,13 +137,13 @@ class CameraOverlayControls extends StatelessWidget {
           ),
           const Spacer(),
           Padding(
-            padding: const EdgeInsets.only(
-              bottom: 40,
-              left: 30,
-              right: 30,
+            padding: EdgeInsetsDirectional.only(
+              bottom: 40.h,
+              start: 30.w,
+              end: 30.w,
             ),
             child: SizedBox(
-              height: 84, // ensures the stack has the height of the largest element
+              height: 84.h, // ensures the stack has the height of the largest element
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -159,10 +161,10 @@ class CameraOverlayControls extends StatelessWidget {
                           child: InkWell(
                             onTap: () => cubit.pickFromGallery(),
                             customBorder: const CircleBorder(),
-                            child: const SizedBox(
-                              width: 50,
-                              height: 50,
-                              child: Icon(
+                            child: SizedBox(
+                              width: 50.r,
+                              height: 50.r,
+                              child: const Icon(
                                 Icons.photo_library_outlined,
                                 color: Color(0xFF4A3D2E),
                               ),
@@ -179,23 +181,23 @@ class CameraOverlayControls extends StatelessWidget {
                               onTap: () => cubit.captureAndAnalyze(),
                               customBorder: const CircleBorder(),
                               child: Container(
-                                width: 84,
-                                height: 84,
+                                width: 84.r,
+                                height: 84.r,
                                 decoration: BoxDecoration(
                                   color: Colors.transparent,
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                       color: Colors.white, width: 4),
                                 ),
-                                padding: const EdgeInsets.all(4),
+                                padding: EdgeInsets.all(4.r),
                                 child: Container(
                                   decoration: const BoxDecoration(
                                     color: Colors.white,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.camera_alt,
-                                    size: 32,
+                                    size: 32.r,
                                     color: Colors.black87,
                                   ),
                                 ),
@@ -203,7 +205,7 @@ class CameraOverlayControls extends StatelessWidget {
                             ),
                           )
                         else
-                          const SizedBox(width: 84),
+                          SizedBox(width: 84.r),
                         // AR Translate Button
                         Material(
                           color: state.isTranslateMode
@@ -217,11 +219,11 @@ class CameraOverlayControls extends StatelessWidget {
                             onTap: () => cubit.toggleTranslateMode(),
                             customBorder: const CircleBorder(),
                             child: SizedBox(
-                              width: 50,
-                              height: 50,
+                              width: 50.r,
+                              height: 50.r,
                               child: Icon(
                                 Icons.translate,
-                                size: 22,
+                                size: 22.r,
                                 color: state.isTranslateMode
                                     ? Theme.of(context).colorScheme.onPrimary
                                     : Theme.of(context).colorScheme.onSurface,
@@ -236,7 +238,7 @@ class CameraOverlayControls extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
         ],
       ),
     );

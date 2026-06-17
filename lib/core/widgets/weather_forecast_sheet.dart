@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../models/weather_context.dart';
 import '../services/weather_controller.dart';
 
@@ -24,6 +26,7 @@ class WeatherForecastSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? const Color(0xFF1A2E3B) : Colors.white;
     final onSurface = isDark ? Colors.white : const Color(0xFF1A1A1A);
@@ -46,49 +49,50 @@ class WeatherForecastSheet extends StatelessWidget {
             children: [
               // ── Handle ─────────────────────────────────────────────────────
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: onSurface.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
 
               // ── Current conditions card ─────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20.r),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.10),
                     border: Border.all(color: color.withValues(alpha: 0.30)),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(18.r),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(weather.conditionIcon, color: color, size: 28),
-                          const SizedBox(width: 12),
+                          Icon(weather.conditionIcon, color: color, size: 28.r),
+                          SizedBox(width: 12.w),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                weather.conditionLabel,
+                                weatherConditionLabel(l, weather.condition,
+                                    emphasis: true),
                                 style: TextStyle(
                                   color: color,
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 17,
-                                  fontFamily: 'Marcellus',
+                                  fontSize: 17.sp,
+                                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                 ),
                               ),
                               Text(
-                                'Egypt conditions right now',
+                                l.weatherConditionsNow,
                                 style: TextStyle(
                                   color: dimText,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
                             ],
@@ -101,20 +105,20 @@ class WeatherForecastSheet extends StatelessWidget {
                                 weather.tempDisplay,
                                 style: TextStyle(
                                   color: onSurface,
-                                  fontSize: 28,
+                                  fontSize: 28.sp,
                                   fontWeight: FontWeight.w300,
-                                  fontFamily: 'Marcellus',
+                                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                 ),
                               ),
                               Text(
                                 weather.feelsLikeDisplay,
-                                style: TextStyle(color: dimText, fontSize: 12),
+                                style: TextStyle(color: dimText, fontSize: 12.sp),
                               ),
                             ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14.h),
                       // Stats row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -137,19 +141,19 @@ class WeatherForecastSheet extends StatelessWidget {
                         ],
                       ),
                       if (weather.isOutdoorAdvisory) ...[
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12.h),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 8.h),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.07),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Text(
-                            weather.advisoryText,
+                            weatherAdvisoryText(l, weather),
                             style: TextStyle(
                               color: color.withValues(alpha: 0.85),
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               height: 1.4,
                             ),
                           ),
@@ -162,25 +166,25 @@ class WeatherForecastSheet extends StatelessWidget {
 
               // ── 7-day header ────────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
                 child: Row(
                   children: [
                     Container(
-                      width: 3,
-                      height: 18,
+                      width: 3.w,
+                      height: 18.h,
                       decoration: BoxDecoration(
                         color: primary,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(2.r),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
-                      '7-Day Forecast',
+                      l.weather7DayForecast,
                       style: TextStyle(
                         color: onSurface,
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        fontFamily: 'Marcellus',
+                        fontSize: 15.sp,
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ],
@@ -191,13 +195,13 @@ class WeatherForecastSheet extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 32.h),
                   itemCount: weather.forecast.length,
                   separatorBuilder: (_, _) => Divider(
                     height: 1,
                     color: onSurface.withValues(alpha: 0.07),
-                    indent: 12,
-                    endIndent: 12,
+                    indent: 12.w,
+                    endIndent: 12.w,
                   ),
                   itemBuilder: (_, i) {
                     final day = weather.forecast[i];
@@ -205,21 +209,21 @@ class WeatherForecastSheet extends StatelessWidget {
                         ? day.severityColor
                         : onSurface;
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       child: Row(
                         children: [
                           // Day label
                           SizedBox(
-                            width: 68,
+                            width: 68.w,
                             child: Text(
-                              day.dayLabel,
+                              weatherDayLabel(l, day),
                               style: TextStyle(
                                 color: i == 0 ? primary : onSurface,
                                 fontWeight: i == 0
                                     ? FontWeight.w700
                                     : FontWeight.w500,
-                                fontSize: 14,
-                                fontFamily: 'Marcellus',
+                                fontSize: 14.sp,
+                                fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               ),
                             ),
                           ),
@@ -231,15 +235,15 @@ class WeatherForecastSheet extends StatelessWidget {
                                     ? Icons.thermostat
                                     : Icons.wb_sunny_outlined,
                             color: dayColor.withValues(alpha: 0.7),
-                            size: 18,
+                            size: 18.r,
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6.w),
                           Expanded(
                             child: Text(
-                              day.conditionLabel,
+                              weatherConditionLabel(l, day.condition),
                               style: TextStyle(
                                 color: dayColor.withValues(alpha: 0.8),
-                                fontSize: 13,
+                                fontSize: 13.sp,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -247,18 +251,18 @@ class WeatherForecastSheet extends StatelessWidget {
                           // UV badge (only when elevated)
                           if (day.isHighUV)
                             Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                              margin: EdgeInsetsDirectional.only(end: 8.w),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
                                 color: day.severityColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
                                 'UV ${day.maxUvIndex.toStringAsFixed(0)}',
                                 style: TextStyle(
                                   color: day.severityColor,
-                                  fontSize: 11,
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -271,15 +275,15 @@ class WeatherForecastSheet extends StatelessWidget {
                                 style: TextStyle(
                                   color: onSurface,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                 ),
                               ),
-                              const SizedBox(width: 2),
+                              SizedBox(width: 2.w),
                               Text(
                                 '/ ${day.minTempC.toStringAsFixed(0)}°',
                                 style: TextStyle(
                                   color: dimText,
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                 ),
                               ),
                             ],
@@ -314,13 +318,13 @@ class _StatChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: color, size: 15),
-        const SizedBox(width: 4),
+        Icon(icon, color: color, size: 15.r),
+        SizedBox(width: 4.w),
         Text(
           label,
           style: TextStyle(
             color: color,
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           ),
         ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
 import '../../domain/entities/tour_entity.dart';
@@ -7,8 +9,8 @@ import '../../domain/entities/booking_entity.dart';
 import '../../domain/usecases/book_tour_usecase.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../data/datasources/paymob_api_service.dart';
 import '../../../../feature/home/notification/domain/services/local_notification_service.dart';
@@ -16,6 +18,7 @@ import 'booking_history_screen.dart';
 import 'tour_detail_screen.dart';
 import '../../../../core/services/recommendation_mappings.dart';
 import '../../../../core/services/recommendation_service.dart';
+import '../../../../core/services/weather_controller.dart';
 import '../../../../core/utils/error_handler.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
@@ -104,6 +107,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         context: 'similar',
         limit: 3,
         excludeSeen: false, // small tour pool — keep all candidates visible
+        weather: WeatherController.weather.value,
       );
       if (!mounted) return;
       if (result == null || result.recommendations.isEmpty) {
@@ -131,9 +135,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Future<void> _processPayment() async {
+    final l10n = AppLocalizations.of(context);
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      _showSnackBar('Please log in to book.', isError: true);
+      _showSnackBar(l10n.bookingLoginRequired, isError: true);
       return;
     }
 
@@ -141,7 +146,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       final phone = _walletPhoneController.text.trim();
       final egyptianMobileRegex = RegExp(r'^01[0125][0-9]{8}$');
       if (!egyptianMobileRegex.hasMatch(phone)) {
-        _showSnackBar('Please enter a valid Egyptian mobile number (e.g. 01XXXXXXXXX).', isError: true);
+        _showSnackBar(l10n.bookingInvalidWallet, isError: true);
         return;
       }
     }
@@ -151,12 +156,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       final tourDoc = await FirebaseFirestore.instance
           .collection('tours').doc(widget.tour.id).get();
       final currentCap = (tourDoc.data()?['maxAttendees'] as num?)?.toInt() ?? 0;
+      if (!context.mounted) return;
       if (currentCap < _quantity) {
         if (currentCap <= 0) {
-          _showSnackBar('Sorry, this tour is now fully booked.', isError: true);
+          _showSnackBar(l10n.bookingFullyBooked, isError: true);
         } else {
           _showSnackBar(
-            'Only $currentCap seat${currentCap == 1 ? '' : 's'} remaining. Please reduce your selection.',
+            l10n.bookingSeatsRemaining(currentCap),
             isError: true,
           );
           if (mounted) setState(() => _quantity = currentCap);
@@ -164,6 +170,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         return;
       }
     } catch (_) {}
+
+    if (!mounted) return;
 
     setState(() => _isLoading = true);
 
@@ -183,7 +191,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           } else {
             if (mounted) {
               setState(() => _isLoading = false);
-              _showSnackBar(response?.message ?? 'Payment was cancelled or failed.', isError: true);
+              _showSnackBar(response?.message ?? l10n.bookingPaymentFailed, isError: true);
             }
           }
           break;
@@ -202,14 +210,14 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           } else {
             if (mounted) {
               setState(() => _isLoading = false);
-              _showSnackBar(response?.message ?? 'Wallet payment failed.', isError: true);
+              _showSnackBar(response?.message ?? l10n.bookingWalletFailed, isError: true);
             }
           }
           break;
 
         case 'kiosk':
           // Fawry/Kiosk generates a reference number — user pays at a kiosk later
-          _showSnackBar('Kiosk payment coming soon!');
+          _showSnackBar(l10n.bookingKioskSoon);
           setState(() => _isLoading = false);
           break;
       }
@@ -245,15 +253,19 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     _notifyTouristAndScheduleReminder(userId);
 
     if (mounted) {
+      final l10n = AppLocalizations.of(context);
       setState(() => _isLoading = false);
       result.fold(
-        (l) => _showSnackBar('Booking Error: ${l.message}', isError: true),
+        (l) => _showSnackBar(l10n.bookingErrorPrefix(l.message), isError: true),
         (r) {
+          final inferred = RecommendationMappings.inferKeysFromText(
+            '${widget.tour.title} ${widget.tour.destinations.join(' ')} ${widget.tour.description}',
+          );
           RecommendationService.recordSignal(
             placeId: widget.tour.id,
             placeName: widget.tour.title,
-            types: ['tourist_attraction'],
-            tags: ['cultural', 'adventure'],
+            types: inferred['types']!,
+            tags: inferred['tags']!,
             signalType: 'booking',
             source: 'booking',
           );
@@ -328,34 +340,35 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   void _showSuccessDialog() {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.r),
               decoration: BoxDecoration(
                 color: const Color(0xFFC79A00).withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle, color: Color(0xFFC79A00), size: 64),
+              child: Icon(Icons.check_circle, color: const Color(0xFFC79A00), size: 64.r),
             ),
-            const SizedBox(height: 16),
-            const Text('Booking Confirmed!', textAlign: TextAlign.center),
+            SizedBox(height: 16.h),
+            Text(l10n.bookingConfirmedTitle, textAlign: TextAlign.center),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Your spot on "${widget.tour.title}" is reserved!',
+              l10n.bookingReservedBody(widget.tour.title),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15),
+              style: TextStyle(fontSize: 15.sp),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             ValueListenableBuilder<String>(
               valueListenable: CurrencyController.currency,
               builder: (context, currency, _) {
@@ -368,8 +381,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                             ? 'EGP ${_totalPrice.toStringAsFixed(0)} ΓÜá'
                             : 'EGP ${_totalPrice.toStringAsFixed(0)}';
                     return Text(
-                      '$label paid successfully.',
-                      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
+                      l10n.bookingPaidSuccess(label),
+                      style: TextStyle(fontSize: 14.sp, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55)),
                     );
                   },
                 );
@@ -384,8 +397,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               FilledButton(
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFC79A00),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
                 ),
                 onPressed: () {
                   Navigator.of(context).popUntil((route) => route.isFirst);
@@ -394,13 +407,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     MaterialPageRoute(builder: (_) => const BookingHistoryScreen()),
                   );
                 },
-                child: const Text('View My Bookings',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(l10n.bookingViewMyBookings,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               TextButton(
                 onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
-                child: const Text('Back to Home'),
+                child: Text(l10n.bookingBackHome),
               ),
             ],
           ),
@@ -416,7 +429,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         content: Text(message),
         backgroundColor: isError ? Colors.red : null,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
       ),
     );
   }
@@ -426,51 +439,51 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Checkout'),
+        title: Text(l10n.bookingCheckoutTitle),
         centerTitle: true,
       ),
       body: Stack(
         children: [
           ListView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 160),
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 160.h),
             children: [
               // ── Order Summary ──
-              _buildSectionTitle('Order Summary'),
-              const SizedBox(height: 12),
+              _buildSectionTitle(l10n.bookingOrderSummary),
+              SizedBox(height: 12.h),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.r),
                 decoration: _cardDecoration(theme, isDark),
                 child: Column(
                   children: [
                     // Tour info
                     Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: widget.tour.images.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: widget.tour.images.first, 
-                                  width: 60, 
-                                  height: 60, 
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                                  errorWidget: (context, url, err) => Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest, child: const Icon(Icons.landscape)),
-                                )
-                              : Container(width: 60, height: 60, color: Theme.of(context).colorScheme.surfaceContainerHighest, child: const Icon(Icons.landscape)),
+                        ShimmerImage(
+                          url: widget.tour.images.isNotEmpty
+                              ? widget.tour.images.first
+                              : null,
+                          width: 60.r,
+                          height: 60.r,
+                          fit: BoxFit.cover,
+                          borderRadius: BorderRadius.circular(12.r),
+                          fallbackIcon: Icons.landscape,
+                          fallbackBackgroundColor:
+                              Theme.of(context).colorScheme.surfaceContainerHighest,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(widget.tour.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              const SizedBox(height: 4),
+                              Text(widget.tour.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp)),
+                              SizedBox(height: 4.h),
                               Text(
                                 widget.tour.meetingLocationName,
-                                style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                                style: TextStyle(fontSize: 13.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -479,20 +492,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         ),
                       ],
                     ),
-                    const Divider(height: 24),
+                    Divider(height: 24.h),
                     // Quantity selector
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Guests', style: TextStyle(fontSize: 15)),
+                        Text(l10n.bookingGuests, style: TextStyle(fontSize: 15.sp)),
                         Row(
                           children: [
                             _quantityButton(Icons.remove, () {
                               if (_quantity > 1) setState(() => _quantity--);
                             }),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text('$_quantity', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              child: Text('$_quantity', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
                             ),
                             _quantityButton(Icons.add, () {
                               if (_quantity < widget.tour.maxAttendees) setState(() => _quantity++);
@@ -501,7 +514,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         ),
                       ],
                     ),
-                    const Divider(height: 24),
+                    Divider(height: 24.h),
                     // Price breakdown
                     ValueListenableBuilder<String>(
                       valueListenable: CurrencyController.currency,
@@ -525,7 +538,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                 Text('$_quantity × $unitLabel'),
                                 Text(
                                   totalLabel,
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: primary),
+                                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: primary),
                                 ),
                               ],
                             );
@@ -537,78 +550,89 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 ),
               ),
 
-              const SizedBox(height: 28),
+              SizedBox(height: 28.h),
 
               // ── Payment Method ──
-              _buildSectionTitle('Payment Method'),
-              const SizedBox(height: 12),
-              _buildPaymentOption(
-                title: 'Credit / Debit Card',
-                subtitle: 'Visa, Mastercard, Meeza',
-                icon: Icons.credit_card,
-                value: 'card',
-                theme: theme,
-              ),
-              _buildPaymentOption(
-                title: 'Mobile Wallet',
-                subtitle: 'Vodafone Cash, Orange, Etisalat',
-                icon: Icons.phone_android,
-                value: 'wallet',
-                theme: theme,
-              ),
-              _buildPaymentOption(
-                title: 'Apple Pay',
-                subtitle: 'iOS only • Coming soon',
-                icon: Icons.apple,
-                value: 'apple_pay',
-                theme: theme,
-                enabled: false, // Enable when Apple Pay integration is live
-              ),
-              _buildPaymentOption(
-                title: 'Fawry / Kiosk',
-                subtitle: 'Pay at any 172,000+ Fawry outlets',
-                icon: Icons.receipt_long,
-                value: 'kiosk',
-                theme: theme,
-                enabled: false, // Enable when kiosk integration is created
+              _buildSectionTitle(l10n.bookingPaymentMethod),
+              SizedBox(height: 12.h),
+              RadioGroup<String>(
+                groupValue: _selectedPaymentMethod,
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedPaymentMethod = val);
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildPaymentOption(
+                      title: l10n.bookingPayCardTitle,
+                      subtitle: l10n.bookingPayCardSub,
+                      icon: Icons.credit_card,
+                      value: 'card',
+                      theme: theme,
+                    ),
+                    _buildPaymentOption(
+                      title: l10n.bookingPayWalletTitle,
+                      subtitle: l10n.bookingPayWalletSub,
+                      icon: Icons.phone_android,
+                      value: 'wallet',
+                      theme: theme,
+                    ),
+                    _buildPaymentOption(
+                      title: l10n.bookingPayApplePayTitle,
+                      subtitle: l10n.bookingPayApplePaySub,
+                      icon: Icons.apple,
+                      value: 'apple_pay',
+                      theme: theme,
+                      enabled: false, // Enable when Apple Pay integration is live
+                    ),
+                    _buildPaymentOption(
+                      title: l10n.bookingPayKioskTitle,
+                      subtitle: l10n.bookingPayKioskSub,
+                      icon: Icons.receipt_long,
+                      value: 'kiosk',
+                      theme: theme,
+                      enabled: false, // Enable when kiosk integration is created
+                    ),
+                  ],
+                ),
               ),
 
               // Wallet phone input
               if (_selectedPaymentMethod == 'wallet') ...[
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 TextField(
                   controller: _walletPhoneController,
                   keyboardType: TextInputType.phone,
                   maxLength: 11,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
-                    labelText: 'Wallet Phone Number',
+                    labelText: l10n.bookingWalletPhoneLabel,
                     hintText: '01XXXXXXXXX',
                     prefixIcon: const Icon(Icons.phone),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r)),
                     filled: true,
                     fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   ),
                 ),
               ],
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // ── Security Badge ──
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14.r),
                 decoration: BoxDecoration(
                   color: primary.withValues(alpha: isDark ? 0.08 : 0.04),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.verified_user, color: primary, size: 20),
-                    const SizedBox(width: 10),
+                    Icon(Icons.verified_user, color: primary, size: 20.r),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
-                        'Payments are processed securely by Paymob. Your card details are never stored locally.',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+                        l10n.bookingSecurityNote,
+                        style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                     ),
                   ],
@@ -617,44 +641,44 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
               // ── Because you booked X, you might enjoy these tours ──
               if (_loadingSimilar || _similarTours.isNotEmpty) ...[
-                const SizedBox(height: 28),
+                SizedBox(height: 28.h),
                 Row(
                   children: [
-                    Icon(Icons.auto_awesome, size: 16, color: primary),
-                    const SizedBox(width: 8),
+                    Icon(Icons.auto_awesome, size: 16.r, color: primary),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
-                        'Because you booked this, you might enjoy',
+                        l10n.bookingBecauseBooked,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
                           color: theme.colorScheme.onSurface,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 SizedBox(
-                  height: 160,
+                  height: 160.h,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _loadingSimilar ? 2 : _similarTours.length,
                     itemBuilder: (_, i) {
                       if (_loadingSimilar) {
                         return Container(
-                          width: 220,
-                          margin: const EdgeInsets.only(right: 12),
+                          width: 220.w,
+                          margin: EdgeInsetsDirectional.only(end: 12.w),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.06),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(16.r),
                           ),
                         );
                       }
                       return Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                        padding: EdgeInsetsDirectional.only(end: 12.w),
                         child: _BookingSimilarTourCard(tour: _similarTours[i]),
                       );
                     },
@@ -668,13 +692,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           if (_isLoading)
             Container(
               color: Colors.black54,
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.white),
-                    SizedBox(height: 16),
-                    Text('Processing payment...', style: TextStyle(color: Colors.white, fontSize: 16)),
+                    const CircularProgressIndicator(color: Colors.white),
+                    SizedBox(height: 16.h),
+                    Text(l10n.bookingProcessing, style: TextStyle(color: Colors.white, fontSize: 16.sp)),
                   ],
                 ),
               ),
@@ -682,7 +706,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         ],
       ),
       bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.r),
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
           boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -4))],
@@ -709,17 +733,17 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Total', style: TextStyle(fontSize: 16)),
+                              Text(l10n.bookingTotal, style: TextStyle(fontSize: 16.sp)),
                               Text(
                                 displayLabel,
-                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: primary),
+                                style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, color: primary),
                               ),
                             ],
                           ),
                           if (showEgpNote)
                             Text(
-                              'Charged as EGP ${_totalPrice.toStringAsFixed(0)} via Paymob',
-                              style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                              l10n.bookingChargedNote(_totalPrice.toStringAsFixed(0)),
+                              style: TextStyle(fontSize: 11.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                             ),
                         ],
                       );
@@ -727,20 +751,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   );
                 },
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               SizedBox(
                 width: double.infinity,
-                height: 54,
+                height: 54.h,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                     elevation: 0,
                   ),
                   onPressed: _isLoading ? null : _processPayment,
                   icon: const Icon(Icons.lock),
-                  label: const Text('Pay Securely', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  label: Text(l10n.bookingPaySecurely, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -751,13 +775,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
+    return Text(title, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold));
   }
 
   BoxDecoration _cardDecoration(ThemeData theme, bool isDark) {
     return BoxDecoration(
       color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.08)),
       boxShadow: [
         BoxShadow(
@@ -777,8 +801,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          padding: EdgeInsets.all(8.r),
+          child: Icon(icon, size: 18.r, color: Theme.of(context).colorScheme.primary),
         ),
       ),
     );
@@ -793,54 +817,50 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     bool enabled = true,
   }) {
     final isSelected = _selectedPaymentMethod == value;
-    return Opacity(
-      opacity: enabled ? 1.0 : 0.4,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.08),
-            width: isSelected ? 2 : 1,
+    return IgnorePointer(
+      ignoring: !enabled,
+      child: Opacity(
+        opacity: enabled ? 1.0 : 0.4,
+        child: Container(
+          margin: EdgeInsets.only(bottom: 10.h),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.08),
+              width: isSelected ? 2 : 1,
+            ),
           ),
-        ),
         child: RadioListTile<String>(
           title: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.r),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? theme.colorScheme.primary.withValues(alpha: 0.1)
                       : theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(icon, color: isSelected ? theme.colorScheme.primary : Colors.grey, size: 22),
+                child: Icon(icon, color: isSelected ? theme.colorScheme.primary : Colors.grey, size: 22.r),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: theme.colorScheme.onSurface)),
-                    Text(subtitle, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                    Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp, color: theme.colorScheme.onSurface)),
+                    Text(subtitle, style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                   ],
                 ),
               ),
             ],
           ),
           value: value,
-          groupValue: _selectedPaymentMethod,
           activeColor: theme.colorScheme.primary,
-          onChanged: enabled
-              ? (val) {
-                  if (val != null) setState(() => _selectedPaymentMethod = val);
-                }
-              : null,
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -859,9 +879,9 @@ class _BookingSimilarTourCard extends StatelessWidget {
         MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
       ),
       child: Container(
-        width: 220,
+        width: 220.w,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           color: theme.colorScheme.surface,
           border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.08)),
         ),
@@ -869,26 +889,14 @@ class _BookingSimilarTourCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (tour.images.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: tour.images.first,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.08)),
-                errorWidget: (_, __, ___) => Container(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                  child: Icon(Icons.tour,
-                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                      size: 36),
-                ),
-              )
-            else
-              Container(
-                color: theme.colorScheme.primary.withValues(alpha: 0.06),
-                child: Icon(Icons.tour,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                    size: 36),
-              ),
+            ShimmerImage(
+              url: tour.images.isNotEmpty ? tour.images.first : null,
+              fit: BoxFit.cover,
+              fallbackIcon: Icons.tour,
+              fallbackBackgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
+              fallbackIconColor: theme.colorScheme.primary.withValues(alpha: 0.3),
+              fallbackIconSize: 36.r,
+            ),
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -900,25 +908,25 @@ class _BookingSimilarTourCard extends StatelessWidget {
               ),
             ),
             if (tour.rating > 0)
-              Positioned(
-                top: 8,
-                right: 8,
+              PositionedDirectional(
+                top: 8.h,
+                end: 8.w,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
                   decoration: BoxDecoration(
                     color: Colors.amber.shade700,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, size: 12, color: Colors.white),
-                      const SizedBox(width: 2),
+                      Icon(Icons.star_rounded, size: 12.r, color: Colors.white),
+                      SizedBox(width: 2.w),
                       Text(
                         tour.rating.toStringAsFixed(1),
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: Colors.white,
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -926,16 +934,16 @@ class _BookingSimilarTourCard extends StatelessWidget {
                 ),
               ),
             Positioned(
-              bottom: 10,
-              left: 10,
-              right: 10,
+              bottom: 10.h,
+              left: 10.w,
+              right: 10.w,
               child: Text(
                 tour.title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                   height: 1.2,
                 ),
                 maxLines: 2,

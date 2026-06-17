@@ -14,10 +14,15 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/theme/app_theme.dart';
 import 'package:lost_in_egypt/theme/theme_controller.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'core/di/service_locator.dart' as di;
 
@@ -28,6 +33,7 @@ import 'feature/auth/presentation/login/bloc/login_bloc.dart';
 import 'feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 import 'feature/onboarding/onboarding_screen.dart';
 import 'feature/home/notification/domain/services/local_notification_service.dart';
+import 'feature/home/tabs/map/data/places_api_service.dart';
 
 // ✅ add these imports for saved theme
 import 'feature/tours/presentation/pages/map_picker_screen.dart';
@@ -46,6 +52,27 @@ void main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     debugPrint("WARNING: .env file not found, Maps API might fail if not injected via CLI.");
+  }
+
+  // Dev kill-switch — when `PLACES_API_DISABLED=true` is in `.env`, every
+  // PlacesApiService entry point short-circuits and MapRepository falls
+  // through to the bundled 500-landmark asset. Lets us test the rest of the
+  // app without burning Places API quota.
+  PlacesApiService.disabled =
+      (dotenv.env['PLACES_API_DISABLED'] ?? '').toLowerCase() == 'true';
+  final rawKillSwitch = dotenv.env['PLACES_API_DISABLED'];
+  if (PlacesApiService.disabled) {
+    debugPrint('🛑 PLACES API KILL-SWITCH IS ON '
+        '(PLACES_API_DISABLED=true). All Places API calls will be blocked '
+        'this session. Remove the flag from .env to re-enable.');
+  } else {
+    // Positive confirmation so a stale bundled .env (assets are baked in at
+    // build time — a hot reload / reinstalling the same APK keeps the old
+    // value) is obvious from the logs. Echoes the raw parsed value too.
+    debugPrint('✅ PLACES API ENABLED '
+        '(PLACES_API_DISABLED=${rawKillSwitch ?? '<unset>'}). Note: a fresh '
+        'API call only fires when memory + disk + Firestore caches all miss — '
+        '"0 API calls!" in the log means cached Places data is being served.');
   }
 
   try {
@@ -86,6 +113,18 @@ void main() async {
   } catch (e) {
     debugPrint("LocalNotifications Initialization Error: $e");
   }
+
+  // intl date-symbol data for Arabic so DateFormat(..., 'ar') renders Arabic
+  // month/weekday names (en_US is bundled by default). Used by the event
+  // detail screen's localized dates.
+  try {
+    await initializeDateFormatting('ar');
+  } catch (e) {
+    debugPrint("Date formatting init error: $e");
+  }
+
+  // Arabic relative-time strings for the `timeago` package (notification list).
+  timeago.setLocaleMessages('ar', timeago.ArMessages());
 
   // ── FCM setup ───────────────────────────────────────────────────────────────
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -160,31 +199,55 @@ class MyApp extends StatelessWidget {
       child: ValueListenableBuilder<ThemeMode>(
         valueListenable: ThemeController.mode,
         builder: (context, mode, _) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Lost in Egypt',
+          return ValueListenableBuilder<Locale>(
+            valueListenable: LocaleController.locale,
+            builder: (context, locale, _) {
+              // Locale-aware default font: Cairo for Arabic, Marcellus for
+              // Latin. The Cairo fallback means any Marcellus-tagged text still
+              // renders Arabic glyphs on-brand instead of the system font.
+              final fontFamily = AppTheme.fontFamilyFor(locale);
+              return MaterialApp(
+                debugShowCheckedModeBanner: false,
+                onGenerateTitle: (context) =>
+                    AppLocalizations.of(context).appTitle,
 
-            theme: AppTheme.light.copyWith(
-              textTheme:
-                  ThemeData.light().textTheme.apply(fontFamily: 'Marcellus'),
-            ),
-            darkTheme: AppTheme.dark.copyWith(
-              textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'Marcellus'),
-            ),
+                locale: locale,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: AppLocalizations.supportedLocales,
 
-            themeMode: mode,
+                theme: AppTheme.light.copyWith(
+                  textTheme: ThemeData.light().textTheme.apply(
+                        fontFamily: fontFamily,
+                        fontFamilyFallback: AppTheme.fontFallback,
+                      ),
+                ),
+                darkTheme: AppTheme.dark.copyWith(
+                  textTheme: ThemeData.dark().textTheme.apply(
+                        fontFamily: fontFamily,
+                        fontFamilyFallback: AppTheme.fontFallback,
+                      ),
+                ),
 
-            home: AuthGate(),
+                themeMode: mode,
 
-            routes: {
-              '/onboarding': (context) => const OnboardingScreen(),
-              '/login': (context) => BlocProvider<LoginBloc>(
-                    create: (_) => di.sl<LoginBloc>(),
-                    child: const LoginScreen(),
-                  ),
-              '/signup': (context) => const SignupScreen(),
-              '/home': (context) => const HomeWrapper(),
-              '/map_picker': (context) => const MapPickerScreen(),
+                home: AuthGate(),
+
+                routes: {
+                  '/onboarding': (context) => const OnboardingScreen(),
+                  '/login': (context) => BlocProvider<LoginBloc>(
+                        create: (_) => di.sl<LoginBloc>(),
+                        child: const LoginScreen(),
+                      ),
+                  '/signup': (context) => const SignupScreen(),
+                  '/home': (context) => HomeWrapper(),
+                  '/map_picker': (context) => const MapPickerScreen(),
+                },
+              );
             },
           );
         },

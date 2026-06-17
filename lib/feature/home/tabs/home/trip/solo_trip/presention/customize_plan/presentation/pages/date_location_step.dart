@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../core/utils/map_style_helper.dart';
 import '../../../../../../../../../../theme/theme.dart';
 import '../manager/trip_planner_controller.dart';
@@ -23,6 +25,15 @@ class DateLocationStep extends StatefulWidget {
 
 class _DateLocationStepState extends State<DateLocationStep> {
   GoogleMapController? _miniMapController;
+  String? _mapStyle;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MapStyleHelper.getStyle(context).then((style) {
+      if (mounted) setState(() => _mapStyle = style);
+    });
+  }
 
   @override
   void dispose() {
@@ -66,6 +77,7 @@ class _DateLocationStepState extends State<DateLocationStep> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppColors.darkPrimaryButton;
     final textColor = isDark ? AppColors.darkText : AppColors.lightText;
@@ -84,7 +96,7 @@ class _DateLocationStepState extends State<DateLocationStep> {
             : null;
 
     return QuizScaffold(
-      title: 'Choose your dates & location',
+      title: l10n.soloQuizDateTitle,
       stepIndex: 0,
       onNext: widget.onNext,
       onBack: widget.onBack,
@@ -93,9 +105,9 @@ class _DateLocationStepState extends State<DateLocationStep> {
         children: [
           // ── From date ────────────────────────────────────────────────────
           _DateField(
-            label: 'From',
+            label: l10n.soloDateFrom,
             value: from != null ? _fmtDate(from) : null,
-            hint: 'Start date',
+            hint: l10n.soloDateStartHint,
             fieldBg: fieldBg,
             borderColor: borderColor,
             textColor: textColor,
@@ -106,19 +118,19 @@ class _DateLocationStepState extends State<DateLocationStep> {
           // ── Nights indicator ─────────────────────────────────────────────
           if (nights != null)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
+              padding: EdgeInsets.symmetric(vertical: 6.h),
               child: Center(
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
-                    '$nights ${nights == 1 ? 'night' : 'nights'}',
+                    l10n.soloNightsCount(nights),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                       color: primary,
                     ),
@@ -127,13 +139,13 @@ class _DateLocationStepState extends State<DateLocationStep> {
               ),
             )
           else
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
 
           // ── To date ──────────────────────────────────────────────────────
           _DateField(
-            label: 'To',
+            label: l10n.soloDateTo,
             value: to != null ? _fmtDate(to) : null,
-            hint: 'End date',
+            hint: l10n.soloDateEndHint,
             fieldBg: fieldBg,
             borderColor: borderColor,
             textColor: textColor,
@@ -141,17 +153,17 @@ class _DateLocationStepState extends State<DateLocationStep> {
             onTap: () => _pickDate(context, isFrom: false),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // ── Location picker ──────────────────────────────────────────────
           GestureDetector(
             onTap: () => _openMapPicker(context),
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
               decoration: BoxDecoration(
                 color: fieldBg,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(
                   color: locationName != null && locationName.isNotEmpty
                       ? primary.withValues(alpha: 0.4)
@@ -162,19 +174,19 @@ class _DateLocationStepState extends State<DateLocationStep> {
                 children: [
                   Icon(
                     Icons.location_on_outlined,
-                    size: 18,
+                    size: 18.r,
                     color: locationName != null && locationName.isNotEmpty
                         ? primary
                         : textColor.withValues(alpha: 0.4),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       locationName != null && locationName.isNotEmpty
                           ? locationName
-                          : 'Where are you starting from?',
+                          : l10n.soloStartLocationHint,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: locationName != null && locationName.isNotEmpty
                             ? textColor
                             : textColor.withValues(alpha: 0.4),
@@ -185,7 +197,7 @@ class _DateLocationStepState extends State<DateLocationStep> {
                   ),
                   Icon(
                     Icons.map_outlined,
-                    size: 16,
+                    size: 16.r,
                     color: primary.withValues(alpha: 0.6),
                   ),
                 ],
@@ -195,11 +207,11 @@ class _DateLocationStepState extends State<DateLocationStep> {
 
           // ── Mini map preview ─────────────────────────────────────────────
           if (lat != null && lng != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
               child: SizedBox(
-                height: 150,
+                height: 150.h,
                 child: GoogleMap(
                   initialCameraPosition: CameraPosition(
                     target: LatLng(lat, lng),
@@ -218,9 +230,9 @@ class _DateLocationStepState extends State<DateLocationStep> {
                   zoomGesturesEnabled: false,
                   rotateGesturesEnabled: false,
                   tiltGesturesEnabled: false,
+                  style: _mapStyle,
                   onMapCreated: (controller) {
                     _miniMapController = controller;
-                    MapStyleHelper.applyTheme(controller, context);
                   },
                 ),
               ),
@@ -259,10 +271,10 @@ class _DateField extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
         decoration: BoxDecoration(
           color: fieldBg,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
             color: hasValue ? primary.withValues(alpha: 0.4) : borderColor,
           ),
@@ -271,15 +283,15 @@ class _DateField extends StatelessWidget {
           children: [
             Icon(
               Icons.calendar_today_outlined,
-              size: 16,
+              size: 16.r,
               color: hasValue ? primary : textColor.withValues(alpha: 0.4),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: Text(
                 value ?? hint,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   color: hasValue ? textColor : textColor.withValues(alpha: 0.4),
                 ),
               ),
@@ -287,7 +299,7 @@ class _DateField extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
                 color: hasValue ? primary : textColor.withValues(alpha: 0.35),
                 letterSpacing: 0.3,

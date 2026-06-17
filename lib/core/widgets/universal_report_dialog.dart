@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../feature/admin/data/models/report_model.dart';
 import '../../feature/admin/domain/repositories/reports_repository.dart';
 import '../utils/error_handler.dart';
@@ -59,17 +61,18 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
   }
 
   Future<void> _submitReport() async {
+    final l = AppLocalizations.of(context);
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to submit a report.')),
+        SnackBar(content: Text(l.reportMustBeLoggedIn)),
       );
       return;
     }
 
     if (_selectedReason == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a reason for reporting.')),
+        SnackBar(content: Text(l.reportSelectReason)),
       );
       return;
     }
@@ -77,7 +80,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
     final description = _descriptionController.text.trim();
     if (description.length > 500) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Description must be 500 characters or fewer.')),
+        SnackBar(content: Text(l.reportDescriptionTooLong)),
       );
       return;
     }
@@ -101,7 +104,7 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Report submitted successfully. Thank you.')),
+          SnackBar(content: Text(l.reportSuccess)),
         );
       }
     } catch (e) {
@@ -115,26 +118,27 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
     }
   }
 
-  String _getDialogTitle() {
+  String _getDialogTitle(AppLocalizations l) {
     switch (widget.reportType) {
       case ReportType.user:
       case ReportType.guide:
-        return 'Report User';
+        return l.reportUser;
       case ReportType.tour:
-        return 'Report Tour';
+        return l.reportTour;
       case ReportType.post:
-        return 'Report Post';
+        return l.reportPost;
       case ReportType.comment:
-        return 'Report Comment';
+        return l.reportComment;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(20.r),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -144,8 +148,8 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _getDialogTitle(),
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  _getDialogTitle(l),
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -155,12 +159,12 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Why are you reporting this?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            SizedBox(height: 16.h),
+            Text(
+              l.reportReasonPrompt,
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // Use Flexible and SingleChildScrollView so it doesn't overflow
             Flexible(
@@ -168,65 +172,72 @@ class _UniversalReportDialogState extends State<UniversalReportDialog> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ..._reasons.map((reason) {
-                      return RadioListTile<String>(
-                        title: Text(reason, style: const TextStyle(fontSize: 14)),
-                        value: reason,
-                        groupValue: _selectedReason,
-                        onChanged: (val) {
+                    RadioGroup<String>(
+                      groupValue: _selectedReason,
+                      onChanged: (val) {
+                        if (val != null) {
                           setState(() {
                             _selectedReason = val;
                           });
-                        },
-                        contentPadding: EdgeInsets.zero,
-                        visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                        activeColor: const Color(0xFFC79A00), // App primary color roughly
-                      );
-                    }),
-                    const SizedBox(height: 12),
+                        }
+                      },
+                      child: Column(
+                        children: _reasons.map((reason) {
+                          return RadioListTile<String>(
+                            title: Text(reportReasonLabel(l, reason),
+                                style: TextStyle(fontSize: 14.sp)),
+                            value: reason,
+                            contentPadding: EdgeInsets.zero,
+                            visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                            activeColor: const Color(0xFFC79A00), // App primary color roughly
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
                     TextField(
                       controller: _descriptionController,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        hintText: 'Additional details (optional)',
-                        hintStyle: const TextStyle(fontSize: 14),
+                        hintText: l.reportAdditionalDetails,
+                        hintStyle: TextStyle(fontSize: 14.sp),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                           borderSide: const BorderSide(color: Colors.grey),
                         ),
-                        contentPadding: const EdgeInsets.all(12),
+                        contentPadding: EdgeInsets.all(12.r),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            
+            SizedBox(height: 20.h),
+
             // Submit Button
             SizedBox(
-              height: 48,
+              height: 48.h,
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitReport,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFC79A00),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
+                    ? SizedBox(
+                        height: 20.r,
+                        width: 20.r,
+                        child: const CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text(
-                        'Submit Report',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    : Text(
+                        l.reportSubmit,
+                        style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                       ),
               ),
             ),

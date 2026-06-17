@@ -16,6 +16,7 @@ import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/w
 import '../../../../../../../../theme/theme.dart';
 import '../../../../navigator/widget/account_menu_button.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class SoloTripPage extends StatefulWidget {
   final String? profileImageUrl;
@@ -189,6 +190,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     final sectionColor = isDark ? AppColors.darkPatternOverlay : const Color(0xFFFFFEF0);
@@ -229,12 +231,12 @@ class _SoloTripPageState extends State<SoloTripPage> {
                       ),
                       Expanded(
                         child: Text(
-                          'Solo Trip',
+                          l10n.soloTripTitle,
                           style: TextStyle(
                             fontSize: 22.sp,
                             fontWeight: FontWeight.w500,
                             color: titleColor,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                       ),
@@ -256,13 +258,13 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                   MaterialPageRoute(
                                       builder: (_) => const MyPlansScreen()),
                                 ),
-                                tooltip: 'My Plans',
+                                tooltip: l10n.accountMyPlans,
                                 icon: Icon(Icons.bookmark_outlined,
                                     color: gold, size: 24.r),
                               ),
                               if (count > 0)
-                                Positioned(
-                                  right: 6,
+                                PositionedDirectional(
+                                  end: 6,
                                   top: 6,
                                   child: Container(
                                     width: 16.r,
@@ -316,12 +318,12 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Recommended Plans',
+                                    l10n.soloRecommendedPlans,
                                     style: TextStyle(
                                       fontSize: 24.sp,
                                       fontWeight: FontWeight.w500,
                                       color: titleColor,
-                                      fontFamily: 'Marcellus',
+                                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                     ),
                                   ),
                                   if (_loadingPersonalization)
@@ -338,7 +340,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
-                                    'Personalised based on your travel history',
+                                    l10n.soloPersonalised,
                                     style: TextStyle(
                                       fontSize: 13.sp,
                                       color: titleColor.withValues(alpha: 0.55),
@@ -366,7 +368,7 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                         direction: DismissDirection.endToStart,
                                         background: Container(
                                           alignment: Alignment.centerRight,
-                                          padding: EdgeInsets.only(right: 20.w),
+                                          padding: EdgeInsetsDirectional.only(end: 20.w),
                                           decoration: BoxDecoration(
                                             color: Colors.red.shade400,
                                             borderRadius: BorderRadius.circular(20.r),
@@ -375,15 +377,16 @@ class _SoloTripPageState extends State<SoloTripPage> {
                                               color: Colors.white, size: 28.r),
                                         ),
                                         onDismissed: (_) {
-                                          for (final key in trip.scoringKeys) {
-                                            RecommendationService.recordSignal(
-                                              placeId: trip.id,
-                                              placeName: trip.title,
-                                              types: [key],
-                                              signalType: 'dismiss',
-                                              source: 'solo_trip',
-                                            );
-                                          }
+                                          // Single signal so the server applies the
+                                          // dismiss weight (-0.3) once across all keys.
+                                          // Looping per key N-amplified the penalty.
+                                          RecommendationService.recordSignal(
+                                            placeId: trip.id,
+                                            placeName: trip.title,
+                                            types: trip.scoringKeys,
+                                            signalType: 'dismiss',
+                                            source: 'solo_trip',
+                                          );
                                         },
                                         child: Padding(
                                           padding: EdgeInsets.only(

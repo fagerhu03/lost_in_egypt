@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
+import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 
 class TripPlannerSheet extends StatefulWidget {
@@ -34,6 +37,18 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
     super.dispose();
   }
 
+  /// Returns the user's current GPS or null on permission/timeout failures.
+  /// Silent failure — proximity scoring just contributes 0 if this returns null.
+  Future<Position?> _getUserPosition() async {
+    try {
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      ).timeout(const Duration(seconds: 8));
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _loadSuggestions() async {
     final sorted = List<MapItem>.from(widget.allItems)
       ..sort((a, b) => b.rating.compareTo(a.rating));
@@ -50,11 +65,16 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
       'lng': item.coordinate.longitude,
     }).toList();
 
+    final pos = await _getUserPosition();
+
     final result = await RecommendationService.recommendPlaces(
       candidates: candidates,
       context: 'solo',
       limit: 8,
       excludeSeen: false,
+      userLat: pos?.latitude,
+      userLng: pos?.longitude,
+      weather: WeatherController.weather.value,
     );
 
     if (!mounted) return;
@@ -98,11 +118,16 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
       'lng': item.coordinate.longitude,
     }).toList();
 
+    final pos = await _getUserPosition();
+
     final result = await RecommendationService.recommendPlaces(
       candidates: candidates,
       context: 'similar',
       limit: 6,
       excludeSeen: false,
+      userLat: pos?.latitude,
+      userLng: pos?.longitude,
+      weather: WeatherController.weather.value,
     );
 
     if (!mounted) return;
@@ -197,6 +222,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
@@ -240,11 +266,11 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                         Icon(Icons.route_rounded, color: primary, size: 22.r),
                         SizedBox(width: 10.w),
                         Text(
-                          'Trip Planner',
+                          l10n.tripPlannerTitle,
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             color: onSurface,
                           ),
                         ),
@@ -262,7 +288,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                                     ),
                                   )
                                 : Icon(Icons.play_arrow_rounded, size: 18.r),
-                            label: Text(_isSorting ? 'Optimising...' : 'Start Trip'),
+                            label: Text(_isSorting ? l10n.tripPlannerOptimising : l10n.tripPlannerStart),
                             style: FilledButton.styleFrom(
                               backgroundColor: primary,
                               foregroundColor: theme.colorScheme.onPrimary,
@@ -287,7 +313,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                   controller: _searchController,
                   onChanged: _searchPlaces,
                   decoration: InputDecoration(
-                    hintText: 'Search places to add…',
+                    hintText: l10n.tripPlannerSearchHint,
                     prefixIcon:
                         Icon(Icons.search, color: onSurface.withValues(alpha: 0.4)),
                     suffixIcon: _searchController.text.isNotEmpty
@@ -362,7 +388,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
-                          '${_itinerary.length} stop${_itinerary.length > 1 ? "s" : ""} — route will be optimised by shortest distance',
+                          l10n.tripPlannerStopsInfo(_itinerary.length),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: primary,
@@ -390,7 +416,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                                 color: onSurface.withValues(alpha: 0.15)),
                             SizedBox(height: 12.h),
                             Text(
-                              'Plan your day in Egypt',
+                              l10n.tripPlannerEmptyTitle,
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 color: onSurface.withValues(alpha: 0.45),
@@ -399,7 +425,7 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                             ),
                             SizedBox(height: 4.h),
                             Text(
-                              'Search above or pick from suggestions below',
+                              l10n.tripPlannerEmptySub,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 12.sp,
@@ -441,8 +467,8 @@ class _TripPlannerSheetState extends State<TripPlannerSheet> {
                           SizedBox(width: 5.w),
                           Text(
                             _itinerary.isEmpty
-                                ? 'Suggested for you'
-                                : 'You might also enjoy',
+                                ? l10n.tripPlannerSuggested
+                                : l10n.tourDetailYouMightEnjoy,
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w700,
@@ -511,7 +537,7 @@ class _ItineraryTile extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: 20.w),
+        padding: EdgeInsetsDirectional.only(end: 20.w),
         margin: EdgeInsets.only(bottom: 8.h),
         decoration: BoxDecoration(
           color: Colors.red.withValues(alpha: 0.12),
@@ -591,23 +617,16 @@ class _SuggestionTile extends StatelessWidget {
       ),
       child: ListTile(
         dense: true,
-        leading: Container(
+        leading: ShimmerImage(
+          url: item.imagePaths.isNotEmpty ? item.imagePaths.first : null,
           width: 36.r,
           height: 36.r,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.r),
-            color: onSurface.withValues(alpha: 0.06),
-            image: item.imagePaths.isNotEmpty
-                ? DecorationImage(
-                    image: NetworkImage(item.imagePaths.first),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: item.imagePaths.isEmpty
-              ? Icon(Icons.place_outlined,
-                  color: primary.withValues(alpha: 0.5), size: 18.r)
-              : null,
+          borderRadius: BorderRadius.circular(8.r),
+          fit: BoxFit.cover,
+          fallbackIcon: Icons.place_outlined,
+          fallbackBackgroundColor: onSurface.withValues(alpha: 0.06),
+          fallbackIconColor: primary.withValues(alpha: 0.5),
+          fallbackIconSize: 18.r,
         ),
         title: Text(
           item.title,
@@ -635,7 +654,7 @@ class _SuggestionTile extends StatelessWidget {
                 Icon(Icons.add, size: 14.r, color: primary),
                 SizedBox(width: 3.w),
                 Text(
-                  'Add',
+                  AppLocalizations.of(context).tripPlannerAdd,
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: primary,

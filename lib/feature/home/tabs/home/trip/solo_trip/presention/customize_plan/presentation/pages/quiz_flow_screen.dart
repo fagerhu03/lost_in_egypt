@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/customize_plan/presentation/pages/trip_time_step.dart';
@@ -26,8 +27,8 @@ class _QuizFlowScreenState extends State<QuizFlowScreen> {
     // TripTimeStep (page 3) requires at least one selection.
     if (controller.currentPage == 3 && controller.plan.tripTimes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select Day, Night, or both.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).soloSelectDayNight),
           behavior: SnackBarBehavior.floating,
         ),
       );

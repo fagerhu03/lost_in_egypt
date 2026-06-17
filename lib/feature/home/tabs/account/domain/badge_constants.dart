@@ -1,5 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'badge_model.dart';
+
+/// Localized badge name (display only). The badge `id` stays the stable key
+/// used for unlock logic / Firestore; only the rendered label is translated.
+/// Falls back to the English `name` for any unmapped id.
+String badgeName(AppLocalizations l10n, BadgeModel badge) {
+  switch (badge.id) {
+    case 'novice_explorer':
+      return l10n.badgeNoviceExplorer;
+    case 'tourist':
+      return l10n.badgeTourist;
+    case 'tomb_raider':
+      return l10n.badgeTombRaider;
+    case 'historian':
+      return l10n.badgeHistorian;
+    case 'pharaoh':
+      return l10n.badgePharaoh;
+    case 'imhotep_secret':
+      return l10n.badgeImhotep;
+    case 'easter_egg_pharaoh':
+      return l10n.badgeDeveloperPharaoh;
+    case 'sphinx_solver':
+      return l10n.badgeRiddleSolver;
+    default:
+      return badge.name;
+  }
+}
+
+/// Localized badge description (display only). Falls back to English.
+String badgeDescription(AppLocalizations l10n, BadgeModel badge) {
+  switch (badge.id) {
+    case 'novice_explorer':
+      return l10n.badgeNoviceExplorerDesc;
+    case 'tourist':
+      return l10n.badgeTouristDesc;
+    case 'tomb_raider':
+      return l10n.badgeTombRaiderDesc;
+    case 'historian':
+      return l10n.badgeHistorianDesc;
+    case 'pharaoh':
+      return l10n.badgePharaohDesc;
+    case 'imhotep_secret':
+      return l10n.badgeImhotepDesc;
+    case 'easter_egg_pharaoh':
+      return l10n.badgeDeveloperPharaohDesc;
+    case 'sphinx_solver':
+      return l10n.badgeRiddleSolverDesc;
+    default:
+      return badge.description;
+  }
+}
 
 class BadgeConstants {
   static const List<BadgeModel> allBadges = [

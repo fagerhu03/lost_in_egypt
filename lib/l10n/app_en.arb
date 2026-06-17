@@ -1,0 +1,3048 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Lost in Egypt",
+  "@appTitle": {
+    "description": "Application name."
+  },
+
+  "navHome": "Home",
+  "@navHome": {
+    "description": "Bottom navigation tab label for the Home tab."
+  },
+  "navCommunity": "Community",
+  "@navCommunity": {
+    "description": "Bottom navigation tab label for the Community tab."
+  },
+  "navMap": "Map",
+  "@navMap": {
+    "description": "Bottom navigation tab label for the Map tab."
+  },
+  "navCamera": "Camera",
+  "@navCamera": {
+    "description": "Bottom navigation tab label for the Camera tab."
+  },
+  "navMore": "More",
+  "@navMore": {
+    "description": "Bottom navigation tab label for the More tab."
+  },
+
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Generic Cancel button."
+  },
+  "commonReset": "Reset",
+  "@commonReset": {
+    "description": "Generic Reset button."
+  },
+  "commonTryAgain": "Try again",
+  "@commonTryAgain": {
+    "description": "Generic retry button shown on error states."
+  },
+  "commonDismiss": "Dismiss",
+  "@commonDismiss": {
+    "description": "Generic dismiss/close tooltip."
+  },
+
+  "reportUser": "Report User",
+  "@reportUser": {
+    "description": "Title of the report dialog when reporting a user or guide."
+  },
+  "reportTour": "Report Tour",
+  "@reportTour": {
+    "description": "Title of the report dialog when reporting a tour."
+  },
+  "reportPost": "Report Post",
+  "@reportPost": {
+    "description": "Title of the report dialog when reporting a community post."
+  },
+  "reportComment": "Report Comment",
+  "@reportComment": {
+    "description": "Title of the report dialog when reporting a comment."
+  },
+  "reportReasonPrompt": "Why are you reporting this?",
+  "@reportReasonPrompt": {
+    "description": "Prompt above the list of report reasons."
+  },
+  "reportAdditionalDetails": "Additional details (optional)",
+  "@reportAdditionalDetails": {
+    "description": "Hint text for the optional report description field."
+  },
+  "reportSubmit": "Submit Report",
+  "@reportSubmit": {
+    "description": "Button that submits a content report."
+  },
+  "reportMustBeLoggedIn": "You must be logged in to submit a report.",
+  "@reportMustBeLoggedIn": {
+    "description": "Error shown when an unauthenticated user tries to report."
+  },
+  "reportSelectReason": "Please select a reason for reporting.",
+  "@reportSelectReason": {
+    "description": "Validation error when no report reason is selected."
+  },
+  "reportDescriptionTooLong": "Description must be 500 characters or fewer.",
+  "@reportDescriptionTooLong": {
+    "description": "Validation error when the report description exceeds 500 chars."
+  },
+  "reportSuccess": "Report submitted successfully. Thank you.",
+  "@reportSuccess": {
+    "description": "Confirmation snackbar after a report is submitted."
+  },
+  "reportReasonImpersonation": "Impersonation",
+  "@reportReasonImpersonation": { "description": "Report reason: pretending to be someone else." },
+  "reportReasonFakeAccount": "Fake Account",
+  "@reportReasonFakeAccount": { "description": "Report reason: fake/bot account." },
+  "reportReasonHarassmentBullying": "Harassment or Bullying",
+  "@reportReasonHarassmentBullying": { "description": "Report reason: harassment or bullying." },
+  "reportReasonInappropriateProfile": "Inappropriate Profile Content",
+  "@reportReasonInappropriateProfile": { "description": "Report reason: inappropriate profile content." },
+  "reportReasonScamFraud": "Scam or Fraud",
+  "@reportReasonScamFraud": { "description": "Report reason: scam or fraud." },
+  "reportReasonOther": "Other",
+  "@reportReasonOther": { "description": "Report reason: other / unlisted." },
+  "reportReasonSpamAds": "Spam or Ads",
+  "@reportReasonSpamAds": { "description": "Report reason: spam or advertising." },
+  "reportReasonHateSpeech": "Hate Speech",
+  "@reportReasonHateSpeech": { "description": "Report reason: hate speech." },
+  "reportReasonFalseInfo": "False Information",
+  "@reportReasonFalseInfo": { "description": "Report reason: false information." },
+  "reportReasonExplicitContent": "Explicit Content",
+  "@reportReasonExplicitContent": { "description": "Report reason: explicit content." },
+  "reportReasonHarassment": "Harassment",
+  "@reportReasonHarassment": { "description": "Report reason: harassment (post/comment)." },
+  "reportReasonUnsafe": "Unsafe Location/Activity",
+  "@reportReasonUnsafe": { "description": "Report reason: unsafe tour location or activity." },
+  "reportReasonInaccurate": "Inaccurate Description",
+  "@reportReasonInaccurate": { "description": "Report reason: inaccurate tour description." },
+  "reportReasonFakeReviews": "Fake Reviews",
+  "@reportReasonFakeReviews": { "description": "Report reason: fake reviews." },
+  "reportReasonOverpriced": "Overpriced/Hidden Fees",
+  "@reportReasonOverpriced": { "description": "Report reason: overpriced or hidden fees." },
+
+  "weatherTapForForecast": "Tap for 7-day forecast",
+  "@weatherTapForForecast": {
+    "description": "Hint on the weather banner that opens the 7-day forecast."
+  },
+  "weatherConditionsNow": "Egypt conditions right now",
+  "@weatherConditionsNow": {
+    "description": "Subtitle under the current weather conditions card."
+  },
+  "weather7DayForecast": "7-Day Forecast",
+  "@weather7DayForecast": {
+    "description": "Header above the 7-day forecast list."
+  },
+  "weatherCondSandstorm": "Sandstorm",
+  "@weatherCondSandstorm": { "description": "Short weather condition label (forecast day): sandstorm." },
+  "weatherCondSandstormWarning": "Sandstorm Warning",
+  "@weatherCondSandstormWarning": { "description": "Current weather condition title: sandstorm warning." },
+  "weatherCondDustHaze": "Dust Haze",
+  "@weatherCondDustHaze": { "description": "Weather condition label: dust haze." },
+  "weatherCondExtremeHeat": "Extreme Heat",
+  "@weatherCondExtremeHeat": { "description": "Weather condition label: extreme heat." },
+  "weatherCondVeryHot": "Very Hot",
+  "@weatherCondVeryHot": { "description": "Weather condition label: very hot." },
+  "weatherCondExtremeUV": "Extreme UV",
+  "@weatherCondExtremeUV": { "description": "Weather condition label: extreme UV." },
+  "weatherCondHighUV": "High UV",
+  "@weatherCondHighUV": { "description": "Weather condition label: high UV." },
+  "weatherCondClear": "Clear",
+  "@weatherCondClear": { "description": "Short weather condition label (forecast day): clear." },
+  "weatherCondGood": "Good Conditions",
+  "@weatherCondGood": { "description": "Current weather condition title: good conditions." },
+  "weatherAdvisorySandstorm": "Sandstorm in the area — avoid all outdoor locations. Wear a mask if you must travel.",
+  "@weatherAdvisorySandstorm": { "description": "Advisory text shown during a sandstorm." },
+  "weatherAdvisoryDustHaze": "Dust haze reducing visibility. Outdoor visits not ideal; wear sunglasses.",
+  "@weatherAdvisoryDustHaze": { "description": "Advisory text shown during dust haze." },
+  "weatherAdvisoryExtremeHeat": "Feels like {temp}°C. Visit outdoor sites before 9am or after 5pm only. Bring at least 2L of water.",
+  "@weatherAdvisoryExtremeHeat": {
+    "description": "Advisory text during extreme heat. {temp} is the feels-like temperature in Celsius.",
+    "placeholders": { "temp": { "type": "String" } }
+  },
+  "weatherAdvisoryVeryHot": "Very hot ({temp}°C feels-like). Stay hydrated and seek shade often.",
+  "@weatherAdvisoryVeryHot": {
+    "description": "Advisory text when very hot. {temp} is the feels-like temperature in Celsius.",
+    "placeholders": { "temp": { "type": "String" } }
+  },
+  "weatherAdvisoryExtremeUV": "UV index {uv} — extreme. Sunscreen, hat, and sunglasses are essential. Limit midday exposure.",
+  "@weatherAdvisoryExtremeUV": {
+    "description": "Advisory text during extreme UV. {uv} is the UV index value.",
+    "placeholders": { "uv": { "type": "String" } }
+  },
+  "weatherAdvisoryHighUV": "UV index {uv} — high. Apply sunscreen SPF 50+ before going outdoors.",
+  "@weatherAdvisoryHighUV": {
+    "description": "Advisory text during high UV. {uv} is the UV index value.",
+    "placeholders": { "uv": { "type": "String" } }
+  },
+  "weatherAdvisoryGood": "Great conditions for outdoor exploration today.",
+  "@weatherAdvisoryGood": { "description": "Advisory text when conditions are good." },
+  "weatherDayToday": "Today",
+  "@weatherDayToday": { "description": "Forecast day label for the current day." },
+  "weatherDayTomorrow": "Tomorrow",
+  "@weatherDayTomorrow": { "description": "Forecast day label for the next day." },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title of the Settings screen."
+  },
+  "settingsSelectLanguage": "Select Language",
+  "@settingsSelectLanguage": {
+    "description": "Settings tile to choose the app language."
+  },
+  "settingsDisplayCurrency": "Display Currency",
+  "@settingsDisplayCurrency": {
+    "description": "Settings tile to choose the preferred display currency."
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Settings tile to toggle light/dark theme."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Name of the English language, shown in the language toggle."
+  },
+  "languageArabic": "العربية",
+  "@languageArabic": {
+    "description": "Name of the Arabic language, shown in the language toggle (endonym)."
+  },
+
+  "settingsResetBadges": "Reset Badges (Debug)",
+  "@settingsResetBadges": {
+    "description": "Debug-only settings tile that clears earned badges."
+  },
+  "settingsBadgesResetSuccess": "Badges successfully reset!",
+  "@settingsBadgesResetSuccess": {
+    "description": "Confirmation snackbar after badges are reset."
+  },
+  "settingsResetTasteSignals": "Reset Taste Signals (Debug)",
+  "@settingsResetTasteSignals": {
+    "description": "Debug-only settings tile that clears recommendation signals."
+  },
+  "settingsResetTasteSignalsTitle": "Reset Taste Signals?",
+  "@settingsResetTasteSignalsTitle": {
+    "description": "Title of the confirmation dialog for resetting taste signals."
+  },
+  "settingsResetTasteSignalsBody": "This clears every personalisation signal recorded for you — saved likes, dismissals, quiz answers, visit history. Recommendations will reset to defaults until you interact again.",
+  "@settingsResetTasteSignalsBody": {
+    "description": "Body text of the reset-taste-signals confirmation dialog."
+  },
+  "settingsTasteSignalsReset": "Taste signals reset.",
+  "@settingsTasteSignalsReset": {
+    "description": "Confirmation snackbar after taste signals are reset."
+  },
+  "settingsTasteSignalsResetError": "Couldn't reset signals. Try again.",
+  "@settingsTasteSignalsResetError": {
+    "description": "Error snackbar when resetting taste signals fails."
+  },
+  "settingsVersion": "Version {version}",
+  "@settingsVersion": {
+    "description": "App version label at the bottom of the Settings screen.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "1.0.0"
+      }
+    }
+  },
+
+  "commonContinue": "Continue",
+  "@commonContinue": {
+    "description": "Generic Continue button."
+  },
+
+  "authEmailHint": "Enter your email",
+  "@authEmailHint": {
+    "description": "Hint text for the email input field."
+  },
+  "authPasswordHint": "Enter your password",
+  "@authPasswordHint": {
+    "description": "Hint text for the password input field."
+  },
+
+  "loginTagline": "Log in to unlock your journey.",
+  "@loginTagline": {
+    "description": "Tagline under the logo on the login screen."
+  },
+  "loginButton": "Log In",
+  "@loginButton": {
+    "description": "Primary button on the login screen."
+  },
+  "loginForgotPassword": "Forgot Password?",
+  "@loginForgotPassword": {
+    "description": "Link to the password reset screen."
+  },
+  "loginOrSignInWith": "OR SIGN IN WITH",
+  "@loginOrSignInWith": {
+    "description": "Divider label above social sign-in buttons."
+  },
+  "loginNoAccount": "Don't have an account?",
+  "@loginNoAccount": {
+    "description": "Prompt next to the create-account link on login."
+  },
+  "loginCreateAccount": "Create Account",
+  "@loginCreateAccount": {
+    "description": "Link to the account creation flow."
+  },
+  "loginFillEmailPassword": "Please fill in your email and password.",
+  "@loginFillEmailPassword": {
+    "description": "Validation error when login fields are empty."
+  },
+  "loginGuidePending": "Your guide application is pending approval.",
+  "@loginGuidePending": {
+    "description": "Notice shown when a guide with a pending application logs in."
+  },
+
+  "forgotEnterEmail": "Please enter your email",
+  "@forgotEnterEmail": {
+    "description": "Validation error when the reset email field is empty."
+  },
+  "forgotResetSent": "If an account exists, a reset link was sent.",
+  "@forgotResetSent": {
+    "description": "Confirmation snackbar after requesting a password reset."
+  },
+  "forgotFailedSend": "Failed to send reset email",
+  "@forgotFailedSend": {
+    "description": "Error when the reset email could not be sent."
+  },
+  "forgotInvalidEmail": "Invalid email formatting.",
+  "@forgotInvalidEmail": {
+    "description": "Error when the entered email is malformed."
+  },
+  "forgotEmailSentTitle": "Email Sent!",
+  "@forgotEmailSentTitle": {
+    "description": "Title after a reset email has been sent."
+  },
+  "forgotResetTitle": "Reset Password",
+  "@forgotResetTitle": {
+    "description": "Title of the password reset screen."
+  },
+  "forgotEmailSentBody": "If an account is registered to {email}, we've sent a secure password reset link. Please check your email.",
+  "@forgotEmailSentBody": {
+    "description": "Body shown after a reset email is sent.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "user@example.com"
+      }
+    }
+  },
+  "forgotResetBody": "Enter your email to receive a secure password reset link.",
+  "@forgotResetBody": {
+    "description": "Instruction on the password reset screen."
+  },
+  "forgotSendLink": "Send Reset Link",
+  "@forgotSendLink": {
+    "description": "Button that sends the password reset link."
+  },
+  "forgotReturnToLogin": "Return to Login",
+  "@forgotReturnToLogin": {
+    "description": "Button to return to the login screen after sending a reset."
+  },
+
+  "usernameTitle": "Choose your\nusername",
+  "@usernameTitle": {
+    "description": "Title of the create-username screen."
+  },
+  "usernameSubtitle": "This is how others will find you in the community. You can change it later in your profile.",
+  "@usernameSubtitle": {
+    "description": "Subtitle explaining the username on the create-username screen."
+  },
+  "usernameAvailable": "@{handle} is available!",
+  "@usernameAvailable": {
+    "description": "Feedback when the chosen username handle is available.",
+    "placeholders": {
+      "handle": {
+        "type": "String",
+        "example": "ahmed_x1"
+      }
+    }
+  },
+  "usernameRules": "3–20 characters · letters, numbers, underscores only",
+  "@usernameRules": {
+    "description": "Hint describing the username format rules."
+  },
+  "usernameTooShort": "Too short — minimum 3 characters",
+  "@usernameTooShort": {
+    "description": "Validation error when the username is under 3 characters."
+  },
+  "usernameTooLong": "Too long — maximum 20 characters",
+  "@usernameTooLong": {
+    "description": "Validation error when the username exceeds 20 characters."
+  },
+  "usernameInvalidChars": "Only lowercase letters, numbers, and underscores",
+  "@usernameInvalidChars": {
+    "description": "Validation error when the username has invalid characters."
+  },
+  "usernameTaken": "That username is already taken",
+  "@usernameTaken": {
+    "description": "Validation error when the username is already in use."
+  },
+  "usernameCheckFailed": "Couldn't check availability — try again",
+  "@usernameCheckFailed": {
+    "description": "Error when the username availability check fails."
+  },
+  "usernameTakenJustNow": "That username was just taken — try another",
+  "@usernameTakenJustNow": {
+    "description": "Error when the username was claimed during submission."
+  },
+  "usernameSaveFailed": "Failed to save — please try again",
+  "@usernameSaveFailed": {
+    "description": "Error when saving the username fails."
+  },
+
+  "roleSelectionTitle": "Are you a...",
+  "@roleSelectionTitle": {
+    "description": "Prompt on the role selection screen asking the user to pick traveler or guide."
+  },
+  "roleTraveler": "TRAVELER!",
+  "@roleTraveler": {
+    "description": "Label on the traveler/tourist role card."
+  },
+  "roleGuide": "GUIDE!",
+  "@roleGuide": {
+    "description": "Label on the guide role card."
+  },
+
+  "completeProfileTitle": "One Last Step",
+  "@completeProfileTitle": {
+    "description": "Title on the complete-profile screen for new social sign-in users."
+  },
+  "completeProfileSubtitle": "We need your birthdate to customize your journey in Egypt.",
+  "@completeProfileSubtitle": {
+    "description": "Subtitle explaining why a birthdate is requested on complete-profile."
+  },
+  "completeProfileButton": "Complete Setup",
+  "@completeProfileButton": {
+    "description": "Button that finalizes the social profile setup."
+  },
+
+  "dobMonth": "Month",
+  "@dobMonth": {
+    "description": "Hint for the birth month dropdown."
+  },
+  "dobDay": "Day",
+  "@dobDay": {
+    "description": "Hint for the birth day dropdown."
+  },
+  "dobYear": "Year",
+  "@dobYear": {
+    "description": "Hint for the birth year dropdown."
+  },
+  "dobMonthJanuary": "January",
+  "@dobMonthJanuary": { "description": "Birth-month dropdown display: January." },
+  "dobMonthFebruary": "February",
+  "@dobMonthFebruary": { "description": "Birth-month dropdown display: February." },
+  "dobMonthMarch": "March",
+  "@dobMonthMarch": { "description": "Birth-month dropdown display: March." },
+  "dobMonthApril": "April",
+  "@dobMonthApril": { "description": "Birth-month dropdown display: April." },
+  "dobMonthMay": "May",
+  "@dobMonthMay": { "description": "Birth-month dropdown display: May." },
+  "dobMonthJune": "June",
+  "@dobMonthJune": { "description": "Birth-month dropdown display: June." },
+  "dobMonthJuly": "July",
+  "@dobMonthJuly": { "description": "Birth-month dropdown display: July." },
+  "dobMonthAugust": "August",
+  "@dobMonthAugust": { "description": "Birth-month dropdown display: August." },
+  "dobMonthSeptember": "September",
+  "@dobMonthSeptember": { "description": "Birth-month dropdown display: September." },
+  "dobMonthOctober": "October",
+  "@dobMonthOctober": { "description": "Birth-month dropdown display: October." },
+  "dobMonthNovember": "November",
+  "@dobMonthNovember": { "description": "Birth-month dropdown display: November." },
+  "dobMonthDecember": "December",
+  "@dobMonthDecember": { "description": "Birth-month dropdown display: December." },
+  "dobErrorMissing": "Please select your date of birth.",
+  "@dobErrorMissing": { "description": "DOB validation error: nothing selected." },
+  "dobErrorInvalid": "Invalid date of birth.",
+  "@dobErrorInvalid": { "description": "DOB validation error: unparseable date." },
+  "dobErrorTooManyDays": "{month} {year} has only {days} days.",
+  "@dobErrorTooManyDays": {
+    "description": "DOB validation error when the chosen day exceeds the days in the month.",
+    "placeholders": {
+      "month": { "type": "String" },
+      "year": { "type": "String" },
+      "days": { "type": "int" }
+    }
+  },
+  "dobErrorUnderage": "You must be at least {minAge} years old to use this app.",
+  "@dobErrorUnderage": {
+    "description": "DOB validation error when the user is below the minimum age.",
+    "placeholders": { "minAge": { "type": "int" } }
+  },
+
+  "signupTitle": "New Account",
+  "@signupTitle": {
+    "description": "Title of the sign-up screen."
+  },
+  "signupFirstNameHint": "First Name",
+  "@signupFirstNameHint": {
+    "description": "Hint for the first name field on sign-up."
+  },
+  "signupLastNameHint": "Last Name",
+  "@signupLastNameHint": {
+    "description": "Hint for the last name field on sign-up."
+  },
+  "signupDateOfBirth": "Date of birth",
+  "@signupDateOfBirth": {
+    "description": "Label above the date-of-birth dropdowns on sign-up."
+  },
+  "signupEmailHint": "Email",
+  "@signupEmailHint": {
+    "description": "Hint for the email field on sign-up."
+  },
+  "signupPhoneLabel": "Phone Number",
+  "@signupPhoneLabel": {
+    "description": "Label for the phone number field on sign-up."
+  },
+  "signupConfirmPasswordHint": "Confirm your password",
+  "@signupConfirmPasswordHint": {
+    "description": "Hint for the confirm-password field on sign-up."
+  },
+  "signupButton": "Sign Up",
+  "@signupButton": {
+    "description": "Primary button on the sign-up screen."
+  },
+  "signupHaveAccount": "Already have an account?",
+  "@signupHaveAccount": {
+    "description": "Prompt next to the log-in link on sign-up."
+  },
+  "signupFirstNameInvalid": "First name must contain valid letters (min 2).",
+  "@signupFirstNameInvalid": {
+    "description": "Validation error for an invalid first name."
+  },
+  "signupLastNameInvalid": "Last name must contain valid letters (min 2).",
+  "@signupLastNameInvalid": {
+    "description": "Validation error for an invalid last name."
+  },
+  "signupEmailInvalid": "Please enter a valid email address.",
+  "@signupEmailInvalid": {
+    "description": "Validation error for an invalid email on sign-up."
+  },
+  "signupPasswordWeak": "Password must be 8+ characters with at least 1 letter and 1 number.",
+  "@signupPasswordWeak": {
+    "description": "Validation error for a weak password on sign-up."
+  },
+  "signupPasswordsNoMatch": "Passwords do not match.",
+  "@signupPasswordsNoMatch": {
+    "description": "Validation error when the two passwords differ."
+  },
+  "signupPhoneInvalid": "Please enter a valid phone number.",
+  "@signupPhoneInvalid": {
+    "description": "Validation error for an invalid phone number on sign-up."
+  },
+  "signupSuccess": "Account created! Please verify your email to continue.",
+  "@signupSuccess": {
+    "description": "Confirmation after an account is created."
+  },
+  "signupEmailInUse": "This email is already registered.",
+  "@signupEmailInUse": {
+    "description": "Error when the email is already registered."
+  },
+  "signupPasswordTooWeak": "The password is too weak.",
+  "@signupPasswordTooWeak": {
+    "description": "Error when Firebase reports a weak password."
+  },
+
+  "greetingMorning": "Good morning",
+  "@greetingMorning": {
+    "description": "Greeting shown before noon."
+  },
+  "greetingAfternoon": "Good afternoon",
+  "@greetingAfternoon": {
+    "description": "Greeting shown between noon and 5pm."
+  },
+  "greetingEvening": "Good evening",
+  "@greetingEvening": {
+    "description": "Greeting shown after 5pm."
+  },
+  "homeGreeting": "{greeting}, {name} 👋",
+  "@homeGreeting": {
+    "description": "Personalised greeting line on the home screen.",
+    "placeholders": {
+      "greeting": {
+        "type": "String",
+        "example": "Good morning"
+      },
+      "name": {
+        "type": "String",
+        "example": "Ahmed"
+      }
+    }
+  },
+  "homeWhereToGo": "Where do you want to go?",
+  "@homeWhereToGo": {
+    "description": "Heading above the category grid on the home screen."
+  },
+  "homePopularPlaces": "Popular Places",
+  "@homePopularPlaces": {
+    "description": "Section header for the popular places carousel."
+  },
+  "homeForYou": "For You",
+  "@homeForYou": {
+    "description": "Section header for the personalised recommendations carousel."
+  },
+  "homeExperiences": "Experiences",
+  "@homeExperiences": {
+    "description": "Section header for the events/experiences carousel."
+  },
+  "homeSeeAll": "see all >",
+  "@homeSeeAll": {
+    "description": "Link to view all items in a section."
+  },
+  "homeNoEventsInCategory": "No events in this category",
+  "@homeNoEventsInCategory": {
+    "description": "Empty state when no events match the selected category filter."
+  },
+  "homePopularTours": "Popular Tours",
+  "@homePopularTours": {
+    "description": "Section header for the popular tours carousel."
+  },
+  "homePlanYourTrip": "Plan your trip",
+  "@homePlanYourTrip": {
+    "description": "Section header above the Guides / Solo trip cards."
+  },
+  "homeTripGuides": "Guides",
+  "@homeTripGuides": {
+    "description": "Label on the Guides trip-planning card."
+  },
+  "homeTripSolo": "Solo trip",
+  "@homeTripSolo": {
+    "description": "Label on the Solo trip card."
+  },
+
+  "communityTitle": "Community",
+  "@communityTitle": {
+    "description": "Header title of the Community tab."
+  },
+  "communitySearchPostsHint": "Search posts...",
+  "@communitySearchPostsHint": {
+    "description": "Hint in the community post search field."
+  },
+  "communitySortTooltip": "Sort",
+  "@communitySortTooltip": {
+    "description": "Tooltip on the sort icon button."
+  },
+  "communityTagLocation": "Tag a Location",
+  "@communityTagLocation": {
+    "description": "Title of the tag-a-location dialog."
+  },
+  "communitySearchPlacesHint": "Search places in Egypt...",
+  "@communitySearchPlacesHint": {
+    "description": "Hint in the place-search field of the tag-location dialog."
+  },
+  "communityTypeToSearch": "Type to search places...",
+  "@communityTypeToSearch": {
+    "description": "Empty state in the tag-location dialog before typing."
+  },
+  "communityPostCategory": "Post Category",
+  "@communityPostCategory": {
+    "description": "Header of the post category picker sheet."
+  },
+  "communityCategoryPhotos": "Photos",
+  "@communityCategoryPhotos": {
+    "description": "Community post category: photos."
+  },
+  "communityCategoryQuestions": "Questions",
+  "@communityCategoryQuestions": {
+    "description": "Community post category: questions."
+  },
+  "communityCategoryGuides": "Guides",
+  "@communityCategoryGuides": {
+    "description": "Community post category: guides."
+  },
+  "communityCategoryLandmarks": "Landmarks",
+  "@communityCategoryLandmarks": {
+    "description": "Community post category: landmarks."
+  },
+  "communityCategoryTips": "Traveler's Tips",
+  "@communityCategoryTips": {
+    "description": "Community post category: traveler's tips."
+  },
+  "communitySortPosts": "Sort Posts",
+  "@communitySortPosts": {
+    "description": "Header of the sort-posts sheet."
+  },
+  "communitySortNewest": "Newest",
+  "@communitySortNewest": {
+    "description": "Sort option: newest first."
+  },
+  "communitySortTopRated": "Top Rated",
+  "@communitySortTopRated": {
+    "description": "Sort option: most liked."
+  },
+  "communitySortMostDiscussed": "Most Discussed",
+  "@communitySortMostDiscussed": {
+    "description": "Sort option: most comments."
+  },
+  "communitySomethingWrong": "Something went wrong. Please try again.",
+  "@communitySomethingWrong": {
+    "description": "Error state when the posts stream fails to load."
+  },
+  "communityNoPostsYet": "No posts yet. Be the first!",
+  "@communityNoPostsYet": {
+    "description": "Empty state when there are no posts at all."
+  },
+  "communityNoResultsFor": "No results for '{query}'",
+  "@communityNoResultsFor": {
+    "description": "Empty state when a search returns no posts.",
+    "placeholders": {
+      "query": {
+        "type": "String",
+        "example": "pyramids"
+      }
+    }
+  },
+  "communityNoPostsInCategory": "No posts in this category yet.",
+  "@communityNoPostsInCategory": {
+    "description": "Empty state when no posts match the active category/hashtag filter."
+  },
+  "communityNewPosts": "New posts — tap to refresh",
+  "@communityNewPosts": {
+    "description": "Floating banner shown when new posts arrive."
+  },
+  "communityTrending": "Trending",
+  "@communityTrending": {
+    "description": "Header above the trending hashtags row."
+  },
+  "communityClearFilter": "Clear filter",
+  "@communityClearFilter": {
+    "description": "Link that clears the active hashtag filter."
+  },
+  "communityTopExplorers": "Top Explorers This Feed",
+  "@communityTopExplorers": {
+    "description": "Header of the leaderboard card."
+  },
+  "communityPostsCount": "{count, plural, =1{1 post} other{{count} posts}}",
+  "@communityPostsCount": {
+    "description": "Post count badge on the leaderboard.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityWeeklyChallenge": "Weekly Challenge",
+  "@communityWeeklyChallenge": {
+    "description": "Label above the weekly challenge title."
+  },
+  "communityPostNow": "Post Now",
+  "@communityPostNow": {
+    "description": "Call-to-action chip on the weekly challenge card."
+  },
+  "communityComposerHint": "Share your Egypt experience...",
+  "@communityComposerHint": {
+    "description": "Hint in the new-post composer field."
+  },
+  "communityPostButton": "Post",
+  "@communityPostButton": {
+    "description": "Button that submits a new community post."
+  },
+  "communityAddPhotosTooltip": "Add photos",
+  "@communityAddPhotosTooltip": {
+    "description": "Tooltip on the composer add-photos action."
+  },
+  "communityTagLocationTooltip": "Tag location",
+  "@communityTagLocationTooltip": {
+    "description": "Tooltip on the composer tag-location action."
+  },
+  "communityCategoryTooltip": "Category",
+  "@communityCategoryTooltip": {
+    "description": "Tooltip on the composer category action."
+  },
+
+  "commonSave": "Save",
+  "@commonSave": {
+    "description": "Generic Save button."
+  },
+  "commonEdit": "Edit",
+  "@commonEdit": {
+    "description": "Generic Edit action."
+  },
+  "commonDelete": "Delete",
+  "@commonDelete": {
+    "description": "Generic Delete action."
+  },
+  "commonReport": "Report",
+  "@commonReport": {
+    "description": "Generic Report action."
+  },
+
+  "commentEditTitle": "Edit Comment",
+  "@commentEditTitle": {
+    "description": "Title of the edit-comment dialog."
+  },
+  "commentDeleteTitle": "Delete Comment",
+  "@commentDeleteTitle": {
+    "description": "Title of the delete-comment confirmation dialog."
+  },
+  "commentDeleteConfirm": "Are you sure you want to delete this comment?",
+  "@commentDeleteConfirm": {
+    "description": "Body of the delete-comment confirmation dialog."
+  },
+  "commentReply": "Reply",
+  "@commentReply": {
+    "description": "Button that starts a reply to a comment."
+  },
+  "commentReplyingTo": "Replying to @{name}",
+  "@commentReplyingTo": {
+    "description": "Banner above the composer when replying to a comment.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "ahmed"
+      }
+    }
+  },
+  "commentWriteReply": "Write a reply...",
+  "@commentWriteReply": {
+    "description": "Hint in the composer when replying."
+  },
+  "commentWriteComment": "Write a comment...",
+  "@commentWriteComment": {
+    "description": "Hint in the composer when commenting."
+  },
+  "commentsEmpty": "No comments yet. Be the first!",
+  "@commentsEmpty": {
+    "description": "Empty state when a post has no comments."
+  },
+  "commentViewReplies": "{count, plural, =1{View 1 reply} other{View {count} replies}} ▸",
+  "@commentViewReplies": {
+    "description": "Expander to show replies under a comment.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commentHideReplies": "Hide replies ▴",
+  "@commentHideReplies": {
+    "description": "Collapser to hide replies under a comment."
+  },
+  "commentsViewMore": "View More Comments",
+  "@commentsViewMore": {
+    "description": "Button that loads more comments."
+  },
+  "commentsHeader": "Comments ({count})",
+  "@commentsHeader": {
+    "description": "Header above the comments list with a count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "moreTitle": "More",
+  "@moreTitle": {
+    "description": "Header of the More tab."
+  },
+  "moreCurrency": "Currency",
+  "@moreCurrency": {
+    "description": "More tab tile: currency converter."
+  },
+  "moreHelp": "Help",
+  "@moreHelp": {
+    "description": "More tab tile: help/FAQ."
+  },
+  "moreTranslator": "Translator",
+  "@moreTranslator": {
+    "description": "More tab tile: translator."
+  },
+  "moreContactUs": "Contact us",
+  "@moreContactUs": {
+    "description": "More tab tile: contact us."
+  },
+  "moreSosButton": "SOS — Emergency Numbers",
+  "@moreSosButton": {
+    "description": "More tab red SOS button."
+  },
+
+  "contactCouldNotOpen": "Could not open link",
+  "@contactCouldNotOpen": {
+    "description": "Error when an external link can't be opened."
+  },
+  "contactEmailCopied": "{email} copied to clipboard",
+  "@contactEmailCopied": {
+    "description": "Confirmation after copying the support email.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "support@lostinegypt.app"
+      }
+    }
+  },
+  "contactTitle": "Contact Us",
+  "@contactTitle": {
+    "description": "Title of the Contact Us screen."
+  },
+  "contactHeadline": "We're here to help",
+  "@contactHeadline": {
+    "description": "Headline on the Contact Us screen."
+  },
+  "contactSubtitle": "Reach out through any of the channels below and we'll get back to you as soon as possible.",
+  "@contactSubtitle": {
+    "description": "Subtitle on the Contact Us screen."
+  },
+  "contactEmailSupport": "Email Support",
+  "@contactEmailSupport": {
+    "description": "Contact tile: email support."
+  },
+  "contactWhatsApp": "WhatsApp",
+  "@contactWhatsApp": {
+    "description": "Contact channel: WhatsApp (brand name)."
+  },
+  "contactWhatsAppSubtitle": "Chat with us directly",
+  "@contactWhatsAppSubtitle": {
+    "description": "Subtitle on the WhatsApp contact tile."
+  },
+  "contactInstagram": "Instagram",
+  "@contactInstagram": {
+    "description": "Contact channel: Instagram (brand name)."
+  },
+  "contactResponseTimes": "Response times",
+  "@contactResponseTimes": {
+    "description": "Header of the response-times section."
+  },
+  "contactRespEmail": "Email",
+  "@contactRespEmail": {
+    "description": "Response-time row label: email."
+  },
+  "contactRespInstagram": "Instagram DMs",
+  "@contactRespInstagram": {
+    "description": "Response-time row label: Instagram direct messages."
+  },
+  "contactTimeEmail": "Within 24 hours",
+  "@contactTimeEmail": {
+    "description": "Expected email response time."
+  },
+  "contactTimeWhatsApp": "Within a few hours",
+  "@contactTimeWhatsApp": {
+    "description": "Expected WhatsApp response time."
+  },
+  "contactTimeInstagram": "1–2 business days",
+  "@contactTimeInstagram": {
+    "description": "Expected Instagram response time."
+  },
+
+  "sosAppBarTitle": "SOS — Emergency",
+  "@sosAppBarTitle": {
+    "description": "Title of the SOS screen."
+  },
+  "sosFindNearestHelp": "Find Nearest Help",
+  "@sosFindNearestHelp": {
+    "description": "Section header above the nearby-help finder."
+  },
+  "sosPolice": "Police",
+  "@sosPolice": {
+    "description": "Help category / dial label: police."
+  },
+  "sosHospital": "Hospital",
+  "@sosHospital": {
+    "description": "Help category: hospital."
+  },
+  "sosFireStation": "Fire Station",
+  "@sosFireStation": {
+    "description": "Help category: fire station."
+  },
+  "sosFindNearest": "Find Nearest {category}",
+  "@sosFindNearest": {
+    "description": "Button to find the nearest place of a category.",
+    "placeholders": {
+      "category": {
+        "type": "String",
+        "example": "Hospital"
+      }
+    }
+  },
+  "sosRefresh": "Refresh — {category}",
+  "@sosRefresh": {
+    "description": "Button to refresh nearby results for a category.",
+    "placeholders": {
+      "category": {
+        "type": "String",
+        "example": "Hospital"
+      }
+    }
+  },
+  "sosUsingLocation": "Using your current location",
+  "@sosUsingLocation": {
+    "description": "Status line shown when a GPS fix is available."
+  },
+  "sosEnableLocation": "Please enable location in your device settings to find nearby help.",
+  "@sosEnableLocation": {
+    "description": "Error when location permission is permanently denied."
+  },
+  "sosLocationError": "Make sure location services are enabled and try again.",
+  "@sosLocationError": {
+    "description": "Error when fetching the current location fails."
+  },
+  "sosNoResults": "No {category} found within 10 km. Try moving to a different area.",
+  "@sosNoResults": {
+    "description": "Empty state when no nearby places of a category are found.",
+    "placeholders": {
+      "category": {
+        "type": "String",
+        "example": "hospitals"
+      }
+    }
+  },
+  "sosSearchFailed": "Search failed — check your connection and try again.",
+  "@sosSearchFailed": {
+    "description": "Error when the nearby search fails."
+  },
+  "sosCouldNotDial": "Could not open dialler",
+  "@sosCouldNotDial": {
+    "description": "Error when the phone dialler can't be opened."
+  },
+  "sosEmergencyNumbers": "Emergency Numbers",
+  "@sosEmergencyNumbers": {
+    "description": "Section header above the emergency dial grid."
+  },
+  "sosNumbersNote": "These are Egypt's official emergency numbers. Tourist Police (126) has English-speaking operators.",
+  "@sosNumbersNote": {
+    "description": "Footnote under the emergency numbers grid."
+  },
+  "sosTouristPolice": "Tourist Police",
+  "@sosTouristPolice": {
+    "description": "Dial label: tourist police."
+  },
+  "sosAmbulance": "Ambulance",
+  "@sosAmbulance": {
+    "description": "Dial label: ambulance."
+  },
+  "sosFireBrigade": "Fire Brigade",
+  "@sosFireBrigade": {
+    "description": "Dial label: fire brigade."
+  },
+  "sosGasEmergency": "Gas Emergency",
+  "@sosGasEmergency": {
+    "description": "Dial label: gas emergency."
+  },
+  "sosTouristPoliceSubtitle": "English-speaking operators · Available 24/7",
+  "@sosTouristPoliceSubtitle": {
+    "description": "Subtitle on the featured tourist-police dial chip."
+  },
+  "sosForTourists": "FOR TOURISTS",
+  "@sosForTourists": {
+    "description": "Badge on the featured tourist-police dial chip."
+  },
+  "sosCall": "Call",
+  "@sosCall": {
+    "description": "Action button to call a nearby place."
+  },
+  "sosMap": "Map",
+  "@sosMap": {
+    "description": "Action button to open a nearby place on the map."
+  },
+
+  "accountUser": "User",
+  "@accountUser": {
+    "description": "Fallback display name when the user's name is unavailable."
+  },
+  "accountYourTaste": "Your Taste",
+  "@accountYourTaste": {
+    "description": "Title of the personalised taste card on the account screen."
+  },
+  "tasteKeyHistory": "History",
+  "@tasteKeyHistory": { "description": "Taste pill: historical_landmark / historical." },
+  "tasteKeyAncientSites": "Ancient Sites",
+  "@tasteKeyAncientSites": { "description": "Taste pill: archaeological_site." },
+  "tasteKeyAttractions": "Attractions",
+  "@tasteKeyAttractions": { "description": "Taste pill: tourist_attraction." },
+  "tasteKeyMuseums": "Museums",
+  "@tasteKeyMuseums": { "description": "Taste pill: museum." },
+  "tasteKeyMosques": "Mosques",
+  "@tasteKeyMosques": { "description": "Taste pill: mosque." },
+  "tasteKeyChurches": "Churches",
+  "@tasteKeyChurches": { "description": "Taste pill: church." },
+  "tasteKeyParks": "Parks",
+  "@tasteKeyParks": { "description": "Taste pill: park." },
+  "tasteKeyBeaches": "Beaches",
+  "@tasteKeyBeaches": { "description": "Taste pill: beach." },
+  "tasteKeyRestaurants": "Restaurants",
+  "@tasteKeyRestaurants": { "description": "Taste pill: restaurant." },
+  "tasteKeyCafes": "Cafés",
+  "@tasteKeyCafes": { "description": "Taste pill: cafe." },
+  "tasteKeyMarkets": "Markets",
+  "@tasteKeyMarkets": { "description": "Taste pill: market." },
+  "tasteKeyShopping": "Shopping",
+  "@tasteKeyShopping": { "description": "Taste pill: shopping_mall / shopping." },
+  "tasteKeyMonuments": "Monuments",
+  "@tasteKeyMonuments": { "description": "Taste pill: monument." },
+  "tasteKeyArt": "Art",
+  "@tasteKeyArt": { "description": "Taste pill: art_gallery." },
+  "tasteKeyNightlife": "Nightlife",
+  "@tasteKeyNightlife": { "description": "Taste pill: night_club." },
+  "tasteKeyThemeParks": "Theme Parks",
+  "@tasteKeyThemeParks": { "description": "Taste pill: amusement_park." },
+  "tasteKeyAquariums": "Aquariums",
+  "@tasteKeyAquariums": { "description": "Taste pill: aquarium." },
+  "tasteKeyZoos": "Zoos",
+  "@tasteKeyZoos": { "description": "Taste pill: zoo." },
+  "tasteKeySpas": "Spas",
+  "@tasteKeySpas": { "description": "Taste pill: spa." },
+  "tasteKeyStadiums": "Stadiums",
+  "@tasteKeyStadiums": { "description": "Taste pill: stadium." },
+  "tasteKeyEntertainment": "Entertainment",
+  "@tasteKeyEntertainment": { "description": "Taste pill: entertainment tag." },
+  "tasteKeyCultural": "Cultural",
+  "@tasteKeyCultural": { "description": "Taste pill: cultural tag." },
+  "tasteKeyNature": "Nature",
+  "@tasteKeyNature": { "description": "Taste pill: natural tag." },
+  "tasteKeyRelaxation": "Relaxation",
+  "@tasteKeyRelaxation": { "description": "Taste pill: relaxation tag." },
+  "tasteKeyReligious": "Religious",
+  "@tasteKeyReligious": { "description": "Taste pill: religious tag." },
+  "tasteKeyFamily": "Family",
+  "@tasteKeyFamily": { "description": "Taste pill: family tag." },
+  "tasteKeyAdventure": "Adventure",
+  "@tasteKeyAdventure": { "description": "Taste pill: adventure tag." },
+  "tasteKeyFood": "Food",
+  "@tasteKeyFood": { "description": "Taste pill: food tag." },
+  "tasteKeyAncient": "Ancient",
+  "@tasteKeyAncient": { "description": "Taste pill: ancient tag." },
+  "accountSettingsHeader": "Account Settings:",
+  "@accountSettingsHeader": {
+    "description": "Header above the account settings tiles."
+  },
+  "accountEditProfile": "Edit Profile",
+  "@accountEditProfile": {
+    "description": "Account tile: edit profile."
+  },
+  "accountApplyGuide": "Apply to be a Guide",
+  "@accountApplyGuide": {
+    "description": "Account tile: apply to become a guide."
+  },
+  "accountMyBookings": "My Bookings",
+  "@accountMyBookings": {
+    "description": "Account tile: booking history."
+  },
+  "accountSavedPosts": "Saved Posts",
+  "@accountSavedPosts": {
+    "description": "Account tile: saved community posts."
+  },
+  "accountMyPlans": "My Plans",
+  "@accountMyPlans": {
+    "description": "Account tile: saved solo plans."
+  },
+  "accountMembership": "Membership",
+  "@accountMembership": {
+    "description": "Account tile: membership / plan."
+  },
+  "accountSignOut": "Sign out",
+  "@accountSignOut": {
+    "description": "Sign-out button on the account screen."
+  },
+  "accountGuideApplication": "Guide Application",
+  "@accountGuideApplication": {
+    "description": "Label on the guide application status tile."
+  },
+  "accountStatusUnderReview": "Under Review",
+  "@accountStatusUnderReview": {
+    "description": "Guide application status: pending review."
+  },
+  "accountStatusNotApproved": "Not Approved",
+  "@accountStatusNotApproved": {
+    "description": "Guide application status: rejected."
+  },
+
+  "planExplorerFree": "Explorer — Free",
+  "@planExplorerFree": {
+    "description": "Name of the free membership tier."
+  },
+  "planActive": "Active",
+  "@planActive": {
+    "description": "Badge showing the current plan is active."
+  },
+  "planCurrentDesc": "Your current plan — enjoy all the core features of Lost in Egypt at no cost.",
+  "@planCurrentDesc": {
+    "description": "Description of the free plan."
+  },
+  "planWhatsIncluded": "What's included",
+  "@planWhatsIncluded": {
+    "description": "Header above the included-features list."
+  },
+  "planFeatDiscoveryTitle": "AI Landmark Discovery",
+  "@planFeatDiscoveryTitle": {
+    "description": "Plan feature title: AI landmark discovery."
+  },
+  "planFeatDiscoveryDesc": "Identify unlimited landmarks with your camera",
+  "@planFeatDiscoveryDesc": {
+    "description": "Plan feature description: AI landmark discovery."
+  },
+  "planFeatStoriesTitle": "AI Historical Stories",
+  "@planFeatStoriesTitle": {
+    "description": "Plan feature title: AI historical stories."
+  },
+  "planFeatStoriesDesc": "Hear captivating stories about every landmark you find",
+  "@planFeatStoriesDesc": {
+    "description": "Plan feature description: AI historical stories."
+  },
+  "planFeatMapTitle": "Interactive Map",
+  "@planFeatMapTitle": {
+    "description": "Plan feature title: interactive map."
+  },
+  "planFeatMapDesc": "Explore 500+ Egyptian landmarks with GPS and routing",
+  "@planFeatMapDesc": {
+    "description": "Plan feature description: interactive map."
+  },
+  "planFeatToursTitle": "Browse & Book Tours",
+  "@planFeatToursTitle": {
+    "description": "Plan feature title: browse and book tours."
+  },
+  "planFeatToursDesc": "Browse guided tours and book with certified guides",
+  "@planFeatToursDesc": {
+    "description": "Plan feature description: tours."
+  },
+  "planFeatBadgesTitle": "Badges & Gamification",
+  "@planFeatBadgesTitle": {
+    "description": "Plan feature title: badges and gamification."
+  },
+  "planFeatBadgesDesc": "Earn badges as you explore more of Egypt",
+  "@planFeatBadgesDesc": {
+    "description": "Plan feature description: badges."
+  },
+  "planFeatCommunityTitle": "Community Feed",
+  "@planFeatCommunityTitle": {
+    "description": "Plan feature title: community feed."
+  },
+  "planFeatCommunityDesc": "Share discoveries and connect with fellow travellers",
+  "@planFeatCommunityDesc": {
+    "description": "Plan feature description: community."
+  },
+  "planFeatTranslatorTitle": "Translator",
+  "@planFeatTranslatorTitle": {
+    "description": "Plan feature title: translator."
+  },
+  "planFeatTranslatorDesc": "Translate text using your camera in real-time",
+  "@planFeatTranslatorDesc": {
+    "description": "Plan feature description: translator."
+  },
+  "planFeatCurrencyTitle": "Currency Converter",
+  "@planFeatCurrencyTitle": {
+    "description": "Plan feature title: currency converter."
+  },
+  "planFeatCurrencyDesc": "Convert between 16 currencies instantly",
+  "@planFeatCurrencyDesc": {
+    "description": "Plan feature description: currency converter."
+  },
+  "planFeatNotificationsTitle": "Booking Notifications",
+  "@planFeatNotificationsTitle": {
+    "description": "Plan feature title: booking notifications."
+  },
+  "planFeatNotificationsDesc": "Get notified about your tour confirmations",
+  "@planFeatNotificationsDesc": {
+    "description": "Plan feature description: notifications."
+  },
+  "planComingSoon": "Coming soon",
+  "@planComingSoon": {
+    "description": "Header of the coming-soon section."
+  },
+  "planComingSoonDesc": "We're working on premium features including offline mode, exclusive guided experiences, and advanced trip planning tools. Stay tuned — and the core app will always remain free.",
+  "@planComingSoonDesc": {
+    "description": "Description under the coming-soon section."
+  },
+
+  "profileViewTitle": "Profile",
+  "@profileViewTitle": {
+    "description": "Title of the read-only profile view screen."
+  },
+  "profileUserNotFound": "User not found",
+  "@profileUserNotFound": {
+    "description": "Empty state when the requested profile does not exist."
+  },
+  "profileEmail": "Email",
+  "@profileEmail": {
+    "description": "Label for the email verification badge / field."
+  },
+  "profilePhone": "Phone",
+  "@profilePhone": {
+    "description": "Label for the phone verification badge / item."
+  },
+  "profilePostsStat": "Posts",
+  "@profilePostsStat": {
+    "description": "Caption under the posts count on the profile stats row."
+  },
+  "profilePlacesStat": "Places",
+  "@profilePlacesStat": {
+    "description": "Caption under the visited-places count on the profile stats row."
+  },
+  "profileRole": "Role",
+  "@profileRole": {
+    "description": "Label for the user role stat / field."
+  },
+  "profileRoleAdmin": "Admin",
+  "@profileRoleAdmin": {
+    "description": "Role label: administrator."
+  },
+  "profileRoleVerifiedGuide": "Verified Guide",
+  "@profileRoleVerifiedGuide": {
+    "description": "Role label: verified guide."
+  },
+  "profileRoleTourist": "Tourist",
+  "@profileRoleTourist": {
+    "description": "Role label: tourist / traveler."
+  },
+  "profileAbout": "About",
+  "@profileAbout": {
+    "description": "Section header for the user's bio."
+  },
+  "profileInterests": "Interests",
+  "@profileInterests": {
+    "description": "Section header / label for the user's interests."
+  },
+  "profileSocial": "Social",
+  "@profileSocial": {
+    "description": "Section header for the user's social links."
+  },
+  "profileInstagram": "Instagram",
+  "@profileInstagram": {
+    "description": "Instagram label / brand name."
+  },
+  "profileTwitter": "Twitter",
+  "@profileTwitter": {
+    "description": "Twitter label / brand name."
+  },
+  "profileContact": "Contact",
+  "@profileContact": {
+    "description": "Section header for the user's contact details."
+  },
+  "profileBadges": "Badges",
+  "@profileBadges": {
+    "description": "Section header for the gamification badges row."
+  },
+  "editProfileTitle": "Edit profile",
+  "@editProfileTitle": {
+    "description": "Header / button label for the edit-profile screen."
+  },
+
+  "editPhotoUpdated": "Profile photo updated ✅",
+  "@editPhotoUpdated": {
+    "description": "Confirmation after the profile photo is uploaded."
+  },
+  "editPhotoUploadError": "Error uploading photo. Please try again.",
+  "@editPhotoUploadError": {
+    "description": "Error when the profile photo upload fails."
+  },
+  "editPhoneMustVerify": "Phone number must be verified before saving",
+  "@editPhoneMustVerify": {
+    "description": "Error when the user tries to save with an unverified new phone number."
+  },
+  "editInstagramRule": "Instagram: letters, numbers, . and _ only (max 30)",
+  "@editInstagramRule": {
+    "description": "Validation error for an invalid Instagram handle."
+  },
+  "editTwitterRule": "Twitter/X: letters, numbers, . and _ only (max 15)",
+  "@editTwitterRule": {
+    "description": "Validation error for an invalid Twitter/X handle."
+  },
+  "editUsernameEmpty": "Username cannot be empty",
+  "@editUsernameEmpty": {
+    "description": "Validation error when the username field is empty."
+  },
+  "editLangRequestTitle": "Request Language Addition",
+  "@editLangRequestTitle": {
+    "description": "Title of the dialog to request a new certified guide language."
+  },
+  "editLangRequestBody": "By Egyptian law, guides require official certification to guide in specific languages. Please enter the language you wish to add. An admin will verify your syndicate/MOTA records.",
+  "@editLangRequestBody": {
+    "description": "Explanation in the request-language dialog."
+  },
+  "editLangRequestHint": "e.g., Spanish, German, Italian",
+  "@editLangRequestHint": {
+    "description": "Hint for the language input in the request-language dialog."
+  },
+  "editLangSubmit": "Submit Request",
+  "@editLangSubmit": {
+    "description": "Button that submits a language addition request."
+  },
+  "editLangPending": "You already have a pending language request.",
+  "@editLangPending": {
+    "description": "Error when the user already has a pending language request."
+  },
+  "editLangSubmitted": "Request submitted! An admin will review it shortly.",
+  "@editLangSubmitted": {
+    "description": "Confirmation after a language addition request is submitted."
+  },
+  "editProfileUpdated": "Profile Updated ✅",
+  "@editProfileUpdated": {
+    "description": "Confirmation after the profile is saved."
+  },
+  "editProfileCompletion": "Profile Completion",
+  "@editProfileCompletion": {
+    "description": "Label above the profile completion progress bar."
+  },
+  "editSectionBasic": "Basic Information",
+  "@editSectionBasic": {
+    "description": "Section header for basic profile fields."
+  },
+  "editFullName": "Full name",
+  "@editFullName": {
+    "description": "Label for the full name field."
+  },
+  "editUsername": "Username",
+  "@editUsername": {
+    "description": "Label for the username field."
+  },
+  "editPhoneNumber": "Phone number",
+  "@editPhoneNumber": {
+    "description": "Label for the phone number field."
+  },
+  "editNationality": "Nationality",
+  "@editNationality": {
+    "description": "Label for the nationality picker."
+  },
+  "editSectionContact": "Contact Information",
+  "@editSectionContact": {
+    "description": "Section header for contact fields."
+  },
+  "editSectionAbout": "About You",
+  "@editSectionAbout": {
+    "description": "Section header for bio and interests."
+  },
+  "editBio": "Bio",
+  "@editBio": {
+    "description": "Label for the bio field."
+  },
+  "editBioHint": "Tell us about yourself...",
+  "@editBioHint": {
+    "description": "Hint inside the bio field."
+  },
+  "editSectionSocial": "Social Links (Optional)",
+  "@editSectionSocial": {
+    "description": "Section header for optional social links."
+  },
+  "editSocialHint": "username (no @)",
+  "@editSocialHint": {
+    "description": "Hint inside the Instagram/Twitter handle fields."
+  },
+  "editTwitterLabel": "Twitter/X",
+  "@editTwitterLabel": {
+    "description": "Label for the Twitter/X handle field."
+  },
+  "editSectionGuide": "Guide Credentials",
+  "@editSectionGuide": {
+    "description": "Section header for verified-guide credentials."
+  },
+  "editCertifiedLangs": "Certified Languages (Locked)",
+  "@editCertifiedLangs": {
+    "description": "Label for the read-only certified languages field."
+  },
+  "editNoCertifiedLangs": "None certified yet.",
+  "@editNoCertifiedLangs": {
+    "description": "Placeholder when the guide has no certified languages."
+  },
+  "editRequestNewLang": "Request New Language",
+  "@editRequestNewLang": {
+    "description": "Button to request adding a new certified language."
+  },
+  "editSearchNationality": "Search nationality",
+  "@editSearchNationality": {
+    "description": "Hint in the nationality country-picker search field."
+  },
+  "editUsernameHint": "your_handle",
+  "@editUsernameHint": {
+    "description": "Placeholder example handle in the username field."
+  },
+  "editVerificationStatus": "Verification Status",
+  "@editVerificationStatus": {
+    "description": "Header of the verification status card."
+  },
+  "editVerificationEmailSent": "Verification email sent! Check your inbox.",
+  "@editVerificationEmailSent": {
+    "description": "Confirmation after a verification email is resent."
+  },
+  "editResend": "Resend",
+  "@editResend": {
+    "description": "Button to resend the email verification."
+  },
+  "editVerifyNow": "Verify now",
+  "@editVerifyNow": {
+    "description": "Button to start phone verification."
+  },
+  "editSaveChanges": "Save Changes",
+  "@editSaveChanges": {
+    "description": "Primary button that saves the edited profile."
+  },
+
+  "currencyConverterTitle": "Currency Converter",
+  "@currencyConverterTitle": {
+    "description": "Title of the currency converter screen."
+  },
+  "currencyEnterValidAmount": "Please enter a valid amount",
+  "@currencyEnterValidAmount": {
+    "description": "Validation error when the amount is empty or non-positive."
+  },
+  "currencyRateUnavailable": "Rate not available for {currency}",
+  "@currencyRateUnavailable": {
+    "description": "Error when no exchange rate exists for the target currency.",
+    "placeholders": {
+      "currency": {
+        "type": "String",
+        "example": "EGP"
+      }
+    }
+  },
+  "currencyFrom": "From",
+  "@currencyFrom": {
+    "description": "Label above the source-currency dropdown."
+  },
+  "currencyTo": "To",
+  "@currencyTo": {
+    "description": "Label above the target-currency dropdown."
+  },
+  "currencyAmount": "Amount",
+  "@currencyAmount": {
+    "description": "Label above the amount input."
+  },
+  "currencyEnterAmount": "Enter amount",
+  "@currencyEnterAmount": {
+    "description": "Hint inside the amount input."
+  },
+  "currencyConvert": "Convert",
+  "@currencyConvert": {
+    "description": "Button that performs the conversion."
+  },
+  "currencyResult": "Result",
+  "@currencyResult": {
+    "description": "Label above the conversion result."
+  },
+
+  "translatorInitFailed": "Failed to initialize translator",
+  "@translatorInitFailed": {
+    "description": "Error when the on-device translator fails to initialize."
+  },
+  "translatorEnterText": "Please enter text to translate",
+  "@translatorEnterText": {
+    "description": "Validation error when the source text is empty."
+  },
+  "translatorTimedOut": "Translation timed out. Models may still be downloading — try again in a moment.",
+  "@translatorTimedOut": {
+    "description": "Error when translation times out."
+  },
+  "translatorFailed": "Translation failed. If offline, models may not be downloaded yet.",
+  "@translatorFailed": {
+    "description": "Error when translation fails."
+  },
+  "translatorDownloadingModels": "Downloading translation models for offline use...",
+  "@translatorDownloadingModels": {
+    "description": "Status banner while language models download."
+  },
+  "translatorWorksOffline": "Works offline - models cached on device",
+  "@translatorWorksOffline": {
+    "description": "Status banner once models are cached."
+  },
+  "translatorEnterTextHint": "Enter text",
+  "@translatorEnterTextHint": {
+    "description": "Hint in the source text field."
+  },
+  "translatorTranslationHint": "Translation",
+  "@translatorTranslationHint": {
+    "description": "Hint in the read-only translation field."
+  },
+  "translatorTranslate": "Translate",
+  "@translatorTranslate": {
+    "description": "Button that triggers translation."
+  },
+
+  "helpFaqTitle": "Help & FAQ",
+  "@helpFaqTitle": {
+    "description": "Title of the Help & FAQ screen."
+  },
+  "helpSecGettingStarted": "Getting Started",
+  "@helpSecGettingStarted": { "description": "Help section header." },
+  "helpSecMapPlaces": "Map & Places",
+  "@helpSecMapPlaces": { "description": "Help section header." },
+  "helpSecBookings": "Bookings & Payments",
+  "@helpSecBookings": { "description": "Help section header." },
+  "helpSecCommunity": "Community",
+  "@helpSecCommunity": { "description": "Help section header." },
+  "helpSecAccount": "Account & Settings",
+  "@helpSecAccount": { "description": "Help section header." },
+  "helpSecOffline": "Offline Mode",
+  "@helpSecOffline": { "description": "Help section header." },
+  "helpSecSafety": "Safety & Emergency",
+  "@helpSecSafety": { "description": "Help section header." },
+
+  "helpQDiscover": "How do I discover landmarks?",
+  "@helpQDiscover": { "description": "FAQ question." },
+  "helpADiscover": "Open the Camera tab and point your phone at any Egyptian landmark. The AI will identify it and generate a historical story read aloud by your personal guide. Each discovery is saved to your profile and counts toward your badge progress.",
+  "@helpADiscover": { "description": "FAQ answer." },
+  "helpQBadges": "How do I earn badges?",
+  "@helpQBadges": { "description": "FAQ question." },
+  "helpABadges": "Badges are earned by discovering landmarks through the Camera tab. Visit 1, 3, 5, 10, and 20 unique landmarks to unlock Novice Explorer, Tourist, Tomb Raider, Historian, and Pharaoh badges respectively. There are also hidden badges — explore and find them!",
+  "@helpABadges": { "description": "FAQ answer." },
+  "helpQGuide": "How do I become a tour guide?",
+  "@helpQGuide": { "description": "FAQ question." },
+  "helpAGuide": "Go to Account → Apply as Guide. You'll need your MOTA license number, syndicate number, certified languages, and supporting documents. Applications are reviewed by our admin team and you will be notified of the outcome in-app.",
+  "@helpAGuide": { "description": "FAQ answer." },
+  "helpQSavePlaces": "Can I save places to visit later?",
+  "@helpQSavePlaces": { "description": "FAQ question." },
+  "helpASavePlaces": "Yes! On the Map tab, tap any landmark pin and press the bookmark icon to save it. You can also save events from the Home tab by tapping the heart icon on any event card. Access all your saved places from the Map tab → Saved Places.",
+  "@helpASavePlaces": { "description": "FAQ answer." },
+  "helpQRecognise": "My camera didn't recognise a landmark — what should I do?",
+  "@helpQRecognise": { "description": "FAQ question." },
+  "helpARecognise": "Ensure the landmark fills most of the frame and is well lit. Tap the shutter button and wait a few seconds. If the landmark is very minor or off the main tourist trail it may not be in the database yet.",
+  "@helpARecognise": { "description": "FAQ answer." },
+  "helpQBook": "How do I book a tour?",
+  "@helpQBook": { "description": "FAQ question." },
+  "helpABook": "Go to the Home tab and browse available guided tours, or find one on the Map tab. Choose a tour, select your date and number of tickets, then complete payment using any of the available payment methods shown at checkout (card, Apple Pay, or mobile wallet).",
+  "@helpABook": { "description": "FAQ answer." },
+  "helpQCancel": "How do I cancel a booking?",
+  "@helpQCancel": { "description": "FAQ question." },
+  "helpACancel": "Go to Account → My Bookings, find the booking under the Upcoming tab, and tap Cancel. Refund policies are set by each guide — check the tour details before booking.",
+  "@helpACancel": { "description": "FAQ answer." },
+  "helpQSecure": "Is my payment information secure?",
+  "@helpQSecure": { "description": "FAQ question." },
+  "helpASecure": "Yes. Payments are processed through Paymob, a certified PCI-compliant payment gateway. Lost in Egypt never stores your card or wallet details on its servers.",
+  "@helpASecure": { "description": "FAQ answer." },
+  "helpQCurrency": "How do I change my display currency?",
+  "@helpQCurrency": { "description": "FAQ question." },
+  "helpACurrency": "Go to More → Settings → Preferred Currency. All tour prices across the app will display in your chosen currency. The actual charge at checkout is always processed in EGP via Paymob.",
+  "@helpACurrency": { "description": "FAQ answer." },
+  "helpQPost": "How do I post in the community?",
+  "@helpQPost": { "description": "FAQ question." },
+  "helpAPost": "Tap the Community tab and press the + button. You can write text, add photos, tag a location, choose a category (Travel Story, Question, Tip, etc.), and use #hashtags or @mention other users.",
+  "@helpAPost": { "description": "FAQ answer." },
+  "helpQReport": "How do I report a post or user?",
+  "@helpQReport": { "description": "FAQ question." },
+  "helpAReport": "On any community post or comment, tap the ⋮ menu and select Report. Our admin team reviews all reports and takes action within 24 hours.",
+  "@helpAReport": { "description": "FAQ answer." },
+  "helpQUsername": "How do I change my username?",
+  "@helpQUsername": { "description": "FAQ question." },
+  "helpAUsername": "Go to Account → Edit Profile. Your username (e.g. @ahmed_x1) must be 3–20 characters, lowercase letters, numbers, and underscores only, and globally unique. It is displayed on all your posts and comments.",
+  "@helpAUsername": { "description": "FAQ answer." },
+  "helpQTheme": "How do I switch between light and dark mode?",
+  "@helpQTheme": { "description": "FAQ question." },
+  "helpATheme": "Go to More → Settings and toggle the Dark Mode switch. Your preference is saved to your account and synced across devices.",
+  "@helpATheme": { "description": "FAQ answer." },
+  "helpQOfflineWhat": "What can I use without an internet connection?",
+  "@helpQOfflineWhat": { "description": "FAQ question." },
+  "helpAOfflineWhat": "Lost in Egypt is designed primarily as an online experience, but several features remain available offline:\n\n• Map pins — over 500 Egyptian landmarks are bundled locally in the app, so the map shows location markers even without internet (map tiles themselves require connectivity).\n• Cached images — places and event images you have previously viewed are stored on your device and load instantly offline.\n• Text recognition (Camera → Scan text) — ML Kit processes text entirely on-device.\n• Translator — once a language pack is downloaded, translation works offline.\n• App navigation, badges, and settings — always available.",
+  "@helpAOfflineWhat": { "description": "FAQ answer." },
+  "helpQOfflineNeed": "What features require an internet connection?",
+  "@helpQOfflineNeed": { "description": "FAQ question." },
+  "helpAOfflineNeed": "The following features need an active connection:\n\n• Landmark identification via the Camera tab (uses Google Cloud Vision API)\n• AI historical story generation (uses Google Gemini)\n• Community posts, likes, and comments (Firestore)\n• Browsing and booking tours (Firestore)\n• Events feed (Firestore)\n• Currency conversion (live exchange rates)\n• SOS — nearest emergency services search (Google Places API)\n• Signing in or creating an account (Firebase Auth)",
+  "@helpAOfflineNeed": { "description": "FAQ answer." },
+  "helpQOfflineImprove": "Will offline-capable features improve over time?",
+  "@helpQOfflineImprove": { "description": "FAQ question." },
+  "helpAOfflineImprove": "Yes. We plan to expand offline support in future updates, including downloadable city guides and cached tour content. Keep the app updated to get these improvements.",
+  "@helpAOfflineImprove": { "description": "FAQ answer." },
+  "helpQEmergency": "What do I do in an emergency?",
+  "@helpQEmergency": { "description": "FAQ question." },
+  "helpAEmergency": "Open More → SOS. You can find the nearest police station, hospital, or fire station using your current location, or dial Egypt's official emergency numbers directly from the app:\n• Police: 122\n• Ambulance: 123\n• Fire: 180\n• Tourist Police: 126",
+  "@helpAEmergency": { "description": "FAQ answer." },
+
+  "soloTripTitle": "Solo Trip",
+  "@soloTripTitle": { "description": "Title of the solo trip page." },
+  "soloRecommendedPlans": "Recommended Plans",
+  "@soloRecommendedPlans": { "description": "Header above the recommended curated trips." },
+  "soloPersonalised": "Personalised based on your travel history",
+  "@soloPersonalised": { "description": "Subtitle shown when a best-match trip is highlighted." },
+  "soloBestForYou": "Best for you",
+  "@soloBestForYou": { "description": "Badge on the best-match trip card." },
+  "soloStatusActive": "Active",
+  "@soloStatusActive": { "description": "Plan status: active tour." },
+  "soloStatusSaved": "Saved",
+  "@soloStatusSaved": { "description": "Plan status / tab / badge: saved." },
+  "soloStatusCompleted": "Completed",
+  "@soloStatusCompleted": { "description": "Plan status / tab: completed." },
+  "soloTabAll": "All",
+  "@soloTabAll": { "description": "My Plans tab: all plans." },
+  "soloCouldNotLoadPlans": "Could not load plans",
+  "@soloCouldNotLoadPlans": { "description": "Error when the plans stream fails." },
+  "soloContinueTour": "Continue Tour",
+  "@soloContinueTour": { "description": "Button to resume an active tour." },
+  "soloStartTour": "Start Tour",
+  "@soloStartTour": { "description": "Button to start a saved tour." },
+  "soloCouldNotStart": "Could not start tour. Try again.",
+  "@soloCouldNotStart": { "description": "Error when starting a tour fails." },
+  "soloDeletePlanTitle": "Delete plan?",
+  "@soloDeletePlanTitle": { "description": "Title of the delete-plan confirmation." },
+  "soloDeleteActiveBody": "This tour is in progress. Deleting it will discard all your progress and cannot be undone.",
+  "@soloDeleteActiveBody": { "description": "Body when deleting an in-progress tour." },
+  "soloDeleteBody": "This cannot be undone.",
+  "@soloDeleteBody": { "description": "Body when deleting a saved plan." },
+  "soloNoPlansYet": "No plans yet",
+  "@soloNoPlansYet": { "description": "Empty state title for My Plans." },
+  "soloNoPlansSub": "Save a curated trip or create your own\nto see it here.",
+  "@soloNoPlansSub": { "description": "Empty state subtitle for My Plans." },
+  "soloBrowseTrips": "Browse Trips",
+  "@soloBrowseTrips": { "description": "CTA in the My Plans empty state." },
+  "soloCustomizeOwnPlan": "Customize your\nown plan",
+  "@soloCustomizeOwnPlan": { "description": "Label on the customize-plan card." },
+  "soloSavePlan": "Save Plan",
+  "@soloSavePlan": { "description": "Button / tooltip to save a generated plan." },
+  "soloPlanSaved": "Plan saved! Find it in My Plans.",
+  "@soloPlanSaved": { "description": "Confirmation after saving a plan." },
+  "soloCouldNotSave": "Could not save plan. Try again.",
+  "@soloCouldNotSave": { "description": "Error when saving a plan fails." },
+  "soloHearStory": "Hear the Story",
+  "@soloHearStory": { "description": "Button to open the AI story sheet for a stop." },
+  "soloStorySilent": "The spirits of history are silent right now.",
+  "@soloStorySilent": { "description": "Error shown when the AI story fails to load." },
+  "soloStoryPause": "Pause",
+  "@soloStoryPause": { "description": "Story audio: pause." },
+  "soloStoryResume": "Resume",
+  "@soloStoryResume": { "description": "Story audio: resume." },
+  "soloStoryListen": "Listen",
+  "@soloStoryListen": { "description": "Story audio: start playback." },
+  "soloStoryGenerating": "Generating audio…",
+  "@soloStoryGenerating": { "description": "Story audio: loading state while TTS generates." },
+  "soloStoryReplay": "Replay from start",
+  "@soloStoryReplay": { "description": "Story audio: replay tooltip." },
+  "soloNavigateHere": "Navigate here",
+  "@soloNavigateHere": { "description": "Tooltip / label to navigate to a stop." },
+  "soloViewFullRoute": "View full route",
+  "@soloViewFullRoute": { "description": "Tooltip to view the whole route on the map." },
+  "soloViewFullRouteMap": "View full route on map",
+  "@soloViewFullRouteMap": { "description": "Tooltip on the curated detail map button." },
+  "soloFullRoute": "Full route",
+  "@soloFullRoute": { "description": "Label on the full-route button." },
+  "soloHighlights": "Highlights",
+  "@soloHighlights": { "description": "Section header for trip highlights." },
+  "soloItinerary": "Itinerary",
+  "@soloItinerary": { "description": "Section header for the itinerary." },
+
+  "tourEndTitle": "End Tour?",
+  "@tourEndTitle": { "description": "Title of the end-tour confirmation." },
+  "tourEndBody": "This will mark the tour as completed. You can still view it in My Plans.",
+  "@tourEndBody": { "description": "Body of the end-tour confirmation." },
+  "tourEndConfirm": "End Tour",
+  "@tourEndConfirm": { "description": "Confirm button to end the tour." },
+  "tourEnded": "Tour ended. Find it under Completed in My Plans.",
+  "@tourEnded": { "description": "Confirmation after a tour is ended." },
+  "tourInProgress": "Tour in Progress",
+  "@tourInProgress": { "description": "Live tour status label." },
+  "tourGo": "Go",
+  "@tourGo": { "description": "Button to focus the map on the next stop." },
+  "tourUpNext": "Up next",
+  "@tourUpNext": { "description": "Pill on the next incomplete stop." },
+  "tourComplete": "Tour Complete!",
+  "@tourComplete": { "description": "Title of the tour-complete dialog." },
+  "tourStopsExplored": "{count, plural, =1{1 stop explored} other{{count} stops explored}}",
+  "@tourStopsExplored": {
+    "description": "Stops-explored count in the tour-complete dialog.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "tourCompleteSub": "You've experienced the heart of Egypt.\nGreat exploring! 🌟",
+  "@tourCompleteSub": { "description": "Congratulatory message in the tour-complete dialog." },
+  "tourYouMightLove": "You might also love",
+  "@tourYouMightLove": { "description": "Header above similar-place suggestions." },
+  "tourDone": "Done",
+  "@tourDone": { "description": "Button to dismiss the tour-complete dialog." },
+  "tourStartedTitle": "🗺️ Your Tour Has Started!",
+  "@tourStartedTitle": { "description": "Headline of the active-tour onboarding sheet." },
+  "tourOnboardTitle": "Here's what you can do",
+  "@tourOnboardTitle": { "description": "Subtitle of the active-tour onboarding sheet." },
+  "tourLetsGo": "Let's Go!",
+  "@tourLetsGo": { "description": "Button to dismiss the onboarding sheet." },
+  "tourFeatViewMap": "View on Map",
+  "@tourFeatViewMap": { "description": "Onboarding feature title: view on map." },
+  "tourFeatViewMapDesc": "Tap the map icon (top-right) to see your stops on the map and navigate to any one.",
+  "@tourFeatViewMapDesc": { "description": "Onboarding feature description: view on map." },
+  "tourFeatTrack": "Track Progress",
+  "@tourFeatTrack": { "description": "Onboarding feature title: track progress." },
+  "tourFeatTrackDesc": "Check off each stop as you visit it. Your progress saves automatically.",
+  "@tourFeatTrackDesc": { "description": "Onboarding feature description: track progress." },
+  "tourFeatStories": "AI Stories",
+  "@tourFeatStories": { "description": "Onboarding feature title: AI stories." },
+  "tourFeatStoriesDesc": "Expand any stop and tap \"Hear the Story\" for an AI-generated history of that place.",
+  "@tourFeatStoriesDesc": { "description": "Onboarding feature description: AI stories." },
+
+  "resultCouldNotGenerate": "Could not generate your plan.",
+  "@resultCouldNotGenerate": { "description": "Error when trip generation fails." },
+  "resultPlanning": "Planning your trip…",
+  "@resultPlanning": { "description": "Loading title while the AI builds the itinerary." },
+  "resultPlanningSub": "Our AI guide is building a personalised day-by-day itinerary for you.",
+  "@resultPlanningSub": { "description": "Loading subtitle while the AI builds the itinerary." },
+  "resultCouldNotLoad": "Couldn't load your plan",
+  "@resultCouldNotLoad": { "description": "Error title when the plan can't be loaded." },
+  "resultCouldNotPin": "Couldn't pin {name} on the map yet. Try again in a moment.",
+  "@resultCouldNotPin": {
+    "description": "Error when a stop has no coordinates yet.",
+    "placeholders": { "name": { "type": "String", "example": "Karnak Temple" } }
+  },
+  "resultCouldNotExport": "Could not export itinerary. Try again.",
+  "@resultCouldNotExport": { "description": "Error when PDF export fails." },
+  "resultDiscardTitle": "Discard plan?",
+  "@resultDiscardTitle": { "description": "Title of the discard-plan confirmation." },
+  "resultDiscardBody": "This plan will not be saved. You can always generate a new one.",
+  "@resultDiscardBody": { "description": "Body of the discard-plan confirmation." },
+  "resultKeep": "Keep",
+  "@resultKeep": { "description": "Button to keep the plan." },
+  "resultDiscard": "Discard",
+  "@resultDiscard": { "description": "Button to discard the plan." },
+  "resultExportPdf": "Export PDF",
+  "@resultExportPdf": { "description": "Tooltip on the export-PDF button." },
+  "resultLocationsCount": "{count, plural, =1{1 location} other{{count} locations}}",
+  "@resultLocationsCount": {
+    "description": "Stat chip showing the number of stops.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "resultDayNum": "Day {num}",
+  "@resultDayNum": {
+    "description": "Forecast chip day label.",
+    "placeholders": { "num": { "type": "int" } }
+  },
+  "resultViewOnMaps": "View on Maps",
+  "@resultViewOnMaps": { "description": "Link to view a stop on the map." },
+  "resultShareSuffix": "Planned with Lost in Egypt 🌍",
+  "@resultShareSuffix": { "description": "Suffix appended when sharing a trip plan." },
+
+  "quizNext": "Next",
+  "@quizNext": { "description": "Quiz next-step button." },
+  "quizFinish": "Finish",
+  "@quizFinish": { "description": "Quiz final-step button." },
+  "quizStepOf": "Step {current} of {total}",
+  "@quizStepOf": {
+    "description": "Quiz step counter.",
+    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "soloQuizInterestsTitle": "What are your interests?",
+  "@soloQuizInterestsTitle": { "description": "Quiz step title: interests." },
+  "soloQuizAreasTitle": "Where do you want to explore?",
+  "@soloQuizAreasTitle": { "description": "Quiz step title: areas." },
+  "soloQuizTripTimeTitle": "Day trips or night out?",
+  "@soloQuizTripTimeTitle": { "description": "Quiz step title: trip time." },
+  "tripTimeDay": "Day",
+  "@tripTimeDay": { "description": "Trip time option: day." },
+  "tripTimeDayDesc": "Temples, markets,\nand outdoor adventures",
+  "@tripTimeDayDesc": { "description": "Description under the Day option." },
+  "tripTimeNight": "Night",
+  "@tripTimeNight": { "description": "Trip time option: night." },
+  "tripTimeNightDesc": "Dining, nightlife,\nand entertainment",
+  "@tripTimeNightDesc": { "description": "Description under the Night option." },
+  "soloQuizBudgetTitle": "What's your budget?",
+  "@soloQuizBudgetTitle": { "description": "Quiz step title: budget." },
+  "budgetPresetBudget": "Budget",
+  "@budgetPresetBudget": { "description": "Budget preset: budget tier." },
+  "budgetPresetMid": "Mid-range",
+  "@budgetPresetMid": { "description": "Budget preset: mid-range tier." },
+  "budgetPresetLuxury": "Luxury",
+  "@budgetPresetLuxury": { "description": "Budget preset: luxury tier." },
+  "soloQuizDateTitle": "Choose your dates & location",
+  "@soloQuizDateTitle": { "description": "Quiz step title: dates and location." },
+  "soloDateFrom": "From",
+  "@soloDateFrom": { "description": "Label on the from-date field." },
+  "soloDateStartHint": "Start date",
+  "@soloDateStartHint": { "description": "Hint in the from-date field." },
+  "soloDateTo": "To",
+  "@soloDateTo": { "description": "Label on the to-date field." },
+  "soloDateEndHint": "End date",
+  "@soloDateEndHint": { "description": "Hint in the to-date field." },
+  "soloNightsCount": "{count, plural, =1{1 night} other{{count} nights}}",
+  "@soloNightsCount": {
+    "description": "Nights pill between the date fields.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "soloStartLocationHint": "Where are you starting from?",
+  "@soloStartLocationHint": { "description": "Hint in the location picker field." },
+  "soloSelectDayNight": "Please select Day, Night, or both.",
+  "@soloSelectDayNight": { "description": "Validation when no trip time is selected." },
+
+  "tourCardUpTo": "Up to {count}",
+  "@tourCardUpTo": {
+    "description": "Max-attendees label on a tour card.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "tourCardNew": "NEW",
+  "@tourCardNew": { "description": "Badge on a tour with no reviews yet." },
+
+  "mapPickerFetching": "Fetching address...",
+  "@mapPickerFetching": { "description": "Placeholder while reverse-geocoding a tapped point." },
+  "mapPickerSelectedLocation": "Selected Location",
+  "@mapPickerSelectedLocation": { "description": "Fallback name for a picked location." },
+  "mapPickerUnknownLocation": "Unknown Location",
+  "@mapPickerUnknownLocation": { "description": "Name when geocoding returns nothing." },
+  "mapPickerSearchHint": "Search for a landmark or destination...",
+  "@mapPickerSearchHint": { "description": "Hint in the map-picker search field." },
+  "mapPickerTapHint": "Tap anywhere on the map to select a location",
+  "@mapPickerTapHint": { "description": "Instruction shown before a point is picked." },
+  "mapPickerConfirm": "Confirm Location",
+  "@mapPickerConfirm": { "description": "Button to confirm the picked location." },
+  "mapPickerCustomPin": "Custom Pin Location",
+  "@mapPickerCustomPin": { "description": "Fallback name returned for a custom pin." },
+
+  "tourMapMeetupTitle": "Meetup Location",
+  "@tourMapMeetupTitle": { "description": "App bar title of the tour meetup map." },
+  "tourMapStartPoint": "Tour Start Point",
+  "@tourMapStartPoint": { "description": "Marker info-window snippet for the meetup point." },
+  "tourMapMeetingPoint": "Meeting Point",
+  "@tourMapMeetingPoint": { "description": "Label above the meetup location name." },
+  "tourMapDestinations": "Destinations You Will Visit:",
+  "@tourMapDestinations": { "description": "Header above the destinations chips." },
+  "tourMapExplore": "Explore in Main Map",
+  "@tourMapExplore": { "description": "Button to open the meetup in the main map." },
+  "tourMapNavigateRoute": "Navigate Tour Route",
+  "@tourMapNavigateRoute": { "description": "Button to plot the full tour route." },
+
+  "qrTitle": "Scan Ticket QR",
+  "@qrTitle": { "description": "App bar title of the QR check-in scanner." },
+  "qrPointCamera": "Point camera at tourist's QR ticket",
+  "@qrPointCamera": { "description": "Instruction overlay on the scanner viewfinder." },
+  "qrScanAnother": "Scan Another",
+  "@qrScanAnother": { "description": "Button to dismiss a result and resume scanning." },
+  "qrBookingNotFound": "Booking not found",
+  "@qrBookingNotFound": { "description": "Shown when a scanned booking ID has no document." },
+  "qrUnknownTour": "Unknown Tour",
+  "@qrUnknownTour": { "description": "Fallback tour title when the tour doc is missing." },
+  "qrUnknownTraveler": "Unknown Traveler",
+  "@qrUnknownTraveler": { "description": "Fallback tourist name when the user doc is missing." },
+  "qrValidTicket": "Valid Ticket",
+  "@qrValidTicket": { "description": "Validity badge for a confirmed, not-yet-checked-in ticket." },
+  "qrInvalidTicket": "Invalid Ticket ({status})",
+  "@qrInvalidTicket": {
+    "description": "Validity badge for a ticket in an invalid status (shown uppercased).",
+    "placeholders": { "status": { "type": "String" } }
+  },
+  "qrAllCheckedIn": "All Tickets Checked In",
+  "@qrAllCheckedIn": { "description": "Validity badge when every ticket on the booking is scanned." },
+  "qrPartiallyCheckedIn": "Partially Checked In ({checked}/{total})",
+  "@qrPartiallyCheckedIn": {
+    "description": "Validity badge when some but not all tickets are checked in.",
+    "placeholders": { "checked": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "qrRowTour": "Tour",
+  "@qrRowTour": { "description": "Booking-sheet row label: tour name." },
+  "qrRowDate": "Date",
+  "@qrRowDate": { "description": "Booking-sheet row label: tour date." },
+  "qrRowTickets": "Tickets",
+  "@qrRowTickets": { "description": "Booking-sheet row label: ticket count." },
+  "qrRowAmount": "Amount",
+  "@qrRowAmount": { "description": "Booking-sheet row label: amount paid." },
+  "qrRowBookingId": "Booking ID",
+  "@qrRowBookingId": { "description": "Booking-sheet row label: short booking reference." },
+  "qrTicketsCount": "{count, plural, =1{1 ticket} other{{count} tickets}}",
+  "@qrTicketsCount": {
+    "description": "Ticket quantity in the booking sheet.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "qrCheckedInCount": "{count} checked in",
+  "@qrCheckedInCount": {
+    "description": "Suffix on the tickets row showing how many are already checked in.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "qrCheckInHowMany": "Check in how many?",
+  "@qrCheckInHowMany": { "description": "Prompt above the partial check-in stepper." },
+  "qrCheckInTourist": "Check In Tourist",
+  "@qrCheckInTourist": { "description": "Check-in button for a single-ticket booking." },
+  "qrCheckInRemaining": "Check In {count} of {remaining} Remaining",
+  "@qrCheckInRemaining": {
+    "description": "Check-in button for a multi-ticket booking with a chosen quantity.",
+    "placeholders": { "count": { "type": "int" }, "remaining": { "type": "int" } }
+  },
+  "qrAllTicketsCheckedIn": "{count, plural, =1{Ticket checked in!} other{All {count} tickets checked in!}}",
+  "@qrAllTicketsCheckedIn": {
+    "description": "Success message when the booking becomes fully checked in.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "qrCheckedInResult": "{count, plural, =1{1 ticket checked in.} other{{count} tickets checked in.}}\n{remaining} remaining.",
+  "@qrCheckedInResult": {
+    "description": "Success message after a partial check-in, with the number still remaining.",
+    "placeholders": { "count": { "type": "int" }, "remaining": { "type": "int" } }
+  },
+
+  "commonNo": "No",
+  "@commonNo": { "description": "Generic No button." },
+
+  "attendeesTitle": "Attendees",
+  "@attendeesTitle": { "description": "App bar title of the tour attendees screen." },
+  "attendeesError": "Error loading attendees",
+  "@attendeesError": { "description": "Shown when the attendees stream errors." },
+  "attendeesIndexHint": "A Firestore index may be needed.\nCheck debug console for the link.",
+  "@attendeesIndexHint": { "description": "Hint under the attendees error about a missing Firestore index." },
+  "attendeesEmpty": "No bookings yet",
+  "@attendeesEmpty": { "description": "Empty state title when a tour has no bookings." },
+  "attendeesEmptySub": "When travelers book this tour,\nthey'll appear here.",
+  "@attendeesEmptySub": { "description": "Empty state subtitle for the attendees list." },
+  "attendeesStatConfirmed": "Confirmed",
+  "@attendeesStatConfirmed": { "description": "Summary stat label: confirmed bookings." },
+  "attendeesStatCancelled": "Cancelled",
+  "@attendeesStatCancelled": { "description": "Summary stat label: cancelled bookings." },
+  "attendeesStatTotal": "Total",
+  "@attendeesStatTotal": { "description": "Summary stat label: total bookings." },
+  "attendeesSectionConfirmed": "Confirmed ({count})",
+  "@attendeesSectionConfirmed": {
+    "description": "Section header above confirmed attendees.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "attendeesSectionCancelled": "Cancelled ({count})",
+  "@attendeesSectionCancelled": {
+    "description": "Section header above cancelled attendees.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "attendeesUnknownUser": "Unknown User",
+  "@attendeesUnknownUser": { "description": "Fallback name when the attendee's user doc is missing." },
+  "attendeesPaid": "PAID",
+  "@attendeesPaid": { "description": "Payment-status badge: paid." },
+  "attendeesPending": "PENDING",
+  "@attendeesPending": { "description": "Payment-status badge: pending." },
+  "attendeesCall": "Call",
+  "@attendeesCall": { "description": "Action button: call the attendee." },
+  "attendeesWhatsApp": "WhatsApp",
+  "@attendeesWhatsApp": { "description": "Action button: message the attendee on WhatsApp." },
+  "attendeesEmail": "Email",
+  "@attendeesEmail": { "description": "Action button: email the attendee." },
+  "attendeesCancelBooking": "Cancel Booking",
+  "@attendeesCancelBooking": { "description": "Title/confirm button for the cancel-booking dialog." },
+  "attendeesCancelBody": "Are you sure you want to cancel this booking? The traveler will be notified.",
+  "@attendeesCancelBody": { "description": "Body of the cancel-booking confirmation dialog." },
+
+  "guideDashTitle": "Guide Dashboard",
+  "@guideDashTitle": { "description": "App bar title of the guide dashboard." },
+  "guideDashStopSharing": "Stop sharing live location",
+  "@guideDashStopSharing": { "description": "Tooltip when live location sharing is on." },
+  "guideDashShareLocation": "Share live location with tourists",
+  "@guideDashShareLocation": { "description": "Tooltip when live location sharing is off." },
+  "guideDashScanTicket": "Scan Ticket",
+  "@guideDashScanTicket": { "description": "Tooltip for the QR scanner action." },
+  "guideDashNoTours": "No tours yet",
+  "@guideDashNoTours": { "description": "Empty state title when the guide has no tours." },
+  "guideDashCreateFirst": "Create your first tour!",
+  "@guideDashCreateFirst": { "description": "Empty state subtitle prompting tour creation." },
+  "guideDashYourTours": "Your Tours ({count})",
+  "@guideDashYourTours": {
+    "description": "Section header above the guide's tour list.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "guideDashCreateTour": "Create Tour",
+  "@guideDashCreateTour": { "description": "Floating action button to create a new tour." },
+  "guideDashEarningsError": "Could not load earnings.\nCheck your connection and try again.",
+  "@guideDashEarningsError": { "description": "Error shown when the earnings summary fails to load." },
+  "guideDashStatTours": "Tours",
+  "@guideDashStatTours": { "description": "Earnings summary stat: number of tours." },
+  "guideDashStatBookings": "Bookings",
+  "@guideDashStatBookings": { "description": "Earnings summary stat: number of bookings." },
+  "guideDashStatRevenue": "Revenue",
+  "@guideDashStatRevenue": { "description": "Earnings summary stat: total revenue." },
+  "guideDashMax": "{count} max",
+  "@guideDashMax": {
+    "description": "Max-attendees chip on a guide tour card.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "guideDashBookingsError": "Could not load bookings.",
+  "@guideDashBookingsError": { "description": "Error shown when a tour's booking count fails to load." },
+  "guideDashConfirmedBookings": "📌 {count, plural, =1{1 confirmed booking} other{{count} confirmed bookings}}",
+  "@guideDashConfirmedBookings": {
+    "description": "Confirmed-bookings badge on a guide tour card.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "guideDashView": "View",
+  "@guideDashView": { "description": "Tour card action: view the tour." },
+  "guideDashDeleteTitle": "Delete Tour",
+  "@guideDashDeleteTitle": { "description": "Title of the delete-tour confirmation dialog." },
+  "guideDashDeleteBody": "Are you sure you want to delete \"{title}\"? This cannot be undone.",
+  "@guideDashDeleteBody": {
+    "description": "Body of the delete-tour confirmation dialog.",
+    "placeholders": { "title": { "type": "String" } }
+  },
+
+  "weekdayMon": "Mon",
+  "@weekdayMon": { "description": "Short weekday name: Monday." },
+  "weekdayTue": "Tue",
+  "@weekdayTue": { "description": "Short weekday name: Tuesday." },
+  "weekdayWed": "Wed",
+  "@weekdayWed": { "description": "Short weekday name: Wednesday." },
+  "weekdayThu": "Thu",
+  "@weekdayThu": { "description": "Short weekday name: Thursday." },
+  "weekdayFri": "Fri",
+  "@weekdayFri": { "description": "Short weekday name: Friday." },
+  "weekdaySat": "Sat",
+  "@weekdaySat": { "description": "Short weekday name: Saturday." },
+  "weekdaySun": "Sun",
+  "@weekdaySun": { "description": "Short weekday name: Sunday." },
+
+  "createEditTitle": "Edit Tour",
+  "@createEditTitle": { "description": "App bar title when editing a tour." },
+  "createNewTitle": "Create New Tour",
+  "@createNewTitle": { "description": "App bar title when creating a tour." },
+  "createUpdatedToast": "Tour updated!",
+  "@createUpdatedToast": { "description": "Toast after a tour is updated." },
+  "createCreatedToast": "Tour created successfully!",
+  "@createCreatedToast": { "description": "Toast after a tour is created." },
+  "createRequired": "Required",
+  "@createRequired": { "description": "Validation message for an empty required field." },
+  "createFieldTitle": "Tour Title",
+  "@createFieldTitle": { "description": "Form field label: tour title." },
+  "createFieldDesc": "Description",
+  "@createFieldDesc": { "description": "Form field label: tour description." },
+  "createDestinationsLabel": "Destinations (Max 5)",
+  "@createDestinationsLabel": { "description": "Section label above the destinations list." },
+  "createSearchDestination": "Search destination...",
+  "@createSearchDestination": { "description": "Hint in the destination autocomplete field." },
+  "createFieldPrice": "Price (EGP)",
+  "@createFieldPrice": { "description": "Form field label: tour price in EGP." },
+  "createFieldMaxAttendees": "Max Attendees",
+  "@createFieldMaxAttendees": { "description": "Form field label: maximum attendees." },
+  "createMeetingLocation": "Meeting Location",
+  "@createMeetingLocation": { "description": "Section header above the selected meeting location." },
+  "createSelectMeetingLocation": "Select Meeting Location",
+  "@createSelectMeetingLocation": { "description": "Tile prompting the guide to pick a meeting location." },
+  "createSelectMeetingTime": "Select Meeting Time",
+  "@createSelectMeetingTime": { "description": "Tile prompting the guide to pick a meeting time." },
+  "createMeetingTimePrefix": "Meeting Time: {time}",
+  "@createMeetingTimePrefix": {
+    "description": "Tile showing the chosen meeting time.",
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "createScheduleFreq": "Schedule Frequency (Days)",
+  "@createScheduleFreq": { "description": "Section label above the weekday chips." },
+  "createImages": "Tour Images",
+  "@createImages": { "description": "Section label above the image picker (create)." },
+  "createEditImages": "Edit Tour Images",
+  "@createEditImages": { "description": "Section label above the image picker (edit)." },
+  "createSaveChanges": "Save Changes",
+  "@createSaveChanges": { "description": "Submit button when editing a tour." },
+  "createSelectTime": "Please select a meeting time.",
+  "@createSelectTime": { "description": "Validation snackbar: no meeting time chosen." },
+  "createSelectImage": "Please select at least one image.",
+  "@createSelectImage": { "description": "Validation snackbar: no image selected." },
+  "createSelectLocation": "Please select a meeting location on the map.",
+  "@createSelectLocation": { "description": "Validation snackbar: no meeting location chosen." },
+  "createAddDestination": "Please add at least one destination.",
+  "@createAddDestination": { "description": "Validation snackbar: no destination added." },
+  "createPriceNegative": "Price cannot be negative.",
+  "@createPriceNegative": { "description": "Validation snackbar: negative price." },
+  "createAttendeesZero": "Max attendees must be greater than zero.",
+  "@createAttendeesZero": { "description": "Validation snackbar: non-positive max attendees." },
+
+  "toursDiscoverTitle": "Discover Tours",
+  "@toursDiscoverTitle": { "description": "App bar title of the tours explorer." },
+  "toursSearchHint": "Search destinations, guides...",
+  "@toursSearchHint": { "description": "Hint in the tours explorer search field." },
+  "toursFilters": "Filters",
+  "@toursFilters": { "description": "Title of the tours filter sheet." },
+  "toursPriceRange": "Price Range",
+  "@toursPriceRange": { "description": "Filter section: price range." },
+  "toursMinRating": "Minimum Rating",
+  "@toursMinRating": { "description": "Filter section: minimum rating." },
+  "toursStarsPlus": "{count}+ stars",
+  "@toursStarsPlus": {
+    "description": "Label next to the star rating filter.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "toursFrequency": "Frequency",
+  "@toursFrequency": { "description": "Filter section: tour frequency." },
+  "toursFreqDaily": "Daily",
+  "@toursFreqDaily": { "description": "Frequency option: daily." },
+  "toursFreqWeekly": "Weekly",
+  "@toursFreqWeekly": { "description": "Frequency option: weekly." },
+  "toursFreqWeekends": "Weekends",
+  "@toursFreqWeekends": { "description": "Frequency option: weekends." },
+  "toursFreqOneTime": "One-Time",
+  "@toursFreqOneTime": { "description": "Frequency option: one-time." },
+  "toursApplyFilters": "Apply Filters",
+  "@toursApplyFilters": { "description": "Button to apply the selected filters." },
+  "toursSortNewest": "Newest First",
+  "@toursSortNewest": { "description": "Sort menu item: newest first." },
+  "toursSortCheapest": "Cheapest First",
+  "@toursSortCheapest": { "description": "Sort menu item: cheapest first." },
+  "toursSortPriciest": "Priciest First",
+  "@toursSortPriciest": { "description": "Sort menu item: priciest first." },
+  "toursSortHighestRated": "Highest Rated",
+  "@toursSortHighestRated": { "description": "Sort menu item: highest rated." },
+  "toursSortMostPopular": "Most Popular",
+  "@toursSortMostPopular": { "description": "Sort menu item: most popular." },
+  "toursSortLabelNewest": "Newest",
+  "@toursSortLabelNewest": { "description": "Sort chip label: newest." },
+  "toursSortLabelCheapest": "Cheapest",
+  "@toursSortLabelCheapest": { "description": "Sort chip label: cheapest." },
+  "toursSortLabelPriciest": "Priciest",
+  "@toursSortLabelPriciest": { "description": "Sort chip label: priciest." },
+  "toursSortLabelTopRated": "Top Rated",
+  "@toursSortLabelTopRated": { "description": "Sort chip label: top rated." },
+  "toursSortLabelPopular": "Popular",
+  "@toursSortLabelPopular": { "description": "Sort chip label: popular." },
+  "toursFoundCount": "{count, plural, =1{1 tour found} other{{count} tours found}}",
+  "@toursFoundCount": {
+    "description": "Results count above the tour list.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "toursLoadError": "Could not load tours.\nCheck your connection and try again.",
+  "@toursLoadError": { "description": "Error shown when the tour list fails to load." },
+  "toursEmptyTitle": "No tours found",
+  "@toursEmptyTitle": { "description": "Empty state title for the tour list." },
+  "toursEmptyFilters": "Try adjusting your filters.",
+  "@toursEmptyFilters": { "description": "Empty state subtitle when filters are active." },
+  "toursEmptySearch": "Try adjusting your search query.",
+  "@toursEmptySearch": { "description": "Empty state subtitle when only a search is active." },
+  "toursClearFilters": "Clear All Filters",
+  "@toursClearFilters": { "description": "Button to clear all active filters." },
+  "toursRecommended": "Recommended for You",
+  "@toursRecommended": { "description": "Header above the personalised tour carousel." },
+
+  "bookingCheckoutTitle": "Checkout",
+  "@bookingCheckoutTitle": { "description": "App bar title of the checkout screen." },
+  "bookingLoginRequired": "Please log in to book.",
+  "@bookingLoginRequired": { "description": "Snackbar shown when an unauthenticated user tries to book." },
+  "bookingInvalidWallet": "Please enter a valid Egyptian mobile number (e.g. 01XXXXXXXXX).",
+  "@bookingInvalidWallet": { "description": "Validation snackbar for an invalid wallet phone number." },
+  "bookingFullyBooked": "Sorry, this tour is now fully booked.",
+  "@bookingFullyBooked": { "description": "Snackbar when no seats remain." },
+  "bookingSeatsRemaining": "{count, plural, =1{Only 1 seat remaining. Please reduce your selection.} other{Only {count} seats remaining. Please reduce your selection.}}",
+  "@bookingSeatsRemaining": {
+    "description": "Snackbar when fewer seats remain than requested.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "bookingPaymentFailed": "Payment was cancelled or failed.",
+  "@bookingPaymentFailed": { "description": "Snackbar when a card payment fails." },
+  "bookingWalletFailed": "Wallet payment failed.",
+  "@bookingWalletFailed": { "description": "Snackbar when a wallet payment fails." },
+  "bookingKioskSoon": "Kiosk payment coming soon!",
+  "@bookingKioskSoon": { "description": "Snackbar for the not-yet-available kiosk option." },
+  "bookingErrorPrefix": "Booking Error: {message}",
+  "@bookingErrorPrefix": {
+    "description": "Snackbar prefix for a booking-creation failure.",
+    "placeholders": { "message": { "type": "String" } }
+  },
+  "bookingConfirmedTitle": "Booking Confirmed!",
+  "@bookingConfirmedTitle": { "description": "Title of the booking-success dialog." },
+  "bookingReservedBody": "Your spot on \"{title}\" is reserved!",
+  "@bookingReservedBody": {
+    "description": "Body of the booking-success dialog.",
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "bookingPaidSuccess": "{amount} paid successfully.",
+  "@bookingPaidSuccess": {
+    "description": "Amount-paid line in the booking-success dialog.",
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "bookingViewMyBookings": "View My Bookings",
+  "@bookingViewMyBookings": { "description": "Button to open booking history after success." },
+  "bookingBackHome": "Back to Home",
+  "@bookingBackHome": { "description": "Button to return to the home screen after success." },
+  "bookingOrderSummary": "Order Summary",
+  "@bookingOrderSummary": { "description": "Section title: order summary." },
+  "bookingGuests": "Guests",
+  "@bookingGuests": { "description": "Quantity selector label." },
+  "bookingPaymentMethod": "Payment Method",
+  "@bookingPaymentMethod": { "description": "Section title: payment method." },
+  "bookingPayCardTitle": "Credit / Debit Card",
+  "@bookingPayCardTitle": { "description": "Payment option title: card." },
+  "bookingPayCardSub": "Visa, Mastercard, Meeza",
+  "@bookingPayCardSub": { "description": "Payment option subtitle: card networks." },
+  "bookingPayWalletTitle": "Mobile Wallet",
+  "@bookingPayWalletTitle": { "description": "Payment option title: mobile wallet." },
+  "bookingPayWalletSub": "Vodafone Cash, Orange, Etisalat",
+  "@bookingPayWalletSub": { "description": "Payment option subtitle: wallet providers." },
+  "bookingPayApplePayTitle": "Apple Pay",
+  "@bookingPayApplePayTitle": { "description": "Payment option title: Apple Pay." },
+  "bookingPayApplePaySub": "iOS only • Coming soon",
+  "@bookingPayApplePaySub": { "description": "Payment option subtitle: Apple Pay status." },
+  "bookingPayKioskTitle": "Fawry / Kiosk",
+  "@bookingPayKioskTitle": { "description": "Payment option title: Fawry/kiosk." },
+  "bookingPayKioskSub": "Pay at any 172,000+ Fawry outlets",
+  "@bookingPayKioskSub": { "description": "Payment option subtitle: Fawry outlets." },
+  "bookingWalletPhoneLabel": "Wallet Phone Number",
+  "@bookingWalletPhoneLabel": { "description": "Label for the wallet phone-number field." },
+  "bookingSecurityNote": "Payments are processed securely by Paymob. Your card details are never stored locally.",
+  "@bookingSecurityNote": { "description": "Security reassurance under the payment options." },
+  "bookingBecauseBooked": "Because you booked this, you might enjoy",
+  "@bookingBecauseBooked": { "description": "Header above the similar-tours carousel on checkout." },
+  "bookingProcessing": "Processing payment...",
+  "@bookingProcessing": { "description": "Loading overlay text during payment." },
+  "bookingTotal": "Total",
+  "@bookingTotal": { "description": "Total label in the checkout bottom bar." },
+  "bookingChargedNote": "Charged as EGP {amount} via Paymob",
+  "@bookingChargedNote": {
+    "description": "Note shown when paying in a non-EGP display currency.",
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "bookingPaySecurely": "Pay Securely",
+  "@bookingPaySecurely": { "description": "Primary checkout button." },
+
+  "tourDetailReport": "Report Tour",
+  "@tourDetailReport": { "description": "Popup menu item to report a tour." },
+  "tourDetailNew": "New",
+  "@tourDetailNew": { "description": "Rating label for a tour with no reviews." },
+  "tourDetailDateTime": "Date & Time",
+  "@tourDetailDateTime": { "description": "Info row label: tour date and time." },
+  "tourDetailPeople": "{count} people",
+  "@tourDetailPeople": {
+    "description": "Max-attendees value in the info grid.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "tourDetailLocation": "Location",
+  "@tourDetailLocation": { "description": "Info row label: meeting location." },
+  "tourDetailAbout": "About This Tour",
+  "@tourDetailAbout": { "description": "Section header: tour description." },
+  "tourDetailDestinations": "Destinations",
+  "@tourDetailDestinations": { "description": "Section header: destinations chips." },
+  "tourDetailMeetupRoute": "Meetup Location & Route",
+  "@tourDetailMeetupRoute": { "description": "Section header: meetup map." },
+  "tourDetailTapExpand": "Tap to expand",
+  "@tourDetailTapExpand": { "description": "Hint overlay on the map preview." },
+  "tourDetailSchedule": "Schedule",
+  "@tourDetailSchedule": { "description": "Section header: schedule." },
+  "tourDetailGallery": "Gallery",
+  "@tourDetailGallery": { "description": "Section header: image gallery." },
+  "tourDetailYourGuide": "Your Guide",
+  "@tourDetailYourGuide": { "description": "Section header / fallback name for the guide." },
+  "tourDetailYouMightEnjoy": "You might also enjoy",
+  "@tourDetailYouMightEnjoy": { "description": "Header above the similar-tours carousel." },
+  "tourDetailYourTour": "This is your tour",
+  "@tourDetailYourTour": { "description": "Disabled bottom button when the viewer owns the tour." },
+  "tourDetailBookNow": "Book Now",
+  "@tourDetailBookNow": { "description": "Primary booking button." },
+  "tourDetailOneTime": "This is a one-time tour.",
+  "@tourDetailOneTime": { "description": "Schedule text for a one-time tour." },
+  "tourDetailGuideNotFound": "Guide not found",
+  "@tourDetailGuideNotFound": { "description": "Fallback when the guide doc is missing." },
+  "tourDetailGuideRating": "{rating} ({count} reviews)",
+  "@tourDetailGuideRating": {
+    "description": "Guide rating subtitle.",
+    "placeholders": { "rating": { "type": "String" }, "count": { "type": "int" } }
+  },
+  "tourDetailReviews": "Reviews",
+  "@tourDetailReviews": { "description": "Reviews section header." },
+  "tourDetailWriteReview": "Write a Review",
+  "@tourDetailWriteReview": { "description": "Button/dialog title to add a review." },
+  "tourDetailReviewsError": "Error loading reviews",
+  "@tourDetailReviewsError": { "description": "Shown when the reviews stream errors." },
+  "tourDetailNoReviews": "No reviews yet. Be the first to review!",
+  "@tourDetailNoReviews": { "description": "Empty state for the reviews list." },
+  "tourDetailShowMore": "Show more reviews",
+  "@tourDetailShowMore": { "description": "Pagination button for reviews." },
+  "tourDetailAnonymous": "Anonymous",
+  "@tourDetailAnonymous": { "description": "Fallback reviewer name." },
+  "tourDetailEditReview": "Edit Review",
+  "@tourDetailEditReview": { "description": "Menu item / dialog title to edit a review." },
+  "tourDetailDeleteReview": "Delete Review",
+  "@tourDetailDeleteReview": { "description": "Menu item / dialog title to delete a review." },
+  "tourDetailReportReview": "Report Review",
+  "@tourDetailReportReview": { "description": "Menu item to report a review." },
+  "tourDetailUpdateHint": "Update your experience...",
+  "@tourDetailUpdateHint": { "description": "Hint in the edit-review text field." },
+  "tourDetailUpdate": "Update",
+  "@tourDetailUpdate": { "description": "Confirm button in the edit-review dialog." },
+  "tourDetailDeleteReviewBody": "Are you sure you want to delete your review? This action cannot be undone.",
+  "@tourDetailDeleteReviewBody": { "description": "Body of the delete-review confirmation dialog." },
+  "tourDetailShareHint": "Share your experience...",
+  "@tourDetailShareHint": { "description": "Hint in the add-review text field." },
+  "tourDetailSubmit": "Submit",
+  "@tourDetailSubmit": { "description": "Confirm button in the add-review dialog." },
+
+  "commonLoadMore": "Load more",
+  "@commonLoadMore": { "description": "Generic pagination button." },
+
+  "bookingStatusConfirmed": "CONFIRMED",
+  "@bookingStatusConfirmed": { "description": "Booking status badge: confirmed." },
+  "bookingStatusCancelled": "CANCELLED",
+  "@bookingStatusCancelled": { "description": "Booking status badge: cancelled." },
+  "bookingStatusPending": "PENDING",
+  "@bookingStatusPending": { "description": "Booking status badge: pending." },
+  "bookingStatusCompleted": "COMPLETED",
+  "@bookingStatusCompleted": { "description": "Booking status badge: completed." },
+  "bookingStatusCheckedIn": "CHECKED IN",
+  "@bookingStatusCheckedIn": { "description": "Booking status badge: checked in." },
+  "bookingStatusPartial": "PARTIALLY CHECKED IN",
+  "@bookingStatusPartial": { "description": "Booking status badge: partially checked in." },
+
+  "bookingHistTitle": "My Bookings",
+  "@bookingHistTitle": { "description": "App bar title of the booking history screen." },
+  "bookingHistLoginRequired": "Please log in",
+  "@bookingHistLoginRequired": { "description": "Shown when no user is signed in." },
+  "bookingHistUpcoming": "Upcoming",
+  "@bookingHistUpcoming": { "description": "Tab label: upcoming bookings." },
+  "bookingHistPast": "Past",
+  "@bookingHistPast": { "description": "Tab label: past bookings." },
+  "bookingHistLoadError": "Could not load bookings.\nCheck your connection and try again.",
+  "@bookingHistLoadError": { "description": "Error shown when the bookings stream fails." },
+  "bookingHistNoUpcoming": "No upcoming tours",
+  "@bookingHistNoUpcoming": { "description": "Empty state for the upcoming tab." },
+  "bookingHistNoPast": "No past tours",
+  "@bookingHistNoPast": { "description": "Empty state for the past tab." },
+  "bookingHistEmptyHint": "Explore tours and book your next adventure!",
+  "@bookingHistEmptyHint": { "description": "Empty-state hint on the upcoming tab." },
+  "bookingHistTbd": "TBD",
+  "@bookingHistTbd": { "description": "Placeholder when a booking has no date." },
+  "bookingHistCountdownDHM": "{days, plural, =1{1 day} other{{days} days}} {hours}h {minutes}m",
+  "@bookingHistCountdownDHM": {
+    "description": "Countdown when days remain.",
+    "placeholders": { "days": { "type": "int" }, "hours": { "type": "int" }, "minutes": { "type": "int" } }
+  },
+  "bookingHistCountdownHMS": "{hours}h {minutes}m {seconds}s",
+  "@bookingHistCountdownHMS": {
+    "description": "Countdown when only hours remain.",
+    "placeholders": { "hours": { "type": "int" }, "minutes": { "type": "int" }, "seconds": { "type": "int" } }
+  },
+  "bookingHistCountdownMS": "{minutes}m {seconds}s",
+  "@bookingHistCountdownMS": {
+    "description": "Countdown when under an hour remains.",
+    "placeholders": { "minutes": { "type": "int" }, "seconds": { "type": "int" } }
+  },
+  "bookingHistStartsIn": "Starts in {time}",
+  "@bookingHistStartsIn": {
+    "description": "Countdown banner wrapper.",
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "bookingHistCancelBody": "Are you sure you want to cancel this booking?",
+  "@bookingHistCancelBody": { "description": "Body of the tourist-side cancel-booking dialog." },
+  "bookingHistYesCancel": "Yes, Cancel",
+  "@bookingHistYesCancel": { "description": "Confirm button in the cancel-booking dialog." },
+  "bookingHistCancelled": "Booking cancelled",
+  "@bookingHistCancelled": { "description": "Snackbar after a booking is cancelled." },
+  "bookingHistReviewSubmitted": "Review submitted!",
+  "@bookingHistReviewSubmitted": { "description": "Snackbar after a review is submitted." },
+  "bookingHistNoPhone": "No phone number on file",
+  "@bookingHistNoPhone": { "description": "Snackbar when the guide has no phone number." },
+  "bookingHistNoEmail": "No email on file",
+  "@bookingHistNoEmail": { "description": "Snackbar when the guide has no email." },
+  "bookingHistCantOpenPhone": "Could not open phone app",
+  "@bookingHistCantOpenPhone": { "description": "Snackbar when the dialer can't be launched." },
+  "bookingHistCantOpenEmail": "Could not open email app",
+  "@bookingHistCantOpenEmail": { "description": "Snackbar when the email app can't be launched." },
+  "bookingHistLeaveReview": "Leave a Review",
+  "@bookingHistLeaveReview": { "description": "Sheet title / button to leave a review." },
+  "bookingHistSubmitReview": "Submit Review",
+  "@bookingHistSubmitReview": { "description": "Submit button in the leave-review sheet." },
+  "bookingHistViewQr": "View QR Ticket",
+  "@bookingHistViewQr": { "description": "Expander to show the QR ticket." },
+  "bookingHistBookingId": "Booking ID: {id}",
+  "@bookingHistBookingId": {
+    "description": "Short booking reference under the QR code.",
+    "placeholders": { "id": { "type": "String" } }
+  },
+  "bookingHistShowGuide": "Show this to your guide upon arrival",
+  "@bookingHistShowGuide": { "description": "Hint under the QR ticket." },
+  "bookingHistViewMeeting": "View Meeting Point",
+  "@bookingHistViewMeeting": { "description": "Tile title to open the meeting point in the map." },
+  "bookingHistOpensMap": "Opens in Map tab",
+  "@bookingHistOpensMap": { "description": "Tile subtitle for the meeting-point action." },
+  "bookingHistGuide": "Guide",
+  "@bookingHistGuide": { "description": "Fallback guide name for the live-tracking sheet." },
+  "bookingHistTrackGuide": "Track Guide Live",
+  "@bookingHistTrackGuide": { "description": "Tile title for live guide tracking." },
+  "bookingHistTrackGuideSub": "See your guide's real-time location",
+  "@bookingHistTrackGuideSub": { "description": "Tile subtitle for live guide tracking." },
+  "bookingHistTotalPaid": "Total paid",
+  "@bookingHistTotalPaid": { "description": "Info row label: total paid." },
+  "bookingHistPaymentRef": "Payment ref",
+  "@bookingHistPaymentRef": { "description": "Info row label: payment reference." },
+  "bookingHistAddCalendar": "Add to Calendar",
+  "@bookingHistAddCalendar": { "description": "Action chip: add booking to calendar." },
+  "bookingHistShareTicket": "Share Ticket",
+  "@bookingHistShareTicket": { "description": "Action chip: share the ticket." },
+  "bookingHistCallGuide": "Call Guide",
+  "@bookingHistCallGuide": { "description": "Action chip: call the guide." },
+  "bookingHistEmailGuide": "Email Guide",
+  "@bookingHistEmailGuide": { "description": "Action chip: email the guide." },
+  "bookingHistRebook": "Re-book This Tour",
+  "@bookingHistRebook": { "description": "Button to book the tour again." },
+  "bookingHistNewGuide": "New Guide",
+  "@bookingHistNewGuide": { "description": "Subtitle for a guide with no reviews." },
+  "bookingHistWeatherDay": "Weather on tour day",
+  "@bookingHistWeatherDay": { "description": "Label above the tour-day weather." },
+  "bookingHistLiveLocation": "{name} – Live Location",
+  "@bookingHistLiveLocation": {
+    "description": "Title of the live guide-location sheet.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "bookingHistWaitingLocation": "Waiting for guide to share their location…",
+  "@bookingHistWaitingLocation": { "description": "Overlay while the guide hasn't shared location yet." },
+  "bookingHistCalTitle": "Lost in Egypt: {title}",
+  "@bookingHistCalTitle": {
+    "description": "Calendar event title.",
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "bookingHistCalDesc": "Meeting point: {location}\nBooking ID: {id}",
+  "@bookingHistCalDesc": {
+    "description": "Calendar event description.",
+    "placeholders": { "location": { "type": "String" }, "id": { "type": "String" } }
+  },
+  "bookingHistShareText": "🏺 Lost in Egypt – Tour Ticket\n\nTour: {title}\nDate: {date}\nMeeting point: {location}\nTickets: {tickets}\nBooking ref: {ref}\n\nSee you there!",
+  "@bookingHistShareText": {
+    "description": "Shared ticket text (native share sheet).",
+    "placeholders": {
+      "title": { "type": "String" },
+      "date": { "type": "String" },
+      "location": { "type": "String" },
+      "tickets": { "type": "int" },
+      "ref": { "type": "String" }
+    }
+  },
+
+  "cameraLens": "Lens",
+  "@cameraLens": { "description": "Camera header in landmark-lens mode." },
+  "cameraTranslation": "Translation",
+  "@cameraTranslation": { "description": "Camera header in AR-translation mode." },
+  "cameraTranslationResult": "Translation Result",
+  "@cameraTranslationResult": { "description": "Header of the translation results panel." },
+  "cameraNoLandmark": "Could not identify any landmark",
+  "@cameraNoLandmark": { "description": "Shown when no landmark is recognised." },
+  "cameraNotInDb": "We found \"{label}\" but it's not in our database",
+  "@cameraNotInDb": {
+    "description": "Shown when a landmark is recognised but missing from the database.",
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "cameraConfigError": "Configuration Error",
+  "@cameraConfigError": { "description": "Error title for an API-key/configuration problem." },
+  "cameraErrorTitle": "Error",
+  "@cameraErrorTitle": { "description": "Generic camera error title." },
+  "cameraLandmarkIdentified": "Landmark Identified",
+  "@cameraLandmarkIdentified": { "description": "Badge label in the result sheet." },
+  "cameraTapForecast": "{condition} · Tap for forecast",
+  "@cameraTapForecast": {
+    "description": "Weather advisory chip in the landmark result sheet.",
+    "placeholders": { "condition": { "type": "String" } }
+  },
+  "cameraStatusCapturing": "Capturing...",
+  "@cameraStatusCapturing": { "description": "Analyzing overlay status while taking the photo." },
+  "cameraStatusIdentifying": "Identifying landmark...",
+  "@cameraStatusIdentifying": { "description": "Analyzing overlay status while the landmark is identified." },
+  "cameraStatusTranslating": "Translating...",
+  "@cameraStatusTranslating": { "description": "Analyzing overlay status while text is translated." },
+  "cameraStatusDownloadingModel": "Downloading {lang} model (this may take a minute)...",
+  "@cameraStatusDownloadingModel": {
+    "description": "Analyzing overlay status while an ML-Kit language model downloads. {lang} is the language name (kept English).",
+    "placeholders": { "lang": { "type": "String" } }
+  },
+  "cameraErrNoCameras": "No cameras available on this device",
+  "@cameraErrNoCameras": { "description": "Camera error: device has no cameras." },
+  "cameraErrInitFailed": "Failed to initialize camera. Please restart the app.",
+  "@cameraErrInitFailed": { "description": "Camera error: controller failed to initialize." },
+  "cameraErrTranslationModels": "Could not download translation models. Please check your internet connection.",
+  "@cameraErrTranslationModels": { "description": "Camera error: translation models could not be downloaded." },
+  "cameraErrLanguageModel": "Failed to download language model. Please check your internet connection.",
+  "@cameraErrLanguageModel": { "description": "Camera error: a language model failed to download." },
+  "cameraErrNoText": "No text found in the selected image.",
+  "@cameraErrNoText": { "description": "Camera error: no recognizable text in the image." },
+  "cameraReadMore": "Read More",
+  "@cameraReadMore": { "description": "Expand the landmark description." },
+  "cameraReadLess": "Read Less",
+  "@cameraReadLess": { "description": "Collapse the landmark description." },
+  "cameraTellStory": "Tell me a story",
+  "@cameraTellStory": { "description": "Button to generate an AI story for the landmark." },
+  "cameraConsulting": "Consulting history...",
+  "@cameraConsulting": { "description": "Loading label while the AI story is generated." },
+  "cameraListen": "Listen",
+  "@cameraListen": { "description": "Play the narrated story." },
+  "cameraPause": "Pause",
+  "@cameraPause": { "description": "Pause the narration." },
+  "cameraResume": "Resume",
+  "@cameraResume": { "description": "Resume the narration." },
+  "cameraGenerating": "Generating...",
+  "@cameraGenerating": { "description": "Loading label while narration audio is generated." },
+  "cameraReplay": "Replay from start",
+  "@cameraReplay": { "description": "Tooltip to replay the narration from the beginning." },
+  "cameraAudioGenFailed": "Could not generate audio. Please try again.",
+  "@cameraAudioGenFailed": { "description": "Snackbar when TTS audio generation fails." },
+  "cameraAudioPlayFailed": "Audio playback failed. Please try again.",
+  "@cameraAudioPlayFailed": { "description": "Snackbar when narration playback fails." },
+  "cameraShowOnMap": "Show on Map",
+  "@cameraShowOnMap": { "description": "Open the identified landmark in the map tab." },
+  "cameraDone": "Done",
+  "@cameraDone": { "description": "Dismiss the landmark result sheet." },
+  "cameraNearby": "You might also like nearby",
+  "@cameraNearby": { "description": "Header above nearby-landmark suggestions." },
+  "sphinxRiddleTitle": "The Sphinx's Riddle 🦁",
+  "@sphinxRiddleTitle": { "description": "Title of the Sphinx riddle easter-egg dialog." },
+  "sphinxPassTitle": "You May Pass 🦁",
+  "@sphinxPassTitle": { "description": "Sphinx dialog title on a correct answer." },
+  "sphinxFailTitle": "Incorrect, Mortal 🌪️",
+  "@sphinxFailTitle": { "description": "Sphinx dialog title on a wrong answer." },
+  "sphinxRiddleBody": "\"What walks on four legs in the morning, two at noon, and three in the evening?\"",
+  "@sphinxRiddleBody": { "description": "The Sphinx's riddle question." },
+  "sphinxPassBody": "Your wisdom equals the ancients. The Sphinx permits your journey to continue.",
+  "@sphinxPassBody": { "description": "Sphinx dialog body on a correct answer." },
+  "sphinxFailBody": "The sands of time will swallow your ignorance. Return when you have learned.",
+  "@sphinxFailBody": { "description": "Sphinx dialog body on a wrong answer." },
+  "sphinxAnswerAnimal": "An Animal",
+  "@sphinxAnswerAnimal": { "description": "Wrong answer option in the Sphinx riddle." },
+  "sphinxAnswerHuman": "A Human",
+  "@sphinxAnswerHuman": { "description": "Correct answer option in the Sphinx riddle." },
+
+  "tripPlannerTitle": "Trip Planner",
+  "@tripPlannerTitle": { "description": "Title of the map trip-planner sheet." },
+  "tripPlannerStart": "Start Trip",
+  "@tripPlannerStart": { "description": "Button to start the planned trip." },
+  "tripPlannerOptimising": "Optimising...",
+  "@tripPlannerOptimising": { "description": "Loading label while the route is being optimised." },
+  "tripPlannerSearchHint": "Search places to add…",
+  "@tripPlannerSearchHint": { "description": "Hint in the trip-planner search field." },
+  "tripPlannerStopsInfo": "{count, plural, =1{1 stop — route will be optimised by shortest distance} other{{count} stops — route will be optimised by shortest distance}}",
+  "@tripPlannerStopsInfo": {
+    "description": "Info chip showing how many stops are in the itinerary.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "tripPlannerEmptyTitle": "Plan your day in Egypt",
+  "@tripPlannerEmptyTitle": { "description": "Empty-state title for the trip planner." },
+  "tripPlannerEmptySub": "Search above or pick from suggestions below",
+  "@tripPlannerEmptySub": { "description": "Empty-state subtitle for the trip planner." },
+  "tripPlannerSuggested": "Suggested for you",
+  "@tripPlannerSuggested": { "description": "Header for AI suggestions when the itinerary is empty." },
+  "tripPlannerAdd": "Add",
+  "@tripPlannerAdd": { "description": "Button to add a suggested place to the itinerary." },
+
+  "placeDetailLoginToSave": "You must be logged in to save places.",
+  "@placeDetailLoginToSave": { "description": "Snackbar when an unauthenticated user tries to save a place." },
+  "placeDetailMetersAway": "{meters} m away",
+  "@placeDetailMetersAway": {
+    "description": "Distance label in metres.",
+    "placeholders": { "meters": { "type": "int" } }
+  },
+  "placeDetailKmAway": "{km} km away",
+  "@placeDetailKmAway": {
+    "description": "Distance label in kilometres (pre-formatted).",
+    "placeholders": { "km": { "type": "String" } }
+  },
+  "placeDetailTaxiFare": "~{low}–{high} EGP by taxi",
+  "@placeDetailTaxiFare": {
+    "description": "Estimated taxi fare range.",
+    "placeholders": { "low": { "type": "int" }, "high": { "type": "int" } }
+  },
+  "placeDetailOpenNow": "Open Now",
+  "@placeDetailOpenNow": { "description": "Opening-status label: open." },
+  "placeDetailClosed": "Closed",
+  "@placeDetailClosed": { "description": "Opening-status label: closed." },
+  "placeDetailClose": "Close",
+  "@placeDetailClose": { "description": "Button to collapse the place detail sheet." },
+  "placeDetailDirections": "Directions",
+  "@placeDetailDirections": { "description": "Action button: get directions." },
+  "placeDetailShare": "Share",
+  "@placeDetailShare": { "description": "Action button: share the place." },
+  "placeDetailSaved": "Saved",
+  "@placeDetailSaved": { "description": "Action button label when the place is saved." },
+  "placeDetailAbout": "About",
+  "@placeDetailAbout": { "description": "Section header: about the place." },
+  "placeDetailDefaultDesc": "Explore the ancient wonders and hidden gems of Egypt. This location offers a unique glimpse into the rich history and culture of the region.",
+  "@placeDetailDefaultDesc": { "description": "Fallback description when a place has none." },
+  "placeDetailEntryFee": "{price} EGP Entry Fee",
+  "@placeDetailEntryFee": {
+    "description": "Info tile: entry fee in EGP.",
+    "placeholders": { "price": { "type": "String" } }
+  },
+  "placeDetailReviews": "What Travelers Say",
+  "@placeDetailReviews": { "description": "Section header: reviews." },
+  "placeDetailPostedHere": "{count, plural, =1{1 traveler posted from here} other{{count} travelers posted from here}}",
+  "@placeDetailPostedHere": {
+    "description": "Community-posts count for this place.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "placeDetailSeePosts": "See Posts",
+  "@placeDetailSeePosts": { "description": "Button to open community posts from this place." },
+  "placeDetailSimilar": "Similar Places",
+  "@placeDetailSimilar": { "description": "Section header: similar places." },
+  "placeDetailCrowdQuiet": "Quiet right now",
+  "@placeDetailCrowdQuiet": { "description": "Crowd badge: low density." },
+  "placeDetailCrowdModerate": "Moderately busy",
+  "@placeDetailCrowdModerate": { "description": "Crowd badge: medium density." },
+  "placeDetailCrowdBusy": "Very busy",
+  "@placeDetailCrowdBusy": { "description": "Crowd badge: high density." },
+  "placeDetailPostsFrom": "Posts from {name}",
+  "@placeDetailPostsFrom": {
+    "description": "Title of the community-posts sheet for a place.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "placeDetailNoPosts": "No posts yet from this place.\nBe the first to share!",
+  "@placeDetailNoPosts": { "description": "Empty state for the place's community posts." },
+
+  "mapDiscovering": "Discovering Egypt...",
+  "@mapDiscovering": { "description": "Map loading overlay title." },
+  "mapLoadingNearby": "Loading places near you",
+  "@mapLoadingNearby": { "description": "Map loading overlay subtitle." },
+  "mapArrivedTitle": "You've Arrived!",
+  "@mapArrivedTitle": { "description": "Title of the navigation-arrival dialog." },
+  "mapArrivedBody": "You have arrived at {name}",
+  "@mapArrivedBody": {
+    "description": "Body of the navigation-arrival dialog.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "mapFabTrip": "Trip",
+  "@mapFabTrip": { "description": "Mini-FAB label: open the trip planner." },
+  "mapFabNearMe": "Near Me",
+  "@mapFabNearMe": { "description": "Mini-FAB label: nearby places." },
+  "mapFabSaved": "Saved",
+  "@mapFabSaved": { "description": "Mini-FAB label: saved places." },
+  "mapStopOf": "Stop {current} of {total}",
+  "@mapStopOf": {
+    "description": "Trip-progress label showing the current stop index.",
+    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "mapNextStop": "Next Stop",
+  "@mapNextStop": { "description": "Button to advance to the next trip stop." },
+  "mapTripDone": "Done! 🎉",
+  "@mapTripDone": { "description": "Button to finish a planned trip." },
+  "mapBackToTour": "Back to Tour",
+  "@mapBackToTour": { "description": "Button to return to the active solo tour." },
+  "mapFindingRoute": "Finding route...",
+  "@mapFindingRoute": { "description": "Loading label while a route is being computed." },
+  "mapEtaTotal": "{distance} · {duration} total",
+  "@mapEtaTotal": {
+    "description": "Overall route distance + duration during live navigation.",
+    "placeholders": { "distance": { "type": "String" }, "duration": { "type": "String" } }
+  },
+  "mapStepProgress": "Step {current}/{total}",
+  "@mapStepProgress": {
+    "description": "Turn-by-turn step counter.",
+    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "mapAiPick": "AI PICK",
+  "@mapAiPick": { "description": "Badge on an AI-suggested place nudge card." },
+
+  "commonLoading": "Loading...",
+  "@commonLoading": { "description": "Generic loading label." },
+
+  "mapSearchHint": "Search places...",
+  "@mapSearchHint": { "description": "Hint in the map search bar." },
+  "mapNoPlacesFound": "No places found",
+  "@mapNoPlacesFound": { "description": "Empty state in map search results." },
+  "mapModeDrive": "Drive",
+  "@mapModeDrive": { "description": "Travel mode: driving." },
+  "mapModeWalk": "Walk",
+  "@mapModeWalk": { "description": "Travel mode: walking." },
+  "mapModeTransit": "Transit",
+  "@mapModeTransit": { "description": "Travel mode: public transit." },
+  "mapStepsCount": "{count, plural, =1{1 step} other{{count} steps}}",
+  "@mapStepsCount": {
+    "description": "Number of turn-by-turn steps in a route.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "mapStartNavigation": "Start Navigation",
+  "@mapStartNavigation": { "description": "Button to begin turn-by-turn navigation." },
+  "mapRouteSteps": "Route Steps",
+  "@mapRouteSteps": { "description": "Title of the route-steps sheet." },
+  "mapArriveDestination": "Arrive at destination",
+  "@mapArriveDestination": { "description": "Final step in the route-steps list." },
+  "mapCurseReleased": "CURSE RELEASED",
+  "@mapCurseReleased": { "description": "Easter-egg overlay text." },
+  "mapFilterByCategory": "Filter by Category",
+  "@mapFilterByCategory": { "description": "Title of the map filter sheet." },
+  "mapZoomFilterOn": "Zoom Filter ON",
+  "@mapZoomFilterOn": { "description": "Filter-sheet status pill: zoom filter active." },
+  "mapShowingAll": "Showing All",
+  "@mapShowingAll": { "description": "Filter-sheet status pill: a category is selected." },
+  "mapPlacesCount": "{visible}/{total} places",
+  "@mapPlacesCount": {
+    "description": "Visible-vs-total places counter on the map.",
+    "placeholders": { "visible": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "mapCatPlacesZoom": "{count, plural, =1{1 place • Zoom to see more} other{{count} places • Zoom to see more}}",
+  "@mapCatPlacesZoom": {
+    "description": "Filter-sheet subtitle for the All category.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "mapCatSavedPlaces": "{count, plural, =1{1 saved place} other{{count} saved places}}",
+  "@mapCatSavedPlaces": {
+    "description": "Filter-sheet subtitle for the Favorites category.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "mapCatPlaces": "{count, plural, =1{1 place} other{{count} places}}",
+  "@mapCatPlaces": {
+    "description": "Filter-sheet subtitle: places in a category.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "mapCatAll": "All",
+  "@mapCatAll": { "description": "Filter category: all." },
+  "mapCatFavorites": "Favorites",
+  "@mapCatFavorites": { "description": "Filter category: favorites." },
+  "mapCatOpenNow": "Open Now",
+  "@mapCatOpenNow": { "description": "Filter category: open now." },
+  "mapCatTourism": "Tourism",
+  "@mapCatTourism": { "description": "Filter category: tourism." },
+  "mapCatHistorical": "Historical",
+  "@mapCatHistorical": { "description": "Filter category: historical." },
+  "mapCatMuseums": "Museums",
+  "@mapCatMuseums": { "description": "Filter category: museums." },
+  "mapCatHotels": "Hotels",
+  "@mapCatHotels": { "description": "Filter category: hotels." },
+  "mapCatReligious": "Religious",
+  "@mapCatReligious": { "description": "Filter category: religious." },
+  "mapCatFood": "Food & Dining",
+  "@mapCatFood": { "description": "Filter category: food & dining." },
+  "mapCatNature": "Nature",
+  "@mapCatNature": { "description": "Filter category: nature." },
+  "mapCatEntertainment": "Entertainment",
+  "@mapCatEntertainment": { "description": "Filter category: entertainment." },
+  "mapCatShopping": "Shopping",
+  "@mapCatShopping": { "description": "Filter category: shopping." },
+
+  "accountMenuMyAccount": "My Account",
+  "@accountMenuMyAccount": { "description": "Profile dropdown: open account." },
+  "accountMenuGuideDashboard": "Guide Dashboard",
+  "@accountMenuGuideDashboard": { "description": "Profile dropdown: open guide dashboard." },
+  "accountMenuAdminDashboard": "Admin Dashboard",
+  "@accountMenuAdminDashboard": { "description": "Profile dropdown: open admin dashboard." },
+  "accountMenuNotifications": "Notification Centre",
+  "@accountMenuNotifications": { "description": "Profile dropdown: open notifications." },
+  "accountMenuSignOut": "Sign Out",
+  "@accountMenuSignOut": { "description": "Profile dropdown: sign out." },
+
+  "homeCatHotels": "Hotels",
+  "@homeCatHotels": { "description": "Home category: hotels." },
+  "homeCatMuseums": "Museums",
+  "@homeCatMuseums": { "description": "Home category: museums." },
+  "homeCatRestaurants": "Restaurants",
+  "@homeCatRestaurants": { "description": "Home category: restaurants." },
+  "homeCatMosques": "Mosques",
+  "@homeCatMosques": { "description": "Home category: mosques." },
+  "homeCatBeaches": "Beaches",
+  "@homeCatBeaches": { "description": "Home category: beaches." },
+  "homeCatAdventure": "Adventure",
+  "@homeCatAdventure": { "description": "Home category: adventure." },
+
+  "catSort": "Sort",
+  "@catSort": { "description": "Tooltip for the category sort menu." },
+  "catSortNameAsc": "Name (A → Z)",
+  "@catSortNameAsc": { "description": "Sort option: name ascending." },
+  "catSortNameDesc": "Name (Z → A)",
+  "@catSortNameDesc": { "description": "Sort option: name descending." },
+  "catSortTopRated": "Top Rated",
+  "@catSortTopRated": { "description": "Sort option: top rated." },
+  "catSortMostReviews": "Most Reviews",
+  "@catSortMostReviews": { "description": "Sort option: most reviews." },
+  "catSortNearest": "Nearest",
+  "@catSortNearest": { "description": "Sort option: nearest." },
+  "catSomethingWrong": "Something went wrong.",
+  "@catSomethingWrong": { "description": "Error state in the category places list." },
+  "catNoRating": "N/A",
+  "@catNoRating": { "description": "Rating placeholder when a place has no rating." },
+  "catReviewsK": "{count}k reviews",
+  "@catReviewsK": {
+    "description": "Review count in thousands (e.g. 1.5k reviews).",
+    "placeholders": { "count": { "type": "String" } }
+  },
+  "catReviews": "{count, plural, =1{1 review} other{{count} reviews}}",
+  "@catReviews": {
+    "description": "Review count on a place card.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "eventCatAll": "All",
+  "@eventCatAll": { "description": "Event category: all." },
+  "eventCatCultural": "Cultural & Heritage",
+  "@eventCatCultural": { "description": "Event category: cultural & heritage." },
+  "eventCatConcert": "Concerts & Music",
+  "@eventCatConcert": { "description": "Event category: concerts & music." },
+  "eventCatTheatre": "Theatre & Performance",
+  "@eventCatTheatre": { "description": "Event category: theatre & performance." },
+  "eventCatFestival": "Festivals",
+  "@eventCatFestival": { "description": "Event category: festivals." },
+  "eventCatArt": "Art & Exhibitions",
+  "@eventCatArt": { "description": "Event category: art & exhibitions." },
+  "eventCatAdventure": "Adventure & Outdoors",
+  "@eventCatAdventure": { "description": "Event category: adventure & outdoors." },
+  "eventCatFood": "Food & Markets",
+  "@eventCatFood": { "description": "Event category: food & markets." },
+  "eventCatCruise": "Cruise & Dining",
+  "@eventCatCruise": { "description": "Event category: cruise & dining." },
+
+  "eventsLoadError": "Could not load events.\nCheck your connection and try again.",
+  "@eventsLoadError": { "description": "Error state on the all-events list." },
+  "eventsEmptyTitle": "No events right now",
+  "@eventsEmptyTitle": { "description": "Empty-state title on the all-events list." },
+  "eventsEmptySubtitle": "Check back soon for upcoming events in Egypt.",
+  "@eventsEmptySubtitle": { "description": "Empty-state subtitle on the all-events list." },
+  "eventTailoredPick": "Tailored pick",
+  "@eventTailoredPick": { "description": "Badge on the top taste-ranked event." },
+
+  "eventDateTime": "DATE & TIME",
+  "@eventDateTime": { "description": "Date & time card label on event details." },
+  "eventLocation": "LOCATION",
+  "@eventLocation": { "description": "Location card label on event details." },
+  "eventCairoTime": "{time} (Cairo Time)",
+  "@eventCairoTime": {
+    "description": "Event start time, noted as Cairo local time.",
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "eventLocationEgypt": "Egypt",
+  "@eventLocationEgypt": { "description": "Fallback location when an event has no address." },
+  "eventMapButton": "Map",
+  "@eventMapButton": { "description": "Button on the event location card that opens the map." },
+  "eventAbout": "About this Event",
+  "@eventAbout": { "description": "Section header for the event description." },
+  "eventDefaultDescription": "Join us for an unforgettable experience! This event brings together the best of culture, entertainment, and community in Egypt. Secure your tickets now and be part of something amazing.",
+  "@eventDefaultDescription": { "description": "Fallback description when an event has none." },
+  "eventShareThis": "Share this event",
+  "@eventShareThis": { "description": "Label on the event share row." },
+  "eventViewOn": "View on {source}",
+  "@eventViewOn": {
+    "description": "Link to the original event listing on an external source.",
+    "placeholders": { "source": { "type": "String" } }
+  },
+  "eventPostPrompt": "Anyone going to {title}? ✨",
+  "@eventPostPrompt": {
+    "description": "Pre-filled community post text seeded from an event.",
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "eventPostToCommunity": "Post to Community",
+  "@eventPostToCommunity": { "description": "Button that shares the event to the community feed." },
+  "eventPrice": "Price",
+  "@eventPrice": { "description": "Price label in the event bottom bar." },
+  "eventSeeListing": "See Listing",
+  "@eventSeeListing": { "description": "Shown in place of a price when the event has none." },
+  "eventTicketsUnavailable": "Tickets are not available online for this event.",
+  "@eventTicketsUnavailable": { "description": "Snackbar when an event has no ticket link." },
+  "eventGetTickets": "Get Tickets",
+  "@eventGetTickets": { "description": "CTA when the event has a ticket link." },
+  "eventRsvpNow": "RSVP Now",
+  "@eventRsvpNow": { "description": "CTA when the event has no ticket link." },
+  "eventReviewerFallback": "Explorer",
+  "@eventReviewerFallback": { "description": "Fallback display name for an event reviewer." },
+
+  "searchHint": "Search landmarks, tours, destinations…",
+  "@searchHint": { "description": "Hint text in the global search field." },
+  "searchTabAll": "All",
+  "@searchTabAll": { "description": "Global search filter tab: all result types." },
+  "searchTabPlaces": "Places",
+  "@searchTabPlaces": { "description": "Global search filter tab: places only." },
+  "searchTabTours": "Tours",
+  "@searchTabTours": { "description": "Global search filter tab: tours only." },
+  "searchPersonalised": "Personalised by your taste",
+  "@searchPersonalised": { "description": "Banner shown when search results are re-ranked by the user's taste vector." },
+  "searchBadgeLandmark": "Landmark",
+  "@searchBadgeLandmark": { "description": "Result-type badge on a place search result." },
+  "searchBadgeTour": "Tour",
+  "@searchBadgeTour": { "description": "Result-type badge on a tour search result." },
+  "searchViewOnMap": "View on map",
+  "@searchViewOnMap": { "description": "Hint on a place search result that opens the map." },
+  "searchEmptyTitle": "Search for a landmark or tour",
+  "@searchEmptyTitle": { "description": "Title of the empty prompt before the user types a query." },
+  "searchEmptyHint": "Try \"Pyramids\", \"Luxor\", \"museum\"…",
+  "@searchEmptyHint": { "description": "Example queries shown under the empty search prompt." },
+  "searchNoResultsFor": "No results for \"{query}\"",
+  "@searchNoResultsFor": {
+    "description": "Shown when a search returns no places or tours.",
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "searchPlacesError": "Could not load places.\nCheck your connection.",
+  "@searchPlacesError": { "description": "Error when the searchable place list fails to load." },
+  "searchToursError": "Could not load tours.\nCheck your connection.",
+  "@searchToursError": { "description": "Error when the searchable tour list fails to load." },
+
+  "guidesSearchToursHint": "Search tours...",
+  "@guidesSearchToursHint": { "description": "Search hint on the guide-browse screen while the Tours tab is active." },
+  "guidesSearchGuidesHint": "Search guides...",
+  "@guidesSearchGuidesHint": { "description": "Search hint on the guide-browse screen while the Guides tab is active." },
+  "guidesTabTours": "Tours",
+  "@guidesTabTours": { "description": "Tab on the guide-browse screen: tours." },
+  "guidesTabGuides": "Guides",
+  "@guidesTabGuides": { "description": "Tab on the guide-browse screen: guides." },
+  "guidesEmptyGuidesTitle": "No guides found",
+  "@guidesEmptyGuidesTitle": { "description": "Empty-state title when no guides match the filters." },
+  "guidesEmptyHint": "Try adjusting your search query or filters.",
+  "@guidesEmptyHint": { "description": "Empty-state subtitle for the guide-browse screen." },
+  "guidesErrorTours": "Error loading tours.",
+  "@guidesErrorTours": { "description": "Error when the tours list fails to load on the guide-browse screen." },
+  "guidesErrorGuides": "Error loading guides.",
+  "@guidesErrorGuides": { "description": "Error when the guides list fails to load." },
+  "guidesNoneAvailable": "No guides available.",
+  "@guidesNoneAvailable": { "description": "Shown when there are no verified guides at all." },
+
+  "communityFilterAll": "All",
+  "@communityFilterAll": { "description": "Community feed category filter chip: show all posts." },
+  "communityFilterTips": "💡 Tips",
+  "@communityFilterTips": { "description": "Community feed category filter chip: traveler tips (short form with emoji)." },
+
+  "soloInterestShopping": "Shopping",
+  "@soloInterestShopping": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestNightlife": "Nightlife",
+  "@soloInterestNightlife": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestMonuments": "Monuments",
+  "@soloInterestMonuments": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestMuseums": "Museums",
+  "@soloInterestMuseums": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestNature": "Nature & Parks",
+  "@soloInterestNature": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestBeaches": "Beaches",
+  "@soloInterestBeaches": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestCulture": "Culture & Traditions",
+  "@soloInterestCulture": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestEntertainment": "Entertainment",
+  "@soloInterestEntertainment": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestAdventure": "Adventure Activities",
+  "@soloInterestAdventure": { "description": "Solo-trip interest chip (display only; value stays English)." },
+  "soloInterestLocal": "Local Experiences",
+  "@soloInterestLocal": { "description": "Solo-trip interest chip (display only; value stays English)." },
+
+  "soloAreaCairo": "Cairo",
+  "@soloAreaCairo": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaLuxor": "Luxor",
+  "@soloAreaLuxor": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaAswan": "Aswan",
+  "@soloAreaAswan": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaAlexandria": "Alexandria",
+  "@soloAreaAlexandria": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaHurghada": "Hurghada",
+  "@soloAreaHurghada": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaSharm": "Sharm El-Sheikh",
+  "@soloAreaSharm": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaDahab": "Dahab",
+  "@soloAreaDahab": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaSiwa": "Siwa",
+  "@soloAreaSiwa": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaFayoum": "Fayoum",
+  "@soloAreaFayoum": { "description": "Solo-trip area chip (display only; value stays English)." },
+  "soloAreaNorthCoast": "North Coast",
+  "@soloAreaNorthCoast": { "description": "Solo-trip area chip (display only; value stays English)." },
+
+  "soloPlanStopsProgress": "{done}/{total} stops",
+  "@soloPlanStopsProgress": {
+    "description": "Completed-vs-total stops on a My Plans card.",
+    "placeholders": { "done": { "type": "int" }, "total": { "type": "int" } }
+  },
+
+  "mapEasterEggCurse": "You dare awaken the Pharaoh... The curse is upon you.",
+  "@mapEasterEggCurse": { "description": "Spoken (TTS) easter-egg narration when navigating to a tomb / Valley of the Kings." },
+  "mapEasterEggSandstorm": "The desert consumes all.",
+  "@mapEasterEggSandstorm": { "description": "Spoken (TTS) easter-egg narration when navigating to the Sahara desert." },
+
+  "profilePlacesVisited": "{count, plural, =1{{count} Place Visited} other{{count} Places Visited}}",
+  "@profilePlacesVisited": {
+    "description": "Profile stat chip: number of unique landmarks the user has visited.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "accountMyProfile": "My Profile",
+  "@accountMyProfile": { "description": "Account screen app-bar title." },
+
+  "notificationsTitle": "Notifications",
+  "@notificationsTitle": { "description": "Notification screen title." },
+  "notificationsCustomize": "Customize your notifications!",
+  "@notificationsCustomize": { "description": "Notification screen: button opening the notification settings sheet." },
+  "notificationsPrevious": "Previously",
+  "@notificationsPrevious": { "description": "Notification screen: section header for older notifications." },
+  "notificationsEmptyTitle": "No notifications yet",
+  "@notificationsEmptyTitle": { "description": "Empty notifications state title." },
+  "notificationsEmptyBody": "Your notifications will appear here once\nyou start getting them.",
+  "@notificationsEmptyBody": { "description": "Empty notifications state subtitle." },
+  "notificationsSettings": "Notification Settings",
+  "@notificationsSettings": { "description": "Empty notifications state: button to open notification settings." },
+
+  "commonDone": "Done",
+  "@commonDone": { "description": "Generic Done button." },
+  "notifPrefTitle": "Notification Preferences",
+  "@notifPrefTitle": { "description": "Notification preferences sheet title." },
+  "notifPrefSubtitle": "Choose what you want to be notified about.",
+  "notifPrefAll": "All Notifications",
+  "notifPrefAllSub": "Master switch for all push alerts",
+  "notifPrefBookings": "Bookings & Tours",
+  "notifPrefBookingsSub": "Confirmations, cancellations, updates",
+  "notifPrefCommunity": "Community",
+  "notifPrefCommunitySub": "Likes, comments, mentions, replies",
+  "notifPrefReviews": "Reviews",
+  "notifPrefReviewsSub": "When someone reviews your tour",
+  "notifPrefGuide": "Guide Updates",
+  "notifPrefGuideSub": "Application & language certification results",
+  "notifPrefDiscovery": "AI Discovery",
+  "notifPrefDiscoverySub": "Daily 'Did you know?' fact about Egypt",
+
+  "badgeNoviceExplorer": "Novice Explorer",
+  "@badgeNoviceExplorer": { "description": "Badge name (display only; the badge id stays as the stable key)." },
+  "badgeNoviceExplorerDesc": "Discovered your first landmark.",
+  "badgeTourist": "Tourist",
+  "badgeTouristDesc": "Visited 3 landmarks.",
+  "badgeTombRaider": "Tomb Raider",
+  "badgeTombRaiderDesc": "Visited 5 landmarks.",
+  "badgeHistorian": "Historian",
+  "badgeHistorianDesc": "Visited 10 landmarks.",
+  "badgePharaoh": "Pharaoh",
+  "badgePharaohDesc": "Visited 20 landmarks.",
+  "badgeImhotep": "High Priest Imhotep",
+  "badgeImhotepDesc": "You discovered the hidden vault of the architect.",
+  "badgeDeveloperPharaoh": "Developer Pharaoh",
+  "badgeDeveloperPharaohDesc": "Discovered the hidden developer tomb.",
+  "badgeRiddleSolver": "Riddle Solver",
+  "badgeRiddleSolverDesc": "You answered the Riddle of the Sphinx."
+}

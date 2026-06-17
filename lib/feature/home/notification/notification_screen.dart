@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/empty_notifications_view.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/notif_card.dart';
 import 'package:lost_in_egypt/feature/home/notification/widget/notification_settings_sheet.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 
 import 'package:lost_in_egypt/feature/home/tabs/community/presentation/post_detail_screen.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/data/model/community_post_model.dart';
@@ -76,6 +79,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       // ── Tourist: booking confirmed, tour cancelled, or booking cancelled by guide
       if (notif.type == 'booking_confirmed' || notif.type == 'tour_cancelled' ||
           notif.type == 'tour_updated' || notif.type == 'booking_cancelled') {
+        if (!mounted) return;
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const BookingHistoryScreen()));
         return;
@@ -83,6 +87,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
       // ── Guide: new booking received → navigate to guide dashboard
       if (notif.type == 'booking') {
+        if (!mounted) return;
         Navigator.push(context, MaterialPageRoute(
           builder: (_) => BlocProvider(
             create: (_) => GuideToursCubit(
@@ -165,14 +170,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 "assets/pattern_comp.png",
                 fit: BoxFit.cover,
                 repeat: ImageRepeat.repeat,
-                errorBuilder: (c, o, s) => const SizedBox.shrink(),
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
           ),
 
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+              padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 16.h),
               child: Column(
                 children: [
                   Row(
@@ -180,48 +185,48 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(Icons.arrow_back_ios_new,
-                            color: onSurface, size: 18),
+                            color: onSurface, size: 18.r),
                       ),
                       const Spacer(),
                       Text(
-                        "Notifications",
+                        AppLocalizations.of(context).notificationsTitle,
                         style: TextStyle(
                           color: onSurface,
-                          fontFamily: "Marcellus",
+                          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                           fontWeight: FontWeight.w600,
-                          fontSize: 18,
+                          fontSize: 18.sp,
                         ),
                       ),
                       const Spacer(),
-                      const SizedBox(width: 42),
+                      SizedBox(width: 42.w),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
 
                   Align(
                     alignment: Alignment.center,
                     child: Material(
                       color: primary.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                       clipBehavior: Clip.hardEdge,
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14.r),
                         onTap: () => NotificationSettingsSheet.open(context),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 14.w, vertical: 8.h),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                             border:
                                 Border.all(color: primary.withValues(alpha: 0.25)),
                           ),
                           child: Text(
-                            "Customize your notifications!",
+                            AppLocalizations.of(context).notificationsCustomize,
                             style: TextStyle(
                               color: primary,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                               fontWeight: FontWeight.w600,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                             ),
                           ),
                         ),
@@ -229,7 +234,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   Expanded(
                     child: StreamBuilder<List<NotificationEntity>>(
@@ -254,43 +259,43 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         return ListView(
                           padding: EdgeInsets.zero,
                           children: [
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4.h),
                             Padding(
                               padding:
-                                  const EdgeInsets.only(left: 6, bottom: 8),
+                                  EdgeInsetsDirectional.only(start: 6.w, bottom: 8.h),
                               child: Text(
-                                "Previously",
+                                AppLocalizations.of(context).notificationsPrevious,
                                 style: TextStyle(
                                   color: onSurface,
-                                  fontFamily: "Marcellus",
+                                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
                             ),
 
                             ...notifications.map((notif) {
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
+                                padding: EdgeInsets.only(bottom: 10.h),
                                 child: Dismissible(
                                   key: ValueKey(notif.id),
                                   direction: DismissDirection.endToStart,
                                   background: Container(
                                     alignment: Alignment.centerRight,
                                     padding:
-                                        const EdgeInsets.only(right: 18),
+                                        EdgeInsetsDirectional.only(end: 18.w),
                                     decoration: BoxDecoration(
                                       color:
                                           Colors.red.withValues(alpha: 0.85),
                                       borderRadius:
-                                          BorderRadius.circular(16),
+                                          BorderRadius.circular(16.r),
                                     ),
                                     child: const Icon(Icons.delete,
                                         color: Colors.white),
                                   ),
                                   onDismissed: (_) async {
                                     await _repo.deleteNotification(_userId, notif.id);
-                                    if (mounted) {
+                                    if (context.mounted) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         const SnackBar(
@@ -303,7 +308,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     isRead: notif.isRead,
                                     senderName: notif.senderName,
                                     message: notif.message,
-                                    timeText: timeago.format(notif.timestamp),
+                                    timeText: timeago.format(notif.timestamp,
+                                        locale: LocaleController.isRtl ? 'ar' : 'en'),
                                     avatarUrl: notif.senderAvatar.isEmpty
                                         ? null
                                         : notif.senderAvatar,
@@ -314,18 +320,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               );
                             }),
 
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Center(
                               child: Text(
                                 "Marking notifications?",
                                 style: TextStyle(
                                   color: onSurface.withValues(alpha: 0.75),
-                                  fontFamily: "Marcellus",
-                                  fontSize: 12,
+                                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
+                                  fontSize: 12.sp,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6.h),
                             Center(
                               child: InkWell(
                                 onTap: () =>
@@ -334,8 +340,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   "See how it works",
                                   style: TextStyle(
                                     color: primary,
-                                    fontFamily: "Marcellus",
-                                    fontSize: 12,
+                                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
+                                    fontSize: 12.sp,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),

@@ -1,9 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/presentation/edit_profile_screen_enhanced.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/home/tabs/account/domain/badge_constants.dart';
@@ -82,22 +83,80 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   /// Converts a canonical taste-vector key (e.g. "historical_landmark",
-  /// "pharaonic") into a human-readable label for the "Your Taste" pills.
-  String _prettyTasteKey(String key) {
-    const overrides = {
-      'historical_landmark': 'History',
-      'archaeological_site': 'Ancient Sites',
-      'tourist_attraction': 'Attractions',
-      'amusement_park': 'Theme Parks',
-      'art_gallery': 'Art',
-      'night_club': 'Nightlife',
-      'shopping_mall': 'Shopping',
-    };
-    if (overrides.containsKey(key)) return overrides[key]!;
-    return key
-        .split('_')
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
+  /// "pharaonic") into a localized, human-readable label for the "Your Taste"
+  /// pills. The known canonical keys (Places API types + recommendation tags)
+  /// are a bounded set and are localized; any unrecognised key falls back to an
+  /// English title-cased form (the open-ended long tail — same fallback pattern
+  /// as `mapCategoryLabel` / `eventCategoryLabel`).
+  String _prettyTasteKey(AppLocalizations l10n, String key) {
+    switch (key) {
+      case 'historical_landmark':
+      case 'historical':
+        return l10n.tasteKeyHistory;
+      case 'archaeological_site':
+        return l10n.tasteKeyAncientSites;
+      case 'tourist_attraction':
+        return l10n.tasteKeyAttractions;
+      case 'museum':
+        return l10n.tasteKeyMuseums;
+      case 'mosque':
+        return l10n.tasteKeyMosques;
+      case 'church':
+        return l10n.tasteKeyChurches;
+      case 'park':
+        return l10n.tasteKeyParks;
+      case 'beach':
+        return l10n.tasteKeyBeaches;
+      case 'restaurant':
+        return l10n.tasteKeyRestaurants;
+      case 'cafe':
+        return l10n.tasteKeyCafes;
+      case 'market':
+        return l10n.tasteKeyMarkets;
+      case 'shopping_mall':
+      case 'shopping':
+        return l10n.tasteKeyShopping;
+      case 'monument':
+        return l10n.tasteKeyMonuments;
+      case 'art_gallery':
+        return l10n.tasteKeyArt;
+      case 'night_club':
+        return l10n.tasteKeyNightlife;
+      case 'amusement_park':
+        return l10n.tasteKeyThemeParks;
+      case 'aquarium':
+        return l10n.tasteKeyAquariums;
+      case 'zoo':
+        return l10n.tasteKeyZoos;
+      case 'spa':
+        return l10n.tasteKeySpas;
+      case 'stadium':
+        return l10n.tasteKeyStadiums;
+      case 'entertainment':
+        return l10n.tasteKeyEntertainment;
+      case 'cultural':
+        return l10n.tasteKeyCultural;
+      case 'natural':
+        return l10n.tasteKeyNature;
+      case 'relaxation':
+        return l10n.tasteKeyRelaxation;
+      case 'religious':
+        return l10n.tasteKeyReligious;
+      case 'family':
+        return l10n.tasteKeyFamily;
+      case 'adventure':
+        return l10n.tasteKeyAdventure;
+      case 'food':
+        return l10n.tasteKeyFood;
+      case 'ancient':
+        return l10n.tasteKeyAncient;
+      default:
+        return key
+            .split('_')
+            .map((w) =>
+                w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+            .join(' ');
+    }
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
@@ -108,6 +167,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bg = theme.scaffoldBackgroundColor;
@@ -128,10 +188,10 @@ class _AccountScreenState extends State<AccountScreen> {
         (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.10 : 0.06);
 
     final User? authUser = sl<FirebaseAuth>().currentUser;
-    String displayName = "User";
+    String displayName = l10n.accountUser;
     if (_user != null) {
       displayName = "${_user!.firstName} ${_user!.lastName}".trim();
-      if (displayName.isEmpty) displayName = "User";
+      if (displayName.isEmpty) displayName = l10n.accountUser;
     } else if (authUser?.displayName != null && authUser!.displayName!.isNotEmpty) {
       displayName = authUser.displayName!;
     }
@@ -182,10 +242,10 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        'My Profile',
+                        AppLocalizations.of(context).accountMyProfile,
                         style: TextStyle(
                           fontSize: 18.sp,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           color: onSurface,
                         ),
                       ),
@@ -240,7 +300,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                                 ? onSurface
                                                 : const Color(0xFF6B3A28),
                                             fontSize: 22.sp,
-                                            fontFamily: "Marcellus",
+                                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                           ),
                                         ),
                                         if (_user?.username.isNotEmpty == true) ...[
@@ -250,7 +310,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                             style: TextStyle(
                                               color: theme.colorScheme.primary,
                                               fontSize: 14.sp,
-                                              fontFamily: "Marcellus",
+                                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                             ),
                                           ),
                                         ],
@@ -280,7 +340,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                                     size: 18.r),
                                                 SizedBox(width: 8.w),
                                                 Text(
-                                                  "$trueVisitedCount Places Visited",
+                                                  AppLocalizations.of(context)
+                                                      .profilePlacesVisited(
+                                                          trueVisitedCount),
                                                   style: TextStyle(
                                                     fontSize: 14.sp,
                                                     fontWeight: FontWeight.bold,
@@ -325,13 +387,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                                             color: goldButtonColor),
                                                         SizedBox(width: 6.w),
                                                         Text(
-                                                          'Your Taste',
+                                                          l10n.accountYourTaste,
                                                           style: TextStyle(
                                                             fontSize: 13.sp,
                                                             fontWeight:
                                                                 FontWeight.w700,
                                                             color: goldButtonColor,
-                                                            fontFamily: 'Marcellus',
+                                                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                                           ),
                                                         ),
                                                       ],
@@ -360,7 +422,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                                                               20.r),
                                                                 ),
                                                                 child: Text(
-                                                                  _prettyTasteKey(k),
+                                                                  _prettyTasteKey(l10n, k),
                                                                   style: TextStyle(
                                                                     fontSize: 12.sp,
                                                                     fontWeight:
@@ -431,36 +493,19 @@ class _AccountScreenState extends State<AccountScreen> {
 
                                   // Profile Avatar (overlapping)
                                   Container(
-                                    width: 104.r,
-                                    height: 104.r,
+                                    padding: const EdgeInsets.all(3),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                           color: goldButtonColor, width: 3),
                                     ),
-                                    child: ClipOval(
-                                      child: profileUrl.isNotEmpty
-                                          ? CachedNetworkImage(
-                                              imageUrl: profileUrl,
-                                              fit: BoxFit.cover,
-                                              width: 104.r,
-                                              height: 104.r,
-                                              errorWidget: (_, _, _) =>
-                                                  Container(
-                                                color: surface,
-                                                child: Icon(Icons.person,
-                                                    size: 60.r,
-                                                    color: onSurface
-                                                        .withValues(alpha: 0.5)),
-                                              ),
-                                            )
-                                          : Container(
-                                              color: surface,
-                                              child: Icon(Icons.person,
-                                                  size: 60.r,
-                                                  color: onSurface
-                                                      .withValues(alpha: 0.5)),
-                                            ),
+                                    child: ShimmerAvatar(
+                                      url: profileUrl,
+                                      radius: 49.r,
+                                      iconSize: 60.r,
+                                      fallbackBackgroundColor: surface,
+                                      fallbackIconColor:
+                                          onSurface.withValues(alpha: 0.5),
                                     ),
                                   ),
                                 ],
@@ -469,19 +514,19 @@ class _AccountScreenState extends State<AccountScreen> {
                               SizedBox(height: 30.h),
 
                               Text(
-                                "Account Settings:",
+                                l10n.accountSettingsHeader,
                                 style: TextStyle(
                                   color: isDark
                                       ? onSurface
                                       : const Color(0xFF6B3A28),
                                   fontSize: 16.sp,
-                                  fontFamily: "Marcellus",
+                                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                 ),
                               ),
                               SizedBox(height: 16.h),
 
                               _AccountTile(
-                                title: "Edit Profile",
+                                title: l10n.accountEditProfile,
                                 icon: Icons.person_outline_rounded,
                                 onTap: () async {
                                   await Navigator.push(
@@ -528,7 +573,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                   )
                                 else
                                   _AccountTile(
-                                    title: "Apply to be a Guide",
+                                    title: l10n.accountApplyGuide,
                                     icon: Icons.badge_outlined,
                                     onTap: () {
                                       Navigator.push(
@@ -549,7 +594,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                   ),
                               ],
                               _AccountTile(
-                                title: "My Bookings",
+                                title: l10n.accountMyBookings,
                                 icon: Icons.calendar_today_outlined,
                                 onTap: () => Navigator.push(context,
                                     MaterialPageRoute(
@@ -557,7 +602,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                             const BookingHistoryScreen())),
                               ),
                               _AccountTile(
-                                title: "Saved Posts",
+                                title: l10n.accountSavedPosts,
                                 icon: Icons.bookmark_outline_rounded,
                                 onTap: () => Navigator.push(context,
                                     MaterialPageRoute(
@@ -565,14 +610,14 @@ class _AccountScreenState extends State<AccountScreen> {
                                             const SavedPostsScreen())),
                               ),
                               _AccountTile(
-                                title: "My Plans",
+                                title: l10n.accountMyPlans,
                                 icon: Icons.map_outlined,
                                 onTap: () => Navigator.push(context,
                                     MaterialPageRoute(
                                         builder: (_) => const MyPlansScreen())),
                               ),
                               _AccountTile(
-                                title: "Membership",
+                                title: l10n.accountMembership,
                                 icon: Icons.workspace_premium_outlined,
                                 onTap: () => Navigator.push(
                                   context,
@@ -597,7 +642,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                     elevation: 2,
                                   ),
                                   child: Text(
-                                    "Sign out",
+                                    l10n.accountSignOut,
                                     style: TextStyle(fontSize: 18.sp),
                                   ),
                                 ),
@@ -642,7 +687,7 @@ class _AccountScreenState extends State<AccountScreen> {
         SizedBox(
           width: 64.w,
           child: Text(
-            badge.name,
+            badgeName(AppLocalizations.of(context), badge),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 10.sp,
@@ -675,9 +720,11 @@ class _ApplicationStatusTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isPending = status == 'pending';
     final statusColor = isPending ? Colors.orange : Colors.red;
-    final statusLabel = isPending ? 'Under Review' : 'Not Approved';
+    final statusLabel =
+        isPending ? l10n.accountStatusUnderReview : l10n.accountStatusNotApproved;
     final statusIcon =
         isPending ? Icons.hourglass_top_rounded : Icons.cancel_outlined;
 
@@ -705,7 +752,7 @@ class _ApplicationStatusTile extends StatelessWidget {
                   Icon(Icons.badge_outlined, color: statusColor, size: 20.r),
                   SizedBox(width: 10.w),
                   Text(
-                    'Guide Application',
+                    l10n.accountGuideApplication,
                     style: TextStyle(
                         color: onSurface.withValues(alpha: 0.85),
                         fontSize: 16.sp),
@@ -804,7 +851,7 @@ class _AccountTile extends StatelessWidget {
                       color: onSurface.withValues(alpha: 0.88),
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                     ),
                   ),
                 ),

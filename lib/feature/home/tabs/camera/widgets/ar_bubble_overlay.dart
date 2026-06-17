@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class ARBubbleOverlay extends StatefulWidget {
@@ -67,8 +68,8 @@ class _ARBubbleOverlayState extends State<ARBubbleOverlay> {
               curve: Curves.easeOutBack,
               alignment: Alignment.topLeft,
               child: Container(
-                padding: isExpanded 
-                    ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+                padding: isExpanded
+                    ? EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h)
                     : EdgeInsets.zero,
                 width: isExpanded ? (rect.width > 60 ? rect.width + 60 : 180) : rect.width,
                 height: isExpanded ? null : rect.height,
@@ -82,7 +83,7 @@ class _ARBubbleOverlayState extends State<ARBubbleOverlay> {
                         : Theme.of(context).colorScheme.primary,
                     width: isExpanded ? 0 : 2.5,
                   ),
-                  borderRadius: BorderRadius.circular(isExpanded ? 12 : 6),
+                  borderRadius: BorderRadius.circular((isExpanded ? 12 : 6).r),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.3),
@@ -100,7 +101,7 @@ class _ARBubbleOverlayState extends State<ARBubbleOverlay> {
                           textAlign: isArabic ? TextAlign.right : TextAlign.left,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

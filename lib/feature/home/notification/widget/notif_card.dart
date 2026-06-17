@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import '../../../../core/widgets/shimmer_avatar.dart';
 
 class NotifCard extends StatelessWidget {
   final bool isRead;
@@ -33,14 +36,14 @@ class NotifCard extends StatelessWidget {
 
     return Material(
       color: surface,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
                 color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
@@ -53,28 +56,21 @@ class NotifCard extends StatelessWidget {
               width: 1,
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
                 onTap: onAvatarTap,
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: primary.withValues(alpha: 0.12),
-                  ),
-                  child: ClipOval(
-                    child: avatarUrl != null
-                        ? Image.network(avatarUrl!, fit: BoxFit.cover)
-                        : Icon(Icons.person,
-                            color: onSurface.withValues(alpha: 0.65)),
-                  ),
+                child: ShimmerAvatar(
+                  url: avatarUrl,
+                  radius: 17.r,
+                  iconSize: 20.r,
+                  fallbackBackgroundColor: primary.withValues(alpha: 0.12),
+                  fallbackIconColor: onSurface.withValues(alpha: 0.65),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,38 +78,38 @@ class NotifCard extends StatelessWidget {
                     Text(
                       senderName,
                       style: TextStyle(
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         fontWeight: FontWeight.w700,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         color: onSurface.withValues(alpha: 0.87),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       message,
                       style: TextStyle(
-                        fontFamily: "Marcellus",
-                        fontSize: 12,
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
+                        fontSize: 12.sp,
                         color: onSurface.withValues(alpha: 0.65),
                         height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Row(
                       children: [
                         Text(
                           timeText,
                           style: TextStyle(
-                            fontFamily: "Marcellus",
-                            fontSize: 11,
+                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
+                            fontSize: 11.sp,
                             color: onSurface.withValues(alpha: 0.50),
                           ),
                         ),
                         const Spacer(),
                         if (!isRead)
                           Container(
-                            width: 8,
-                            height: 8,
+                            width: 8.r,
+                            height: 8.r,
                             decoration: BoxDecoration(
                               color: primary,
                               shape: BoxShape.circle,

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Full-screen photo gallery with swipe navigation.
 class FullScreenGallery extends StatefulWidget {
@@ -44,16 +45,16 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white, size: 28),
+          icon: Icon(Icons.close, color: Colors.white, size: 28.r),
           onPressed: () => Navigator.pop(context),
         ),
         title: widget.title != null
             ? Text(
                 widget.title!,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontFamily: 'Marcellus',
-                  fontSize: 16,
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
+                  fontSize: 16.sp,
                 ),
               )
             : null,
@@ -61,17 +62,17 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
         actions: [
           if (widget.imageUrls.length > 1)
             Padding(
-              padding: const EdgeInsets.only(right: 16),
+              padding: EdgeInsetsDirectional.only(end: 16.w),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
                     '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    style: TextStyle(color: Colors.white70, fontSize: 13.sp),
                   ),
                 ),
               ),
@@ -92,14 +93,14 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                   child: CachedNetworkImage(
                     imageUrl: widget.imageUrls[index],
                     fit: BoxFit.contain,
-                    placeholder: (_, __) => const Center(
+                    placeholder: (_, _) => const Center(
                       child: CircularProgressIndicator(
                         color: Color(0xFFD6A00F),
                         strokeWidth: 2,
                       ),
                     ),
-                    errorWidget: (_, __, ___) => const Center(
-                      child: Icon(Icons.broken_image, color: Colors.white38, size: 64),
+                    errorWidget: (_, _, _) => Center(
+                      child: Icon(Icons.broken_image, color: Colors.white38, size: 64.r),
                     ),
                   ),
                 ),
@@ -110,7 +111,7 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
           // Dot indicators
           if (widget.imageUrls.length > 1)
             Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 20,
+              bottom: MediaQuery.of(context).padding.bottom + 20.h,
               left: 0,
               right: 0,
               child: Row(
@@ -119,14 +120,14 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
                   widget.imageUrls.length,
                   (index) => AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: _currentIndex == index ? 20 : 6,
-                    height: 6,
+                    margin: EdgeInsets.symmetric(horizontal: 3.w),
+                    width: _currentIndex == index ? 20.w : 6.w,
+                    height: 6.h,
                     decoration: BoxDecoration(
                       color: _currentIndex == index
                           ? const Color(0xFFD6A00F)
                           : Colors.white30,
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(3.r),
                     ),
                   ),
                 ),

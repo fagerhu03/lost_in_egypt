@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 
 class AdminLanguageRequestsScreen extends StatelessWidget {
   const AdminLanguageRequestsScreen({super.key});
@@ -54,7 +56,7 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
       context: context,
       builder: (_) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(10),
+        insetPadding: EdgeInsets.all(10.r),
         child: GestureDetector(
           onTap: () => Navigator.of(context).pop(),
           child: InteractiveViewer(
@@ -64,8 +66,8 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
             child: Image.network(
               imageUrl,
               fit: BoxFit.contain,
-              errorBuilder: (ctx, error, stackTrace) => const Center(
-                child: Icon(Icons.broken_image, color: Colors.white, size: 50),
+              errorBuilder: (ctx, error, stackTrace) => Center(
+                child: Icon(Icons.broken_image, color: Colors.white, size: 50.r),
               ),
             ),
           ),
@@ -105,7 +107,7 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.r),
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final doc = docs[index];
@@ -117,11 +119,11 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
                 future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
                 builder: (context, userSnapshot) {
                   if (userSnapshot.connectionState == ConnectionState.waiting) {
-                    return const Card(
-                      margin: EdgeInsets.only(bottom: 12),
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 12.h),
                       child: Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: Center(child: CircularProgressIndicator()),
+                        padding: EdgeInsets.all(32.r),
+                        child: const Center(child: CircularProgressIndicator()),
                       ),
                     );
                   }
@@ -136,17 +138,17 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
                     String last = userData['lastName']?.toString() ?? '';
                     userName = "$first $last".trim();
                     if (userName.isEmpty) userName = 'Unknown User';
-                    
+
                     // Check guideDocuments map first (newer schema)
                     if (userData.containsKey('guideDocuments') && userData['guideDocuments'] != null && userData['guideDocuments'] is Map) {
                       final docsMap = userData['guideDocuments'] as Map;
                       guideLicenseUrl = docsMap['motaLicense']?.toString() ?? '';
                       idCardUrl = docsMap['syndicateCard']?.toString() ?? '';
                     }
-                    
+
                     // Fallback to top-level fields (older schema or testing)
                     if (guideLicenseUrl.isEmpty) {
-                      guideLicenseUrl = userData['motaLicense'] ?? userData['motaLicenseUrl'] ?? ''; 
+                      guideLicenseUrl = userData['motaLicense'] ?? userData['motaLicenseUrl'] ?? '';
                     }
                     if (idCardUrl.isEmpty) {
                       idCardUrl = userData['syndicateCard'] ?? userData['syndicateCardUrl'] ?? '';
@@ -157,74 +159,74 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
                     elevation: 2,
                     color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
-                    margin: const EdgeInsets.only(bottom: 12),
+                    margin: EdgeInsets.only(bottom: 12.h),
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.r),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Requested Language: $language',
-                            style: const TextStyle(
-                              fontSize: 18,
+                            style: TextStyle(
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           Text(
                             'Guide: $userName',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                               color: isDark ? Colors.grey.shade300 : Colors.grey.shade800,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             'User ID: $userId',
                             style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 color: isDark ? Colors.grey.shade500 : Colors.grey.shade600),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           if (guideLicenseUrl.isNotEmpty || idCardUrl.isNotEmpty) ...[
-                            const Text(
+                            Text(
                               'Submitted Credentials:',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             SizedBox(
-                              height: 120, // fixed height for images
+                              height: 120.h, // fixed height for images
                               child: Row(
                                 children: [
                                   if (guideLicenseUrl.isNotEmpty)
                                     Expanded(
                                       child: GestureDetector(
                                         onTap: () => _showImageDialog(context, guideLicenseUrl),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: Image.network(guideLicenseUrl, fit: BoxFit.cover),
+                                        child: ShimmerImage(
+                                          url: guideLicenseUrl,
+                                          borderRadius: BorderRadius.circular(8.r),
                                         ),
                                       ),
                                     ),
                                   if (guideLicenseUrl.isNotEmpty && idCardUrl.isNotEmpty)
-                                    const SizedBox(width: 8),
+                                    SizedBox(width: 8.w),
                                   if (idCardUrl.isNotEmpty)
                                     Expanded(
                                       child: GestureDetector(
                                         onTap: () => _showImageDialog(context, idCardUrl),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: Image.network(idCardUrl, fit: BoxFit.cover),
+                                        child: ShimmerImage(
+                                          url: idCardUrl,
+                                          borderRadius: BorderRadius.circular(8.r),
                                         ),
                                       ),
                                     ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
                           ],
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -238,7 +240,7 @@ class AdminLanguageRequestsScreen extends StatelessWidget {
                                   side: const BorderSide(color: Colors.red),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12.w),
                               ElevatedButton.icon(
                                 onPressed: () => _handleRequest(context, doc, true),
                                 icon: const Icon(Icons.check, color: Colors.white),

@@ -1,11 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../tours/domain/entities/tour_entity.dart';
 import '../../../tours/presentation/pages/tour_detail_screen.dart';
 import '../../../../core/services/currency_controller.dart';
 import '../../../../core/services/currency_service.dart';
-import '../../../../core/widgets/shimmer_loading_widget.dart';
+import '../../../../core/widgets/shimmer_image.dart';
 
 class TourCard extends StatelessWidget {
   final TourEntity tour;
@@ -16,16 +17,16 @@ class TourCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Material(
       color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(20.r),
       elevation: 0,
       shadowColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
       child: Ink(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
               color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
@@ -35,7 +36,7 @@ class TourCard extends StatelessWidget {
           ],
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => TourDetailScreen(tour: tour)),
@@ -46,27 +47,21 @@ class TourCard extends StatelessWidget {
             // Image Banner
             Hero(
               tag: 'tour_image_${tour.id}',
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                child: SizedBox(
-                  height: 180,
-                  width: double.infinity,
-                  child: tour.images.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: tour.images.first,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) =>
-                              const ShimmerLoadingWidget.rectangular(height: 180),
-                          errorWidget: (_, __, ___) => _buildPlaceholderImage(),
-                        )
-                      : _buildPlaceholderImage(),
-                ),
+              child: ShimmerImage(
+                url: tour.images.isNotEmpty ? tour.images.first : null,
+                height: 180.h,
+                width: double.infinity,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+                fallbackIcon: Icons.image_not_supported,
+                fallbackBackgroundColor: Colors.grey[300],
+                fallbackIconColor: Colors.grey[600],
+                fallbackIconSize: 50.r,
               ),
             ),
-            
+
             // Content
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -76,18 +71,18 @@ class TourCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           tour.title,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       // Rating badge
-                      _buildRatingBadge(theme),
-                      const SizedBox(width: 12),
+                      _buildRatingBadge(context, theme),
+                      SizedBox(width: 12.w),
                       ValueListenableBuilder<String>(
                         valueListenable: CurrencyController.currency,
                         builder: (context, currency, _) {
@@ -102,7 +97,7 @@ class TourCard extends StatelessWidget {
                               return Text(
                                 label,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 18.sp,
                                   fontWeight: FontWeight.w900,
                                   color: theme.colorScheme.primary,
                                 ),
@@ -113,43 +108,43 @@ class TourCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  
+                  SizedBox(height: 8.h),
+
                   // Metadata row
                   Row(
                     children: [
-                      Icon(Icons.calendar_month, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                      const SizedBox(width: 4),
+                      Icon(Icons.calendar_month, size: 16.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                      SizedBox(width: 4.w),
                       Text(
                         DateFormat('MMM d, yyyy').format(tour.meetingTime),
                         style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
-                      const SizedBox(width: 16),
-                      Icon(Icons.people, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 16.w),
+                      Icon(Icons.people, size: 16.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                      SizedBox(width: 4.w),
                       Text(
-                        'Up to ${tour.maxAttendees}',
+                        AppLocalizations.of(context).tourCardUpTo(tour.maxAttendees),
                         style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
                       ),
                     ],
                   ),
-                  
-                  const SizedBox(height: 12),
+
+                  SizedBox(height: 12.h),
                   // Destinations chips
                   Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                    spacing: 6.w,
+                    runSpacing: 6.h,
                     children: tour.destinations.take(3).map((dest) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         dest,
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 10.sp,
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
@@ -165,18 +160,18 @@ class TourCard extends StatelessWidget {
     ));
   }
 
-  Widget _buildRatingBadge(ThemeData theme) {
+  Widget _buildRatingBadge(BuildContext context, ThemeData theme) {
     final hasRating = tour.rating > 0 && !tour.rating.isNaN && !tour.rating.isInfinite && tour.reviewCount > 0;
     if (hasRating) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star, color: Colors.amber, size: 16),
-          const SizedBox(width: 2),
+          Icon(Icons.star, color: Colors.amber, size: 16.r),
+          SizedBox(width: 2.w),
           Text(
             tour.rating.toStringAsFixed(1),
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 13.sp,
               fontWeight: FontWeight.bold,
               color: theme.colorScheme.onSurface,
             ),
@@ -184,7 +179,7 @@ class TourCard extends StatelessWidget {
           Text(
             ' (${tour.reviewCount})',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
@@ -192,15 +187,15 @@ class TourCard extends StatelessWidget {
       );
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
       decoration: BoxDecoration(
         color: theme.colorScheme.tertiary.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: Text(
-        'NEW',
+        AppLocalizations.of(context).tourCardNew,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 10.sp,
           fontWeight: FontWeight.bold,
           color: theme.colorScheme.tertiary,
         ),
@@ -208,12 +203,4 @@ class TourCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholderImage() {
-    return Container(
-      color: Colors.grey.withValues(alpha: 0.2),
-      child: const Center(
-        child: Icon(Icons.landscape, size: 48, color: Colors.grey),
-      ),
-    );
-  }
 }

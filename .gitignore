@@ -1,5 +1,6 @@
 # Project roadmap (local only)
 ROADMAP.md
+roadmap.md
 
 # Miscellaneous
 *.class
@@ -66,3 +67,4 @@ CLAUDE.md
 
 .vscode/
 .claude/
+.gemini/

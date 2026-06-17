@@ -11,6 +11,8 @@ abstract class AuthRepository {
     required String birthMonth,
     required String birthDay,
     required String birthYear,
+    required String phoneNumber,
+    required String nationalityCode,
   });
 
   Future<Either<Failure, UserEntity>> login({

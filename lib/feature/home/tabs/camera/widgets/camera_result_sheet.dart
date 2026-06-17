@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/ai_storyteller_service.dart';
+import 'package:lost_in_egypt/core/services/locale_controller.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
@@ -92,6 +94,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
         limit: 3,
         userLat: lat,
         userLng: lng,
+        weather: WeatherController.weather.value,
       );
       if (!mounted) return;
       if (result == null || result.recommendations.isEmpty) {
@@ -140,6 +143,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
 
   Future<void> _startPlayback() async {
     if (story == null) return;
+    final l10n = AppLocalizations.of(context);
 
     if (_audioFilePath != null) {
       await _audioPlayer.play(DeviceFileSource(_audioFilePath!));
@@ -150,12 +154,13 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
     setState(() => isLoadingAudio = true);
 
     try {
-      final audioBytes = await AIStorytellerService.getStoryAudio(story!);
+      final audioBytes = await AIStorytellerService.getStoryAudio(story!,
+          locale: LocaleController.localeCode);
       if (audioBytes == null || !mounted) {
         if (mounted) {
           setState(() => isLoadingAudio = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not generate audio. Please try again.')),
+            SnackBar(content: Text(l10n.cameraAudioGenFailed)),
           );
         }
         return;
@@ -173,7 +178,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
       if (mounted) {
         setState(() => isLoadingAudio = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Audio playback failed. Please try again.')),
+          SnackBar(content: Text(l10n.cameraAudioPlayFailed)),
         );
       }
     }
@@ -182,6 +187,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
     final surface = theme.colorScheme.surface;
@@ -200,24 +206,14 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
           controller: scrollController,
           padding: EdgeInsets.zero,
           children: [
-            ClipRRect(
+            ShimmerImage(
+              url: widget.place.imagePath,
+              height: 220.h,
+              width: double.infinity,
+              fit: BoxFit.cover,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-              child: SizedBox(
-                height: 220.h,
-                width: double.infinity,
-                child: CachedNetworkImage(
-                  imageUrl: widget.place.imagePath,
-                  fit: BoxFit.cover,
-                  placeholder: (_, _) => Container(
-                    color: Colors.grey[300],
-                    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  ),
-                  errorWidget: (_, _, _) => Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image),
-                  ),
-                ),
-              ),
+              fallbackIcon: Icons.broken_image,
+              fallbackBackgroundColor: Colors.grey[300],
             ),
             Padding(
               padding: EdgeInsets.all(24.r),
@@ -227,7 +223,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                   Text(
                     widget.place.title,
                     style: TextStyle(
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       fontSize: 26.sp,
                       color: onSurface,
                     ),
@@ -238,7 +234,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                       Icon(Icons.check_circle, color: primary, size: 20.r),
                       SizedBox(width: 8.w),
                       Text(
-                        'Landmark Identified',
+                        l10n.cameraLandmarkIdentified,
                         style: TextStyle(
                           color: onSurface.withValues(alpha: 0.7),
                           fontWeight: FontWeight.w800,
@@ -270,7 +266,9 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                               SizedBox(width: 6.w),
                               Expanded(
                                 child: Text(
-                                  '${weather.conditionLabel} · Tap for forecast',
+                                  l10n.cameraTapForecast(weatherConditionLabel(
+                                      l10n, weather.condition,
+                                      emphasis: true)),
                                   style: TextStyle(
                                     color: color,
                                     fontSize: 12.sp,
@@ -300,7 +298,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                       TextButton(
                         onPressed: () => setState(() => showFullDescription = !showFullDescription),
                         child: Text(
-                          showFullDescription ? 'Read Less' : 'Read More',
+                          showFullDescription ? l10n.cameraReadLess : l10n.cameraReadMore,
                           style: TextStyle(color: primary, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -331,7 +329,8 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                             : () async {
                                 setState(() => isLoadingStory = true);
                                 final storyResult = await AIStorytellerService
-                                    .getLandmarkStory(widget.place.title);
+                                    .getLandmarkStory(widget.place.title,
+                                        locale: LocaleController.localeCode);
                                 setState(() {
                                   story = storyResult;
                                   isLoadingStory = false;
@@ -357,7 +356,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                 ),
                               )
                             : Icon(Icons.auto_awesome, color: theme.colorScheme.onPrimary),
-                        label: Text(isLoadingStory ? 'Consulting history...' : 'Tell me a story'),
+                        label: Text(isLoadingStory ? l10n.cameraConsulting : l10n.cameraTellStory),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primary,
                           foregroundColor: theme.colorScheme.onPrimary,
@@ -393,12 +392,12 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                   ),
                             label: Text(
                               isLoadingAudio
-                                  ? 'Generating...'
+                                  ? l10n.cameraGenerating
                                   : isPlaying
-                                      ? 'Pause'
+                                      ? l10n.cameraPause
                                       : isPaused
-                                          ? 'Resume'
-                                          : 'Listen',
+                                          ? l10n.cameraResume
+                                          : l10n.cameraListen,
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primary,
@@ -415,7 +414,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                           IconButton.filled(
                             onPressed: isLoadingAudio ? null : _handleReplay,
                             icon: const Icon(Icons.replay),
-                            tooltip: 'Replay from start',
+                            tooltip: l10n.cameraReplay,
                             style: IconButton.styleFrom(
                               backgroundColor: primary.withValues(alpha: 0.15),
                               foregroundColor: primary,
@@ -437,7 +436,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                           },
                           icon: Icon(Icons.map_outlined, color: theme.colorScheme.secondary),
                           label: Text(
-                            'Show on Map',
+                            l10n.cameraShowOnMap,
                             style: TextStyle(color: theme.colorScheme.secondary),
                           ),
                           style: OutlinedButton.styleFrom(
@@ -461,7 +460,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                               borderRadius: BorderRadius.circular(16.r),
                             ),
                           ),
-                          child: const Text('Done', style: TextStyle(color: Colors.white)),
+                          child: Text(l10n.cameraDone, style: const TextStyle(color: Colors.white)),
                         ),
                       ),
                     ],
@@ -475,12 +474,12 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                         Icon(Icons.auto_awesome, size: 16.r, color: primary),
                         SizedBox(width: 6.w),
                         Text(
-                          'You might also like nearby',
+                          l10n.cameraNearby,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
                             color: onSurface,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                           ),
                         ),
                       ],
@@ -494,7 +493,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                               itemCount: 3,
                               itemBuilder: (_, _) => Container(
                                 width: 150.w,
-                                margin: EdgeInsets.only(right: 10.w),
+                                margin: EdgeInsetsDirectional.only(end: 10.w),
                                 decoration: BoxDecoration(
                                   color: onSurface.withValues(alpha: 0.06),
                                   borderRadius: BorderRadius.circular(12.r),
@@ -513,7 +512,7 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                   },
                                   child: Container(
                                     width: 150.w,
-                                    margin: EdgeInsets.only(right: 10.w),
+                                    margin: EdgeInsetsDirectional.only(end: 10.w),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12.r),
                                       color: onSurface.withValues(alpha: 0.05),
@@ -528,15 +527,11 @@ class _CameraResultSheetState extends State<CameraResultSheet> {
                                           height: 80.h,
                                           width: double.infinity,
                                           child: p.imagePath.startsWith('http')
-                                              ? CachedNetworkImage(
-                                                  imageUrl: p.imagePath,
+                                              ? ShimmerImage(
+                                                  url: p.imagePath,
                                                   fit: BoxFit.cover,
-                                                  placeholder: (_, _) => Container(
-                                                      color: primary
-                                                          .withValues(alpha: 0.08)),
-                                                  errorWidget: (_, _, _) => Container(
-                                                      color: primary
-                                                          .withValues(alpha: 0.06)),
+                                                  fallbackBackgroundColor: primary
+                                                      .withValues(alpha: 0.06),
                                                 )
                                               : Image.asset(p.imagePath,
                                                   fit: BoxFit.cover),

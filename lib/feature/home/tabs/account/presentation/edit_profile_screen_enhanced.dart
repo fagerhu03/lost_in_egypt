@@ -5,10 +5,12 @@ import 'package:country_picker/country_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
 import 'package:lost_in_egypt/feature/auth/data/models/user.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import '../../camera/widgets/badge_unlock_dialog.dart';
@@ -16,6 +18,7 @@ import '../domain/badge_constants.dart';
 import 'package:lost_in_egypt/core/utils/image_utils.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/community/data/repositories/firebase_community_repository.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class EditProfileScreenEnhanced extends StatefulWidget {
   const EditProfileScreenEnhanced({super.key});
@@ -94,6 +97,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Future<bool> _uploadProfileImage() async {
     if (_selectedImage == null || _firebaseUser == null) return false;
 
+    final l10n = AppLocalizations.of(context);
     setState(() => _isUploadingImage = true);
 
     try {
@@ -129,7 +133,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("Profile photo updated ✅"),
+            content: Text(l10n.editPhotoUpdated),
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
@@ -139,8 +143,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       debugPrint("Upload error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Error uploading photo. Please try again."),
+          SnackBar(
+            content: Text(l10n.editPhotoUploadError),
             backgroundColor: Colors.red,
           ),
         );
@@ -218,13 +222,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Future<void> _submit() async {
     if (_currentUser == null) return;
 
+    final l10n = AppLocalizations.of(context);
+
     if (_selectedImage != null) {
       final success = await _uploadProfileImage();
       if (!success) return;
     }
 
     if (_completePhoneNumber.isNotEmpty && _completePhoneNumber.length < 10) {
-      _showError("Please enter a valid phone number");
+      _showError(l10n.signupPhoneInvalid);
       return;
     }
 
@@ -233,6 +239,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         _completePhoneNumber.isNotEmpty && _currentUser!.phoneNumber.isEmpty;
 
     if ((isPhoneAdded || isPhoneChanged) && _completePhoneNumber.isNotEmpty) {
+      if (!mounted) return;
       final bool? verified = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -241,7 +248,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       );
 
       if (verified != true) {
-        _showError("Phone number must be verified before saving");
+        _showError(l10n.editPhoneMustVerify);
         return;
       }
     }
@@ -252,10 +259,10 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     String? igErr;
     String? twErr;
     if (igVal.isNotEmpty && !RegExp(r'^[a-zA-Z0-9._]{1,30}$').hasMatch(igVal)) {
-      igErr = 'Instagram: letters, numbers, . and _ only (max 30)';
+      igErr = l10n.editInstagramRule;
     }
     if (twVal.isNotEmpty && !RegExp(r'^[a-zA-Z0-9._]{1,15}$').hasMatch(twVal)) {
-      twErr = 'Twitter/X: letters, numbers, . and _ only (max 15)';
+      twErr = l10n.editTwitterRule;
     }
     if (igErr != null || twErr != null) {
       setState(() { _instagramError = igErr; _twitterError = twErr; });
@@ -264,7 +271,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
     // Validate username before saving
     final newUsername = _usernameController.text.trim().toLowerCase();
-    final usernameErr = await _validateUsername(newUsername);
+    final usernameErr = await _validateUsername(l10n, newUsername);
     if (usernameErr != null) {
       setState(() => _usernameError = usernameErr);
       return;
@@ -366,7 +373,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text("Profile Updated ✅"),
+              content: Text(l10n.editProfileUpdated),
               backgroundColor: Theme.of(context).colorScheme.primary,
             ),
           );
@@ -375,7 +382,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       }
     } on FirebaseException catch (e) {
       if (e.code == 'already-exists') {
-        setState(() => _usernameError = "That username was just taken — try another");
+        setState(() => _usernameError = l10n.usernameTakenJustNow);
       } else {
         _showError(ErrorHandler.handleGenericError(e));
       }
@@ -389,6 +396,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Future<void> _requestLanguageAddition() async {
     if (_firebaseUser == null) return;
 
+    final l10n = AppLocalizations.of(context);
     setState(() => _isLoading = true);
     try {
       final existingQuery = await FirebaseFirestore.instance
@@ -399,7 +407,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           .get();
 
       if (existingQuery.docs.isNotEmpty) {
-        _showError("You already have a pending language request.");
+        _showError(l10n.editLangPending);
         setState(() => _isLoading = false);
         return;
       }
@@ -411,25 +419,25 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     setState(() => _isLoading = false);
 
     final TextEditingController newLangController = TextEditingController();
+    if (!mounted) return;
     final bool? shouldSubmit = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Request Language Addition', style: TextStyle(fontFamily: 'Marcellus')),
+        title: Text(l10n.editLangRequestTitle, style: const TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'])),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "By Egyptian law, guides require official certification to guide in specific languages. "
-              "Please enter the language you wish to add. An admin will verify your syndicate/MOTA records.",
-              style: TextStyle(fontSize: 14),
+            Text(
+              l10n.editLangRequestBody,
+              style: TextStyle(fontSize: 14.sp),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             TextField(
               controller: newLangController,
-              decoration: const InputDecoration(
-                hintText: "e.g., Spanish, German, Italian",
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.editLangRequestHint,
+                border: const OutlineInputBorder(),
               ),
             ),
           ],
@@ -437,7 +445,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -445,7 +453,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                  Navigator.pop(ctx, true);
               }
             },
-            child: const Text('Submit Request'),
+            child: Text(l10n.editLangSubmit),
           ),
         ],
       ),
@@ -465,8 +473,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Request submitted! An admin will review it shortly."),
+            SnackBar(
+              content: Text(l10n.editLangSubmitted),
               backgroundColor: Colors.green,
             ),
           );
@@ -481,12 +489,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
   /// Validates username format and checks Firestore uniqueness.
   /// Returns an error string or null if valid.
-  Future<String?> _validateUsername(String username) async {
-    if (username.isEmpty) return "Username cannot be empty";
-    if (username.length < 3) return "Username must be at least 3 characters";
-    if (username.length > 20) return "Username must be 20 characters or fewer";
+  Future<String?> _validateUsername(
+      AppLocalizations l10n, String username) async {
+    if (username.isEmpty) return l10n.editUsernameEmpty;
+    if (username.length < 3) return l10n.usernameTooShort;
+    if (username.length > 20) return l10n.usernameTooLong;
     if (!RegExp(r'^[a-z0-9_]+$').hasMatch(username)) {
-      return "Only lowercase letters, numbers, and underscores";
+      return l10n.usernameInvalidChars;
     }
     // Skip uniqueness check if unchanged
     if (username == _currentUser?.username) return null;
@@ -495,7 +504,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         .where('username', isEqualTo: username)
         .limit(1)
         .get();
-    if (query.docs.isNotEmpty) return "Username is already taken";
+    if (query.docs.isNotEmpty) return l10n.usernameTaken;
     return null;
   }
 
@@ -530,6 +539,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -579,11 +589,11 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                     child: CircularProgressIndicator(color: primary),
                   )
                       : ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
                     children: [
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       _buildAvatar(primary, onSurface, fieldShadow),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
                       // Profile completion indicator
                       Builder(builder: (context) {
@@ -596,41 +606,41 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Profile Completion",
+                                  l10n.editProfileCompletion,
                                   style: TextStyle(
                                     color: onSurface.withValues(alpha: 0.7),
-                                    fontSize: 13,
-                                    fontFamily: 'Marcellus',
+                                    fontSize: 13.sp,
+                                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                   ),
                                 ),
                                 Text(
                                   "$pct%",
                                   style: TextStyle(
                                     color: primary,
-                                    fontSize: 13,
+                                    fontSize: 13.sp,
                                     fontWeight: FontWeight.bold,
-                                    fontFamily: 'Marcellus',
+                                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6.h),
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(4.r),
                               child: LinearProgressIndicator(
                                 value: completed / 8,
                                 backgroundColor: primary.withValues(alpha: 0.12),
                                 valueColor: AlwaysStoppedAnimation<Color>(primary),
-                                minHeight: 6,
+                                minHeight: 6.h,
                               ),
                             ),
                           ],
                         );
                       }),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
-                      _buildSectionTitle("Basic Information", onSurface),
-                      _buildLabel("Full name", onSurface),
+                      _buildSectionTitle(l10n.editSectionBasic, onSurface),
+                      _buildLabel(l10n.editFullName, onSurface),
                       _buildField(
                         controller: _fullNameController,
                         surface: surface,
@@ -638,23 +648,23 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         shadow: fieldShadow,
                         borderColor: borderColor,
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
-                      _buildLabel("Username", onSurface),
+                      _buildLabel(l10n.editUsername, onSurface),
                       _buildUsernameField(surface, onSurface, fieldShadow, borderColor, primary),
                       if (_usernameError != null) ...[
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
                         Padding(
-                          padding: const EdgeInsets.only(left: 8),
+                          padding: EdgeInsetsDirectional.only(start: 8.w),
                           child: Text(
                             _usernameError!,
-                            style: const TextStyle(color: Colors.red, fontSize: 12),
+                            style: TextStyle(color: Colors.red, fontSize: 12.sp),
                           ),
                         ),
                       ],
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
-                      _buildLabel("Email", onSurface),
+                      _buildLabel(l10n.profileEmail, onSurface),
                       _buildField(
                         controller: _emailController,
                         readOnly: true,
@@ -663,18 +673,18 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         shadow: fieldShadow,
                         borderColor: borderColor,
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
-                      _buildLabel("Role", onSurface),
+                      _buildLabel(l10n.profileRole, onSurface),
                       _buildRoleSelector(surface, onSurface, fieldShadow, borderColor),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
-                      _buildSectionTitle("Contact Information", onSurface),
-                      _buildLabel("Phone number", onSurface),
+                      _buildSectionTitle(l10n.editSectionContact, onSurface),
+                      _buildLabel(l10n.editPhoneNumber, onSurface),
                       _buildPhoneField(surface, onSurface, fieldShadow, borderColor),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
-                      _buildLabel("Nationality", onSurface),
+                      _buildLabel(l10n.editNationality, onSurface),
                       _buildNationalityPicker(
                         surface,
                         onSurface,
@@ -682,22 +692,22 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         borderColor,
                         primary,
                       ),
-                      const SizedBox(height: 30),
+                      SizedBox(height: 30.h),
 
-                      _buildSectionTitle("About You", onSurface),
-                      _buildLabel("Bio", onSurface),
+                      _buildSectionTitle(l10n.editSectionAbout, onSurface),
+                      _buildLabel(l10n.editBio, onSurface),
                       _buildBioField(surface, onSurface, fieldShadow, borderColor),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
-                      _buildLabel("Interests", onSurface),
+                      _buildLabel(l10n.profileInterests, onSurface),
                       _buildInterestsTags(surface, onSurface, primary, borderColor),
-                      const SizedBox(height: 30),
+                      SizedBox(height: 30.h),
 
-                      _buildSectionTitle("Social Links (Optional)", onSurface),
-                      _buildLabel("Instagram", onSurface),
+                      _buildSectionTitle(l10n.editSectionSocial, onSurface),
+                      _buildLabel(l10n.profileInstagram, onSurface),
                       _buildSocialField(
                         controller: _instagramController,
-                        hint: "username (no @)",
+                        hint: l10n.editSocialHint,
                         surface: surface,
                         onSurface: onSurface,
                         shadow: fieldShadow,
@@ -706,12 +716,12 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         errorText: _instagramError,
                         onChanged: (_) => setState(() => _instagramError = null),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
-                      _buildLabel("Twitter/X", onSurface),
+                      _buildLabel(l10n.editTwitterLabel, onSurface),
                       _buildSocialField(
                         controller: _twitterController,
-                        hint: "username (no @)",
+                        hint: l10n.editSocialHint,
                         surface: surface,
                         onSurface: onSurface,
                         shadow: fieldShadow,
@@ -720,20 +730,20 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                         errorText: _twitterError,
                         onChanged: (_) => setState(() => _twitterError = null),
                       ),
-                      const SizedBox(height: 30),
-                      
+                      SizedBox(height: 30.h),
+
                       if (_currentUser?.isVerifiedGuide == true) ...[
-                        _buildSectionTitle("Guide Credentials", onSurface),
-                        _buildLabel("Certified Languages (Locked)", onSurface),
+                        _buildSectionTitle(l10n.editSectionGuide, onSurface),
+                        _buildLabel(l10n.editCertifiedLangs, onSurface),
                         _buildLanguagesField(surface, onSurface, fieldShadow, borderColor),
-                        const SizedBox(height: 30),
+                        SizedBox(height: 30.h),
                       ],
 
                       _buildVerificationStatus(surface, onSurface, borderColor),
-                      const SizedBox(height: 40),
+                      SizedBox(height: 40.h),
 
                       _buildSubmitButton(primary, onSurface),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                     ],
                   ),
                 ),
@@ -747,23 +757,23 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
   Widget _buildHeader(BuildContext context, Color onSurface) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.arrow_back_ios_new, size: 20, color: onSurface),
+            icon: Icon(Icons.arrow_back_ios_new, size: 20.r, color: onSurface),
           ),
           Text(
-            "Edit profile",
+            AppLocalizations.of(context).editProfileTitle,
             style: TextStyle(
-              fontSize: 20,
-              fontFamily: "Marcellus",
+              fontSize: 20.sp,
+              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
               color: onSurface,
             ),
           ),
-          const SizedBox(width: 24),
+          SizedBox(width: 24.w),
         ],
       ),
     );
@@ -771,13 +781,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
 
   Widget _buildSectionTitle(String title, Color onSurface) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16, top: 10),
+      padding: EdgeInsets.only(bottom: 16.h, top: 10.h),
       child: Text(
         title,
         style: TextStyle(
           color: onSurface,
-          fontSize: 20,
-          fontFamily: "Marcellus",
+          fontSize: 20.sp,
+          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -789,32 +799,29 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       child: Stack(
         children: [
           Container(
-            width: 120,
-            height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: primary.withValues(alpha: 0.18),
               boxShadow: [shadow],
             ),
-            child: ClipOval(
-              child: _selectedImage != null
-                  ? Image.file(_selectedImage!, fit: BoxFit.cover)
-                  : (_currentUser?.profileImageUrl.isNotEmpty == true)
-                  ? Image.network(
-                _currentUser!.profileImageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (c, o, s) => Center(
-                  child: Icon(Icons.person, color: onSurface, size: 60),
-                ),
-              )
-                  : Center(
-                child: Icon(Icons.person, color: onSurface, size: 60),
-              ),
-            ),
+            child: _selectedImage != null
+                ? Container(
+                    width: 120.r,
+                    height: 120.r,
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                  )
+                : ShimmerAvatar(
+                    url: _currentUser?.profileImageUrl,
+                    radius: 60.r,
+                    iconSize: 60.r,
+                    fallbackBackgroundColor: primary.withValues(alpha: 0.18),
+                    fallbackIconColor: onSurface,
+                  ),
           ),
-          Positioned(
+          PositionedDirectional(
             bottom: 0,
-            right: 0,
+            end: 0,
             child: Material(
               color: Theme.of(context).colorScheme.surface,
               shape: const CircleBorder(),
@@ -824,7 +831,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                 onTap: _isUploadingImage ? null : _pickImage,
                 customBorder: const CircleBorder(),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.r),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -836,8 +843,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                   ),
                   child: _isUploadingImage
                       ? SizedBox(
-                    width: 20,
-                    height: 20,
+                    width: 20.w,
+                    height: 20.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation(primary),
@@ -845,7 +852,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                   )
                       : Icon(
                     Icons.camera_alt_outlined,
-                    size: 20,
+                    size: 20.r,
                     color: primary,
                   ),
                 ),
@@ -853,18 +860,18 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             ),
           ),
           if (_selectedImage != null)
-            Positioned(
+            PositionedDirectional(
               top: 0,
-              right: 0,
+              end: 0,
               child: GestureDetector(
                 onTap: () => setState(() => _selectedImage = null),
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: EdgeInsets.all(4.r),
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.red,
                   ),
-                  child: const Icon(Icons.close, size: 16, color: Colors.white),
+                  child: Icon(Icons.close, size: 16.r, color: Colors.white),
                 ),
               ),
             ),
@@ -874,13 +881,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   }
 
   Widget _buildLabel(String text, Color onSurface) => Padding(
-    padding: const EdgeInsets.only(bottom: 8, left: 4),
+    padding: EdgeInsetsDirectional.only(bottom: 8.h, start: 4.w),
     child: Text(
       text,
       style: TextStyle(
         color: onSurface.withValues(alpha: 0.85),
-        fontSize: 14,
-        fontFamily: "Marcellus",
+        fontSize: 14.sp,
+        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
         fontWeight: FontWeight.w600,
       ),
     ),
@@ -897,7 +904,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     return Container(
       decoration: BoxDecoration(
         color: readOnly ? surface.withValues(alpha: 0.70) : surface,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(25.r),
         boxShadow: readOnly ? [] : [shadow],
         border: Border.all(
           color: readOnly ? borderColor.withValues(alpha: 1) : borderColor,
@@ -909,9 +916,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         style: TextStyle(color: onSurface),
         decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          contentPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
           suffixIcon: readOnly
-              ? Icon(Icons.lock_outline, color: onSurface.withValues(alpha: 0.7), size: 20)
+              ? Icon(Icons.lock_outline, color: onSurface.withValues(alpha: 0.7), size: 20.r)
               : null,
         ),
       ),
@@ -927,7 +934,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     return Container(
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [shadow],
         border: Border.all(color: borderColor),
       ),
@@ -937,8 +944,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         style: TextStyle(color: onSurface),
         decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
-          hintText: "Tell us about yourself...",
+          contentPadding: EdgeInsets.all(16.r),
+          hintText: AppLocalizations.of(context).editBioHint,
           hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.45)),
         ),
       ),
@@ -954,15 +961,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     return Container(
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(25.r),
         boxShadow: [shadow],
         border: Border.all(color: borderColor),
       ),
       child: IntlPhoneField(
         initialValue: _completePhoneNumber,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
           counterText: "",
         ),
         initialCountryCode: _isoCode,
@@ -986,7 +993,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       ) {
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(25),
+      borderRadius: BorderRadius.circular(25.r),
       clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: () {
@@ -1003,30 +1010,30 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             countryListTheme: CountryListThemeData(
               backgroundColor: surface,
               textStyle: TextStyle(
-                fontFamily: "Marcellus",
+                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 color: onSurface,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               inputDecoration: InputDecoration(
-                hintText: 'Search nationality',
+                hintText: AppLocalizations.of(context).editSearchNationality,
                 prefixIcon: Icon(Icons.search, color: onSurface.withValues(alpha: 0.8)),
                 border: OutlineInputBorder(
                   borderSide: BorderSide(color: borderColor),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: borderColor),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: primary, width: 1.4),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
             ),
           );
         },
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(25.r),
         child: AbsorbPointer(
           child: _buildField(
             controller: _nationalityController,
@@ -1050,21 +1057,21 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     return Container(
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(25.r),
         boxShadow: [shadow],
         border: Border.all(color: borderColor),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
       child: Text(
         _currentUser?.role == 'admin'
-            ? '👑 Admin'
+            ? '👑 ${AppLocalizations.of(context).profileRoleAdmin}'
             : _currentUser?.isVerifiedGuide == true
-                ? '🧭 Verified Guide'
-                : '🧳 Tourist',
+                ? '🧭 ${AppLocalizations.of(context).profileRoleVerifiedGuide}'
+                : '🧳 ${AppLocalizations.of(context).profileRoleTourist}',
         style: TextStyle(
           color: onSurface,
-          fontSize: 16,
-          fontFamily: 'Marcellus',
+          fontSize: 16.sp,
+          fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
         ),
       ),
     );
@@ -1077,13 +1084,13 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       Color borderColor,
       ) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 8.w,
+      runSpacing: 8.h,
       children: _availableInterests.map((interest) {
         final isSelected = _selectedInterests.contains(interest);
         return Material(
           color: isSelected ? primary : surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           clipBehavior: Clip.hardEdge,
           child: InkWell(
             onTap: () {
@@ -1095,11 +1102,11 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                 }
               });
             },
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
                   color: isSelected ? primary.withValues(alpha: 0.8) : borderColor,
                 ),
@@ -1108,7 +1115,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                 interest,
                 style: TextStyle(
                   color: isSelected ? Colors.white : onSurface.withValues(alpha: 0.9),
-                  fontSize: 15,
+                  fontSize: 15.sp,
                 ),
               ),
             ),
@@ -1125,11 +1132,11 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       Color borderColor,
       ) {
     final TextEditingController langsController = TextEditingController(
-      text: _currentUser?.certifiedLanguages.isNotEmpty == true 
-        ? _currentUser!.certifiedLanguages.join(', ') 
-        : "None certified yet.",
+      text: _currentUser?.certifiedLanguages.isNotEmpty == true
+        ? _currentUser!.certifiedLanguages.join(', ')
+        : AppLocalizations.of(context).editNoCertifiedLangs,
     );
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1141,14 +1148,14 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           borderColor: borderColor,
           readOnly: true,
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton.icon(
             onPressed: _requestLanguageAddition,
-            icon: Icon(Icons.add_circle_outline, size: 18, color: Theme.of(context).colorScheme.primary),
+            icon: Icon(Icons.add_circle_outline, size: 18.r, color: Theme.of(context).colorScheme.primary),
             label: Text(
-              "Request New Language",
+              AppLocalizations.of(context).editRequestNewLang,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.w600,
@@ -1170,7 +1177,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
     return Container(
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(25.r),
         boxShadow: [shadow],
         border: Border.all(
           color: _usernameError != null ? Colors.red : borderColor,
@@ -1179,12 +1186,12 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 20),
+            padding: EdgeInsetsDirectional.only(start: 20.w),
             child: Text(
               "@",
               style: TextStyle(
                 color: primary,
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1208,8 +1215,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
               },
               decoration: InputDecoration(
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                hintText: "your_handle",
+                contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 16.h),
+                hintText: AppLocalizations.of(context).editUsernameHint,
                 hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.45)),
               ),
             ),
@@ -1237,7 +1244,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         Container(
           decoration: BoxDecoration(
             color: surface,
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(25.r),
             boxShadow: [shadow],
             border: Border.all(color: hasError ? Colors.red : borderColor),
           ),
@@ -1254,7 +1261,7 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
             },
             decoration: InputDecoration(
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
               hintText: hint,
               hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.45)),
             ),
@@ -1262,10 +1269,10 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
         ),
         if (hasError)
           Padding(
-            padding: const EdgeInsets.only(left: 12, top: 4),
+            padding: EdgeInsetsDirectional.only(start: 12.w, top: 4.h),
             child: Text(
               errorText,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
+              style: TextStyle(color: Colors.red, fontSize: 12.sp),
             ),
           ),
       ],
@@ -1273,28 +1280,29 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   }
 
   Widget _buildVerificationStatus(Color surface, Color onSurface, Color borderColor) {
+    final l10n = AppLocalizations.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Verification Status",
+            l10n.editVerificationStatus,
             style: TextStyle(
               color: onSurface,
-              fontSize: 16,
-              fontFamily: "Marcellus",
+              fontSize: 16.sp,
+              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildVerificationItem(
-            "Email", 
+            l10n.profileEmail,
             _currentUser?.emailVerified ?? false,
             onResend: () async {
               try {
@@ -1302,8 +1310,8 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
                   await _firebaseUser.sendEmailVerification();
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Verification email sent! Check your inbox."),
+                      SnackBar(
+                        content: Text(l10n.editVerificationEmailSent),
                         backgroundColor: Colors.green,
                       ),
                     );
@@ -1321,9 +1329,9 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
               }
             },
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           _buildVerificationItem(
-            "Phone",
+            l10n.profilePhone,
             _currentUser?.phoneVerified ?? false,
             onVerify: (_currentUser?.phoneVerified ?? true)
                 ? null
@@ -1356,15 +1364,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
       children: [
         Icon(
           isVerified ? Icons.check_circle : Icons.radio_button_unchecked,
-          size: 18,
+          size: 18.r,
           color: isVerified ? Colors.green : Colors.grey,
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Text(
           label,
           style: TextStyle(
             color: isVerified ? Colors.green : Colors.grey,
-            fontSize: 14,
+            fontSize: 14.sp,
           ),
         ),
         if (!isVerified && onResend != null) ...[
@@ -1372,15 +1380,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           TextButton(
             onPressed: onResend,
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              "Resend",
+              AppLocalizations.of(context).editResend,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1391,15 +1399,15 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
           TextButton(
             onPressed: onVerify,
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              "Verify now",
+              AppLocalizations.of(context).editVerifyNow,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1411,21 +1419,21 @@ class _EditProfileScreenEnhancedState extends State<EditProfileScreenEnhanced> {
   Widget _buildSubmitButton(Color primary, Color onSurface) {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 50.h,
       child: ElevatedButton(
         onPressed: _submit,
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
         ),
-        child: const Text(
-          "Save Changes",
+        child: Text(
+          AppLocalizations.of(context).editSaveChanges,
           style: TextStyle(
-            fontSize: 18,
-            fontFamily: "Marcellus",
+            fontSize: 18.sp,
+            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
             fontWeight: FontWeight.w600,
           ),
         ),

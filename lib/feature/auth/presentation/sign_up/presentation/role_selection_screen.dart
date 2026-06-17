@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/sign_up/presentation/signup_screen.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
@@ -12,19 +14,19 @@ class RoleSelectionScreen extends StatefulWidget {
 class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   bool? isGuideSelected;
 
-  void _navigateToSignup(BuildContext context, bool isGuide) {
+  void _navigateToSignup(BuildContext context, bool _) {
+    // Both tourist + guide signups go through the same screen now — guides
+    // apply later from their dashboard, not at signup time.
     Navigator.of(context).push(
-      FadePageRoute(
-        page: SignupScreen(isGuidePreselected: isGuide),
-      ),
+      FadePageRoute(page: const SignupScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const bool isDark = false; // Forced to light mode as requested
-    final bgColor = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFCFBE8);
-    final textColor = isDark ? Colors.white70 : const Color(0xff634700);
+    final l10n = AppLocalizations.of(context);
+    final bgColor = const Color(0xFFFCFBE8);
+    final textColor = const Color(0xff634700);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -39,33 +41,33 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 60),
+              SizedBox(height: 60.h),
 
               // LOGO
               Center(
                 child: Image.asset(
                   "assets/logo/logo_colorful_comp.png",
-                  height: 140,
+                  height: 140.h,
                 ),
               ),
 
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
 
               Text(
-                "Are you a...",
+                l10n.roleSelectionTitle,
                 style: TextStyle(
-                  fontSize: 22,
-                  fontFamily: "Marcellus",
+                  fontSize: 22.sp,
+                  fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                   color: textColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
 
-              const SizedBox(height: 50),
+              SizedBox(height: 50.h),
 
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -73,7 +75,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       // Traveler Card
                       Expanded(
                         child: _RoleCard(
-                          title: "TRAVELER!",
+                          title: l10n.roleTraveler,
                           imagePath: "assets/icons/adventure.png",
                           isSelected: isGuideSelected == false,
                           onTap: () {
@@ -82,7 +84,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                               isGuideSelected = false;
                             });
                             Future.delayed(const Duration(milliseconds: 300), () {
-                              if (mounted) {
+                              if (context.mounted) {
                                 _navigateToSignup(context, false);
                                 // reset selection after pushing to avoid red flash on back
                                 Future.delayed(const Duration(milliseconds: 300), () {
@@ -93,11 +95,11 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       // Guide Card
                       Expanded(
                         child: _RoleCard(
-                          title: "GUIDE!",
+                          title: l10n.roleGuide,
                           imagePath: "assets/icons/guide.png",
                           isSelected: isGuideSelected == true,
                           onTap: () {
@@ -106,7 +108,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                               isGuideSelected = true;
                             });
                             Future.delayed(const Duration(milliseconds: 300), () {
-                              if (mounted) {
+                              if (context.mounted) {
                                 _navigateToSignup(context, true);
                                 // reset selection after pushing to avoid red flash on back
                                 Future.delayed(const Duration(milliseconds: 300), () {
@@ -121,7 +123,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: 60.h),
             ],
           ),
         ),
@@ -145,21 +147,20 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bool isDark = false; // Forced to light mode as requested
-    final cardColor = isDark ? const Color(0xFF2C2C2C) : const Color(0xFFFCFBE8);
-    final shadowColor = isDark ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: isSelected ? 0.15 : 0.05);
-    final textColor = isDark ? Colors.white : const Color(0xff634700);
+    final cardColor = const Color(0xFFFCFBE8);
+    final shadowColor = Colors.black.withValues(alpha: isSelected ? 0.15 : 0.05);
+    final textColor = const Color(0xff634700);
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
-        height: isSelected ? 320 : 250,
-        margin: EdgeInsets.only(bottom: isSelected ? 0 : 30),
+        height: (isSelected ? 320 : 250).h,
+        margin: EdgeInsets.only(bottom: (isSelected ? 0 : 30).h),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
               color: shadowColor,
@@ -174,17 +175,17 @@ class _RoleCard extends StatelessWidget {
             Text(
               isSelected ? title.toUpperCase() : title,
               style: TextStyle(
-                fontSize: isSelected ? 20 : 16,
-                fontFamily: "Marcellus",
+                fontSize: (isSelected ? 20 : 16).sp,
+                fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                 color: textColor,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              height: isSelected ? 120 : 80,
-              width: isSelected ? 120 : 80,
+              height: (isSelected ? 120 : 80).r,
+              width: (isSelected ? 120 : 80).r,
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage(imagePath),

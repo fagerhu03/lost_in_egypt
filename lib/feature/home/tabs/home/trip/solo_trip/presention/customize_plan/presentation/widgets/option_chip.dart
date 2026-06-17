@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../../../../../../theme/theme.dart';
 
 class OptionChip extends StatelessWidget {
@@ -20,16 +21,16 @@ class OptionChip extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(20.r),
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.darkPrimaryButton
               : (isDark ? AppColors.darkPatternOverlay : Colors.white),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected
                 ? AppColors.darkPrimaryButton
@@ -40,13 +41,13 @@ class OptionChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (emoji != null) ...[
-              Text(emoji!, style: const TextStyle(fontSize: 15)),
-              const SizedBox(width: 6),
+              Text(emoji!, style: TextStyle(fontSize: 15.sp)),
+              SizedBox(width: 6.w),
             ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 color: isSelected
                     ? Colors.white
                     : (isDark ? AppColors.darkText : AppColors.lightText),

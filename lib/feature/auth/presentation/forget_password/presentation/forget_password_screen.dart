@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
@@ -18,12 +20,13 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
   Future<void> _sendPasswordReset() async {
     FocusManager.instance.primaryFocus?.unfocus();
+    final l = AppLocalizations.of(context);
     final email = _emailController.text.trim();
 
     // 1. Basic Input Validation
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email")),
+        SnackBar(content: Text(l.forgotEnterEmail)),
       );
       return;
     }
@@ -42,17 +45,17 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("If an account exists, a reset link was sent."),
+          SnackBar(
+            content: Text(l.forgotResetSent),
             backgroundColor: Colors.green,
           ),
         );
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        String msg = "Failed to send reset email";
-        if (e.code == 'invalid-email') msg = "Invalid email formatting.";
-        
+        String msg = l.forgotFailedSend;
+        if (e.code == 'invalid-email') msg = l.forgotInvalidEmail;
+
         showErrorSnackBar(context, msg);
       }
     } catch (e) {
@@ -66,6 +69,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFFFCFBE8),
@@ -86,48 +90,48 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
         extendBodyBehindAppBar: true,
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(30.0),
+            padding: EdgeInsets.all(30.r),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // ICON
                 Image.asset(
                   "assets/icons/error.png",
-                  height: 150,
-                  errorBuilder: (c, e, s) => const Icon(Icons.lock_reset, size: 100, color: Color(0xff634700)),
+                  height: 150.h,
+                  errorBuilder: (_, _, _) => Icon(Icons.lock_reset, size: 100.r, color: const Color(0xff634700)),
                 ),
 
                 Text(
-                  _emailSent ? "Email Sent!" : "Reset Password",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontFamily: "Marcellus",
-                    color: Color(0xff634700),
+                  _emailSent ? l.forgotEmailSentTitle : l.forgotResetTitle,
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
+                    color: const Color(0xff634700),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
 
                 Text(
-                  _emailSent 
-                    ? "If an account is registered to ${_emailController.text}, we've sent a secure password reset link. Please check your email."
-                    : "Enter your email to receive a secure password reset link.",
+                  _emailSent
+                    ? l.forgotEmailSentBody(_emailController.text)
+                    : l.forgotResetBody,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontFamily: "Marcellus",
-                    fontSize: 16,
-                    color: Color(0xff634700),
+                  style: TextStyle(
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
+                    fontSize: 16.sp,
+                    color: const Color(0xff634700),
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                SizedBox(height: 30.h),
 
                 if (!_emailSent) ...[
                   // EMAIL INPUT
                   AuthTextField(
                     controller: _emailController,
-                    hintText: "Enter your email",
+                    hintText: l.authEmailHint,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) {
@@ -135,29 +139,29 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 25),
+                  SizedBox(height: 25.h),
 
                   Material(
                     color: const Color(0xFFD6A00F),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     clipBehavior: Clip.hardEdge,
                     child: InkWell(
                       onTap: _isLoading ? null : _sendPasswordReset,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                       child: SizedBox(
                         width: double.infinity,
-                        height: 50,
+                        height: 50.h,
                         child: Center(
                           child: _isLoading
                               ? const CircularProgressIndicator(
                                   color: Colors.black87)
-                              : const Text(
-                                  "Send Reset Link",
+                              : Text(
+                                  l.forgotSendLink,
                                   style: TextStyle(
                                     color: Colors.black87,
-                                    fontSize: 18,
+                                    fontSize: 18.sp,
                                     fontWeight: FontWeight.w700,
-                                    fontFamily: "Marcellus",
+                                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                                   ),
                                 ),
                         ),
@@ -168,22 +172,22 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                   // BACK TO LOGIN BUTTON
                   Material(
                     color: const Color(0xFFD6A00F),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     clipBehavior: Clip.hardEdge,
                     child: InkWell(
                       onTap: () => Navigator.of(context).pop(),
-                      borderRadius: BorderRadius.circular(10),
-                      child: const SizedBox(
+                      borderRadius: BorderRadius.circular(10.r),
+                      child: SizedBox(
                         width: double.infinity,
-                        height: 50,
+                        height: 50.h,
                         child: Center(
                           child: Text(
-                            "Return to Login",
+                            l.forgotReturnToLogin,
                             style: TextStyle(
                               color: Colors.black87,
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.w700,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             ),
                           ),
                         ),

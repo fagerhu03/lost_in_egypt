@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import '../bloc/map_bloc.dart';
 import '../bloc/map_event.dart';
@@ -31,9 +33,9 @@ class MapActionButtons extends StatelessWidget {
       children: [
         // My Location FAB
         if (!state.isNavigationMode)
-          Positioned(
-            bottom: state.selectedPlace != null ? 350 : 110,
-            right: 20,
+          PositionedDirectional(
+            bottom: state.selectedPlace != null ? 350.h : 110.h,
+            end: 20.w,
             child: FloatingActionButton(
               heroTag: "location_btn",
               backgroundColor: chipBg(),
@@ -47,9 +49,9 @@ class MapActionButtons extends StatelessWidget {
             ),
           ),
         if (state.isNavigationMode)
-          Positioned(
-            bottom: 280,
-            right: 20,
+          PositionedDirectional(
+            bottom: 280.h,
+            end: 20.w,
             child: FloatingActionButton(
               heroTag: "location_btn",
               backgroundColor: chipBg(),
@@ -65,17 +67,17 @@ class MapActionButtons extends StatelessWidget {
 
         // Reset Filter FAB
         if (state.selectedUiCategoryId != 'all' && !state.isNavigationMode)
-          Positioned(
-            bottom: state.selectedPlace != null ? 350 : 110,
-            left: 20,
+          PositionedDirectional(
+            bottom: state.selectedPlace != null ? 350.h : 110.h,
+            start: 20.w,
             child: FloatingActionButton.extended(
               heroTag: "reset_filter_btn",
               backgroundColor: chipBg(),
               onPressed: () =>
                   context.read<MapBloc>().add(const MapCategoryChanged('all')),
               icon: Icon(Icons.close,
-                  color: onSurface.withValues(alpha: 0.9), size: 18),
-              label: Text('Reset',
+                  color: onSurface.withValues(alpha: 0.9), size: 18.r),
+              label: Text(AppLocalizations.of(context).commonReset,
                   style: TextStyle(color: onSurface.withValues(alpha: 0.9))),
             ),
           ),

@@ -943,9 +943,10 @@ exports.recommendPlaces = onCall(async (request) => {
 
   // ── Country prior (cold-start) ────────────────────────────────────────────
   // Only fetched when user has <5 signals AND we know their nationality.
-  // nationalityCode is written to Firestore by EditProfileScreenEnhanced when the
-  // user selects their country from the country picker. It's an ISO alpha-2 code
-  // (e.g. "EG" for Egypt, "US" for United States) normalised to 3 chars uppercase.
+  // nationalityCode is written to Firestore by EditProfileScreenEnhanced (and
+  // ideally by signup — see roadmap audit #7) when the user picks a country.
+  // Format: ISO 3166-1 alpha-2 (e.g. "EG", "US"). The slice(0, 3) below is a
+  // defensive cap that also handles any legacy alpha-3 values.
   let countryPrior = null;
   if (!hasEnoughSignals && userData.nationalityCode) {
     const priorSnap = await db()
@@ -1232,7 +1233,7 @@ exports.resetTasteVector = onCall(async (request) => {
  * Only users who have at least 1 signal are processed (signalCount > 0 filter).
  */
 exports.decayTasteVectors = onSchedule(
-  { schedule: "0 3 * * *", timeZone: "UTC" },
+  { schedule: "0 3 * * *", timeZone: "UTC", region: "europe-west1" },
   async () => {
     const snapshot = await db().collection("users")
       .where("signalCount", ">", 0)
@@ -1291,7 +1292,7 @@ exports.decayTasteVectors = onSchedule(
  * to 100k+, we'd want to shard this or move to ALS/matrix factorisation.
  */
 exports.rebuildPlaceNeighbors = onSchedule(
-  { schedule: "0 4 * * *", timeZone: "UTC" },
+  { schedule: "0 4 * * *", timeZone: "UTC", region: "europe-west1" },
   async () => {
     const sinceMs = Date.now() - 90 * 24 * 60 * 60 * 1000; // 90 days ago
     const since = admin.firestore.Timestamp.fromMillis(sinceMs);
@@ -1397,7 +1398,7 @@ exports.rebuildPlaceNeighbors = onSchedule(
  * night's decay), so the averaged vectors already reflect the latest decay.
  */
 exports.rebuildCountryPriors = onSchedule(
-  { schedule: "0 2 * * 0", timeZone: "UTC" }, // Sunday 2:00 AM UTC
+  { schedule: "0 2 * * 0", timeZone: "UTC", region: "europe-west1" }, // Sunday 2:00 AM UTC
   async () => {
     const byCountry = new Map(); // code → { sum: {key: total}, count: int }
     const usersSnap = await db().collection("users")
@@ -1446,26 +1447,30 @@ exports.rebuildCountryPriors = onSchedule(
 
 // Famous Egyptian landmarks pool — Places API is the production source for live
 // data; this list is the daily-push candidate set (static, curated, no API call).
+//
+// Keys MUST be drawn from CANONICAL_TYPES / CANONICAL_TAGS at the top of this
+// file — otherwise the dot-product scoring below ignores them silently and
+// personalisation degrades to random.
 const DISCOVERY_POOL = [
-  { name: "Karnak Temple", types: ["temple", "historical", "cultural"] },
-  { name: "Abu Simbel", types: ["temple", "historical", "monument"] },
-  { name: "Valley of the Kings", types: ["historical", "tombs", "cultural"] },
-  { name: "Bibliotheca Alexandrina", types: ["museum", "cultural", "modern"] },
-  { name: "Siwa Oasis", types: ["nature", "natural", "adventure"] },
-  { name: "Dahab Blue Hole", types: ["beach", "diving", "adventure"] },
-  { name: "Khan el-Khalili", types: ["bazaar", "shopping", "cultural"] },
-  { name: "Luxor Temple", types: ["temple", "historical", "monument"] },
-  { name: "Citadel of Saladin", types: ["historical", "islamic", "monument"] },
-  { name: "White Desert", types: ["nature", "natural", "adventure"] },
-  { name: "Edfu Temple", types: ["temple", "historical", "pharaonic"] },
-  { name: "Ras Muhammad National Park", types: ["nature", "beach", "diving"] },
+  { name: "Karnak Temple",              types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical", "religious"] },
+  { name: "Abu Simbel",                 types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Valley of the Kings",        types: ["archaeological_site"],             tags: ["ancient", "pharaonic", "historical", "cultural"] },
+  { name: "Bibliotheca Alexandrina",    types: ["museum"],                          tags: ["cultural", "modern"] },
+  { name: "Siwa Oasis",                 types: ["park", "tourist_attraction"],      tags: ["natural", "adventure", "relaxation"] },
+  { name: "Dahab Blue Hole",            types: ["beach"],                           tags: ["natural", "adventure"] },
+  { name: "Khan el-Khalili",            types: ["market"],                          tags: ["islamic", "shopping", "cultural", "historical"] },
+  { name: "Luxor Temple",               types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Citadel of Saladin",         types: ["historical_landmark", "monument"], tags: ["islamic", "historical", "religious"] },
+  { name: "White Desert",               types: ["park", "tourist_attraction"],      tags: ["natural", "adventure"] },
+  { name: "Edfu Temple",                types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Ras Muhammad National Park", types: ["park", "beach"],                   tags: ["natural", "adventure"] },
 ];
 
 exports.sendDailyDiscovery = onSchedule(
   { schedule: "0 9 * * *", region: "europe-west1", secrets: [groqApiKey] },
   async () => {
     const usersSnap = await db().collection("users")
-      .where("notifications", "==", true)
+      .where("preferences.notifications", "==", true)
       .select("fcmToken", "tasteVector", "notificationPreferences")
       .limit(500)
       .get();
@@ -1479,11 +1484,13 @@ exports.sendDailyDiscovery = onSchedule(
         // Respect the dedicated dailyDiscovery preference (defaults true)
         if (notificationPreferences.dailyDiscovery === false) return;
 
-        // Pick the pool entry whose types best overlap the user's taste vector
+        // Pick the pool entry whose types+tags best overlap the user's taste vector
         let bestMatch = DISCOVERY_POOL[Math.floor(Math.random() * DISCOVERY_POOL.length)];
         let bestScore = -Infinity;
         for (const landmark of DISCOVERY_POOL) {
-          const score = landmark.types.reduce((sum, t) => sum + (tasteVector[t] || 0), 0);
+          let score = 0;
+          for (const t of landmark.types) score += tasteVector[t] || 0;
+          for (const t of landmark.tags || []) score += tasteVector[t] || 0;
           if (score > bestScore) { bestScore = score; bestMatch = landmark; }
         }
 
@@ -1594,7 +1601,7 @@ exports.sendWeeklyRecommendations = onSchedule(
   { schedule: "0 10 * * 0", region: "europe-west1" },
   async () => {
     const usersSnap = await db().collection("users")
-      .where("notifications", "==", true)
+      .where("preferences.notifications", "==", true)
       .where("signalCount", ">=", 1)
       .select("fcmToken", "notificationPreferences")
       .limit(1000)
@@ -1689,7 +1696,7 @@ exports.sendWeatherAlertForSavedPlans = onSchedule(
   { schedule: "0 18 * * *", region: "europe-west1" },
   async () => {
     const usersSnap = await db().collection("users")
-      .where("notifications", "==", true)
+      .where("preferences.notifications", "==", true)
       .select("fcmToken", "notificationPreferences")
       .limit(500)
       .get();

@@ -10,7 +10,12 @@ class EmailVerificationScreen extends StatefulWidget {
   /// without a full re-fetch loop.
   final VoidCallback? onVerified;
 
-  const EmailVerificationScreen({super.key, this.onVerified});
+  /// Called when the user taps "Skip for now". If null, no skip button is
+  /// shown. The skip is session-only — AuthGate re-evaluates the gate on the
+  /// next cold start, so the user gets nudged again next session.
+  final VoidCallback? onSkip;
+
+  const EmailVerificationScreen({super.key, this.onVerified, this.onSkip});
 
   @override
   State<EmailVerificationScreen> createState() => _EmailVerificationScreenState();
@@ -180,6 +185,20 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                         )
                       : const Text("Resend Verification Email"),
                 ),
+                if (widget.onSkip != null) ...[
+                  SizedBox(height: 8.h),
+                  TextButton(
+                    onPressed: widget.onSkip,
+                    child: Text(
+                      "Skip for now",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: theme.colorScheme.onSurface
+                            .withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

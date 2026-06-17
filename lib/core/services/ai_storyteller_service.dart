@@ -3,11 +3,12 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 
 class AIStorytellerService {
-  static Future<String> getLandmarkStory(String landmarkName) async {
+  static Future<String> getLandmarkStory(String landmarkName, {String locale = 'en'}) async {
     try {
       final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('analyzeImageOrStory');
       final result = await callable.call(<String, dynamic>{
         'landmarkName': landmarkName,
+        'locale': locale,
       });
 
       return result.data['story'] ?? "I'm sorry, I couldn't find a story for this place yet.";
@@ -21,7 +22,7 @@ class AIStorytellerService {
   }
 
   /// Calls Google Cloud TTS via our Cloud Function and returns raw MP3 bytes.
-  static Future<Uint8List?> getStoryAudio(String storyText) async {
+  static Future<Uint8List?> getStoryAudio(String storyText, {String locale = 'en'}) async {
     try {
       final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable(
         'generateStoryAudio',
@@ -29,6 +30,7 @@ class AIStorytellerService {
       );
       final result = await callable.call(<String, dynamic>{
         'text': storyText,
+        'locale': locale,
       });
 
       final base64Audio = result.data['audio'] as String?;

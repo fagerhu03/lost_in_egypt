@@ -85,7 +85,7 @@ class _StartScreenState extends State<StartScreen> {
                       style: TextStyle(
                         color: Colors.black87,
                         fontWeight: FontWeight.w600,
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         letterSpacing: 1.2,
                         fontSize: 16.sp,
                       ),

@@ -83,10 +83,12 @@ class CameraCubit extends Cubit<CameraState> {
       if (_cameras.isNotEmpty) {
         await _initializeCameraController(_cameras[_selectedCameraIndex]);
       } else {
-        emit(const CameraError('No cameras available on this device'));
+        emit(const CameraError('No cameras available on this device',
+            kind: CameraErrorKind.noCameras));
       }
     } catch (e) {
-      emit(const CameraError('Failed to initialize camera. Please restart the app.'));
+      emit(const CameraError('Failed to initialize camera. Please restart the app.',
+          kind: CameraErrorKind.initFailed));
     }
   }
 
@@ -129,7 +131,8 @@ class CameraCubit extends Cubit<CameraState> {
       ));
     } catch (e) {
       debugPrint("Error initializing camera: $e");
-      emit(const CameraError('Failed to initialize camera. Please restart the app.'));
+      emit(const CameraError('Failed to initialize camera. Please restart the app.',
+          kind: CameraErrorKind.initFailed));
     }
   }
 
@@ -193,7 +196,8 @@ class CameraCubit extends Cubit<CameraState> {
         emit(CameraAnalyzing(
           isGalleryImage: currentState.isGalleryImage,
           capturedImagePath: currentState.capturedImagePath,
-          message: "Downloading $_sourceLang model (this may take a minute)...",
+          status: CameraStatus.downloadingModel,
+          modelLang: _sourceLang,
         ));
       }
       await modelManager.downloadModel(sourceMlLang.bcpCode).timeout(const Duration(seconds: 45));
@@ -205,7 +209,8 @@ class CameraCubit extends Cubit<CameraState> {
         emit(CameraAnalyzing(
           isGalleryImage: currentState.isGalleryImage,
           capturedImagePath: currentState.capturedImagePath,
-          message: "Downloading $_targetLang model (this may take a minute)...",
+          status: CameraStatus.downloadingModel,
+          modelLang: _targetLang,
         ));
       }
       await modelManager.downloadModel(targetMlLang.bcpCode).timeout(const Duration(seconds: 45));
@@ -237,7 +242,7 @@ class CameraCubit extends Cubit<CameraState> {
       emit(CameraAnalyzing(
         isGalleryImage: true,
         capturedImagePath: image.path,
-        message: "Identifying landmark...",
+        status: CameraStatus.identifying,
       ));
 
       // Easter Egg: The Sphinx's Riddle
@@ -298,7 +303,8 @@ class CameraCubit extends Cubit<CameraState> {
 
   Future<void> _processImageForTranslation(String imagePath) async {
     try {
-      emit(const CameraAnalyzing(isGalleryImage: true, message: "Translating..."));
+      emit(const CameraAnalyzing(
+          isGalleryImage: true, status: CameraStatus.translating));
 
       final inputImage = InputImage.fromFilePath(imagePath);
       
@@ -324,7 +330,9 @@ class CameraCubit extends Cubit<CameraState> {
         await _downloadModelsIfNeeded();
       } catch (e) {
         debugPrint("Failed to initialize translation: $e");
-        emit(const CameraError('Could not download translation models. Please check your internet connection.'));
+        emit(const CameraError(
+            'Could not download translation models. Please check your internet connection.',
+            kind: CameraErrorKind.translationModelsFailed));
         return;
       }
 
@@ -343,7 +351,8 @@ class CameraCubit extends Cubit<CameraState> {
           galleryImagePath: imagePath,
         ));
       } else {
-        emit(const CameraError('No text found in the selected image.'));
+        emit(const CameraError('No text found in the selected image.',
+            kind: CameraErrorKind.noTextFound));
       }
     } catch (e) {
       debugPrint("Translation error: $e");
@@ -362,17 +371,21 @@ class CameraCubit extends Cubit<CameraState> {
       HapticFeedback.lightImpact();
 
       // Emit a transient capturing state
-      emit(wasTranslateMode 
-          ? const CameraAnalyzing(isGalleryImage: true, message: "Capturing...") 
-          : const CameraAnalyzing(message: "Capturing..."));
+      emit(wasTranslateMode
+          ? const CameraAnalyzing(
+              isGalleryImage: true, status: CameraStatus.capturing)
+          : const CameraAnalyzing(status: CameraStatus.capturing));
 
       final XFile imageFile = await _controller!.takePicture();
 
       // Re-emit with the captured image path so the UI can show a still preview
       if (!wasTranslateMode) {
-        emit(CameraAnalyzing(capturedImagePath: imageFile.path, message: "Identifying landmark..."));
+        emit(CameraAnalyzing(
+            capturedImagePath: imageFile.path,
+            status: CameraStatus.identifying));
       } else {
-        emit(const CameraAnalyzing(isGalleryImage: true, message: "Translating..."));
+        emit(const CameraAnalyzing(
+            isGalleryImage: true, status: CameraStatus.translating));
       }
       
       // If we are translating, just freeze and show translation immediately
@@ -429,8 +442,8 @@ class CameraCubit extends Cubit<CameraState> {
       
       if (currentState.galleryImagePath != null) {
         emit(CameraAnalyzing(
-          isGalleryImage: true, 
-          message: "Translating...",
+          isGalleryImage: true,
+          status: CameraStatus.translating,
           capturedImagePath: currentState.galleryImagePath,
         ));
           
@@ -445,7 +458,9 @@ class CameraCubit extends Cubit<CameraState> {
             ));
           }
         } catch (e) {
-          emit(const CameraError('Failed to download language model. Please check your internet connection.'));
+          emit(const CameraError(
+              'Failed to download language model. Please check your internet connection.',
+              kind: CameraErrorKind.languageModelFailed));
         }
       } else {
         emit(currentState.copyWith(
@@ -471,8 +486,8 @@ class CameraCubit extends Cubit<CameraState> {
       
       if (currentState.galleryImagePath != null) {
         emit(CameraAnalyzing(
-          isGalleryImage: true, 
-          message: "Translating...",
+          isGalleryImage: true,
+          status: CameraStatus.translating,
           capturedImagePath: currentState.galleryImagePath,
         ));
           
@@ -487,7 +502,9 @@ class CameraCubit extends Cubit<CameraState> {
             ));
           }
         } catch (e) {
-          emit(const CameraError('Failed to download language model. Please check your internet connection.'));
+          emit(const CameraError(
+              'Failed to download language model. Please check your internet connection.',
+              kind: CameraErrorKind.languageModelFailed));
         }
       } else {
         emit(currentState.copyWith(

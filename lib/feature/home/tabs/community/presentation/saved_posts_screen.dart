@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -17,7 +18,6 @@ class SavedPostsScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final bg = theme.scaffoldBackgroundColor;
     final onSurface = theme.colorScheme.onSurface;
-    final primary = theme.colorScheme.primary;
     final surface = theme.colorScheme.surface;
     final currentUid = GetIt.I<FirebaseAuth>().currentUser?.uid ?? '';
 
@@ -31,7 +31,7 @@ class SavedPostsScreen extends StatelessWidget {
         title: Text(
           'Saved Posts',
           style: TextStyle(
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             color: onSurface,
             fontWeight: FontWeight.bold,
           ),
@@ -48,10 +48,10 @@ class SavedPostsScreen extends StatelessWidget {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return ListView.separated(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12.r),
                     itemCount: 4,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (_, __) => _buildSkeleton(surface, onSurface, isDark),
+                    separatorBuilder: (_, _) => SizedBox(height: 12.h),
+                    itemBuilder: (_, _) => _buildSkeleton(surface, onSurface, isDark),
                   );
                 }
 
@@ -68,16 +68,16 @@ class SavedPostsScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.bookmark_border_rounded, size: 64, color: onSurface.withValues(alpha: 0.2)),
-                        const SizedBox(height: 16),
+                        Icon(Icons.bookmark_border_rounded, size: 64.r, color: onSurface.withValues(alpha: 0.2)),
+                        SizedBox(height: 16.h),
                         Text(
                           'No saved posts yet',
-                          style: TextStyle(fontFamily: 'Marcellus', fontSize: 18, color: onSurface.withValues(alpha: 0.5)),
+                          style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 18.sp, color: onSurface.withValues(alpha: 0.5)),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           'Tap the bookmark icon on any post to save it here.',
-                          style: TextStyle(fontSize: 13, color: onSurface.withValues(alpha: 0.4)),
+                          style: TextStyle(fontSize: 13.sp, color: onSurface.withValues(alpha: 0.4)),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -89,9 +89,9 @@ class SavedPostsScreen extends StatelessWidget {
                   ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
                 return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
+                  padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 24.h),
                   itemCount: posts.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => SizedBox(height: 12.h),
                   itemBuilder: (context, index) {
                     final post = posts[index];
                     return CommunityPostCard(
@@ -111,28 +111,28 @@ class SavedPostsScreen extends StatelessWidget {
 
   Widget _buildSkeleton(Color surface, Color onSurface, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const ShimmerLoadingWidget.circular(width: 38, height: 38),
-            const SizedBox(width: 10),
+            ShimmerLoadingWidget.circular(width: 38.r, height: 38.r),
+            SizedBox(width: 10.w),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const ShimmerLoadingWidget.rectangular(width: 120, height: 13),
-              const SizedBox(height: 5),
-              const ShimmerLoadingWidget.rectangular(width: 80, height: 10),
+              ShimmerLoadingWidget.rectangular(width: 120.w, height: 13.h),
+              SizedBox(height: 5.h),
+              ShimmerLoadingWidget.rectangular(width: 80.w, height: 10.h),
             ]),
           ]),
-          const SizedBox(height: 12),
-          const ShimmerLoadingWidget.rectangular(width: double.infinity, height: 13),
-          const SizedBox(height: 6),
-          const ShimmerLoadingWidget.rectangular(width: 200, height: 13),
+          SizedBox(height: 12.h),
+          ShimmerLoadingWidget.rectangular(width: double.infinity, height: 13.h),
+          SizedBox(height: 6.h),
+          ShimmerLoadingWidget.rectangular(width: 200.w, height: 13.h),
         ],
       ),
     );

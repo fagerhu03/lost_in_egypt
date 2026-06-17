@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../theme/theme.dart';
 
 class QuizScaffold extends StatelessWidget {
@@ -7,7 +9,11 @@ class QuizScaffold extends StatelessWidget {
   final Widget child;
   final VoidCallback onNext;
   final VoidCallback onBack;
-  final String nextText;
+
+  /// When true the primary button reads "Finish" with a check icon instead of
+  /// "Next" with a forward arrow. Replaces the old string-compare on nextText
+  /// so the label can be localized without breaking the icon logic.
+  final bool isFinish;
   final int stepIndex;
   final int totalSteps;
 
@@ -19,11 +25,12 @@ class QuizScaffold extends StatelessWidget {
     required this.onBack,
     required this.stepIndex,
     this.totalSteps = 5,
-    this.nextText = 'Next',
+    this.isFinish = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppColors.darkPrimaryButton;
     final bg = isDark ? AppColors.darkBackground : AppColors.lightBackground;
@@ -37,75 +44,75 @@ class QuizScaffold extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
 
             // ── Header: back button + "Step X of 5" ───────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Row(
                 children: [
                   GestureDetector(
                     onTap: onBack,
                     child: Container(
-                      width: 38,
-                      height: 38,
+                      width: 38.r,
+                      height: 38.r,
                       decoration: BoxDecoration(
                         color: primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Icon(
                         Icons.arrow_back_ios_new_rounded,
-                        size: 16,
+                        size: 16.r,
                         color: primary,
                       ),
                     ),
                   ),
                   Expanded(
                     child: Text(
-                      'Step ${stepIndex + 1} of $totalSteps',
+                      l10n.quizStepOf(stepIndex + 1, totalSteps),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                         color: textColor.withValues(alpha: 0.55),
                         letterSpacing: 0.5,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ),
                   // Invisible balance for the back button
-                  const SizedBox(width: 38),
+                  SizedBox(width: 38.w),
                 ],
               ),
             ),
 
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
 
             // ── Gold progress bar ──────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(6.r),
                 child: LinearProgressIndicator(
                   value: (stepIndex + 1) / totalSteps,
-                  minHeight: 5,
+                  minHeight: 5.h,
                   backgroundColor: primary.withValues(alpha: 0.14),
                   valueColor: AlwaysStoppedAnimation<Color>(primary),
                 ),
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // ── Content card ───────────────────────────────────────────────
             Expanded(
               child: Container(
                 width: double.infinity,
-                margin: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-                padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
+                margin: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+                padding: EdgeInsets.fromLTRB(18.w, 20.h, 18.w, 16.h),
                 decoration: BoxDecoration(
                   color: cardBg,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(24.r),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,28 +120,28 @@ class QuizScaffold extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         color: labelColor,
                         fontWeight: FontWeight.w600,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18.h),
                     Expanded(child: child),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14.h),
 
                     // ── Next / Finish ──────────────────────────────────────
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 50.h,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primary,
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                         ),
                         onPressed: onNext,
@@ -142,19 +149,19 @@ class QuizScaffold extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              nextText,
-                              style: const TextStyle(
-                                fontSize: 15,
+                              isFinish ? l10n.quizFinish : l10n.quizNext,
+                              style: TextStyle(
+                                fontSize: 15.sp,
                                 fontWeight: FontWeight.w600,
-                                fontFamily: 'Marcellus',
+                                fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6.w),
                             Icon(
-                              nextText == 'Finish'
+                              isFinish
                                   ? Icons.check_rounded
                                   : Icons.arrow_forward_rounded,
-                              size: 16,
+                              size: 16.r,
                             ),
                           ],
                         ),

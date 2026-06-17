@@ -1,19 +1,23 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get_it/get_it.dart';
 
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import 'package:lost_in_egypt/core/models/weather_context.dart';
 import 'package:lost_in_egypt/core/services/recommendation_service.dart';
 import 'package:lost_in_egypt/core/services/weather_controller.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_avatar.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/core/widgets/shimmer_loading_widget.dart';
 import 'package:lost_in_egypt/core/widgets/weather_banner.dart';
 import 'package:lost_in_egypt/core/widgets/weather_forecast_sheet.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
+import 'package:lost_in_egypt/feature/home/tabs/map/data/places_api_service.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/widgets/full_screen_gallery.dart';
 
 // Mirrors OUTDOOR_TYPES + SEMI_OUTDOOR_TYPES in functions/recommendation.js.
@@ -60,6 +64,15 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   List<_SimilarPlace> _similarPlaces = [];
   bool _loadingSimilar = false;
 
+  // Lazy-loaded display fields. Initialised from widget.place; backfilled from
+  // getPlaceDetails when missing. The bulk Places API fetch in MapRepository
+  // omits `reviews` and `editorialSummary` (drops SKU from Atmosphere $0.040
+  // to Enterprise $0.035), so we restore the rich data on demand here. Places
+  // sourced from cat_*.json already arrive with descriptions populated, so the
+  // empty-check below short-circuits and no API call fires for those.
+  late String _description = widget.place.description;
+  late List<PlaceReview> _reviews = widget.place.reviews;
+
   @override
   void initState() {
     super.initState();
@@ -67,10 +80,75 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
     _calculateDistance();
     _loadCrowdLevel();
     _loadCommunityPostCount();
+    _backfillDetailsIfMissing();
     if (widget.allItems.length > 1) {
       _loadingSimilar = true;
       _loadSimilarPlaces();
     }
+  }
+
+  /// Fetches description + reviews from the Places Details API when the bulk
+  /// fetch didn't include them. Idempotent: skips if both are already
+  /// populated, skips for synthetic / non-Google IDs, and the underlying
+  /// getPlaceDetails call is Firestore-cached for 30 days.
+  Future<void> _backfillDetailsIfMissing() async {
+    if (_description.isNotEmpty && _reviews.isNotEmpty) return;
+
+    final placeId = widget.place.id;
+    if (placeId.isEmpty) return;
+    // Synthetic IDs from SOS results / AI-generated trip stops / local JSON
+    // entries that don't have a real Google place ID. The Places API would
+    // reject these — short-circuit silently. Local JSON entries already arrive
+    // with descriptions populated, so the empty-check above usually handles
+    // them, but the explicit prefix list is the durable guarantee.
+    //   cat_*    → cat_*.json (LocalPlacesService curated places)
+    //   place_*  → final_places_clean_v2.json (offline fallback dataset)
+    //   sos_*    → SOSScreen synthetic markers
+    //   local_*, synthetic_* → reserved prefixes for future synthetic sources
+    if (placeId.startsWith('cat_') ||
+        placeId.startsWith('place_') ||
+        placeId.startsWith('sos_') ||
+        placeId.startsWith('local_') ||
+        placeId.startsWith('synthetic_')) {
+      return;
+    }
+
+    final details =
+        await GetIt.instance<PlacesApiService>().getPlaceDetails(placeId);
+    if (!mounted || details == null) return;
+
+    String? freshDescription;
+    final editorial = details['editorialSummary'];
+    if (editorial is Map<String, dynamic>) {
+      final t = editorial['text'];
+      if (t is String && t.isNotEmpty) freshDescription = t;
+    }
+
+    final freshReviews = <PlaceReview>[];
+    final rawReviews = details['reviews'];
+    if (rawReviews is List) {
+      for (final r in rawReviews) {
+        if (r is Map<String, dynamic>) {
+          try {
+            freshReviews.add(PlaceReview.fromJson(r));
+          } catch (_) {}
+        }
+      }
+    }
+
+    if (!mounted) return;
+    if ((freshDescription == null || _description.isNotEmpty) &&
+        (freshReviews.isEmpty || _reviews.isNotEmpty)) {
+      return;
+    }
+    setState(() {
+      if (_description.isEmpty && freshDescription != null) {
+        _description = freshDescription;
+      }
+      if (_reviews.isEmpty && freshReviews.isNotEmpty) {
+        _reviews = freshReviews;
+      }
+    });
   }
 
   Future<void> _loadSimilarPlaces() async {
@@ -106,6 +184,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
       userLng: lng,
       limit: 5,
       excludeSeen: false,
+      weather: WeatherController.weather.value,
     );
 
     if (!mounted) return;
@@ -209,7 +288,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   Future<void> _toggleSave() async {
     if (_userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to save places.')),
+        SnackBar(content: Text(AppLocalizations.of(context).placeDetailLoginToSave)),
       );
       return;
     }
@@ -250,20 +329,22 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   }
 
   String _formatDistance(double km) {
-    if (km < 1) return '${(km * 1000).round()} m away';
-    if (km < 10) return '${km.toStringAsFixed(1)} km away';
-    return '${km.round()} km away';
+    final l10n = AppLocalizations.of(context);
+    if (km < 1) return l10n.placeDetailMetersAway((km * 1000).round());
+    if (km < 10) return l10n.placeDetailKmAway(km.toStringAsFixed(1));
+    return l10n.placeDetailKmAway('${km.round()}');
   }
 
   String _estimateFare(double km) {
     final fare = (10 + km * 5).round();
     final fareHigh = (fare * 1.5).round();
-    return '~$fare–$fareHigh EGP by taxi';
+    return AppLocalizations.of(context).placeDetailTaxiFare(fare, fareHigh);
   }
 
   String _getOpeningStatus() {
     if (widget.place.openingHoursText.isNotEmpty) {
-      return widget.place.isCurrentlyOpen ? 'Open Now' : 'Closed';
+      final l10n = AppLocalizations.of(context);
+      return widget.place.isCurrentlyOpen ? l10n.placeDetailOpenNow : l10n.placeDetailClosed;
     }
     return '';
   }
@@ -284,6 +365,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     final surface = theme.colorScheme.surface;
@@ -369,40 +451,24 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                                     ),
                                   );
                                 },
-                                child: CachedNetworkImage(
-                                  imageUrl: widget.place.imagePaths[index],
+                                child: ShimmerImage(
+                                  url: widget.place.imagePaths[index],
                                   fit: BoxFit.cover,
-                                  placeholder: (_, _) => ShimmerLoadingWidget.rectangular(height: 220.h),
-                                  errorWidget: (_, _, _) => Container(
-                                    color: Colors.grey.withValues(alpha: 0.15),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.image_not_supported_outlined,
-                                              color: Colors.grey.withValues(alpha: 0.5), size: 50.r),
-                                          SizedBox(height: 8.h),
-                                          Text('Photo not available',
-                                              style: TextStyle(
-                                                  color: Colors.grey.withValues(alpha: 0.6),
-                                                  fontSize: 12.sp)),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                                  fallbackIcon: Icons.image_not_supported_outlined,
+                                  fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.15),
+                                  fallbackIconColor: Colors.grey.withValues(alpha: 0.5),
+                                  fallbackIconSize: 50.r,
                                 ),
                               );
                             },
                           )
                         : widget.place.imagePath.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: widget.place.imagePath,
+                            ? ShimmerImage(
+                                url: widget.place.imagePath,
                                 fit: BoxFit.cover,
-                                placeholder: (_, _) => ShimmerLoadingWidget.rectangular(height: 220.h),
-                                errorWidget: (_, _, _) => Container(
-                                  color: Colors.grey.withValues(alpha: 0.15),
-                                  child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
-                                ),
+                                fallbackIcon: Icons.broken_image,
+                                fallbackBackgroundColor: Colors.grey.withValues(alpha: 0.15),
+                                fallbackIconColor: Colors.grey,
                               )
                             : Container(
                                 color: primary.withValues(alpha: isDark ? 0.15 : 0.08),
@@ -428,9 +494,9 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       ),
                     ),
                   ),
-                  Positioned(
+                  PositionedDirectional(
                     top: 10.h,
-                    right: 10.w,
+                    end: 10.w,
                     child: GestureDetector(
                       onTap: widget.onClose,
                       child: Container(
@@ -445,7 +511,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             Icon(Icons.keyboard_arrow_down_rounded,
                                 size: 18.r, color: Colors.white),
                             SizedBox(width: 2.w),
-                            Text('Close',
+                            Text(l10n.placeDetailClose,
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 12.sp,
@@ -491,7 +557,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     Text(
                       widget.place.title,
                       style: TextStyle(
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         fontSize: 26.sp,
                         fontWeight: FontWeight.bold,
                         color: onSurface,
@@ -560,7 +626,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       children: [
                         _buildActionButton(
                           icon: Icons.map_outlined,
-                          label: "Show on Map",
+                          label: l10n.cameraShowOnMap,
                           isPrimary: true,
                           primary: primary,
                           onSurface: onSurface,
@@ -576,7 +642,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                         _buildActionButton(
                           icon: Icons.directions,
-                          label: "Directions",
+                          label: l10n.placeDetailDirections,
                           isPrimary: false,
                           primary: primary,
                           onSurface: onSurface,
@@ -585,7 +651,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                         _buildActionButton(
                           icon: Icons.share,
-                          label: "Share",
+                          label: l10n.placeDetailShare,
                           isPrimary: false,
                           primary: primary,
                           onSurface: onSurface,
@@ -594,7 +660,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                         _buildActionButton(
                           icon: _isSaved ? Icons.favorite : Icons.favorite_border,
-                          label: _isSaved ? "Saved" : "Save",
+                          label: _isSaved ? l10n.placeDetailSaved : l10n.commonSave,
                           isPrimary: false,
                           primary: primary,
                           onSurface: onSurface,
@@ -613,7 +679,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
 
                     // About
                     Text(
-                      "About",
+                      l10n.placeDetailAbout,
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
@@ -622,11 +688,9 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     ),
                     SizedBox(height: 10.h),
                     Text(
-                      widget.place.description.isNotEmpty
-                          ? widget.place.description
-                          : "Explore the ancient wonders and hidden gems of Egypt. "
-                              "This location offers a unique glimpse into the rich "
-                              "history and culture of the region.",
+                      _description.isNotEmpty
+                          ? _description
+                          : l10n.placeDetailDefaultDesc,
                       style: TextStyle(
                         height: 1.6,
                         color: onSurface.withValues(alpha: 0.85),
@@ -663,7 +727,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                     if (widget.place.price > 0)
                       _buildInfoTile(
                         icon: Icons.confirmation_number_outlined,
-                        text: "${widget.place.price.toStringAsFixed(0)} EGP Entry Fee",
+                        text: l10n.placeDetailEntryFee(widget.place.price.toStringAsFixed(0)),
                         iconColor: Colors.green,
                         onSurface: onSurface,
                       ),
@@ -682,12 +746,12 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                       _buildCrowdBadge(_crowdCount!, primary, onSurface, isDark),
                     ],
 
-                    if (widget.place.reviews.isNotEmpty) ...[
+                    if (_reviews.isNotEmpty) ...[
                       SizedBox(height: 16.h),
                       Divider(thickness: 1, color: onSurface.withValues(alpha: 0.10)),
                       SizedBox(height: 16.h),
                       Text(
-                        "What Travelers Say",
+                        l10n.placeDetailReviews,
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
@@ -695,7 +759,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                         ),
                       ),
                       SizedBox(height: 12.h),
-                      ...widget.place.reviews.take(3).map((review) =>
+                      ..._reviews.take(3).map((review) =>
                         _buildReviewCard(review, onSurface, primary, isDark),
                       ),
                     ],
@@ -711,7 +775,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
-                              '$_communityPostCount traveler${_communityPostCount == 1 ? '' : 's'} posted from here',
+                              l10n.placeDetailPostedHere(_communityPostCount),
                               style: TextStyle(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.w600,
@@ -722,7 +786,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           TextButton(
                             onPressed: () => _openCommunityPosts(context),
                             child: Text(
-                              'See Posts',
+                              l10n.placeDetailSeePosts,
                               style: TextStyle(color: primary, fontWeight: FontWeight.w700),
                             ),
                           ),
@@ -740,7 +804,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                           Icon(Icons.auto_awesome, size: 16.r, color: primary),
                           SizedBox(width: 8.w),
                           Text(
-                            "Similar Places",
+                            l10n.placeDetailSimilar,
                             style: TextStyle(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
@@ -758,7 +822,7 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             itemCount: 3,
                             itemBuilder: (_, _) => Container(
                               width: 150.w,
-                              margin: EdgeInsets.only(right: 10.w),
+                              margin: EdgeInsetsDirectional.only(end: 10.w),
                               child: ShimmerLoadingWidget.rectangular(height: 148.h),
                             ),
                           ),
@@ -773,12 +837,16 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                             final sp = _similarPlaces[index];
                             return GestureDetector(
                               onTap: () {
+                                // Tapping a Similar Places thumbnail expresses
+                                // interest, not a real visit — use 'like' (+0.4)
+                                // not 'visit' (+1.0). Otherwise five thumbnail
+                                // taps cross the 5-signal cold-start threshold.
                                 RecommendationService.recordSignal(
                                   placeId: sp.item.id,
                                   placeName: sp.item.title,
                                   types: [sp.item.category],
                                   tags: sp.item.tags,
-                                  signalType: 'visit',
+                                  signalType: 'like',
                                   source: 'similar_places',
                                 );
                                 widget.onClose();
@@ -786,8 +854,8 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                               },
                               child: Container(
                                 width: 150.w,
-                                margin: EdgeInsets.only(
-                                  right: index < _similarPlaces.length - 1 ? 10.w : 0,
+                                margin: EdgeInsetsDirectional.only(
+                                  end: index < _similarPlaces.length - 1 ? 10.w : 0,
                                 ),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(14.r),
@@ -800,27 +868,17 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(
+                                    ShimmerImage(
+                                      url: sp.item.imagePaths.isNotEmpty
+                                          ? sp.item.imagePaths.first
+                                          : null,
                                       height: 80.h,
                                       width: double.infinity,
-                                      child: sp.item.imagePaths.isNotEmpty
-                                          ? CachedNetworkImage(
-                                              imageUrl: sp.item.imagePaths.first,
-                                              fit: BoxFit.cover,
-                                              placeholder: (ctx, url) => Container(
-                                                color: primary.withValues(alpha: 0.08),
-                                              ),
-                                              errorWidget: (ctx, url, err) => Container(
-                                                color: primary.withValues(alpha: 0.06),
-                                                child: Icon(Icons.place,
-                                                    color: primary.withValues(alpha: 0.3)),
-                                              ),
-                                            )
-                                          : Container(
-                                              color: primary.withValues(alpha: 0.06),
-                                              child: Icon(Icons.place,
-                                                  color: primary.withValues(alpha: 0.3), size: 32.r),
-                                            ),
+                                      fit: BoxFit.cover,
+                                      fallbackIcon: Icons.place,
+                                      fallbackBackgroundColor: primary.withValues(alpha: 0.06),
+                                      fallbackIconColor: primary.withValues(alpha: 0.3),
+                                      fallbackIconSize: 32.r,
                                     ),
                                     Padding(
                                       padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 4.h),
@@ -951,17 +1009,18 @@ class _PlaceDetailSheetState extends State<PlaceDetailSheet> {
   }
 
   Widget _buildCrowdBadge(int count, Color primary, Color onSurface, bool isDark) {
+    final l10n = AppLocalizations.of(context);
     final Color dotColor;
     final String label;
     if (count <= 2) {
       dotColor = Colors.green.shade500;
-      label = 'Quiet right now';
+      label = l10n.placeDetailCrowdQuiet;
     } else if (count <= 8) {
       dotColor = Colors.amber.shade600;
-      label = 'Moderately busy';
+      label = l10n.placeDetailCrowdModerate;
     } else {
       dotColor = Colors.red.shade500;
-      label = 'Very busy';
+      label = l10n.placeDetailCrowdBusy;
     }
 
     return Container(
@@ -1115,6 +1174,7 @@ class _CommunityPostsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? const Color(0xFF1A2E3A) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
@@ -1150,9 +1210,9 @@ class _CommunityPostsSheet extends StatelessWidget {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Posts from $placeName',
+                      l10n.placeDetailPostsFrom(placeName),
                       style: TextStyle(
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                         fontSize: 18.sp,
                         color: textColor,
                         fontWeight: FontWeight.w700,
@@ -1179,7 +1239,7 @@ class _CommunityPostsSheet extends StatelessWidget {
                   if (docs.isEmpty) {
                     return Center(
                       child: Text(
-                        'No posts yet from this place.\nBe the first to share!',
+                        l10n.placeDetailNoPosts,
                         textAlign: TextAlign.center,
                         style: TextStyle(color: onSurface.withValues(alpha: 0.5)),
                       ),
@@ -1197,16 +1257,11 @@ class _CommunityPostsSheet extends StatelessWidget {
                       final avatar = data['userAvatar'] as String? ?? '';
                       return ListTile(
                         contentPadding: EdgeInsets.symmetric(vertical: 8.h),
-                        leading: CircleAvatar(
+                        leading: ShimmerAvatar(
+                          url: avatar,
                           radius: 18.r,
-                          backgroundColor: primary.withValues(alpha: 0.15),
-                          child: avatar.isNotEmpty
-                              ? ClipOval(child: CachedNetworkImage(
-                                  imageUrl: avatar, width: 36.r, height: 36.r,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (ctx, url, err) => Icon(Icons.person, size: 16.r, color: primary),
-                                ))
-                              : Icon(Icons.person, size: 16.r, color: primary),
+                          iconSize: 16.r,
+                          fallbackBackgroundColor: primary.withValues(alpha: 0.15),
                         ),
                         title: Text(userName,
                           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp, color: textColor)),

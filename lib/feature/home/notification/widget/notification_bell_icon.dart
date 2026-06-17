@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/di/service_locator.dart';
 import '../domain/repositories/notifications_repository.dart';
@@ -52,20 +53,20 @@ class _NotificationBellIconState extends State<NotificationBellIcon> {
               },
             ),
             if (unreadCount > 0)
-              Positioned(
-                right: 8,
-                top: 8,
+              PositionedDirectional(
+                end: 8.w,
+                top: 8.h,
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: EdgeInsets.all(4.r),
                   decoration: const BoxDecoration(
                     color: Colors.red,
                     shape: BoxShape.circle,
                   ),
                   child: Text(
                     unreadCount > 9 ? '9+' : unreadCount.toString(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 10.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

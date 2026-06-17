@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class AppErrorWidget extends StatelessWidget {
   final String message;
@@ -32,7 +33,7 @@ class AppErrorWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: onSurface.withValues(alpha: 0.65),
-                fontFamily: 'Marcellus',
+                fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 fontSize: 14.sp,
                 height: 1.5,
               ),
@@ -42,9 +43,10 @@ class AppErrorWidget extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onRetry,
                 icon: Icon(Icons.refresh_rounded, size: 18.r),
-                label: const Text(
-                  'Try again',
-                  style: TextStyle(fontFamily: 'Marcellus'),
+                label: Text(
+                  AppLocalizations.of(context).commonTryAgain,
+                  style: const TextStyle(
+                      fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo']),
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: primary,

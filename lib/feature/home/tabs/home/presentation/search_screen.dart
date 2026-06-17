@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lost_in_egypt/core/services/recommendation_mappings.dart';
 import 'package:lost_in_egypt/core/widgets/app_error_widget.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
+import 'package:lost_in_egypt/core/widgets/shimmer_image.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/map_repository.dart';
 import 'package:lost_in_egypt/feature/home/tabs/map/data/datasources/map_focus_service.dart';
@@ -15,6 +17,8 @@ import 'package:lost_in_egypt/core/services/currency_controller.dart';
 import 'package:lost_in_egypt/core/services/currency_service.dart';
 
 enum _Tab { all, places, tours }
+
+enum _SearchError { places, tours }
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -35,7 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<MapItem> _placeResults = [];
   List<TourEntity> _tourResults = [];
   bool _loading = false;
-  String? _error;
+  _SearchError? _error;
 
   // Cached full place list (loaded once)
   List<MapItem>? _allPlaces;
@@ -103,7 +107,7 @@ class _SearchScreenState extends State<SearchScreen> {
       if (mounted) setState(() { _allPlaces = places; _error = null; });
     } catch (e) {
       debugPrint('Search: failed to load places: $e');
-      if (mounted) setState(() => _error = 'Could not load places.\nCheck your connection.');
+      if (mounted) setState(() => _error = _SearchError.places);
     }
   }
 
@@ -214,7 +218,7 @@ class _SearchScreenState extends State<SearchScreen> {
       if (mounted) setState(() { _tourResults = all; _error = null; });
     } catch (e) {
       debugPrint('Search tours error: $e');
-      if (mounted) setState(() => _error = 'Could not load tours.\nCheck your connection.');
+      if (mounted) setState(() => _error = _SearchError.tours);
     }
   }
 
@@ -234,6 +238,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -261,13 +266,13 @@ class _SearchScreenState extends State<SearchScreen> {
           controller: _controller,
           focusNode: _focusNode,
           onChanged: _onQueryChanged,
-          style: TextStyle(color: onSurface, fontFamily: 'Marcellus'),
+          style: TextStyle(color: onSurface, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo']),
           decoration: InputDecoration(
-            hintText: 'Search landmarks, tours, destinations…',
+            hintText: l10n.searchHint,
             hintStyle: TextStyle(
               color: onSurface.withValues(alpha: 0.45),
-              fontFamily: 'Marcellus',
-              fontSize: 15,
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
+              fontSize: 15.sp,
             ),
             border: InputBorder.none,
             suffixIcon: _controller.text.isNotEmpty
@@ -282,7 +287,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
+          preferredSize: Size.fromHeight(48.h),
           child: _TabBar(
             selected: _tab,
             primary: primary,
@@ -298,7 +303,9 @@ class _SearchScreenState extends State<SearchScreen> {
               ? Center(child: CircularProgressIndicator(color: primary))
               : _error != null && totalCount == 0
                   ? AppErrorWidget(
-                      message: _error!,
+                      message: _error == _SearchError.places
+                          ? l10n.searchPlacesError
+                          : l10n.searchToursError,
                       onRetry: () { setState(() => _error = null); _runSearch(); },
                     )
                   : totalCount == 0
@@ -307,19 +314,19 @@ class _SearchScreenState extends State<SearchScreen> {
                       children: [
                         if (_personalised)
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                            padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
                             child: Row(
                               children: [
                                 Icon(Icons.auto_awesome,
-                                    size: 14, color: primary),
-                                const SizedBox(width: 6),
+                                    size: 14.r, color: primary),
+                                SizedBox(width: 6.w),
                                 Text(
-                                  'Personalised by your taste',
+                                  l10n.searchPersonalised,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     color: primary,
                                     fontWeight: FontWeight.w600,
-                                    fontFamily: 'Marcellus',
+                                    fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                   ),
                                 ),
                               ],
@@ -327,7 +334,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         Expanded(
                           child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: EdgeInsets.symmetric(vertical: 8.h),
                             itemCount: placeList.length + tourList.length,
                             itemBuilder: (context, i) {
                               if (i < placeList.length) {
@@ -377,15 +384,16 @@ class _TabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
       child: Row(
         children: [
-          _chip('All', _Tab.all),
-          const SizedBox(width: 8),
-          _chip('Places', _Tab.places),
-          const SizedBox(width: 8),
-          _chip('Tours', _Tab.tours),
+          _chip(l10n.searchTabAll, _Tab.all),
+          SizedBox(width: 8.w),
+          _chip(l10n.searchTabPlaces, _Tab.places),
+          SizedBox(width: 8.w),
+          _chip(l10n.searchTabTours, _Tab.tours),
         ],
       ),
     );
@@ -397,18 +405,18 @@ class _TabBar extends StatelessWidget {
       onTap: () => onSelect(tab),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
         decoration: BoxDecoration(
           color: active ? primary : primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
         ),
         child: Text(
           label,
           style: TextStyle(
             color: active ? Colors.white : onSurface.withValues(alpha: 0.7),
             fontWeight: FontWeight.w600,
-            fontFamily: 'Marcellus',
-            fontSize: 13,
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
+            fontSize: 13.sp,
           ),
         ),
       ),
@@ -437,34 +445,35 @@ class _PlaceResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
           child: Row(
             children: [
               // Thumbnail
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 64,
-                  height: 64,
-                  child: place.imagePath.startsWith('http')
-                      ? CachedNetworkImage(
-                          imageUrl: place.imagePath,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: onSurface.withValues(alpha: 0.08)),
-                          errorWidget: (_, __, ___) => _PlaceholderIcon(primary: primary),
-                        )
-                      : place.imagePath.isNotEmpty
-                          ? Image.asset(place.imagePath, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _PlaceholderIcon(primary: primary))
-                          : _PlaceholderIcon(primary: primary),
-                ),
+              SizedBox(
+                width: 64.r,
+                height: 64.r,
+                child: place.imagePath.startsWith('http')
+                    ? ShimmerImage(
+                        url: place.imagePath,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(10.r),
+                        fallbackBackgroundColor: onSurface.withValues(alpha: 0.08),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(10.r),
+                        child: place.imagePath.isNotEmpty
+                            ? Image.asset(place.imagePath, fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => _PlaceholderIcon(primary: primary))
+                            : _PlaceholderIcon(primary: primary),
+                      ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,48 +485,48 @@ class _PlaceResultTile extends StatelessWidget {
                             place.title,
                             style: TextStyle(
                               color: onSurface,
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        _TypeBadge(label: 'Landmark', color: primary),
+                        _TypeBadge(label: l10n.searchBadgeLandmark, color: primary),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     if (place.locationAddress.isNotEmpty)
                       Text(
                         place.locationAddress,
                         style: TextStyle(
                           color: onSurface.withValues(alpha: 0.55),
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Row(
                       children: [
-                        Icon(Icons.star_rounded, color: Colors.amber, size: 14),
-                        const SizedBox(width: 3),
+                        Icon(Icons.star_rounded, color: Colors.amber, size: 14.r),
+                        SizedBox(width: 3.w),
                         Text(
                           place.rating.toStringAsFixed(1),
                           style: TextStyle(
                             color: onSurface.withValues(alpha: 0.7),
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Icon(Icons.map_outlined, color: primary.withValues(alpha: 0.7), size: 13),
-                        const SizedBox(width: 3),
+                        SizedBox(width: 8.w),
+                        Icon(Icons.map_outlined, color: primary.withValues(alpha: 0.7), size: 13.r),
+                        SizedBox(width: 3.w),
                         Text(
-                          'View on map',
+                          l10n.searchViewOnMap,
                           style: TextStyle(
                             color: primary.withValues(alpha: 0.8),
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ],
@@ -554,6 +563,7 @@ class _TourResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final currencyCode = CurrencyController.currency.value;
 
     return Material(
@@ -561,26 +571,27 @@ class _TourResultTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
           child: Row(
             children: [
               // Thumbnail
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SizedBox(
-                  width: 64,
-                  height: 64,
-                  child: tour.images.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: tour.images.first,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: onSurface.withValues(alpha: 0.08)),
-                          errorWidget: (_, __, ___) => _PlaceholderIcon(primary: primary, icon: Icons.tour),
-                        )
-                      : _PlaceholderIcon(primary: primary, icon: Icons.tour),
-                ),
+              SizedBox(
+                width: 64.r,
+                height: 64.r,
+                child: tour.images.isNotEmpty
+                    ? ShimmerImage(
+                        url: tour.images.first,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(10.r),
+                        fallbackIcon: Icons.tour,
+                        fallbackBackgroundColor: onSurface.withValues(alpha: 0.08),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(10.r),
+                        child: _PlaceholderIcon(primary: primary, icon: Icons.tour),
+                      ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -592,29 +603,29 @@ class _TourResultTile extends StatelessWidget {
                             tour.title,
                             style: TextStyle(
                               color: onSurface,
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
-                              fontFamily: 'Marcellus',
+                              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        _TypeBadge(label: 'Tour', color: Colors.teal),
+                        _TypeBadge(label: l10n.searchBadgeTour, color: Colors.teal),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     if (tour.meetingLocationName.isNotEmpty)
                       Text(
                         tour.meetingLocationName,
                         style: TextStyle(
                           color: onSurface.withValues(alpha: 0.55),
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Row(
                       children: [
                         FutureBuilder<double>(
@@ -631,20 +642,20 @@ class _TourResultTile extends StatelessWidget {
                               style: TextStyle(
                                 color: primary,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 13,
+                                fontSize: 13.sp,
                               ),
                             );
                           },
                         ),
                         if (tour.rating > 0) ...[
-                          const SizedBox(width: 10),
-                          Icon(Icons.star_rounded, color: Colors.amber, size: 14),
-                          const SizedBox(width: 3),
+                          SizedBox(width: 10.w),
+                          Icon(Icons.star_rounded, color: Colors.amber, size: 14.r),
+                          SizedBox(width: 3.w),
                           Text(
                             tour.rating.toStringAsFixed(1),
                             style: TextStyle(
                               color: onSurface.withValues(alpha: 0.7),
-                              fontSize: 12,
+                              fontSize: 12.sp,
                             ),
                           ),
                         ],
@@ -676,7 +687,7 @@ class _PlaceholderIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: primary.withValues(alpha: 0.1),
-      child: Icon(icon, color: primary.withValues(alpha: 0.5), size: 28),
+      child: Icon(icon, color: primary.withValues(alpha: 0.5), size: 28.r),
     );
   }
 }
@@ -690,16 +701,16 @@ class _TypeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: color,
-          fontSize: 11,
+          fontSize: 11.sp,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -715,26 +726,27 @@ class _EmptyPrompt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search, size: 64, color: primary.withValues(alpha: 0.25)),
-          const SizedBox(height: 16),
+          Icon(Icons.search, size: 64.r, color: primary.withValues(alpha: 0.25)),
+          SizedBox(height: 16.h),
           Text(
-            'Search for a landmark or tour',
+            l10n.searchEmptyTitle,
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.5),
-              fontSize: 16,
-              fontFamily: 'Marcellus',
+              fontSize: 16.sp,
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
-            'Try "Pyramids", "Luxor", "museum"…',
+            l10n.searchEmptyHint,
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.35),
-              fontSize: 13,
+              fontSize: 13.sp,
             ),
           ),
         ],
@@ -751,18 +763,19 @@ class _NoResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off, size: 56, color: onSurface.withValues(alpha: 0.2)),
-          const SizedBox(height: 16),
+          Icon(Icons.search_off, size: 56.r, color: onSurface.withValues(alpha: 0.2)),
+          SizedBox(height: 16.h),
           Text(
-            'No results for "$query"',
+            l10n.searchNoResultsFor(query),
             style: TextStyle(
               color: onSurface.withValues(alpha: 0.5),
-              fontSize: 15,
-              fontFamily: 'Marcellus',
+              fontSize: 15.sp,
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             ),
           ),
         ],

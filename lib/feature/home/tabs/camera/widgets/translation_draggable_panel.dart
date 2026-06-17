@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class TranslationDraggablePanel extends StatelessWidget {
   final Map<String, String> translations;
@@ -44,44 +46,44 @@ class TranslationDraggablePanel extends StatelessWidget {
           child: ListView(
             controller: scrollController,
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(top: 12, bottom: 20),
+            padding: EdgeInsets.only(top: 12.h, bottom: 20.h),
             children: [
               Center(
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  width: 40,
-                  height: 4,
+                  margin: EdgeInsets.only(bottom: 16.h),
+                  width: 40.w,
+                  height: 4.h,
                   decoration: BoxDecoration(
                     color: Colors.grey.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Row(
                   children: [
                     Icon(
                       Icons.translate,
                       color: Theme.of(context).colorScheme.onSurface,
-                      size: 20,
+                      size: 20.r,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
-                      "Translation Result",
+                      AppLocalizations.of(context).cameraTranslationResult,
                       style: TextStyle(
-                        fontFamily: "Marcellus",
+                        fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                         color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Divider(color: Colors.black26, height: 24),
+              Divider(color: Colors.black26, height: 24.h),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Directionality(
                   textDirection:
                       isArabic ? TextDirection.rtl : TextDirection.ltr,
@@ -90,7 +92,7 @@ class TranslationDraggablePanel extends StatelessWidget {
                     textAlign: isArabic ? TextAlign.right : TextAlign.left,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       height: 1.4,
                     ),
                   ),

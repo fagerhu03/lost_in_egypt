@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/login/presentation/login_screen.dart';
 import 'package:lost_in_egypt/core/utils/page_transitions.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_text_field.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/widgets/auth_password_field.dart';
 import 'package:lost_in_egypt/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
+import 'package:lost_in_egypt/core/utils/dob_validator.dart';
 import 'package:lost_in_egypt/core/utils/error_handler.dart';
 import 'package:lost_in_egypt/core/utils/snack_bar_utils.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class SignupScreen extends StatefulWidget {
-  final bool isGuidePreselected;
-  const SignupScreen({super.key, this.isGuidePreselected = false});
+  const SignupScreen({super.key});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -23,14 +25,12 @@ class _SignupScreenState extends State<SignupScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPassController = TextEditingController();
 
   final _firstNameFocus = FocusNode();
   final _lastNameFocus = FocusNode();
   final _emailFocus = FocusNode();
-  final _phoneFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _confirmPassFocus = FocusNode();
 
@@ -42,101 +42,87 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _selectedDay;
   String? _selectedYear;
 
-  static const _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
+  // Phone number captured from IntlPhoneField (full E.164 form, e.g. "+201234567890")
+  // and the ISO 3166-1 alpha-2 country code (e.g. "EG"). Both written to
+  // Firestore at signup. The ISO code is what the recommendation engine reads
+  // for cold-start country-prior scoring — without it, new users get
+  // popularity-only rankings until they edit their profile.
+  String _completePhone = '';
+  String _isoCode = 'EG';
+  bool _phoneValid = false;
 
-  List<String> get _days {
-    if (_selectedMonth == null || _selectedYear == null) {
-      return List.generate(31, (i) => '${i + 1}');
-    }
-    final monthIndex = _months.indexOf(_selectedMonth!) + 1;
-    final year = int.tryParse(_selectedYear!) ?? DateTime.now().year;
-    final daysInMonth = DateUtils.getDaysInMonth(year, monthIndex);
-    return List.generate(daysInMonth, (i) => '${i + 1}');
-  }
+  static const _months = DobValidator.months;
 
-  List<String> get _years {
-    final now = DateTime.now();
-    return List.generate(85, (i) => '${now.year - 16 - i}');
-  }
+  List<String> get _days =>
+      DobValidator.daysFor(monthName: _selectedMonth, year: _selectedYear);
+
+  List<String> get _years => DobValidator.yearsList();
 
   @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPassController.dispose();
     _firstNameFocus.dispose();
     _lastNameFocus.dispose();
     _emailFocus.dispose();
-    _phoneFocus.dispose();
     _passwordFocus.dispose();
     _confirmPassFocus.dispose();
     super.dispose();
   }
 
   bool _validateForm() {
+    final l10n = AppLocalizations.of(context);
     final nameRegex = RegExp(r'^[a-zA-Z\s]{2,}$');
 
     if (!nameRegex.hasMatch(_firstNameController.text.trim())) {
-      _showError('First name must contain valid letters (min 2).');
+      _showError(l10n.signupFirstNameInvalid);
       return false;
     }
     if (!nameRegex.hasMatch(_lastNameController.text.trim())) {
-      _showError('Last name must contain valid letters (min 2).');
+      _showError(l10n.signupLastNameInvalid);
       return false;
     }
 
-    if (_selectedMonth == null || _selectedDay == null || _selectedYear == null) {
-      _showError('Please select your date of birth.');
-      return false;
-    }
-
-    final year = int.tryParse(_selectedYear!);
-    final day = int.tryParse(_selectedDay!);
-    if (year == null || day == null) {
-      _showError('Invalid date of birth.');
-      return false;
-    }
-
-    final now = DateTime.now();
-    final monthIndex = _months.indexOf(_selectedMonth!) + 1;
-    final dob = DateTime(year, monthIndex, day);
-    int age = now.year - dob.year;
-    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
-      age--;
-    }
-    if (age < 16) {
-      _showError('You must be at least 16 years old to sign up.');
+    final dobResult = DobValidator.validate(
+      monthName: _selectedMonth,
+      day: _selectedDay,
+      year: _selectedYear,
+    );
+    if (dobResult.error != null) {
+      _showError(dobErrorMessage(
+        l10n,
+        dobResult.error!,
+        monthName: _selectedMonth,
+        year: _selectedYear,
+        maxDay: dobResult.maxDay,
+      ));
       return false;
     }
 
     final emailRegex =
         RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     if (!emailRegex.hasMatch(_emailController.text.trim())) {
-      _showError('Please enter a valid email address.');
+      _showError(l10n.signupEmailInvalid);
       return false;
     }
 
     final passwordRegex =
         RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$');
     if (!passwordRegex.hasMatch(_passwordController.text)) {
-      _showError('Password must be 8+ characters with at least 1 letter and 1 number.');
+      _showError(l10n.signupPasswordWeak);
       return false;
     }
 
     if (_passwordController.text != _confirmPassController.text) {
-      _showError('Passwords do not match.');
+      _showError(l10n.signupPasswordsNoMatch);
       return false;
     }
 
-    final phone = _phoneController.text.trim();
-    if (phone.isNotEmpty && !RegExp(r'^\+?[0-9]{7,15}$').hasMatch(phone)) {
-      _showError('Please enter a valid phone number (7–15 digits).');
+    if (!_phoneValid || _completePhone.isEmpty) {
+      _showError(l10n.signupPhoneInvalid);
       return false;
     }
 
@@ -163,15 +149,16 @@ class _SignupScreenState extends State<SignupScreen> {
         birthMonth: _selectedMonth!,
         birthDay: _selectedDay!,
         birthYear: _selectedYear!,
-        phoneNumber: _phoneController.text.trim(),
+        phoneNumber: _completePhone,
+        nationalityCode: _isoCode,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created! Please verify your email to continue.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).signupSuccess),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 4),
+            duration: const Duration(seconds: 4),
           ),
         );
         Navigator.of(context).pushAndRemoveUntil(
@@ -182,9 +169,9 @@ class _SignupScreenState extends State<SignupScreen> {
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       if (e.code == 'email-already-in-use') {
-        _showError('This email is already registered.');
+        _showError(AppLocalizations.of(context).signupEmailInUse);
       } else if (e.code == 'weak-password') {
-        _showError('The password is too weak.');
+        _showError(AppLocalizations.of(context).signupPasswordTooWeak);
       } else {
         _showError(ErrorHandler.handleAuthError(e));
       }
@@ -197,8 +184,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _monthDropdown() => _dobDropdown(
         value: _selectedMonth,
-        hint: 'Month',
+        hint: AppLocalizations.of(context).dobMonth,
         items: _months,
+        itemLabel: (m) => dobMonthLabel(AppLocalizations.of(context), m),
         onChanged: (v) => setState(() {
           _selectedMonth = v;
           if (_selectedDay != null && !_days.contains(_selectedDay)) {
@@ -209,14 +197,14 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _dayDropdown() => _dobDropdown(
         value: _selectedDay,
-        hint: 'Day',
+        hint: AppLocalizations.of(context).dobDay,
         items: _days,
         onChanged: (v) => setState(() => _selectedDay = v),
       );
 
   Widget _yearDropdown() => _dobDropdown(
         value: _selectedYear,
-        hint: 'Year',
+        hint: AppLocalizations.of(context).dobYear,
         items: _years,
         onChanged: (v) => setState(() {
           _selectedYear = v;
@@ -231,6 +219,7 @@ class _SignupScreenState extends State<SignupScreen> {
     required String hint,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    String Function(String)? itemLabel,
   }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w),
@@ -251,7 +240,7 @@ class _SignupScreenState extends State<SignupScreen> {
             hint,
             style: TextStyle(
               fontSize: 14.sp,
-              fontFamily: 'Marcellus',
+              fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
               color: const Color(0xFF7A8450),
             ),
           ),
@@ -260,12 +249,13 @@ class _SignupScreenState extends State<SignupScreen> {
               color: const Color(0xFF7A8450), size: 20.r),
           style: TextStyle(
             fontSize: 14.sp,
-            fontFamily: 'Marcellus',
+            fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
             color: const Color(0xff634700),
           ),
           dropdownColor: const Color(0xFFFCFBE8),
           items: items
-              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+              .map((e) => DropdownMenuItem(
+                  value: e, child: Text(itemLabel != null ? itemLabel(e) : e)))
               .toList(),
           onChanged: onChanged,
         ),
@@ -275,6 +265,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFFFCFBE8),
@@ -312,10 +303,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
                   SizedBox(height: 16.h),
                   Text(
-                    'New Account',
+                    l10n.signupTitle,
                     style: TextStyle(
                       fontSize: 20.sp,
-                      fontFamily: 'Marcellus',
+                      fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       color: const Color(0xff634700),
                       fontWeight: FontWeight.w600,
                     ),
@@ -323,7 +314,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   SizedBox(height: 14.h),
 
                   AuthTextField(
-                    hintText: 'First Name',
+                    hintText: l10n.signupFirstNameHint,
                     controller: _firstNameController,
                     textInputAction: TextInputAction.next,
                     focusNode: _firstNameFocus,
@@ -332,7 +323,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   SizedBox(height: 10.h),
 
                   AuthTextField(
-                    hintText: 'Last Name',
+                    hintText: l10n.signupLastNameHint,
                     controller: _lastNameController,
                     textInputAction: TextInputAction.next,
                     focusNode: _lastNameFocus,
@@ -343,11 +334,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Date of birth',
+                      l10n.signupDateOfBirth,
                       style: TextStyle(
                         color: const Color(0xff634700),
                         fontSize: 15.sp,
-                        fontFamily: 'Marcellus',
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                       ),
                     ),
                   ),
@@ -364,27 +355,55 @@ class _SignupScreenState extends State<SignupScreen> {
                   SizedBox(height: 14.h),
 
                   AuthTextField(
-                    hintText: 'Email',
+                    hintText: l10n.signupEmailHint,
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
                     focusNode: _emailFocus,
-                    onSubmitted: (_) => _phoneFocus.requestFocus(),
-                  ),
-                  SizedBox(height: 10.h),
-
-                  AuthTextField(
-                    hintText: 'Phone Number (optional)',
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    textInputAction: TextInputAction.next,
-                    focusNode: _phoneFocus,
                     onSubmitted: (_) => _passwordFocus.requestFocus(),
                   ),
                   SizedBox(height: 10.h),
 
+                  // Required — captures both the full phone number AND the
+                  // country (ISO alpha-2) for the recommendation engine's
+                  // cold-start path. Matches the look of the other inputs:
+                  // white fill, 12 r radius, olive border.
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: const Color(0xFF7A8450).withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: IntlPhoneField(
+                      initialCountryCode: 'EG',
+                      decoration: InputDecoration(
+                        labelText: l10n.signupPhoneLabel,
+                        border: InputBorder.none,
+                      ),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
+                        color: const Color(0xff634700),
+                      ),
+                      onChanged: (phone) {
+                        _completePhone = phone.completeNumber;
+                        _isoCode = phone.countryISOCode;
+                      },
+                      // The package itself validates length per-country; we
+                      // mirror that result so _validateForm can short-circuit.
+                      validator: (phone) {
+                        final ok = phone != null && phone.number.isNotEmpty;
+                        _phoneValid = ok;
+                        return null;
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+
                   AuthPasswordField(
-                    hintText: 'Enter your password',
+                    hintText: l10n.authPasswordHint,
                     obscureText: _obscure1,
                     controller: _passwordController,
                     textInputAction: TextInputAction.next,
@@ -396,7 +415,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   SizedBox(height: 10.h),
 
                   AuthPasswordField(
-                    hintText: 'Confirm your password',
+                    hintText: l10n.signupConfirmPasswordHint,
                     obscureText: _obscure2,
                     controller: _confirmPassController,
                     textInputAction: TextInputAction.done,
@@ -424,11 +443,11 @@ class _SignupScreenState extends State<SignupScreen> {
                             ? const CircularProgressIndicator(
                                 color: Colors.black87)
                             : Text(
-                                'Sign Up',
+                                l10n.signupButton,
                                 style: TextStyle(
                                   color: Colors.black87,
                                   fontSize: 18.sp,
-                                  fontFamily: 'Marcellus',
+                                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -440,11 +459,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Already have an account?',
-                        style: TextStyle(
+                      Text(
+                        l10n.signupHaveAccount,
+                        style: const TextStyle(
                           color: Colors.black87,
-                          fontFamily: 'Marcellus',
+                          fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'],
                         ),
                       ),
                       SizedBox(width: 5.w),
@@ -452,12 +471,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         onTap: () => Navigator.of(context).push(
                           FadePageRoute(page: const LoginScreen()),
                         ),
-                        child: const Text(
-                          'Log In',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.loginButton,
+                          style: const TextStyle(
                             color: Color(0xFFD6A00F),
                             fontWeight: FontWeight.w600,
-                            fontFamily: 'Marcellus',
+                            fontFamily: 'Marcellus', fontFamilyFallback: ['Cairo'],
                           ),
                         ),
                       ),

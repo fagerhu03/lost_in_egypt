@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../theme/theme.dart';
 import '../manager/trip_planner_controller.dart';
 import '../widgets/quiz_scaffold.dart';
@@ -22,6 +24,7 @@ class BudgetStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primary = AppColors.darkPrimaryButton;
     final textColor = isDark ? AppColors.darkText : AppColors.lightText;
@@ -30,11 +33,11 @@ class BudgetStep extends StatelessWidget {
     final maxB = controller.plan.maxBudget;
 
     return QuizScaffold(
-      title: "What's your budget?",
+      title: l10n.soloQuizBudgetTitle,
       stepIndex: 4,
       onNext: onNext,
       onBack: onBack,
-      nextText: 'Finish',
+      isFinish: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -42,23 +45,23 @@ class BudgetStep extends StatelessWidget {
           Row(
             children: [
               _PresetBtn(
-                label: 'Budget',
+                label: l10n.budgetPresetBudget,
                 sub: '< 3K',
                 isSelected: minB == 500 && maxB == 3000,
                 color: const Color(0xFF22C55E),
                 onTap: () => controller.updateBudgetRange(500, 3000),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               _PresetBtn(
-                label: 'Mid-range',
+                label: l10n.budgetPresetMid,
                 sub: '3K–10K',
                 isSelected: minB == 3000 && maxB == 10000,
                 color: primary,
                 onTap: () => controller.updateBudgetRange(3000, 10000),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               _PresetBtn(
-                label: 'Luxury',
+                label: l10n.budgetPresetLuxury,
                 sub: '10K+',
                 isSelected: minB == 10000 && maxB == 30000,
                 color: const Color(0xFFA855F7),
@@ -67,7 +70,7 @@ class BudgetStep extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // ── Range display ────────────────────────────────────────────────
           Row(
@@ -76,32 +79,32 @@ class BudgetStep extends StatelessWidget {
               Text(
                 _fmt(minB),
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                   color: labelColor,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 ),
               ),
               Text(
                 '—',
                 style: TextStyle(
                   color: textColor.withValues(alpha: 0.35),
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
               Text(
                 _fmt(maxB),
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
                   color: labelColor,
-                  fontFamily: 'Marcellus',
+                  fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'],
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
 
           // ── RangeSlider ──────────────────────────────────────────────────
           SliderTheme(
@@ -110,7 +113,7 @@ class BudgetStep extends StatelessWidget {
               inactiveTrackColor: primary.withValues(alpha: 0.18),
               thumbColor: primary,
               overlayColor: primary.withValues(alpha: 0.12),
-              trackHeight: 4,
+              trackHeight: 4.h,
             ),
             child: RangeSlider(
               values: RangeValues(minB, maxB),
@@ -122,21 +125,21 @@ class BudgetStep extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '500 EGP',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 11.sp,
                   color: textColor.withValues(alpha: 0.40),
                 ),
               ),
               Text(
                 '30K EGP',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 11.sp,
                   color: textColor.withValues(alpha: 0.40),
                 ),
               ),
@@ -173,10 +176,10 @@ class _PresetBtn extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: EdgeInsets.symmetric(vertical: 10.h),
           decoration: BoxDecoration(
             color: isSelected ? color.withValues(alpha: 0.12) : surfaceBg,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: isSelected ? color : color.withValues(alpha: 0.25),
               width: isSelected ? 1.5 : 1,
@@ -187,16 +190,16 @@ class _PresetBtn extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w700,
                   color: isSelected ? color : color.withValues(alpha: 0.7),
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 sub,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 10.sp,
                   color: color.withValues(alpha: 0.55),
                 ),
               ),

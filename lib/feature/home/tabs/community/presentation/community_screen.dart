@@ -1,21 +1,25 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../../../../core/widgets/shimmer_avatar.dart';
 import '../../navigator/widget/account_menu_button.dart';
 import '../data/repositories/firebase_community_repository.dart';
 import '../domain/entities/community_post.dart';
+import '../data/community_post_action_service.dart';
 import './community_post_card.dart';
 import 'post_detail_screen.dart';
 import 'package:lost_in_egypt/feature/auth/presentation/phone_verif/phone_verification_screen.dart';
 import '../../../../../core/widgets/shimmer_loading_widget.dart';
 import '../../map/data/places_api_service.dart';
 import '../../../../../core/services/recommendation_service.dart';
+import '../../../../../core/services/recommendation_mappings.dart';
 import '../../../../../core/utils/snack_bar_utils.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -71,6 +75,23 @@ class _CommunityScreenState extends State<CommunityScreen>
       setState(() => _composerFocused = _composerFocusNode.hasFocus);
     });
     _scrollController.addListener(_onScroll);
+    CommunityPostActionService.instance.pendingPostContent.addListener(_handlePendingPost);
+    _checkPendingPost();
+  }
+
+  void _checkPendingPost() {
+    final content = CommunityPostActionService.instance.pendingPostContent.value;
+    if (content != null) {
+      _postController.text = content;
+      CommunityPostActionService.instance.pendingPostContent.value = null;
+      _composerFocusNode.requestFocus();
+    }
+  }
+
+  void _handlePendingPost() {
+    if (mounted) {
+      _checkPendingPost();
+    }
   }
 
   void _onScroll() {
@@ -82,6 +103,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   @override
   void dispose() {
+    CommunityPostActionService.instance.pendingPostContent.removeListener(_handlePendingPost);
     _postController.dispose();
     _composerFocusNode.dispose();
     _scrollController.dispose();
@@ -121,7 +143,6 @@ class _CommunityScreenState extends State<CommunityScreen>
   void _handlePostAction() async {
     if (_isPosting) return;
     if (_postController.text.trim().isEmpty && _selectedImages.isEmpty) return;
-
     final user = _auth.currentUser;
 
     bool isPhoneVerified = false;
@@ -135,6 +156,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     }
 
     if (!isPhoneVerified) {
+      if (!mounted) return;
       final bool? verified = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const PhoneVerificationScreen()),
@@ -163,23 +185,23 @@ class _CommunityScreenState extends State<CommunityScreen>
             return AlertDialog(
               backgroundColor: surface,
               surfaceTintColor: Colors.transparent,
-              title: Text('Tag a Location', style: TextStyle(color: onSurface, fontFamily: 'Marcellus')),
+              title: Text(AppLocalizations.of(context).communityTagLocation, style: TextStyle(color: onSurface, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'])),
               content: SizedBox(
                 width: double.maxFinite,
-                height: 400,
+                height: 400.h,
                 child: Column(
                   children: [
                     TextField(
                       autofocus: true,
                       style: TextStyle(color: onSurface),
                       decoration: InputDecoration(
-                        hintText: 'Search places in Egypt...',
+                        hintText: AppLocalizations.of(context).communitySearchPlacesHint,
                         hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.6)),
                         prefixIcon: Icon(Icons.search, color: onSurface.withValues(alpha: 0.7)),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: onSurface.withValues(alpha: 0.12))),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: onSurface.withValues(alpha: 0.12))),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: primary.withValues(alpha: 0.8))),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: onSurface.withValues(alpha: 0.12))),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: onSurface.withValues(alpha: 0.12))),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: primary.withValues(alpha: 0.8))),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                       ),
                       onChanged: (val) async {
                         if (val.trim().length < 2) {
@@ -199,16 +221,16 @@ class _CommunityScreenState extends State<CommunityScreen>
                         }
                       },
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     if (isLoading)
-                      Padding(padding: const EdgeInsets.all(20), child: CircularProgressIndicator(color: primary))
+                      Padding(padding: EdgeInsets.all(20.r), child: CircularProgressIndicator(color: primary))
                     else if (searchResults.isEmpty)
-                      Expanded(child: Center(child: Text('Type to search places...', style: TextStyle(color: onSurface.withValues(alpha: 0.55)))))
+                      Expanded(child: Center(child: Text(AppLocalizations.of(context).communityTypeToSearch, style: TextStyle(color: onSurface.withValues(alpha: 0.55)))))
                     else
                       Expanded(
                         child: ListView.separated(
                           itemCount: searchResults.length,
-                          separatorBuilder: (_, __) => Divider(height: 1, color: onSurface.withValues(alpha: 0.10)),
+                          separatorBuilder: (_, _) => Divider(height: 1.h, color: onSurface.withValues(alpha: 0.10)),
                           itemBuilder: (context, index) {
                             final place = searchResults[index];
                             final name = (place['displayName'] as Map<String, dynamic>?)?['text'] as String? ?? '';
@@ -218,14 +240,14 @@ class _CommunityScreenState extends State<CommunityScreen>
                             final lng = (loc?['longitude'] as num?)?.toDouble();
                             final placeId = (place['id'] as String?) ?? '';
                             return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                              contentPadding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
                               leading: Container(
-                                width: 40, height: 40,
-                                decoration: BoxDecoration(color: primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                                child: Icon(Icons.place_rounded, color: primary, size: 20),
+                                width: 40.r, height: 40.r,
+                                decoration: BoxDecoration(color: primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8.r)),
+                                child: Icon(Icons.place_rounded, color: primary, size: 20.r),
                               ),
-                              title: Text(name, style: TextStyle(fontWeight: FontWeight.bold, color: onSurface, fontSize: 14)),
-                              subtitle: address.isNotEmpty ? Text(address, style: TextStyle(color: onSurface.withValues(alpha: 0.55), fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis) : null,
+                              title: Text(name, style: TextStyle(fontWeight: FontWeight.bold, color: onSurface, fontSize: 14.sp)),
+                              subtitle: address.isNotEmpty ? Text(address, style: TextStyle(color: onSurface.withValues(alpha: 0.55), fontSize: 11.sp), maxLines: 1, overflow: TextOverflow.ellipsis) : null,
                               onTap: () {
                                 setState(() {
                                   _selectedLocationName = name;
@@ -242,7 +264,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   ],
                 ),
               ),
-              actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: TextStyle(color: onSurface.withValues(alpha: 0.6))))],
+              actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context).commonCancel, style: TextStyle(color: onSurface.withValues(alpha: 0.6))))],
             );
           },
         );
@@ -264,16 +286,17 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   void _showCategoryPicker() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
     final surface = theme.colorScheme.surface;
 
     final categories = [
-      ('photos', Icons.photo_library_outlined, 'Photos'),
-      ('questions', Icons.help_outline_rounded, 'Questions'),
-      ('guides', Icons.tour_outlined, 'Guides'),
-      ('landmarks', Icons.account_balance_outlined, 'Landmarks'),
-      ('tips', Icons.lightbulb_outline_rounded, "Traveler's Tips"),
+      ('photos', Icons.photo_library_outlined, l10n.communityCategoryPhotos),
+      ('questions', Icons.help_outline_rounded, l10n.communityCategoryQuestions),
+      ('guides', Icons.tour_outlined, l10n.communityCategoryGuides),
+      ('landmarks', Icons.account_balance_outlined, l10n.communityCategoryLandmarks),
+      ('tips', Icons.lightbulb_outline_rounded, l10n.communityCategoryTips),
     ];
 
     showModalBottomSheet(
@@ -284,23 +307,23 @@ class _CommunityScreenState extends State<CommunityScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 12),
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: onSurface.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 16),
+            SizedBox(height: 12.h),
+            Container(width: 36.w, height: 4.h, decoration: BoxDecoration(color: onSurface.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2.r))),
+            SizedBox(height: 16.h),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text('Post Category', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: onSurface, fontWeight: FontWeight.bold)),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Text(l10n.communityPostCategory, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 16.sp, color: onSurface, fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             ...categories.map((cat) {
               final isSelected = _selectedCategory == cat.$1;
               return ListTile(
                 leading: Container(
-                  width: 38, height: 38,
-                  decoration: BoxDecoration(color: primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-                  child: Icon(cat.$2, color: primary, size: 20),
+                  width: 38.r, height: 38.r,
+                  decoration: BoxDecoration(color: primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10.r)),
+                  child: Icon(cat.$2, color: primary, size: 20.r),
                 ),
-                title: Text(cat.$3, style: TextStyle(fontFamily: 'Marcellus', color: onSurface)),
+                title: Text(cat.$3, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], color: onSurface)),
                 trailing: isSelected ? Icon(Icons.check_rounded, color: primary) : null,
                 onTap: () {
                   setState(() => _selectedCategory = isSelected ? null : cat.$1);
@@ -308,11 +331,28 @@ class _CommunityScreenState extends State<CommunityScreen>
                 },
               );
             }),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
           ],
         ),
       ),
     );
+  }
+
+  String _categoryLabel(AppLocalizations l10n, String id) {
+    switch (id) {
+      case 'photos':
+        return l10n.communityCategoryPhotos;
+      case 'questions':
+        return l10n.communityCategoryQuestions;
+      case 'guides':
+        return l10n.communityCategoryGuides;
+      case 'landmarks':
+        return l10n.communityCategoryLandmarks;
+      case 'tips':
+        return l10n.communityCategoryTips;
+      default:
+        return id;
+    }
   }
 
   Future<void> _handlePost() async {
@@ -320,6 +360,12 @@ class _CommunityScreenState extends State<CommunityScreen>
     // Capture before setState clears them
     final postLocationId = _selectedLocationId;
     final postLocationName = _selectedLocationName;
+    final eventId = CommunityPostActionService.instance.pendingEventId;
+    final eventName = CommunityPostActionService.instance.pendingEventName;
+    // Clear pending event data
+    CommunityPostActionService.instance.pendingEventId = null;
+    CommunityPostActionService.instance.pendingEventName = null;
+    final postCategory = _selectedCategory;
     try {
       await _repository.addPost(
         _postController.text.trim(),
@@ -329,11 +375,18 @@ class _CommunityScreenState extends State<CommunityScreen>
         locationLat: _selectedLocationLat,
         locationLng: _selectedLocationLng,
         category: _selectedCategory ?? '',
+        taggedEventId: eventId,
+        taggedEventName: eventName,
       );
       if (postLocationId != null) {
+        final inferred = RecommendationMappings.inferKeysFromText(
+          '${postLocationName ?? ''} ${postCategory ?? ''}',
+        );
         RecommendationService.recordSignal(
           placeId: postLocationId,
           placeName: postLocationName,
+          types: inferred['types']!,
+          tags: inferred['tags']!,
           signalType: 'post',
           source: 'community',
         );
@@ -365,6 +418,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   void _showSortBottomSheet() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final onSurface = theme.colorScheme.onSurface;
     final surface = theme.colorScheme.surface;
@@ -377,15 +431,15 @@ class _CommunityScreenState extends State<CommunityScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 12),
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: onSurface.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 16),
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Text('Sort Posts', style: TextStyle(fontFamily: 'Marcellus', fontSize: 16, color: onSurface, fontWeight: FontWeight.bold))),
-            const SizedBox(height: 8),
-            _sortTile(ctx, 'Newest', 'newest', Icons.access_time_rounded, primary, onSurface),
-            _sortTile(ctx, 'Top Rated', 'popular', Icons.thumb_up_outlined, primary, onSurface),
-            _sortTile(ctx, 'Most Discussed', 'most_discussed', Icons.chat_bubble_outline_rounded, primary, onSurface),
-            const SizedBox(height: 8),
+            SizedBox(height: 12.h),
+            Container(width: 36.w, height: 4.h, decoration: BoxDecoration(color: onSurface.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2.r))),
+            SizedBox(height: 16.h),
+            Padding(padding: EdgeInsets.symmetric(horizontal: 20.w), child: Text(l10n.communitySortPosts, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 16.sp, color: onSurface, fontWeight: FontWeight.bold))),
+            SizedBox(height: 8.h),
+            _sortTile(ctx, l10n.communitySortNewest, 'newest', Icons.access_time_rounded, primary, onSurface),
+            _sortTile(ctx, l10n.communitySortTopRated, 'popular', Icons.thumb_up_outlined, primary, onSurface),
+            _sortTile(ctx, l10n.communitySortMostDiscussed, 'most_discussed', Icons.chat_bubble_outline_rounded, primary, onSurface),
+            SizedBox(height: 8.h),
           ],
         ),
       ),
@@ -396,11 +450,11 @@ class _CommunityScreenState extends State<CommunityScreen>
     final isSelected = _sortBy == value;
     return ListTile(
       leading: Container(
-        width: 38, height: 38,
-        decoration: BoxDecoration(color: primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-        child: Icon(icon, color: primary, size: 20),
+        width: 38.r, height: 38.r,
+        decoration: BoxDecoration(color: primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10.r)),
+        child: Icon(icon, color: primary, size: 20.r),
       ),
-      title: Text(label, style: TextStyle(fontFamily: 'Marcellus', color: onSurface)),
+      title: Text(label, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], color: onSurface)),
       trailing: isSelected ? Icon(Icons.check_rounded, color: primary) : null,
       onTap: () {
         if (_sortBy != value) {
@@ -418,6 +472,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   Widget build(BuildContext context) {
     super.build(context);
 
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bg = theme.scaffoldBackgroundColor;
@@ -456,7 +511,7 @@ class _CommunityScreenState extends State<CommunityScreen>
           Positioned.fill(
             child: Opacity(
               opacity: patternOpacity,
-              child: Image.asset('assets/pattern_comp.png', fit: BoxFit.cover, repeat: ImageRepeat.repeat, errorBuilder: (_, __, ___) => Container()),
+              child: Image.asset('assets/pattern_comp.png', fit: BoxFit.cover, repeat: ImageRepeat.repeat, errorBuilder: (_, _, _) => Container()),
             ),
           ),
           SafeArea(
@@ -468,7 +523,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+                        padding: EdgeInsets.fromLTRB(12.w, 6.h, 12.w, 8.h),
                         child: _buildComposer(theme, surface, onSurface, primary, boxShadow),
                       ),
                       Expanded(
@@ -477,15 +532,15 @@ class _CommunityScreenState extends State<CommunityScreen>
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return ListView.separated(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                padding: EdgeInsets.symmetric(horizontal: 12.w),
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: 4,
-                                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                                itemBuilder: (_, __) => _buildShimmerSkeleton(surface, onSurface, isDark, boxShadow),
+                                separatorBuilder: (_, _) => SizedBox(height: 12.h),
+                                itemBuilder: (_, _) => _buildShimmerSkeleton(surface, onSurface, isDark, boxShadow),
                               );
                             }
                             if (snapshot.hasError) {
-                              return Center(child: Padding(padding: const EdgeInsets.all(16), child: Text('Something went wrong:\n${snapshot.error}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red))));
+                              return Center(child: Padding(padding: EdgeInsets.all(16.r), child: Text(l10n.communitySomethingWrong, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red))));
                             }
 
                             final allPosts = snapshot.data ?? [];
@@ -532,10 +587,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                             final trendingTags = _extractTrendingHashtags(allPosts);
 
                             if (allPosts.isEmpty) {
-                              return Center(child: Text('No posts yet. Be the first!', style: TextStyle(color: onSurface.withValues(alpha: 0.75))));
+                              return Center(child: Text(l10n.communityNoPostsYet, style: TextStyle(color: onSurface.withValues(alpha: 0.75))));
                             }
                             if (filteredPosts.isEmpty) {
-                              return Center(child: Text(_searchQuery.isNotEmpty ? 'No results for \'$_searchQuery\'' : 'No posts in this category yet.', style: TextStyle(color: onSurface.withValues(alpha: 0.75))));
+                              return Center(child: Text(_searchQuery.isNotEmpty ? l10n.communityNoResultsFor(_searchQuery) : l10n.communityNoPostsInCategory, style: TextStyle(color: onSurface.withValues(alpha: 0.75))));
                             }
 
                             final currentUid = _auth.currentUser?.uid ?? '';
@@ -545,9 +600,9 @@ class _CommunityScreenState extends State<CommunityScreen>
                                 ListView.separated(
                                   key: const PageStorageKey('community_list'),
                                   controller: _scrollController,
-                                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                                  padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
                                   itemCount: filteredPosts.length + 3, // +3: challenge, leaderboard, trending
-                                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                  separatorBuilder: (_, _) => SizedBox(height: 12.h),
                                   itemBuilder: (context, index) {
                                     if (index == 0) return _buildChallengeCard(context, primary, onSurface, surface);
                                     if (index == 1) return _buildLeaderboard(allPosts, primary, onSurface, surface, isDark);
@@ -564,7 +619,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                                 ),
                                 if (_showNewPostsBanner)
                                   Positioned(
-                                    top: 12,
+                                    top: 12.h,
                                     left: 0, right: 0,
                                     child: Center(
                                       child: GestureDetector(
@@ -577,18 +632,18 @@ class _CommunityScreenState extends State<CommunityScreen>
                                         },
                                         child: AnimatedContainer(
                                           duration: const Duration(milliseconds: 300),
-                                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                                          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 8.h),
                                           decoration: BoxDecoration(
                                             color: primary,
-                                            borderRadius: BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(20.r),
                                             boxShadow: [BoxShadow(color: primary.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))],
                                           ),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 14),
-                                              const SizedBox(width: 6),
-                                              const Text('New posts — tap to refresh', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                                              Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 14.r),
+                                              SizedBox(width: 6.w),
+                                              Text(l10n.communityNewPosts, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp)),
                                             ],
                                           ),
                                         ),
@@ -614,12 +669,13 @@ class _CommunityScreenState extends State<CommunityScreen>
   // ─── HEADER ───────────────────────────────────────────────────────────────
 
   Widget _buildHeader(BuildContext context, Color surface, Color onSurface, Color primary, BoxShadow shadow) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final searchBg = primary.withValues(alpha: isDark ? 0.25 : 0.18);
     final borderColor = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.10);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 4.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -631,27 +687,27 @@ class _CommunityScreenState extends State<CommunityScreen>
                   child: _searchExpanded
                       ? Container(
                           key: const ValueKey('search'),
-                          height: 44,
-                          decoration: BoxDecoration(color: searchBg, borderRadius: BorderRadius.circular(24), border: Border.all(color: borderColor), boxShadow: [shadow]),
+                          height: 44.h,
+                          decoration: BoxDecoration(color: searchBg, borderRadius: BorderRadius.circular(24.r), border: Border.all(color: borderColor), boxShadow: [shadow]),
                           child: TextField(
                             autofocus: true,
                             onChanged: (val) => setState(() => _searchQuery = val),
                             textInputAction: TextInputAction.search,
-                            style: TextStyle(color: isDark ? onSurface : Colors.white, fontFamily: 'Marcellus', fontWeight: FontWeight.bold),
+                            style: TextStyle(color: isDark ? onSurface : Colors.white, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
-                              hintText: 'Search posts...',
-                              hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontSize: 16, fontFamily: 'Marcellus'),
+                              hintText: l10n.communitySearchPostsHint,
+                              hintStyle: TextStyle(color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.85), fontSize: 16.sp, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo']),
                               prefixIcon: Icon(Icons.search, color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.9)),
                               suffixIcon: IconButton(icon: Icon(Icons.close, color: (isDark ? onSurface : Colors.white).withValues(alpha: 0.7)), onPressed: () => setState(() { _searchExpanded = false; _searchQuery = ''; })),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                             ),
                           ),
                         )
                       : Row(
                           key: const ValueKey('title'),
                           children: [
-                            Text('Community', style: TextStyle(fontFamily: 'Marcellus', fontSize: 24, fontWeight: FontWeight.bold, color: onSurface)),
+                            Text(l10n.communityTitle, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 24.sp, fontWeight: FontWeight.bold, color: onSurface)),
                           ],
                         ),
                 ),
@@ -660,7 +716,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 IconButton(icon: Icon(Icons.search_rounded, color: onSurface.withValues(alpha: 0.8)), onPressed: () => setState(() => _searchExpanded = true)),
                 IconButton(
                   icon: Icon(Icons.sort_rounded, color: onSurface.withValues(alpha: 0.8)),
-                  tooltip: 'Sort',
+                  tooltip: l10n.communitySortTooltip,
                   onPressed: _showSortBottomSheet,
                 ),
               ],
@@ -675,34 +731,35 @@ class _CommunityScreenState extends State<CommunityScreen>
   // ─── CATEGORY CHIPS ──────────────────────────────────────────────────────
 
   Widget _buildCategoryChips(Color primary, Color onSurface, Color surface) {
+    final l10n = AppLocalizations.of(context);
     final categories = [
-      ('all', 'All'),
-      ('photos', 'Photos'),
-      ('questions', 'Questions'),
-      ('guides', 'Guides'),
-      ('landmarks', 'Landmarks'),
-      ('tips', '💡 Tips'),
+      ('all', l10n.communityFilterAll),
+      ('photos', l10n.communityCategoryPhotos),
+      ('questions', l10n.communityCategoryQuestions),
+      ('guides', l10n.communityCategoryGuides),
+      ('landmarks', l10n.communityCategoryLandmarks),
+      ('tips', l10n.communityFilterTips),
     ];
 
     return SizedBox(
-      height: 42,
+      height: 42.h,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => SizedBox(width: 8.w),
         itemBuilder: (_, i) {
           final cat = categories[i];
           final isSelected = _activeCategory == cat.$1;
           return FilterChip(
-            label: Text(cat.$2, style: TextStyle(fontFamily: 'Marcellus', fontWeight: FontWeight.bold, color: isSelected ? Colors.white : primary, fontSize: 13)),
+            label: Text(cat.$2, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold, color: isSelected ? Colors.white : primary, fontSize: 13.sp)),
             selected: isSelected,
             onSelected: (_) => setState(() => _activeCategory = cat.$1),
             selectedColor: primary,
             backgroundColor: Colors.transparent,
             showCheckmark: false,
             side: BorderSide(color: primary),
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
           );
         },
       ),
@@ -728,32 +785,33 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   Widget _buildTrendingHashtags(List<MapEntry<String, int>> tags, Color primary, Color onSurface) {
     if (tags.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: EdgeInsets.only(bottom: 8.h),
           child: Row(
             children: [
-              Icon(Icons.trending_up_rounded, size: 15, color: primary),
-              const SizedBox(width: 6),
-              Text('Trending', style: TextStyle(fontFamily: 'Marcellus', fontSize: 13, color: onSurface, fontWeight: FontWeight.bold)),
+              Icon(Icons.trending_up_rounded, size: 15.r, color: primary),
+              SizedBox(width: 6.w),
+              Text(l10n.communityTrending, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 13.sp, color: onSurface, fontWeight: FontWeight.bold)),
               if (_activeHashtag != null) ...[
                 const Spacer(),
                 GestureDetector(
                   onTap: () => setState(() => _activeHashtag = null),
-                  child: Text('Clear filter', style: TextStyle(color: primary, fontSize: 12)),
+                  child: Text(l10n.communityClearFilter, style: TextStyle(color: primary, fontSize: 12.sp)),
                 ),
               ],
             ],
           ),
         ),
         SizedBox(
-          height: 34,
+          height: 34.h,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: tags.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => SizedBox(width: 8.w),
             itemBuilder: (_, i) {
               final tag = tags[i];
               final isActive = _activeHashtag == tag.key;
@@ -761,17 +819,17 @@ class _CommunityScreenState extends State<CommunityScreen>
                 onTap: () => setState(() => _activeHashtag = isActive ? null : tag.key),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
                     color: isActive ? primary : primary.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(color: primary.withValues(alpha: isActive ? 1.0 : 0.25)),
                   ),
                   child: Text(
                     '#${tag.key}  ${tag.value}',
                     style: TextStyle(
                       color: isActive ? Colors.white : primary,
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -780,7 +838,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             },
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
       ],
     );
   }
@@ -788,6 +846,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   // ─── LEADERBOARD WIDGET ───────────────────────────────────────────────────
 
   Widget _buildLeaderboard(List<CommunityPost> posts, Color primary, Color onSurface, Color surface, bool isDark) {
+    final l10n = AppLocalizations.of(context);
     // Group by userId — count posts
     final Map<String, List<CommunityPost>> byUser = {};
     for (final post in posts) {
@@ -802,11 +861,11 @@ class _CommunityScreenState extends State<CommunityScreen>
     final medals = ['🥇', '🥈', '🥉'];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      margin: EdgeInsets.only(bottom: 4.h),
+      padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 12.h),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: primary.withValues(alpha: 0.15)),
       ),
       child: Column(
@@ -814,39 +873,42 @@ class _CommunityScreenState extends State<CommunityScreen>
         children: [
           Row(
             children: [
-              Text('🏆', style: const TextStyle(fontSize: 15)),
-              const SizedBox(width: 6),
-              Text('Top Explorers This Feed', style: TextStyle(fontFamily: 'Marcellus', fontSize: 13, color: onSurface, fontWeight: FontWeight.bold)),
+              Text('🏆', style: TextStyle(fontSize: 15.sp)),
+              SizedBox(width: 6.w),
+              Text(l10n.communityTopExplorers, style: TextStyle(fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 13.sp, color: onSurface, fontWeight: FontWeight.bold)),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           ...List.generate(top.length, (i) {
             final entry = top[i];
             final sample = entry.value.first;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.only(bottom: 8.h),
               child: Row(
                 children: [
-                  Text(medals[i], style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
-                  sample.userAvatar.isNotEmpty
-                      ? CircleAvatar(radius: 14, backgroundImage: CachedNetworkImageProvider(sample.userAvatar))
-                      : CircleAvatar(radius: 14, backgroundColor: primary.withValues(alpha: 0.12), child: Icon(Icons.person, size: 14, color: primary)),
-                  const SizedBox(width: 8),
+                  Text(medals[i], style: TextStyle(fontSize: 18.sp)),
+                  SizedBox(width: 8.w),
+                  ShimmerAvatar(
+                    url: sample.userAvatar,
+                    radius: 14.r,
+                    iconSize: 14.r,
+                    fallbackBackgroundColor: primary.withValues(alpha: 0.12),
+                  ),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(sample.userName, style: TextStyle(color: onSurface, fontWeight: FontWeight.w700, fontSize: 13), overflow: TextOverflow.ellipsis),
+                        Text(sample.userName, style: TextStyle(color: onSurface, fontWeight: FontWeight.w700, fontSize: 13.sp), overflow: TextOverflow.ellipsis),
                         if (sample.userUsername.isNotEmpty)
-                          Text('@${sample.userUsername}', style: TextStyle(color: primary, fontSize: 11)),
+                          Text('@${sample.userUsername}', style: TextStyle(color: primary, fontSize: 11.sp)),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(color: primary.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(12)),
-                    child: Text('${entry.value.length} posts', style: TextStyle(color: primary, fontSize: 11, fontWeight: FontWeight.w700)),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    decoration: BoxDecoration(color: primary.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(12.r)),
+                    child: Text(l10n.communityPostsCount(entry.value.length), style: TextStyle(color: primary, fontSize: 11.sp, fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -870,17 +932,17 @@ class _CommunityScreenState extends State<CommunityScreen>
         if (title.isEmpty) return const SizedBox.shrink();
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 12, top: 4),
+          margin: EdgeInsets.only(bottom: 12.h, top: 4.h),
           decoration: BoxDecoration(
             gradient: const LinearGradient(colors: [Color(0xFFD6A00F), Color(0xFFB8860B)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(18.r),
             boxShadow: [BoxShadow(color: const Color(0xFFD6A00F).withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 6))],
           ),
           child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(18.r),
             child: InkWell(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(18.r),
               onTap: () {
                 _composerFocusNode.requestFocus();
                 if (hashtag.isNotEmpty && !_postController.text.contains(hashtag)) {
@@ -889,28 +951,28 @@ class _CommunityScreenState extends State<CommunityScreen>
                 }
               },
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.r),
                 child: Row(
                   children: [
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Weekly Challenge', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                          const SizedBox(height: 4),
-                          Text(title, style: const TextStyle(color: Colors.white, fontFamily: 'Marcellus', fontSize: 15, fontWeight: FontWeight.bold)),
+                          Text(AppLocalizations.of(context).communityWeeklyChallenge, style: TextStyle(color: Colors.white70, fontSize: 11.sp, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                          SizedBox(height: 4.h),
+                          Text(title, style: TextStyle(color: Colors.white, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontSize: 15.sp, fontWeight: FontWeight.bold)),
                           if (hashtag.isNotEmpty) ...[
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                              child: Text('Post Now', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12.r)),
+                              child: Text(AppLocalizations.of(context).communityPostNow, style: TextStyle(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ],
                       ),
                     ),
-                    const Icon(Icons.auto_awesome, color: Colors.white54, size: 44),
+                    Icon(Icons.auto_awesome, color: Colors.white54, size: 44.r),
                   ],
                 ),
               ),
@@ -924,6 +986,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   // ─── COMPOSER ────────────────────────────────────────────────────────────
 
   Widget _buildComposer(ThemeData theme, Color surface, Color onSurface, Color primary, BoxShadow shadow) {
+    final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bool isActive = _composerFocused || _postController.text.isNotEmpty || _selectedImages.isNotEmpty || _selectedLocationName != null;
 
@@ -931,10 +994,10 @@ class _CommunityScreenState extends State<CommunityScreen>
       onTap: () => _composerFocusNode.requestFocus(),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.all(isActive ? 12 : 10),
+        padding: EdgeInsets.all(isActive ? 12.r : 10.r),
         decoration: BoxDecoration(
           color: surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: isActive ? primary.withValues(alpha: 0.3) : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08)),
           boxShadow: [shadow],
         ),
@@ -944,13 +1007,14 @@ class _CommunityScreenState extends State<CommunityScreen>
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-                  backgroundImage: (_profileImageUrl != null && _profileImageUrl!.isNotEmpty) ? CachedNetworkImageProvider(_profileImageUrl!) : null,
-                  child: (_profileImageUrl == null || _profileImageUrl!.isEmpty) ? Icon(Icons.person, size: 20, color: onSurface.withValues(alpha: 0.75)) : null,
+                ShimmerAvatar(
+                  url: _profileImageUrl,
+                  radius: 18.r,
+                  iconSize: 20.r,
+                  fallbackBackgroundColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+                  fallbackIconColor: onSurface.withValues(alpha: 0.75),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: TextField(
                     controller: _postController,
@@ -958,7 +1022,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     maxLines: isActive ? 4 : 1,
                     style: TextStyle(color: onSurface),
                     decoration: InputDecoration(
-                      hintText: 'Share your Egypt experience...',
+                      hintText: l10n.communityComposerHint,
                       hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.55)),
                       border: InputBorder.none,
                       isDense: true,
@@ -968,7 +1032,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                 ),
                 if (!isActive)
                   _isPosting
-                      ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: primary))
+                      ? SizedBox(width: 20.w, height: 20.h, child: CircularProgressIndicator(strokeWidth: 2, color: primary))
                       : IconButton(
                           icon: Icon(Icons.send_rounded, color: primary),
                           onPressed: _handlePostAction,
@@ -981,16 +1045,16 @@ class _CommunityScreenState extends State<CommunityScreen>
             // Tags row: location + category chips
             if (_selectedLocationName != null || _selectedCategory != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: EdgeInsets.only(top: 8.h),
                 child: Wrap(
-                  spacing: 6,
+                  spacing: 6.w,
                   children: [
                     if (_selectedLocationName != null)
                       Chip(
                         backgroundColor: primary.withValues(alpha: 0.10),
-                        avatar: Icon(Icons.location_on_rounded, size: 14, color: primary),
-                        label: Text(_selectedLocationName!, style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w600)),
-                        deleteIcon: Icon(Icons.close, size: 13, color: primary.withValues(alpha: 0.7)),
+                        avatar: Icon(Icons.location_on_rounded, size: 14.r, color: primary),
+                        label: Text(_selectedLocationName!, style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
+                        deleteIcon: Icon(Icons.close, size: 13.r, color: primary.withValues(alpha: 0.7)),
                         onDeleted: () => setState(() {
                           _selectedLocationName = null;
                           _selectedLocationId = null;
@@ -1000,19 +1064,19 @@ class _CommunityScreenState extends State<CommunityScreen>
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                         side: BorderSide(color: primary.withValues(alpha: 0.20)),
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: EdgeInsets.symmetric(horizontal: 4.w),
                       ),
                     if (_selectedCategory != null)
                       Chip(
                         backgroundColor: primary.withValues(alpha: 0.10),
-                        avatar: Icon(Icons.label_rounded, size: 14, color: primary),
-                        label: Text(_selectedCategory!, style: TextStyle(fontSize: 12, color: primary, fontWeight: FontWeight.w600)),
-                        deleteIcon: Icon(Icons.close, size: 13, color: primary.withValues(alpha: 0.7)),
+                        avatar: Icon(Icons.label_rounded, size: 14.r, color: primary),
+                        label: Text(_categoryLabel(l10n, _selectedCategory!), style: TextStyle(fontSize: 12.sp, color: primary, fontWeight: FontWeight.w600)),
+                        deleteIcon: Icon(Icons.close, size: 13.r, color: primary.withValues(alpha: 0.7)),
                         onDeleted: () => setState(() => _selectedCategory = null),
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                         side: BorderSide(color: primary.withValues(alpha: 0.20)),
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: EdgeInsets.symmetric(horizontal: 4.w),
                       ),
                   ],
                 ),
@@ -1021,30 +1085,30 @@ class _CommunityScreenState extends State<CommunityScreen>
             // Image preview strip
             if (_selectedImages.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 10, bottom: 2),
+                padding: EdgeInsets.only(top: 10.h, bottom: 2.h),
                 child: SizedBox(
-                  height: 80,
+                  height: 80.h,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _selectedImages.length,
                     itemBuilder: (_, index) => Stack(
                       children: [
                         Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          width: 80,
+                          margin: EdgeInsetsDirectional.only(end: 8.w),
+                          width: 80.w,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                             image: DecorationImage(image: FileImage(_selectedImages[index]), fit: BoxFit.cover),
                           ),
                         ),
-                        Positioned(
-                          top: 2, right: 10,
+                        PositionedDirectional(
+                          top: 2.h, end: 10.w,
                           child: Material(
                             color: Colors.black54, shape: const CircleBorder(), clipBehavior: Clip.hardEdge,
                             child: InkWell(
                               onTap: () => setState(() => _selectedImages.removeAt(index)),
                               customBorder: const CircleBorder(),
-                              child: const SizedBox(width: 20, height: 20, child: Icon(Icons.close, size: 12, color: Colors.white)),
+                              child: SizedBox(width: 20.w, height: 20.h, child: Icon(Icons.close, size: 12.r, color: Colors.white)),
                             ),
                           ),
                         ),
@@ -1056,33 +1120,33 @@ class _CommunityScreenState extends State<CommunityScreen>
 
             // Action row — only visible when active
             if (isActive) ...[
-              Divider(height: 16, color: onSurface.withValues(alpha: 0.08)),
+              Divider(height: 16.h, color: onSurface.withValues(alpha: 0.08)),
               Row(
                 children: [
-                  _ComposerActionBtn(icon: Icons.photo_library_outlined, color: onSurface.withValues(alpha: 0.65), onTap: _pickImages, tooltip: 'Add photos'),
-                  const SizedBox(width: 4),
+                  _ComposerActionBtn(icon: Icons.photo_library_outlined, color: onSurface.withValues(alpha: 0.65), onTap: _pickImages, tooltip: l10n.communityAddPhotosTooltip),
+                  SizedBox(width: 4.w),
                   _ComposerActionBtn(
                     icon: Icons.location_on_outlined,
                     color: _selectedLocationName != null ? primary : onSurface.withValues(alpha: 0.65),
                     onTap: _pickLocation,
-                    tooltip: 'Tag location',
+                    tooltip: l10n.communityTagLocationTooltip,
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4.w),
                   _ComposerActionBtn(
                     icon: Icons.label_outline_rounded,
                     color: _selectedCategory != null ? primary : onSurface.withValues(alpha: 0.65),
                     onTap: _showCategoryPicker,
-                    tooltip: 'Category',
+                    tooltip: l10n.communityCategoryTooltip,
                   ),
                   const Spacer(),
                   _isPosting
-                      ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: primary))
+                      ? SizedBox(width: 22.w, height: 22.h, child: CircularProgressIndicator(strokeWidth: 2.5, color: primary))
                       : GestureDetector(
                           onTap: _handlePostAction,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                            decoration: BoxDecoration(color: primary, borderRadius: BorderRadius.circular(20)),
-                            child: const Text('Post', style: TextStyle(color: Colors.white, fontFamily: 'Marcellus', fontWeight: FontWeight.bold, fontSize: 14)),
+                            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 8.h),
+                            decoration: BoxDecoration(color: primary, borderRadius: BorderRadius.circular(20.r)),
+                            child: Text(l10n.communityPostButton, style: TextStyle(color: Colors.white, fontFamily: 'Marcellus', fontFamilyFallback: const ['Cairo'], fontWeight: FontWeight.bold, fontSize: 14.sp)),
                           ),
                         ),
                 ],
@@ -1098,26 +1162,26 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   Widget _buildShimmerSkeleton(Color surface, Color onSurface, bool isDark, BoxShadow shadow) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05)), boxShadow: [shadow]),
+      padding: EdgeInsets.all(12.r),
+      decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(16.r), border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05)), boxShadow: [shadow]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const ShimmerLoadingWidget.circular(width: 40, height: 40),
-            const SizedBox(width: 12),
+            ShimmerLoadingWidget.circular(width: 40.w, height: 40.h),
+            SizedBox(width: 12.w),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const ShimmerLoadingWidget.rectangular(width: 120, height: 14),
-              const SizedBox(height: 6),
-              const ShimmerLoadingWidget.rectangular(width: 80, height: 10),
+              ShimmerLoadingWidget.rectangular(width: 120.w, height: 14.h),
+              SizedBox(height: 6.h),
+              ShimmerLoadingWidget.rectangular(width: 80.w, height: 10.h),
             ]),
           ]),
-          const SizedBox(height: 12),
-          const ShimmerLoadingWidget.rectangular(width: double.infinity, height: 14),
-          const SizedBox(height: 6),
-          const ShimmerLoadingWidget.rectangular(width: 200, height: 14),
-          const SizedBox(height: 12),
-          const ShimmerLoadingWidget.rectangular(width: double.infinity, height: 160),
+          SizedBox(height: 12.h),
+          ShimmerLoadingWidget.rectangular(width: double.infinity, height: 14.h),
+          SizedBox(height: 6.h),
+          ShimmerLoadingWidget.rectangular(width: 200.w, height: 14.h),
+          SizedBox(height: 12.h),
+          ShimmerLoadingWidget.rectangular(width: double.infinity, height: 160.h),
         ],
       ),
     );
@@ -1140,14 +1204,13 @@ class _ComposerActionBtn extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Icon(icon, size: 22, color: color),
+            padding: EdgeInsets.all(6.r),
+            child: Icon(icon, size: 22.r, color: color),
           ),
         ),
       ),
     );
   }
 }
-

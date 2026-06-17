@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../../../core/constants/trip_options.dart';
 import '../manager/trip_planner_controller.dart';
 import '../widgets/option_chip.dart';
@@ -31,18 +33,19 @@ class InterestStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return QuizScaffold(
-      title: 'What are your interests?',
+      title: l10n.soloQuizInterestsTitle,
       stepIndex: 1,
       onNext: onNext,
       onBack: onBack,
       child: SingleChildScrollView(
         child: Wrap(
-          spacing: 10,
-          runSpacing: 12,
+          spacing: 10.w,
+          runSpacing: 12.h,
           children: TripOptions.interests.map((item) {
             return OptionChip(
-              label: item,
+              label: tripInterestLabel(l10n, item),
               emoji: _interestEmojis[item],
               isSelected: controller.plan.interests.contains(item),
               onTap: () => controller.toggleInterest(item),

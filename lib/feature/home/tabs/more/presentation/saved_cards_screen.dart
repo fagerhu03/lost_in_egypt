@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lost_in_egypt/core/di/service_locator.dart';
@@ -49,17 +50,17 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.credit_card_off, size: 80, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
-                        const SizedBox(height: 16),
+                        Icon(Icons.credit_card_off, size: 80.r, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
+                        SizedBox(height: 16.h),
                         Text(
                           'No saved cards yet',
-                          style: TextStyle(fontSize: 18, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                          style: TextStyle(fontSize: 18.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           'Cards are saved automatically after\nyour first successful payment.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
+                          style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.35)),
                         ),
                       ],
                     ),
@@ -67,9 +68,9 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                 }
 
                 return ListView.separated(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20.r),
                   itemCount: docs.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => SizedBox(height: 12.h),
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
                     final lastFour = data['lastFour'] ?? '••••';
@@ -77,7 +78,7 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                     final isDefault = data['isDefault'] == true;
 
                     return Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.r),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: isDark
@@ -86,7 +87,7 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [
                           BoxShadow(
                             color: primary.withValues(alpha: 0.2),
@@ -107,44 +108,44 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
                                   Icon(
                                     brand.toLowerCase().contains('visa') ? Icons.credit_card : Icons.credit_card,
                                     color: Colors.white,
-                                    size: 28,
+                                    size: 28.r,
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8.w),
                                   Text(
                                     brand.toUpperCase(),
-                                    style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: 1),
+                                    style: TextStyle(color: Colors.white70, fontSize: 14.sp, fontWeight: FontWeight.w600, letterSpacing: 1),
                                   ),
                                 ],
                               ),
                               if (isDefault)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(8.r),
                                   ),
-                                  child: const Text('DEFAULT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  child: Text('DEFAULT', style: TextStyle(color: Colors.white, fontSize: 10.sp, fontWeight: FontWeight.bold)),
                                 ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: 20.h),
                           Text(
                             '•••• •••• •••• $lastFour',
-                            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w500, letterSpacing: 3),
+                            style: TextStyle(color: Colors.white, fontSize: 22.sp, fontWeight: FontWeight.w500, letterSpacing: 3),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 data['cardholderName'] ?? '',
-                                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                                style: TextStyle(color: Colors.white70, fontSize: 13.sp),
                               ),
                               Row(
                                 children: [
                                   if (!isDefault)
                                     _cardAction(Icons.star_border, 'Default', () => _setDefault(docs[index].id, docs)),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8.w),
                                   _cardAction(Icons.delete_outline, 'Remove', () => _deleteCard(docs[index].id)),
                                 ],
                               ),
@@ -163,15 +164,15 @@ class _SavedCardsScreenState extends State<SavedCardsScreen> {
   Widget _cardAction(IconData icon, String label, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white60, size: 16),
-            const SizedBox(width: 4),
-            Text(label, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+            Icon(icon, color: Colors.white60, size: 16.r),
+            SizedBox(width: 4.w),
+            Text(label, style: TextStyle(color: Colors.white60, fontSize: 12.sp)),
           ],
         ),
       ),

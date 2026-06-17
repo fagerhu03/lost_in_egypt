@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/trip/solo_trip/presention/customize_plan/presentation/pages/quiz_flow_screen.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../../../../../../../../theme/theme.dart';
 
 class CustomizePlanCard extends StatelessWidget {
@@ -22,13 +24,13 @@ class CustomizePlanCard extends StatelessWidget {
       },
       child: Container(
         width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 40),
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
+        margin: EdgeInsets.symmetric(horizontal: 40.w),
+        padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 30.h),
         decoration: BoxDecoration(
           color: isDark
               ? AppColors.darkPatternOverlay
               : const Color(0xFFFFFEF0),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.15),
@@ -42,16 +44,16 @@ class CustomizePlanCard extends StatelessWidget {
           children: [
             Icon(
               Icons.calendar_month_outlined,
-              size: 47,
+              size: 47.r,
               color: isDark ? AppColors.darkPrimaryButton : AppColors.lightBox,
             ),
-            const SizedBox(width: 18),
+            SizedBox(width: 18.w),
             Flexible(
               child: Text(
-                "Customize your\nown plan",
+                AppLocalizations.of(context).soloCustomizeOwnPlan,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 24.sp,
                   height: 1.25,
                   fontWeight: FontWeight.w600,
                   color: isDark ? AppColors.darkText : AppColors.lightBox,

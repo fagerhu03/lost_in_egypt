@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 
 import '../../home/tabs/navigator/home_wrapper.dart';
 
@@ -66,9 +67,10 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
   }
 
   String? _formatError(String value) {
-    if (value.length < 3) return "Too short — minimum 3 characters";
-    if (value.length > 20) return "Too long — maximum 20 characters";
-    if (!_validPattern.hasMatch(value)) return "Only lowercase letters, numbers, and underscores";
+    final l = AppLocalizations.of(context);
+    if (value.length < 3) return l.usernameTooShort;
+    if (value.length > 20) return l.usernameTooLong;
+    if (!_validPattern.hasMatch(value)) return l.usernameInvalidChars;
     return null;
   }
 
@@ -85,14 +87,15 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
       setState(() {
         _isChecking = false;
         _isAvailable = query.docs.isEmpty;
-        _errorMessage = query.docs.isEmpty ? null : "That username is already taken";
+        _errorMessage =
+            query.docs.isEmpty ? null : AppLocalizations.of(context).usernameTaken;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _isChecking = false;
         _isAvailable = null;
-        _errorMessage = "Couldn't check availability — try again";
+        _errorMessage = AppLocalizations.of(context).usernameCheckFailed;
       });
     }
   }
@@ -133,28 +136,30 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
       if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeWrapper()),
+        MaterialPageRoute(builder: (_) => HomeWrapper()),
         (route) => false,
       );
     } on FirebaseException catch (e) {
       if (!mounted) return;
+      final l = AppLocalizations.of(context);
       setState(() {
         _isSaving = false;
         _errorMessage = e.code == 'already-exists'
-            ? "That username was just taken — try another"
-            : "Failed to save — please try again";
+            ? l.usernameTakenJustNow
+            : l.usernameSaveFailed;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isSaving = false;
-        _errorMessage = "Failed to save — please try again";
+        _errorMessage = AppLocalizations.of(context).usernameSaveFailed;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final primary = theme.colorScheme.primary;
@@ -186,17 +191,17 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
                 SizedBox(height: 60.h),
 
                 Text(
-                  "Choose your\nusername",
+                  l.usernameTitle,
                   style: TextStyle(
                     fontSize: 34.sp,
-                    fontFamily: "Marcellus",
+                    fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                     color: onSurface,
                     height: 1.2,
                   ),
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  "This is how others will find you in the community. You can change it later in your profile.",
+                  l.usernameSubtitle,
                   style: TextStyle(
                     fontSize: 15.sp,
                     color: onSurface.withValues(alpha: 0.6),
@@ -230,13 +235,13 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
                   child: Row(
                     children: [
                       Padding(
-                        padding: EdgeInsets.only(left: 20.w),
+                        padding: EdgeInsetsDirectional.only(start: 20.w),
                         child: Text(
                           "@",
                           style: TextStyle(
                             color: primary,
                             fontSize: 20.sp,
-                            fontFamily: "Marcellus",
+                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -251,7 +256,7 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
                           style: TextStyle(
                             color: onSurface,
                             fontSize: 18.sp,
-                            fontFamily: "Marcellus",
+                            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                           ),
                           onChanged: _onChanged,
                           decoration: InputDecoration(
@@ -267,7 +272,7 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(right: 16.w),
+                        padding: EdgeInsetsDirectional.only(end: 16.w),
                         child: _buildStatusIcon(),
                       ),
                     ],
@@ -306,10 +311,10 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
                             ),
                           )
                         : Text(
-                            "Continue",
+                            l.commonContinue,
                             style: TextStyle(
                               fontSize: 18.sp,
-                              fontFamily: "Marcellus",
+                              fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -345,6 +350,7 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
   }
 
   Widget _buildFeedback(Color onSurface) {
+    final l = AppLocalizations.of(context);
     if (_errorMessage != null) {
       return Row(
         key: const ValueKey('error'),
@@ -363,7 +369,7 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
         children: [
           SizedBox(width: 8.w),
           Text(
-            "@${_controller.text} is available!",
+            l.usernameAvailable(_controller.text),
             style: TextStyle(color: Colors.green, fontSize: 13.sp),
           ),
         ],
@@ -372,9 +378,9 @@ class _CreateUsernameScreenState extends State<CreateUsernameScreen> {
     if (_controller.text.isEmpty) {
       return Padding(
         key: const ValueKey('hint'),
-        padding: EdgeInsets.only(left: 8.w),
+        padding: EdgeInsetsDirectional.only(start: 8.w),
         child: Text(
-          "3–20 characters · letters, numbers, underscores only",
+          l.usernameRules,
           style: TextStyle(
             color: onSurface.withValues(alpha: 0.45),
             fontSize: 13.sp,

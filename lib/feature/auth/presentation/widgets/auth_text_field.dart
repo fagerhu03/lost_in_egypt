@@ -35,7 +35,7 @@ class AuthTextField extends StatelessWidget {
         focusNode: focusNode,
         style: TextStyle(
           color: Colors.white,
-          fontFamily: "Marcellus",
+          fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
           fontSize: 15.sp,
         ),
         decoration: InputDecoration(
@@ -43,7 +43,7 @@ class AuthTextField extends StatelessWidget {
           hintText: hintText,
           hintStyle: TextStyle(
             color: Colors.white70,
-            fontFamily: "Marcellus",
+            fontFamily: "Marcellus", fontFamilyFallback: const ['Cairo'],
             fontSize: 15.sp,
           ),
         ),

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
+import 'package:lost_in_egypt/l10n/app_localizations.dart';
 import '../presentation/bloc/camera_state.dart';
 
 class CameraAnalyzingView extends StatelessWidget {
@@ -13,8 +15,22 @@ class CameraAnalyzingView extends StatelessWidget {
     this.controller,
   });
 
+  String _statusLabel(AppLocalizations l10n) {
+    switch (state.status) {
+      case CameraStatus.capturing:
+        return l10n.cameraStatusCapturing;
+      case CameraStatus.identifying:
+        return l10n.cameraStatusIdentifying;
+      case CameraStatus.translating:
+        return l10n.cameraStatusTranslating;
+      case CameraStatus.downloadingModel:
+        return l10n.cameraStatusDownloadingModel(state.modelLang ?? '');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Show captured still image if available (avoids camera freeze effect)
     final capturedPath = state.capturedImagePath;
 
@@ -56,11 +72,11 @@ class CameraAnalyzingView extends StatelessWidget {
                 );
               },
               child: Container(
-                margin: const EdgeInsets.all(24),
-                padding: const EdgeInsets.all(24),
+                margin: EdgeInsets.all(24.r),
+                padding: EdgeInsets.all(24.r),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFE6A44A).withValues(alpha: 0.2),
@@ -73,12 +89,12 @@ class CameraAnalyzingView extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const CircularProgressIndicator(color: Color(0xFFE6A44A)),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Text(
-                      state.message,
-                      style: const TextStyle(
+                      _statusLabel(l10n),
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
