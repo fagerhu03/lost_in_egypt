@@ -1451,19 +1451,21 @@ exports.rebuildCountryPriors = onSchedule(
 // Keys MUST be drawn from CANONICAL_TYPES / CANONICAL_TAGS at the top of this
 // file — otherwise the dot-product scoring below ignores them silently and
 // personalisation degrades to random.
+// `lat`/`lng` let the client deep-link the daily push straight to the pin on
+// the map (the client resolves the name+coords to the real dataset entry).
 const DISCOVERY_POOL = [
-  { name: "Karnak Temple",              types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical", "religious"] },
-  { name: "Abu Simbel",                 types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
-  { name: "Valley of the Kings",        types: ["archaeological_site"],             tags: ["ancient", "pharaonic", "historical", "cultural"] },
-  { name: "Bibliotheca Alexandrina",    types: ["museum"],                          tags: ["cultural", "modern"] },
-  { name: "Siwa Oasis",                 types: ["park", "tourist_attraction"],      tags: ["natural", "adventure", "relaxation"] },
-  { name: "Dahab Blue Hole",            types: ["beach"],                           tags: ["natural", "adventure"] },
-  { name: "Khan el-Khalili",            types: ["market"],                          tags: ["islamic", "shopping", "cultural", "historical"] },
-  { name: "Luxor Temple",               types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
-  { name: "Citadel of Saladin",         types: ["historical_landmark", "monument"], tags: ["islamic", "historical", "religious"] },
-  { name: "White Desert",               types: ["park", "tourist_attraction"],      tags: ["natural", "adventure"] },
-  { name: "Edfu Temple",                types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
-  { name: "Ras Muhammad National Park", types: ["park", "beach"],                   tags: ["natural", "adventure"] },
+  { name: "Karnak Temple",              lat: 25.7188, lng: 32.6573, types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical", "religious"] },
+  { name: "Abu Simbel",                 lat: 22.3372, lng: 31.6258, types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Valley of the Kings",        lat: 25.7402, lng: 32.6014, types: ["archaeological_site"],             tags: ["ancient", "pharaonic", "historical", "cultural"] },
+  { name: "Bibliotheca Alexandrina",    lat: 31.2089, lng: 29.9092, types: ["museum"],                          tags: ["cultural", "modern"] },
+  { name: "Siwa Oasis",                 lat: 29.2041, lng: 25.5195, types: ["park", "tourist_attraction"],      tags: ["natural", "adventure", "relaxation"] },
+  { name: "Dahab Blue Hole",            lat: 28.5722, lng: 34.5375, types: ["beach"],                           tags: ["natural", "adventure"] },
+  { name: "Khan el-Khalili",            lat: 30.0477, lng: 31.2622, types: ["market"],                          tags: ["islamic", "shopping", "cultural", "historical"] },
+  { name: "Luxor Temple",               lat: 25.6997, lng: 32.6391, types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Citadel of Saladin",         lat: 30.0294, lng: 31.2611, types: ["historical_landmark", "monument"], tags: ["islamic", "historical", "religious"] },
+  { name: "White Desert",               lat: 27.2879, lng: 28.1810, types: ["park", "tourist_attraction"],      tags: ["natural", "adventure"] },
+  { name: "Edfu Temple",                lat: 24.9779, lng: 32.8732, types: ["archaeological_site", "monument"], tags: ["ancient", "pharaonic", "historical"] },
+  { name: "Ras Muhammad National Park", lat: 27.7333, lng: 34.2500, types: ["park", "beach"],                   tags: ["natural", "adventure"] },
 ];
 
 exports.sendDailyDiscovery = onSchedule(
@@ -1484,15 +1486,33 @@ exports.sendDailyDiscovery = onSchedule(
         // Respect the dedicated dailyDiscovery preference (defaults true)
         if (notificationPreferences.dailyDiscovery === false) return;
 
-        // Pick the pool entry whose types+tags best overlap the user's taste vector
-        let bestMatch = DISCOVERY_POOL[Math.floor(Math.random() * DISCOVERY_POOL.length)];
-        let bestScore = -Infinity;
-        for (const landmark of DISCOVERY_POOL) {
-          let score = 0;
-          for (const t of landmark.types) score += tasteVector[t] || 0;
-          for (const t of landmark.tags || []) score += tasteVector[t] || 0;
-          if (score > bestScore) { bestScore = score; bestMatch = landmark; }
+        // Rank the pool by how well each entry's types+tags overlap the user's
+        // taste vector (highest first; ties keep pool order).
+        const scored = DISCOVERY_POOL
+          .map((landmark) => {
+            let score = 0;
+            for (const t of landmark.types) score += tasteVector[t] || 0;
+            for (const t of landmark.tags || []) score += tasteVector[t] || 0;
+            return { landmark, score };
+          })
+          .sort((a, b) => b.score - a.score);
+
+        // Rotate through the top matches by day-of-year so the SAME user gets a
+        // DIFFERENT landmark each day instead of the single deterministic top
+        // pick (the "same place every day" bug). When the user has no taste
+        // signal yet (top score 0) the whole pool is in play. A per-user offset
+        // keeps two identical-taste users from seeing the same pick on a day.
+        const hasTaste = scored[0].score > 0;
+        const rotationSize = hasTaste ? Math.min(5, scored.length) : scored.length;
+        const now = new Date();
+        const dayOfYear = Math.floor(
+          (Date.now() - Date.UTC(now.getUTCFullYear(), 0, 0)) / 86400000
+        );
+        let userOffset = 0;
+        for (let i = 0; i < userDoc.id.length; i++) {
+          userOffset += userDoc.id.charCodeAt(i);
         }
+        const bestMatch = scored[(dayOfYear + userOffset) % rotationSize].landmark;
 
         // Generate a short "Did you know?" fact via Groq
         const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -1515,6 +1535,10 @@ exports.sendDailyDiscovery = onSchedule(
         const fact = groqData.choices?.[0]?.message?.content?.trim() || `Discover ${bestMatch.name} today`;
 
         const title = `📍 ${bestMatch.name}`;
+        // Deep-link payload the client decodes to focus the pin on the map:
+        // "<name>|<lat>|<lng>". Kept in deepLinkTargetId because the in-app
+        // notification model only round-trips that single field.
+        const deepLink = `${bestMatch.name}|${bestMatch.lat}|${bestMatch.lng}`;
 
         // Write in-app notification document so it appears in the notification centre
         await db().collection("users").doc(userDoc.id)
@@ -1526,7 +1550,7 @@ exports.sendDailyDiscovery = onSchedule(
             title,
             message: fact,
             type: "daily_discovery",
-            deepLinkTargetId: "",
+            deepLinkTargetId: deepLink,
             isRead: false,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
           });
@@ -1535,7 +1559,12 @@ exports.sendDailyDiscovery = onSchedule(
         await admin.messaging().send({
           token: fcmToken,
           notification: { title, body: fact },
-          data: { type: "daily_discovery", landmark: bestMatch.name },
+          data: {
+            type: "daily_discovery",
+            landmark: bestMatch.name,
+            lat: String(bestMatch.lat),
+            lng: String(bestMatch.lng),
+          },
           android: {
             notification: {
               channelId: "high_importance_channel",
