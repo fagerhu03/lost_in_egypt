@@ -47,6 +47,17 @@ class _HomeWrapperState extends State<HomeWrapper>
     ];
 
     MapFocusService.instance.tabSwitchNotifier.addListener(_handleTabSwitch);
+
+    // Drain any notification tap that launched the app from a terminated state.
+    // Deferred to the first frame so the tab-switch listener (above) and the map
+    // tab are live before the focus fires. Null on a normal launch — no-op.
+    final pendingLaunch = MapFocusService.instance.pendingLaunchAction;
+    if (pendingLaunch != null) {
+      MapFocusService.instance.pendingLaunchAction = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) pendingLaunch();
+      });
+    }
   }
 
   void _handleTabSwitch() {

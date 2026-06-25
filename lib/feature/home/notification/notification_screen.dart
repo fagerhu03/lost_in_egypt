@@ -115,11 +115,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return;
       }
 
-      // ── Daily discovery push → Home tab (same surface as weekly) ───────
+      // ── Daily discovery push → focus the landmark on the map ───────────
       if (notif.type == 'daily_discovery') {
         if (!mounted) return;
+        // Pop back to HomeWrapper first; triggerFocus then switches to the map
+        // tab and opens the pin's detail sheet.
         Navigator.of(context).popUntil((r) => r.isFirst);
-        MapFocusService.instance.tabSwitchNotifier.value = 0;
+        MapFocusService.instance.focusDiscoveryFromDeepLink(targetId);
         return;
       }
 

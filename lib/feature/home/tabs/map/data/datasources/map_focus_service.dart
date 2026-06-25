@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:lost_in_egypt/core/models/solo_plan.dart';
 import 'package:lost_in_egypt/feature/home/tabs/home/data/models/map_item_models.dart';
@@ -29,6 +30,12 @@ class MapFocusService {
 
   /// The plan currently being toured. Null when no tour is active.
   SavedPlan? activeTourPlan;
+
+  /// One-shot action queued by a notification tap that launched the app from a
+  /// terminated state (FCM getInitialMessage). HomeWrapper runs + clears it on
+  /// its first frame, once the tab/map infrastructure is live. Null on every
+  /// normal launch, so it never affects the default startup path.
+  VoidCallback? pendingLaunchAction;
 
   void triggerFocus(MapItem item) {
     debugPrint("🚀 MapFocusService.triggerFocus: ${item.title}");
@@ -69,6 +76,39 @@ class MapFocusService {
   void clearFocus() {
     debugPrint("🧹 MapFocusService.clearFocus");
     focusedItemNotifier.value = null;
+  }
+
+  /// Focuses the map on a daily-discovery landmark. Builds a lightweight
+  /// synthetic place from the name + coords; the map screen resolves it to the
+  /// real dataset pin (photos / reviews / description) when one is within
+  /// range, otherwise it still pans to the coordinates and selects the pin.
+  void focusDiscovery(String name, double lat, double lng) {
+    triggerFocus(PlaceModel(
+      id: 'discovery_${name.toLowerCase().replaceAll(' ', '_')}',
+      title: name,
+      category: 'tourism',
+      coordinate: GeoPoint(lat, lng),
+      imagePath: '',
+      locationAddress: '',
+      rating: 0,
+      price: 0,
+      duration: '',
+      weather: '',
+      description: '',
+    ));
+  }
+
+  /// Parses a daily-discovery deep link of the form `name|lat|lng` and
+  /// focuses the map on it. Returns false (no-op) when the payload is malformed
+  /// — e.g. legacy notifications written before deep-link payloads existed.
+  bool focusDiscoveryFromDeepLink(String payload) {
+    final parts = payload.split('|');
+    if (parts.length != 3) return false;
+    final lat = double.tryParse(parts[1]);
+    final lng = double.tryParse(parts[2]);
+    if (lat == null || lng == null) return false;
+    focusDiscovery(parts[0], lat, lng);
+    return true;
   }
 
   void switchToTab(int tabIndex) {

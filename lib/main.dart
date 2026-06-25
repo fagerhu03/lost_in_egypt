@@ -34,6 +34,7 @@ import 'feature/auth/presentation/sign_up/presentation/signup_screen.dart';
 import 'feature/onboarding/onboarding_screen.dart';
 import 'feature/home/notification/domain/services/local_notification_service.dart';
 import 'feature/home/tabs/map/data/places_api_service.dart';
+import 'feature/home/tabs/map/data/datasources/map_focus_service.dart';
 
 // ✅ add these imports for saved theme
 import 'feature/tours/presentation/pages/map_picker_screen.dart';
@@ -43,6 +44,23 @@ import 'package:lost_in_egypt/feature/auth/presentation/auth_gate.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Background messages are displayed natively by FCM — no extra work needed.
+}
+
+/// Routes a tapped push notification to the right in-app destination. Currently
+/// handles the daily-discovery push (focus the landmark on the map); other
+/// types are deep-linked from the in-app notification centre instead. Safe to
+/// call once HomeWrapper is mounted — focus drives the map via ValueNotifiers,
+/// no BuildContext needed.
+void _handleNotificationTap(RemoteMessage message) {
+  final data = message.data;
+  if (data['type'] == 'daily_discovery') {
+    final name = data['landmark'] ?? '';
+    final lat = double.tryParse(data['lat'] ?? '');
+    final lng = double.tryParse(data['lng'] ?? '');
+    if (name.isNotEmpty && lat != null && lng != null) {
+      MapFocusService.instance.focusDiscovery(name, lat, lng);
+    }
+  }
 }
 
 void main() async {
@@ -150,6 +168,19 @@ void main() async {
     }
   });
 
+  // Background tap (app alive in background): HomeWrapper is already mounted, so
+  // route straight away.
+  FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+
+  // Cold-start tap (app was terminated): HomeWrapper isn't mounted yet, so queue
+  // the action — it's drained on HomeWrapper's first frame once the tab/map
+  // infrastructure is live.
+  final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+  if (initialMessage != null) {
+    MapFocusService.instance.pendingLaunchAction =
+        () => _handleNotificationTap(initialMessage);
+  }
+
   // Background tap: update FCM token on refresh
   FirebaseMessaging.instance.onTokenRefresh.listen((String newToken) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -183,6 +214,28 @@ void main() async {
     debugPrint('[PlatformError] $error\n$stack');
     return true;
   };
+
+  // TEMP DIAGNOSTIC — remove once the Tours-screen grey-box bug is fixed.
+  // In a release/TestFlight build a widget that throws during build is replaced
+  // by a blank light-grey box (the default release ErrorWidget) which hides the
+  // real exception. This override paints the exception text on screen instead so
+  // it can be read/screenshotted from a release build. It is layout-safe in both
+  // bounded and unbounded (ListView item) contexts.
+  ErrorWidget.builder = (FlutterErrorDetails details) => Directionality(
+        textDirection: TextDirection.ltr,
+        child: Container(
+          color: const Color(0xFFB00020),
+          padding: const EdgeInsets.all(8),
+          alignment: Alignment.center,
+          child: Text(
+            details.exceptionAsString(),
+            style: const TextStyle(color: Colors.white, fontSize: 10, height: 1.3),
+            textAlign: TextAlign.center,
+            maxLines: 40,
+            overflow: TextOverflow.clip,
+          ),
+        ),
+      );
 
   runApp(const MyApp());
 }
